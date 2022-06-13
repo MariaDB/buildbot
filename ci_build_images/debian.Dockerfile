@@ -23,7 +23,7 @@ RUN if grep -q "ID=debian" /etc/os-release; then \
 # see: https://cryptography.io/en/latest/installation/
 RUN apt-get update \
     && apt-get -y upgrade \
-    && apt-get -y install --no-install-recommends curl devscripts equivs \
+    && apt-get -y install --no-install-recommends curl ca-certificates devscripts equivs \
     && curl -skO https://raw.githubusercontent.com/MariaDB/server/$mariadb_branch/debian/control \
     # MDEV-27965 - temporary hack to introduce a late libfmt dependency, so \
     # the main branches don't immediately fail on autobake builders once \
@@ -67,7 +67,6 @@ RUN apt-get update \
     dumb-init \
     gawk \
     git \
-    gosu \
     iputils-ping \
     libasio-dev \
     libboost-dev \
@@ -76,13 +75,15 @@ RUN apt-get update \
     libffi-dev \
     libssl-dev \
     python3-dev \
-    python3-pip \
     python3-setuptools \
     scons \
     sudo  \
     wget \
+    && if ! grep -q 'stretch' /etc/apt/sources.list; then \
+      apt-get -y install --no-install-recommends python3-buildbot-worker; \
+    fi \
     # install Debian 9 only deps \
     && if grep -q 'stretch' /etc/apt/sources.list; then \
-        apt-get -y install --no-install-recommends gnutls-dev; \
+        apt-get -y install --no-install-recommends gnutls-dev python3-pip; \
     fi \
     && apt-get clean

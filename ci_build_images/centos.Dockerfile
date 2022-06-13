@@ -18,6 +18,7 @@ RUN dnf -y --enablerepo=extras install epel-release \
     && dnf -y install \
     # not sure if needed
     # perl \
+    buildbot-worker \
     ccache \
     check-devel \
     cracklib-devel \
@@ -43,18 +44,4 @@ RUN dnf -y --enablerepo=extras install epel-release \
     && dnf clean all \
     # dumb-init rpm is not available on centos (official repo)
     && curl -sL "https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_$(uname -m)" >/usr/local/bin/dumb-init \
-    && chmod +x /usr/local/bin/dumb-init \
-    && case $(uname -m) in \
-        "x86_64") curl -sL "https://github.com/tianon/gosu/releases/download/1.14/gosu-amd64" >/usr/local/bin/gosu ;; \
-        "aarch64") curl -sL "https://github.com/tianon/gosu/releases/download/1.14/gosu-arm64" >/usr/local/bin/gosu ;; \
-        "ppc64le") curl -sL "https://github.com/tianon/gosu/releases/download/1.14/gosu-ppc64el" >/usr/local/bin/gosu ;; \
-    esac \
-    && chmod +x /usr/local/bin/gosu
-
-# install MariaDB dependencies
-# see yum-builddep -y mariadb-server
-# not sure this is needed:
-# RUN wget http://yum.mariadb.org/10.5.6/centos8-amd64/srpms/MariaDB-10.5.6-1.el8.src.rpm
-# RUN rpm -ivh ./MariaDB-10.5.6-1.el8.src.rpm
-# RUN yum-builddep -y ~/rpmbuild/SPECS/*
-
+    && chmod +x /usr/local/bin/dumb-init

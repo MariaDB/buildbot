@@ -104,10 +104,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Check Dockerfile with hadolint
-        run: |
-          cd ${{ env.WORKDIR }}
-          docker run -i -v $(pwd):/mnt -w /mnt hadolint/hadolint:latest hadolint /mnt/${{ matrix.dockerfile }}
       - name: Set up env vars
         run: |
           set -vx
@@ -158,7 +154,18 @@ jobs:
         run: |
           cd ${{ env.WORKDIR }}
           pwd
-          cat ${{ matrix.dockerfile }} common.Dockerfile >/home/runner/work/Dockerfile
+          # for some OS we need to install buildbot-worker with pip
+          if [[ "${{ matrix.dockerfile }}" == "centos7.Dockerfile" ]] ||
+            [[ "${{ matrix.image }}" == "debian:9" ]] ||
+            [[ "${{ matrix.dockerfile }}" == "rhel7.Dockerfile" ]]; then
+            cat ${{ matrix.dockerfile }} pip.Dockerfile common.Dockerfile >/home/runner/work/Dockerfile
+          else
+            cat ${{ matrix.dockerfile }} common.Dockerfile >/home/runner/work/Dockerfile
+          fi
+      - name: Check Dockerfile with hadolint
+        run: |
+          cp /home/runner/work/Dockerfile .
+          docker run -i -v $(pwd):/mnt -w /mnt hadolint/hadolint:latest hadolint /mnt/Dockerfile
       - name: Build image
         if: (!contains(matrix.dockerfile, 'rhel'))
         uses: docker/build-push-action@v2
@@ -195,8 +202,8 @@ jobs:
             line="${msg//?/=}"
             printf "\n${line}\n${msg}\n${line}\n"
             docker pull -q --platform "$platform" "$image"
-            docker run -i "$image" /home/buildbot/.local/bin/buildbot-worker --version
-            docker run -i "$image" dumb-init /home/buildbot/.local/bin/twistd --pidfile= -y /home/buildbot/buildbot.tac
+            docker run -i "$image" buildbot-worker --version
+            docker run -i "$image" dumb-init twistd --pidfile= -y /home/buildbot/buildbot.tac
           done
       - name: Check for registry credentials
         if: >
