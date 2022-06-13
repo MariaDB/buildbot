@@ -89,3 +89,8 @@ supportedPlatforms["10.10"] = ['aarch64-centos-7', 'aarch64-centos-8', 'aarch64-
 for k in supportedPlatforms:
     supportedPlatforms[k] = list(filter(lambda x: x not in github_status_builders, supportedPlatforms[k]))
 
+DEVELOPMENT_BRANCH="10.10"
+RELEASABLE_BRANCHES="5.5 10.0 10.1 10.2 10.3 10.4 10.5 10.6 bb-5.5-release bb-10.0-release bb-10.1-release bb-10.2-release bb-10.3-release bb-10.4-release bb-10.5-release bb-10.6-release"
+savedPackageBranches= ["5.5", "10.0", "10.1", "10.2", "10.3", "10.4", "10.5", "10.6", "10.7", "10.8", "10.9", "10.10", "bb-*-release", "bb-10.2-compatibility", "preview-*"]
+# The trees for which we save binary packages.
+releaseBranches = ["bb-*-release", "preview-10.*"]
