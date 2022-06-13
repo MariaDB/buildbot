@@ -197,7 +197,7 @@ jobs:
           done
       - name: Check for registry credentials
         if: >
-          github.ref == 'refs/heads/master' &&
+          github.ref == 'refs/heads/main' &&
           github.repository == 'MariaDB/mariadb.org-tools'
         run: |
           missing=()
