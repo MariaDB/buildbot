@@ -48,6 +48,10 @@ jobs:
             image: debian:11
             branch: 10.7
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
+          - dockerfile: debian.Dockerfile create_user.Dockerfile aocc.Dockerfile
+            image: debian:11
+            branch: 10.7
+            platforms: linux/amd64
           - dockerfile: debian.Dockerfile
             image: debian:sid
             branch: 10.7
@@ -107,7 +111,9 @@ jobs:
       - name: Check Dockerfile with hadolint
         run: |
           cd ${{ env.WORKDIR }}
-          docker run -i -v $(pwd):/mnt -w /mnt hadolint/hadolint:latest hadolint /mnt/${{ matrix.dockerfile }}
+          if [[ "${{ matrix.dockerfile }}" != *"aocc"* ]]; then
+            docker run -i -v $(pwd):/mnt -w /mnt hadolint/hadolint:latest hadolint /mnt/${{ matrix.dockerfile }}
+          fi
       - name: Set up env vars
         run: |
           set -vx
@@ -122,6 +128,8 @@ jobs:
             echo "TAG=rhel8" >>$GITHUB_ENV
           elif [[ "${{ matrix.platforms }}" = "linux/386" ]]; then
             echo "TAG=${TAG_TMP/:/}-386" >>$GITHUB_ENV
+          elif [[ "${{ matrix.dockerfile }}" == *"aocc"* ]]; then
+            echo "TAG=${TAG_TMP/:/}-aocc" >>$GITHUB_ENV
           else
             echo "TAG=${TAG_TMP/:/}" >>$GITHUB_ENV
           fi
@@ -158,7 +166,11 @@ jobs:
         run: |
           cd ${{ env.WORKDIR }}
           pwd
-          cat ${{ matrix.dockerfile }} common.Dockerfile >/home/runner/work/Dockerfile
+          if [[ "${{ matrix.dockerfile }}" == *"aocc"* ]]; then
+            cat ${{ matrix.dockerfile }} common.Dockerfile >/home/runner/work/Dockerfile
+          else
+            cat ${{ matrix.dockerfile }} create_user.Dockerfile common.Dockerfile >/home/runner/work/Dockerfile
+          fi
       - name: Build image
         if: (!contains(matrix.dockerfile, 'rhel'))
         uses: docker/build-push-action@v2
