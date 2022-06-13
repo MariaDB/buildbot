@@ -97,7 +97,7 @@ jobs:
     env:
       BUILD_RHEL: false
       DEPLOY_IMAGES: false
-      WORKDIR: buildbot.mariadb.org/ci_build_images
+      WORKDIR: ci_build_images
 
     steps:
       - uses: actions/checkout@v2
