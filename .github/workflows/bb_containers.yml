@@ -5,11 +5,11 @@ on:
   push:
     paths:
       - .github/workflows/bb_containers.yml
-      - "buildbot.mariadb.org/ci_build_images/**"
+      - "ci_build_images/**"
   pull_request:
     paths:
       - .github/workflows/bb_containers.yml
-      - "buildbot.mariadb.org/ci_build_images/**"
+      - "ci_build_images/**"
 
 jobs:
   build:
