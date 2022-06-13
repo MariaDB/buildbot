@@ -1,23 +1,83 @@
+centos-7:
+  version_name: 7
+  arch:
+    - amd64
+  type: rpm
+centos-stream8:
+  version_name: 8
+  arch:
+    - amd64
+    - aarch64
+  type: rpm
+centos-stream9:
+  version_name: 9
+  arch:
+    - amd64
+    - aarch64
+  type: rpm
+debian-10:
+  version_name: buster
+  arch:
+    - amd64
+    - aarch64
+  type: deb
 debian-11:
   version_name: bullseye
   arch:
     - amd64
     - aarch64
   type: deb
-ubuntu-1804:
-  version_name: bionic
+debian-sid:
+  version_name: sid
   arch:
     - amd64
     - aarch64
   type: deb
-centos-7:
-  version_name: 7
-  arch:
-    - amd64
-  type: rpm
 fedora-35:
   version_name: 35
   arch:
     - amd64
     - aarch64
   type: rpm
+fedora-36:
+  version_name: 36
+  arch:
+    - amd64
+    - aarch64
+  type: rpm
+rhel-7:
+  version_name: 7
+  arch:
+    - amd64
+  type: rpm
+rhel-8:
+  version_name: 8
+  arch:
+    - amd64
+    - aarch64
+  type: rpm
+rhel-9:
+  version_name: 9
+  arch:
+    - amd64
+    - aarch64
+  type: rpm
+ubuntu-1804:
+  version_name: bionic
+  arch:
+    - amd64
+    - aarch64
+  type: deb
+ubuntu-2004:
+  version_name: focal
+  arch:
+    - amd64
+    - aarch64
+  type: deb
+ubuntu-2204:
+  version_name: jammy
+  arch:
+    - amd64
+    - aarch64
+  type: deb
+
