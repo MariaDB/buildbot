@@ -16,7 +16,7 @@ watchdog() {
 
   while true; do
     FAIL=0
-    VAR_QEMU_SSH_CONF=7
+    VAR_QEMU_SSH_CONF=$(python3 get_number_of_ssh_conns.py)
     # shellcheck disable=SC2009
     VAR_QEMU_SSH_CONNEXION=$(ps faux | grep -c "qemu:///")
 
