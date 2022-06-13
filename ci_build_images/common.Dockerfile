@@ -4,7 +4,7 @@
 RUN useradd -ms /bin/bash buildbot \
     && gosu buildbot curl -so /home/buildbot/buildbot.tac \
     # TODO move buildbot.tac to ci_build_images
-    https://raw.githubusercontent.com/MariaDB/mariadb.org-tools/master/buildbot.mariadb.org/dockerfiles/buildbot.tac \
+    https://raw.githubusercontent.com/MariaDB/buildbot/main/dockerfiles/buildbot.tac \
     && echo "[[ -d /home/buildbot/.local/bin/ ]] && export PATH=\"/home/buildbot/.local/bin:\$PATH\"" >>/home/buildbot/.bashrc \
     # autobake-deb (debian/ubuntu) will need sudo rights \
     && if grep -qi "debian" /etc/os-release; then \
@@ -33,7 +33,7 @@ RUN gosu buildbot curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs >/tm
     else \
         pip3 install --no-cache-dir -U pip; \
         gosu buildbot curl -so /home/buildbot/requirements.txt \
-        https://raw.githubusercontent.com/MariaDB/mariadb.org-tools/master/buildbot.mariadb.org/ci_build_images/requirements.txt; \
+        https://raw.githubusercontent.com/MariaDB/buildbot/main/ci_build_images/requirements.txt; \
         # https://jira.mariadb.org/browse/MDBF-329 \
         if grep -q "stretch" /etc/apt/sources.list; then \
             gosu buildbot bash -c "pip3 install --no-cache-dir --no-warn-script-location incremental"; \

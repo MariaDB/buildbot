@@ -1,6 +1,6 @@
 import yaml
 
-with open('/srv/buildbot/mariadb.org-tools/buildbot.mariadb.org/os_info.yaml', 'r') as f:
+with open('/srv/buildbot/master/os_info.yaml', 'r') as f:
     os_info = yaml.safe_load(f)
 
 github_status_builders = [

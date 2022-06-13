@@ -36,7 +36,7 @@ def getScript(scriptname):
       name=f"fetch_{scriptname}",
       command=["bash", "-xc", f"""
   for script in bash_lib.sh {scriptname}; do
-    [[ ! -f $script ]] && wget "https://raw.githubusercontent.com/MariaDB/mariadb.org-tools/master/buildbot.mariadb.org/scripts/$script"
+    [[ ! -f $script ]] && wget "https://raw.githubusercontent.com/MariaDB/buildbot/main/scripts/$script"
   done
   chmod a+x {scriptname}
 """])
@@ -182,7 +182,7 @@ done
 @util.renderer
 def dockerfile(props):
     worker = props.getProperty('workername')
-    return "https://github.com/MariaDB/mariadb.org-tools/tree/master/buildbot.mariadb.org/dockerfiles/" + "-".join(worker.split('-')[-2:]) + '.dockerfile'
+    return "https://github.com/MariaDB/buildbot/tree/main/dockerfiles/" + "-".join(worker.split('-')[-2:]) + '.dockerfile'
 
 # checks if the list of files is empty
 def hasFiles(step):

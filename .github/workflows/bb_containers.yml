@@ -5,11 +5,11 @@ on:
   push:
     paths:
       - .github/workflows/bb_containers.yml
-      - "buildbot.mariadb.org/ci_build_images/**"
+      - "ci_build_images/**"
   pull_request:
     paths:
       - .github/workflows/bb_containers.yml
-      - "buildbot.mariadb.org/ci_build_images/**"
+      - "ci_build_images/**"
 
 jobs:
   build:
@@ -97,7 +97,7 @@ jobs:
     env:
       BUILD_RHEL: false
       DEPLOY_IMAGES: false
-      WORKDIR: buildbot.mariadb.org/ci_build_images
+      WORKDIR: ci_build_images
 
     steps:
       - uses: actions/checkout@v2
@@ -197,8 +197,8 @@ jobs:
           done
       - name: Check for registry credentials
         if: >
-          github.ref == 'refs/heads/master' &&
-          github.repository == 'MariaDB/mariadb.org-tools'
+          github.ref == 'refs/heads/main' &&
+          github.repository == 'MariaDB/buildbot'
         run: |
           missing=()
           [[ -n "${{ secrets.QUAY_USER }}" ]] || missing+=(QUAY_USER)
