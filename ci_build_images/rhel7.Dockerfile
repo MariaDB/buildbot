@@ -43,12 +43,6 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     && yum -y remove cmake \
     && ln -sf /usr/bin/cmake3 /usr/bin/cmake \
     && curl -sL "https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_$(uname -m)" >/usr/local/bin/dumb-init \
-    && chmod +x /usr/local/bin/dumb-init \
-    && case $(uname -m) in \
-        "x86_64") curl -sL "https://github.com/tianon/gosu/releases/download/1.14/gosu-amd64" >/usr/local/bin/gosu ;; \
-        "aarch64") curl -sL "https://github.com/tianon/gosu/releases/download/1.14/gosu-arm64" >/usr/local/bin/gosu ;; \
-        "ppc64le") curl -sL "https://github.com/tianon/gosu/releases/download/1.14/gosu-ppc64el" >/usr/local/bin/gosu ;; \
-    esac \
-    && chmod +x /usr/local/bin/gosu
+    && chmod +x /usr/local/bin/dumb-init
 
 ENV CRYPTOGRAPHY_ALLOW_OPENSSL_102=1

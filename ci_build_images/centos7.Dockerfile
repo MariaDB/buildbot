@@ -53,11 +53,4 @@ RUN yum -y --enablerepo=extras install epel-release \
     --family cmake \
     # dumb-init rpm is not available on centos
     && curl -sL "https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_$(uname -m)" >/usr/local/bin/dumb-init \
-    && chmod +x /usr/local/bin/dumb-init \
-    && case $(uname -m) in \
-        "x86_64") curl -sL "https://github.com/tianon/gosu/releases/download/1.14/gosu-amd64" >/usr/local/bin/gosu ;; \
-        "aarch64") curl -sL "https://github.com/tianon/gosu/releases/download/1.14/gosu-arm64" >/usr/local/bin/gosu ;; \
-        "ppc64le") curl -sL "https://github.com/tianon/gosu/releases/download/1.14/gosu-ppc64el" >/usr/local/bin/gosu ;; \
-    esac \
-    && chmod +x /usr/local/bin/gosu
-
+    && chmod +x /usr/local/bin/dumb-init

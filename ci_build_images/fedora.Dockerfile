@@ -13,6 +13,7 @@ RUN dnf -y upgrade \
     && dnf -y builddep mariadb-server \
     && dnf -y install \
     @development-tools \
+    buildbot-worker \
     bzip2 \
     bzip2-devel \
     bzip2-libs \
@@ -34,7 +35,6 @@ RUN dnf -y upgrade \
     lzo-devel \
     python-unversioned-command \
     python3-devel \
-    python3-pip \
     readline-devel \
     rpm-build \
     rubypick \
@@ -44,11 +44,4 @@ RUN dnf -y upgrade \
     unixODBC-devel \
     wget \
     && if [ "$(uname -m)" = "x86_64" ]; then dnf -y install libpmem-devel; fi \
-    && dnf clean all \
-    && case $(uname -m) in \
-        "x86_64") curl -sL "https://github.com/tianon/gosu/releases/download/1.14/gosu-amd64" >/usr/local/bin/gosu ;; \
-        "aarch64") curl -sL "https://github.com/tianon/gosu/releases/download/1.14/gosu-arm64" >/usr/local/bin/gosu ;; \
-        "ppc64le") curl -sL "https://github.com/tianon/gosu/releases/download/1.14/gosu-ppc64el" >/usr/local/bin/gosu ;; \
-    esac \
-    && chmod +x /usr/local/bin/gosu
-
+    && dnf clean all
