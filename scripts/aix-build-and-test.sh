@@ -51,7 +51,7 @@ plugins.server_audit         : unknown reasons
 innodb.log_file_name         : Unknown but frequent reasons
 main.cli_options_force_protocol_not_win : unknown reasons
 type_inet.type_inet6         : AIX incorrect IN6_IS_ADDR_V4COMPAT implementation (reported)
-main.func_json_notembedded   : machine too fast sometimes - bb-10.6-danielblack-MDEV-27955-postfix-func_json_notembedded 
+main.func_json_notembedded   : machine too fast sometimes - bb-10.6-danielblack-MDEV-27955-postfix-func_json_notembedded
 binlog_encryption.rpl_typeconv : timeout on 2 minutes, resource, backtrace is just on poll loop
 rpl.rpl_typeconv : timeout on 2 minutes, resource, backtrace is just on poll loop
 rpl.rpl_row_img_blobs : timeout on 2 minutes, resource, backtrace is just on poll loop
