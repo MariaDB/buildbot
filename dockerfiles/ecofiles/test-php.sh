@@ -48,7 +48,7 @@ export MYSQL_TEST_PASSWD=letmein
 export PDO_MYSQL_TEST_DSN="mysql:host=127.0.0.1;dbname=${MYSQL_TEST_DB}"
 export PDO_MYSQL_TEST_USER="${MYSQL_TEST_USER}"
 export PDO_MYSQL_TEST_PASS="${MYSQL_TEST_PASSWD}"
-# 
+#
 # ./ext/pdo_mysql/tests/mysql_pdo_test.inc
 # PDO_MYSQL_TEST_DSN, = mysql:host=localhost;dbname=test
 # PDO_MYSQL_TEST_USER

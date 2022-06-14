@@ -37,7 +37,7 @@
                     {% for revision in revisions %}
                         {# only print builds that have a revision which matches the revision in the header and matches the builder #}
                         {% for build in builds if (build.properties.revision|length > 0) and (build.builderid == builder.builderid) and (build.properties.revision.0 == revision) %}
-                            <td>	    
+                            <td>
                         {% for build in builds if (build.properties.revision|length > 0) and (build.builderid == builder.builderid) and (build.properties.revision.0 == revision) %}
                                     {# If this build is from this builderid/revision, then we render it in this cell #}
                                     {# We use buildbot internal CSS styles display our builds, with links to the standard UI  #}
