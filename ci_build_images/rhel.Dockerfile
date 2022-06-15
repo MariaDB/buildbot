@@ -17,13 +17,15 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     --activationkey="$(cat /run/secrets/rhel_keyname)" \
     && case $base_image in \
     ubi9) \
-      v=9 ; \
-       # no buildbot-worker any more \
-      extra="fmt-devel python3-pip" ;; \
+      v=9; \
+      # no buildbot-worker any more \
+      extra="fmt-devel python3-pip"; \
+      ;; \
     ubi8) \
-      v=8 ; \
+      v=8; \
       # fmt-devel # >= 7.0 needed, epel8 has 6.2.1-1.el8 \
-      extra=buildbot-worker ;; \
+      extra="buildbot-worker"; \
+      ;; \
     esac \
     && subscription-manager repos --enable "codeready-builder-for-rhel-${v}-$(uname -m)-rpms" \
     && rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-"${v}".noarch.rpm \
@@ -34,6 +36,7 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     "https://kojipkgs.fedoraproject.org/packages/Judy/1.0.5/28.fc36/$(arch)/Judy-devel-1.0.5-28.fc36.$(arch).rpm" \
     && dnf -y builddep mariadb-server \
     && dnf -y install \
+    ${extra} \
     boost-devel \
     ccache \
     check-devel \
@@ -41,7 +44,6 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     coreutils \
     cracklib-devel \
     curl-devel \
-    ${extra} \
     java-1.8.0-openjdk \
     jemalloc-devel --allowerasing \
     krb5-devel \
