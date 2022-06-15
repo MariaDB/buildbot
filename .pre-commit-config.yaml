@@ -1,0 +1,80 @@
+---
+exclude: "dockerfiles"
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.3.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-ast
+      - id: check-case-conflict
+      - id: check-executables-have-shebangs
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: check-toml
+      - id: check-xml
+      - id: check-yaml
+        name: Check yaml files
+      - id: debug-statements
+        name: Check for Python debug statements
+      - id: trailing-whitespace
+        name: Check trailing whitespace
+        args: [--markdown-linebreak-ext=md]
+  # - repo: https://gitlab.com/pycqa/flake8.git
+  #   rev: 3.9.2
+  #   hooks:
+  #     - id: flake8
+  #       name: Check python (flake8)
+  - repo: https://github.com/adrienverge/yamllint.git
+    rev: v1.28.0
+    hooks:
+      - id: yamllint
+        name: Check yaml files (yamllint)
+  - repo: https://github.com/fauust/pre-commit-shell
+    rev: v1.1
+    hooks:
+      - id: shellcheck
+        name: Check shell script (shellcheck)
+        args: ["-x"]
+      # - id: shfmt
+      #   name: Check shell style (shfmt)
+      #   args: ["-d", "-i", "2", "-ci"]
+  - repo: https://github.com/markdownlint/markdownlint
+    rev: v0.11.0
+    hooks:
+      - id: markdownlint
+        name: Check for markdown lint (mdl)
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.2.1
+    hooks:
+      - id: codespell
+        name: Checks for common misspellings in text files
+        entry: codespell
+        language: python
+  - repo: local
+    hooks:
+      - id: docker-hadolint
+        name: Run hadolint with docker
+        language: docker_image
+        entry: hadolint/hadolint:latest hadolint
+        files: Dockerfile
+      # - id: docker-prettier
+      #   name: Run prettier with docker
+      #   entry: tmknom/prettier:latest -l
+      #   language: docker_image
+      #   files: "\\.(\
+      #     css|less|scss\
+      #     |graphql|gql\
+      #     |html\
+      #     |js|jsx\
+      #     |json\
+      #     |md|markdown|mdown|mkdn\
+      #     |mdx\
+      #     |ts|tsx\
+      #     |vue\
+      #     |yaml|yml\
+      #     )$"
+      - id: docker-lychee
+        name: Run lychee on markdown files with docker
+        entry: lycheeverse/lychee
+        language: docker_image
+        types: [markdown]
