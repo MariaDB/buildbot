@@ -50,7 +50,7 @@ case "${buildername#*ubuntu-}" in
     ;;
   2004-deb-autobake)
     base=focal
-    pkgver=ubu2204
+    pkgver=ubu2004
     ;;
   *)
     echo "unknown base buildername $buildername"
