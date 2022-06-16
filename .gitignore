@@ -1,8 +1,9 @@
 *.log*
-master-private.cfg
-workers
-master-protected-branches
 *.pid
+.envrc
+__pycache__
+master-private.cfg
+master-protected-branches
 prof*
 venv
-__pycache__
+workers
