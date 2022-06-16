@@ -10,22 +10,34 @@
 # This needs to be called as ExecStartPost= in the systemd unit file.
 # See: /etc/systemd/system/buildbot-master-libvirt.service
 
+err() {
+  echo >&2 "ERROR: $*"
+  exit 1
+}
+
 watchdog() {
-  VAR_BB_LIBVIRT_DIR="/srv/buildbot/master/master-libvirt"
-  VAR_BB_LIBVIRT_CONF="$VAR_BB_LIBVIRT_DIR/master.cfg"
+  GET_SSH_CNX_SCRIPT="get_ssh_cnx_num.py"
+  [[ -f $GET_SSH_CNX_SCRIPT ]] ||
+    err "$GET_SSH_CNX_SCRIPT not found"
+
+  # $GET_SSH_CNX_SCRIPT needs some pip libraries, thus we need to use
+  # buildmaster venv
+  VAR_PYTHON_VENV="/home/buildmaster/buildbot/.venv"
+  [[ -d $VAR_PYTHON_VENV ]] ||
+    err "$VAR_PYTHON_VENV does not exist"
 
   while true; do
     FAIL=0
-    VAR_QEMU_SSH_CONF=$(python3 get_number_of_ssh_conns.py)
+    VAR_QEMU_SSH_CONF=$($VAR_PYTHON_VENV/bin/python $GET_SSH_CNX_SCRIPT)
     # shellcheck disable=SC2009
-    VAR_QEMU_SSH_CONNEXION=$(ps faux | grep -c "qemu:///")
+    VAR_QEMU_SSH_CONNEXION=$(ps -ef | grep buildbot | grep -c "qemu:///")
 
-    if ((VAR_QEMU_SSH_CONF != $((VAR_QEMU_SSH_CONNEXION - 1)))); then
+    if ((VAR_QEMU_SSH_CONF != VAR_QEMU_SSH_CONNEXION)); then
       FAIL=1
     fi
 
     if ((FAIL == 0)); then
-      /bin/systemd-notify WATCHDOG=1;
+      /bin/systemd-notify WATCHDOG=1
       sleep $((WATCHDOG_USEC / 2000000))
     else
       sleep 1
