@@ -46,16 +46,26 @@ container_tag=${container_tag,,*}
 case "${buildername#*ubuntu-}" in
   2204-deb-autobake)
     base=jammy
+    pkgver=ubu2204
     ;;
   2004-deb-autobake)
     base=focal
-    ;;
-  1804-deb-autobake)
-    base=bionic
+    pkgver=ubu2204
     ;;
   *)
     echo "unknown base buildername $buildername"
     exit 0
+    ;;
+esac
+
+# gradually exclude for other major version as
+# https://github.com/MariaDB/server/commit/c168e16782fc449f61412e5afc1c01d59b77c675
+# is merged up.
+case "$container_tag" in
+  10.3)
+    ;;
+  *)
+    pkgver=$base
     ;;
 esac
 
@@ -87,7 +97,7 @@ build() {
   shift
   t=$(mktemp)
   buildah bud --layers "$@" --build-arg REPOSITORY="[trusted=yes] https://ci.mariadb.org/$tarbuildnum/${arch}-${buildernamebase}/debs ./" \
-    --build-arg MARIADB_VERSION="1:$mariadb_version+maria~$base" \
+    --build-arg MARIADB_VERSION="1:$mariadb_version+maria~$pkgver" \
     "${annotations[@]}" \
     "mariadb-docker/$master_branch" | tee "${t}"
   image=$(tail -n 1 "$t")
