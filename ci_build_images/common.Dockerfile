@@ -7,6 +7,8 @@ RUN if grep -q '^buildbot:' /etc/passwd; then \
     else \
       useradd -ms /bin/bash buildbot; \
     fi \
+    # make sure that buildbot user UID is fixed \
+    && usermod -u 1000 buildbot \
     && if [ ! -d /home/buildbot ]; then \
       mkdir /home/buildbot; \
       chown -R buildbot:buildbot /home/buildbot; \
