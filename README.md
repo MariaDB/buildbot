@@ -1,5 +1,7 @@
 # buildbot.mariadb.org
 
+[![BB container build](https://github.com/MariaDB/buildbot/actions/workflows/bb_containers.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/bb_containers.yml)
+
 ```console
 _________________________
 < Build all the things! >
