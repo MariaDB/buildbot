@@ -105,7 +105,7 @@ jobs:
             platforms: linux/amd64, linux/ppc64le
           - dockerfile: rhel8.Dockerfile
             image: ubi8
-            tah: rhel8
+            tag: rhel8
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
     env:
       BUILD_RHEL: false
