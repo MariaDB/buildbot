@@ -27,9 +27,7 @@ err() {
 
 manual_run_switch() {
   # check if we are in Buildbot CI or not
-  # //TEMP find a better generic way here (we might want to be able to run it
-  # manually and as the buildbot user)
-  if [[ $(whoami) != "buildbot" ]]; then
+  if [[ $BB_CI != "true" ]]; then
     if [[ -z $1 ]]; then
       echo "Please provide the build URL, example:"
       echo "$0 https://buildbot.mariadb.org/#/builders/171/builds/7351"
