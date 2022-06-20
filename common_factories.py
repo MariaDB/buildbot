@@ -94,9 +94,9 @@ def getRpmAutobakeFactory(mtrDbPool):
     #f_rpm_autobake.addStep(steps.MultipleFileUpload(workersrcs=util.Property('packages'),
     #    masterdest=util.Interpolate('/srv/buildbot/packages/' + '%(prop:tarbuildnum)s' + '/' + '%(prop:buildername)s'), mode=0o755, url=util.Interpolate('https://ci.mariadb.org/' + "%(prop:tarbuildnum)s" + "/" + '%(prop:buildername)s' + "/"), doStepIf=lambda step: hasFiles(step) and savePackage(step)))
     f_rpm_autobake.addStep(steps.ShellCommand(name='save_packages', timeout=7200, haltOnFailure=True, command=util.Interpolate('mkdir -p ' + '/packages/' + '%(prop:tarbuildnum)s' + '/' + '%(prop:buildername)s'+ ' && cp -r rpms srpms sha256sums.txt' + ' /packages/' + '%(prop:tarbuildnum)s' + '/' + '%(prop:buildername)s' + '/' +  ' && sync /packages/' + '%(prop:tarbuildnum)s'), doStepIf=lambda step: hasFiles(step) and savePackage(step)))
-    f_rpm_autobake.addStep(steps.Trigger(name='install', schedulerNames=['s_install'], waitForFinish=True, updateSourceStamp=False,
+    f_rpm_autobake.addStep(steps.Trigger(name='install', schedulerNames=['s_install'], waitForFinish=False, updateSourceStamp=False,
         set_properties={"tarbuildnum" : Property("tarbuildnum"), "mariadb_version" : Property("mariadb_version"), "master_branch" : Property("master_branch"), "parentbuildername": Property("buildername")}, doStepIf=lambda step: hasInstall(step) and savePackage(step) and hasFiles(step)))
-    f_rpm_autobake.addStep(steps.Trigger(name='major-minor-upgrade', schedulerNames=['s_upgrade'], waitForFinish=True, updateSourceStamp=False,
+    f_rpm_autobake.addStep(steps.Trigger(name='major-minor-upgrade', schedulerNames=['s_upgrade'], waitForFinish=False, updateSourceStamp=False,
         set_properties={"tarbuildnum" : Property("tarbuildnum"), "mariadb_version" : Property("mariadb_version"), "master_branch" : Property("master_branch"), "parentbuildername": Property("buildername")}, doStepIf=lambda step: hasUpgrade(step) and savePackage(step) and hasFiles(step)))
     f_rpm_autobake.addStep(steps.ShellCommand(name="cleanup", command="rm -r * .* 2> /dev/null || true", alwaysRun=True))
     return f_rpm_autobake
