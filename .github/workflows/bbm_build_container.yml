@@ -1,0 +1,71 @@
+---
+name: build bbm container
+
+on:
+  push:
+    paths:
+      - "Dockerfile"
+      - .github/workflows/bbm_build_container.yml
+  pull_request:
+    paths:
+      - "Dockerfile"
+      - .github/workflows/bbm_build_container.yml
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: build
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check Dockerfile with hadolint
+        run: |
+          docker run -i -v $(pwd):/mnt -w /mnt hadolint/hadolint:latest hadolint /mnt/Dockerfile
+      - name: Create empty context
+        run: |
+          # //TEMP there is probably a better way to not include context
+          mkdir empty
+      - name: Build image
+        uses: docker/build-push-action@v2
+        with:
+          context: /home/runner/work/buildbot/buildbot/empty
+          file: /home/runner/work/buildbot/buildbot/Dockerfile
+          push: true
+          tags: localhost:5000/test/bb-master:latest
+      - name: Check for registry credentials
+        if: >
+          github.ref == 'refs/heads/main' &&
+          github.repository == 'MariaDB/buildbot'
+        run: |
+          missing=()
+          [[ -n "${{ secrets.QUAY_USER }}" ]] || missing+=(QUAY_USER)
+          [[ -n "${{ secrets.QUAY_TOKEN }}" ]] || missing+=(QUAY_TOKEN)
+          for i in "${missing[@]}"; do
+            echo "Missing github secret: $i"
+          done
+          if (( ${#missing[@]} == 0 )); then
+            echo "DEPLOY_IMAGES=true" >> $GITHUB_ENV
+          else
+            echo "Not pushing images to registry"
+          fi
+      - name: Login to registry
+        if: ${{ env.DEPLOY_IMAGES == 'true' }}
+        uses: docker/login-action@v1
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USER }}
+          password: ${{ secrets.QUAY_TOKEN }}
+      - name: Push images to registry
+        if: ${{ env.DEPLOY_IMAGES == 'true' }}
+        run: |
+          msg="Push docker image to registry"
+          line="${msg//?/=}"
+          printf "\n${line}\n${msg}\n${line}\n"
+          skopeo copy --all --src-tls-verify=0 \
+          docker://localhost:5000/test/bb-master:latest \
+          docker://quay.io/mariadb-foundation/bb-master:latest

@@ -1,23 +1,84 @@
-private["db_url"] = ""
-private["gh_secret"] = ""
+private["db_url"] = "mysql://buildmaster:password@localhost/buildbot?max_idle=300&storage_engine=InnoDB"
+private["db_host"] = "localhost"
+private["db_user"] = "buildmaster"
+private["db_password"] = "password"
+private["db_mtr_db"] = "buildbot"
+private["gh_secret"] = "gh_secret"
+private["zabbix_server"] = "https://zabbix.server"
+private["zabbix_token"] = "zabbix_token"
 private["user_pass"]= {
-    "admin":"",
+    "admin":"user_pass",
 }
 private["worker_pass"]= {
-    "bm-bbw1-ubuntu1804":"",
-    "shinnok-bbw1-macos":"",
+    "hz-bbw2-ubuntu1804":"1234",
+    "hz-bbw2-libvirt-debian-10":"1234",
+    "bm-bbw1-ubuntu1804":"1234",
+    "shinnok-bbw1-macos":"1234",
+    "aix-worker":"1234",
+    "bbw1-windows":"1234",
+    "bb-rhel8-docker":"1234",
+    "s390x-rhel8":"1234",
+    "libvirt": "1234",
 }
 private["docker_workers"]= {
-    "do-bbw1-docker":"",
-    "hz-bbw1-docker":"",
-    "bm-bbw1-docker":""
+    "amd-bbw1-docker":"tcp://IP_address:port",
+    "amd-bbw2-docker":"tcp://IP_address:port",
+    "hz-bbw1-docker":"tcp://IP_address:port",
+    "hz-bbw2-docker":"tcp://IP_address:port",
+    "hz-bbw4-docker":"tcp://IP_address:port",
+    "hz-bbw5-docker":"tcp://IP_address:port",
+    "gsk-bbw1-docker":"tcp://IP_address:port",
+    "bm-bbw1-docker":"tcp://IP_address:port",
+    "p9-rhel8-bbw1-docker":"tcp://IP_address:port",
+    "p9-rhel7-bbw1-docker":"tcp://IP_address:port",
+    "p9-db-bbw1-docker":"tcp://IP_address:port",
+    "aarch64-bbw1-docker":"tcp://IP_address:port",
+    "aarch64-bbw2-docker":"tcp://IP_address:port",
+    "aarch64-bbw3-docker":"tcp://IP_address:port",
+    "aarch64-bbw4-docker":"tcp://IP_address:port",
+    "aarch64-bbw5-docker":"tcp://IP_address:port",
+    "apexis-bbw1-docker":"tcp://IP_address:port",
+    "apexis-bbw2-docker":"tcp://IP_address:port",
+    "bg-bbw1-docker":"tcp://IP_address:port",
+    "bg-bbw2-docker":"tcp://IP_address:port",
+    "bg-bbw3-docker":"tcp://IP_address:port",
+    "bg-bbw4-docker":"tcp://IP_address:port",
+    "bg-bbw5-docker":"tcp://IP_address:port",
+    "intel-bbw1-docker":"tcp://IP_address:port",
+    "s390x-bbw1-docker":"tcp://IP_address:port",
+    "s390x-bbw2-docker":"tcp://IP_address:port",
+    "s390x-bbw3-docker":"tcp://IP_address:port",
+    "aws-bbw1-docker":"tcp://IP_address:port",
 }
-# github.com/mariadbci access token
+
+private["worker_name_mapping"] = {
+    "s390x-bbw1": "ibm-s390x-ubuntu20.04",
+    "s390x-bbw2": "ibm-s390x-sles15",
+    "s390x-bbw3": "ibm-s390x-rhel8",
+}
+
 private["gh_mdbci"]= {
-    "access_token":""
+    "username":"username",
+    "name":"username",
+    "email":"user@domain.com",
+    "access_token":"access_token",
+    "push_access_token":"push_access_token"
 }
+
 # github.com/mariadb/ auth app
 private["gh_mdbauth"]= {
-    "client":"",
-    "secret":""
+    "client":"client",
+    "secret":"secret"
+}
+
+# RHEL subscription
+private["rhel_sub"]= {
+    "user":"user",
+    "password": "password"
+}
+
+private["libvirt_workers"] = {
+    "amd64": ("bb-hz-bbw5", "qemu+ssh://user@IP_address/system"),
+    "aarch64": ("bb-eq-arm1", "qemu+ssh://user@IP_addres/system"),
+    "ppc64le": ("bb-db-p9-bbw1", "qemu+ssh://user@IP_adress/system"),
 }
