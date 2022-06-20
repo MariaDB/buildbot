@@ -1,0 +1,85 @@
+---
+name: BB master check
+
+on:
+  push:
+    paths:
+      - .github/workflows/bbm.yml
+      - "master.cfg"
+  pull_request:
+    paths:
+      - .github/workflows/bbm.yml
+      - "master.cfg"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: check bbm config
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install deps
+        run: |
+          # sudo apt-get install -y \
+          #   nodejs \
+          #   npm
+          # cd /root
+          # npm install --location=global yarn
+          # export PATH="$HOME/node_modules/.bin:$PATH"
+          sudo apt-get install -y \
+            build-essential \
+            libmariadb-dev \
+            libvirt-dev \
+            python3-dev \
+            python3-venv
+          yarn global add gulp yo generator-buildbot-dashboard
+      - name: Get fork
+        run: |
+          git clone --branch grid https://github.com/vladbogo/buildbot
+      - name: Install buildbot
+        run: |
+          cd buildbot
+          python3 -m venv .venv
+          . .venv/bin/activate
+          pip install pip -U
+          pip install \
+            buildbot-prometheus \
+            buildbot-worker \
+            docker \
+            flask \
+            libvirt-python \
+            mock \
+            mysqlclient \
+            pyzabbix \
+            treq \
+            wheel
+          pip install sqlalchemy==1.3.23
+          cd master
+          python setup.py bdist_wheel
+          pip install dist/*.whl
+      - name: Check master.cfg files
+        run: |
+          . buildbot/.venv/bin/activate
+          sudo mkdir -p /var/log/buildbot
+          sudo mkdir -p /srv/buildbot
+          sudo ln -s $(pwd) /srv/buildbot/master
+          buildbot --version
+          ln -s master-private.cfg-sample master-private.cfg
+          echo "Checking master.cfg"
+          buildbot checkconfig master.cfg
+          echo -e "done\n"
+          # not checking libvirt config file (//TEMP we need to find a solution
+          # to not check ssh connexion)
+          for dir in master-galera master-nonlatent master-web; do
+            cd $dir
+            echo "Checking $dir/master.cfg"
+            buildbot checkconfig master.cfg
+            echo -e "done\n"
+            cd ..
+          done
+      - name: Install buildbot frontend
+        run: |
+          cd buildbot
+          . .venv/bin/activate
+          # export PATH="$HOME/node_modules/.bin:$PATH"
+          make frontend
