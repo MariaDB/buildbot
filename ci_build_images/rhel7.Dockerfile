@@ -32,6 +32,7 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     python3-pip \
     scons \
     snappy-devel \
+    systemd-devel \
     wget \
     && if [ "$(arch)" = "ppc64le" ]; then \
         subscription-manager repos --enable rhel-7-for-power-le-optional-rpms; \
