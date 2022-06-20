@@ -1,0 +1,39 @@
+---
+name: bbm conf check
+
+on:
+  push:
+    paths:
+      - "master-galera/master.cfg"
+      - "master-nonlatent/master.cfg"
+      - "master-web/master.cfg"
+      - "master.cfg"
+      - .github/workflows/bbm_check_conf.yml
+  pull_request:
+    paths:
+      - "master-galera/master.cfg"
+      - "master-nonlatent/master.cfg"
+      - "master-web/master.cfg"
+      - "master.cfg"
+      - .github/workflows/bbm_check_conf.yml
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: check
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check master.cfg files
+        run: |
+          ln -s master-private.cfg-sample master-private.cfg
+          echo "Checking master.cfg"
+          docker run -i -v $(pwd):/srv/buildbot/master -w /srv/buildbot/master quay.io/mariadb-foundation/bb-master:latest buildbot checkconfig master.cfg
+          echo -e "done\n"
+          # not checking libvirt config file (//TEMP we need to find a solution
+          # to not check ssh connection)
+          for dir in master-galera master-nonlatent master-web; do
+            echo "Checking $dir/master.cfg"
+            docker run -i -v $(pwd):/srv/buildbot/master -w /srv/buildbot/master quay.io/mariadb-foundation/bb-master:latest bash -c "cd $dir && buildbot checkconfig master.cfg"
+            echo -e "done\n"
+          done
