@@ -23,7 +23,7 @@ RUN apt-get update -y && \
 RUN useradd -ms /bin/bash buildbot && \
     mkdir -p /buildbot /data && \
     chown -R buildbot /buildbot /data /usr/local && \
-    curl -o /buildbot/buildbot.tac https://raw.githubusercontent.com/MariaDB/mariadb.org-tools/master/buildbot.mariadb.org/dockerfiles/buildbot.tac
+    curl -o /buildbot/buildbot.tac https://raw.githubusercontent.com/MariaDB/buildbot/main/dockerfiles/buildbot.tac
 
 WORKDIR /buildbot
 
