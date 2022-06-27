@@ -37,6 +37,7 @@ release_builders = [
         "aarch64-ubuntu-2004-deb-autobake",
         "amd64-debian-sid",
         "amd64-debian-sid-deb-autobake",
+        "amd64-ubuntu-2004",
         "ppc64le-debian-11",
         "ppc64le-debian-11-deb-autobake",
         "ppc64le-debian-sid",
