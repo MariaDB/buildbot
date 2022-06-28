@@ -49,6 +49,11 @@ manual_run_switch() {
       for var in $(jq -r '.properties[]' properties.json | grep -v warnings-count | grep ": \[" | cut -d \" -f2); do
         export "$var"="$(jq -r ".properties[] | .${var}[0]" properties.json)"
       done
+      # we need some global env vars (not provided as properties)
+      wget -q "https://raw.githubusercontent.com/MariaDB/buildbot/main/constants.py" -O constants.py ||
+        err "unable to get global env vars"
+      dev_branch=$(grep DEVELOPMENT_BRANCH constants.py | cut -d \" -f2)
+      export development_branch="$dev_branch"
     fi
     # for RPM we have to download artifacts from ci.mariadb.org
     if command -v rpm >/dev/null; then
@@ -78,7 +83,7 @@ apt_get_update() {
 
 wait_for_mariadb_upgrade() {
   res=1
-  for i in {1..10}; do
+  for i in {1..20}; do
     if pgrep -i 'mysql_upgrade|mysqlcheck|mysqlrepair|mysqlanalyze|mysqloptimize|mariadb-upgrade|mariadb-check'; then
       bb_log_info "wait for mysql_upgrade to finish ($i)"
       sleep 5
@@ -94,6 +99,8 @@ wait_for_mariadb_upgrade() {
 }
 
 deb_setup_mariadb_mirror() {
+  # stop if any further variable is undefined
+  set -u
   [[ -n $1 ]] || {
     bb_log_err "missing the branch variable"
     exit 1
@@ -104,8 +111,6 @@ deb_setup_mariadb_mirror() {
     branch="10.$prev_released"
     bb_log_info "using previous $branch released version for development branch $1"
   fi
-  # stop if any further variable is undefined
-  set -u
   bb_log_info "setup MariaDB repository for $branch branch"
   command -v wget >/dev/null || {
     bb_log_err "wget command not found"
