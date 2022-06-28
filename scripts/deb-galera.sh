@@ -70,7 +70,7 @@ for process in mariadbd mysqld; do
 done
 
 # give mariadb the time to shutdown
-for i in 1 2 3 4 5 6 7 8 9 10; do
+for i in {1..10}; do
   if pgrep 'mysqld|mariadbd'; then
     bb_log_info "give mariadb the time to shutdown ($i)"
     sleep 3
@@ -214,9 +214,9 @@ sudo mysqld_safe --defaults-extra-file=/home/buildbot/node1.cnf --user=mysql --w
 res=1
 set +x
 bb_log_info "waiting till the first node comes up..."
-for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do
+for i in {1..10}; do
   bb_log_info "still waiting for first node comes up ($i)..."
-  sleep 2
+  sleep 5
   if mysql -uroot -prootpass --port=8301 --protocol=tcp -e "create database mgc; create table mgc.t1 (i int); insert into mgc.t1 values (1)"; then
     res=0
     break
@@ -244,7 +244,7 @@ for node in 2 3; do
   res=1
   set +x
   bb_log_info "waiting till node $node comes up..."
-  for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do
+  for i in {1..20}; do
     sleep 5
     # echoing to 2>/dev/null because we do not want mysql connection error to
     # be printed ERROR 2002 (HY000): Can't connect to MySQL server on 'localhost'

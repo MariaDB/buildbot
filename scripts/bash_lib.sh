@@ -61,7 +61,7 @@ manual_run_switch() {
 apt_get_update() {
   bb_log_info "update apt cache"
   res=1
-  for i in 1 2 3 4 5 6 7 8 9 10; do
+  for i in {1..10}; do
     if sudo apt-get update; then
       res=0
       break
@@ -78,10 +78,10 @@ apt_get_update() {
 
 wait_for_mariadb_upgrade() {
   res=1
-  for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
+  for i in {1..10}; do
     if pgrep -i 'mysql_upgrade|mysqlcheck|mysqlrepair|mysqlanalyze|mysqloptimize|mariadb-upgrade|mariadb-check'; then
       bb_log_info "wait for mysql_upgrade to finish ($i)"
-      sleep 2
+      sleep 5
     else
       res=0
       break
@@ -94,8 +94,6 @@ wait_for_mariadb_upgrade() {
 }
 
 deb_setup_mariadb_mirror() {
-  # stop if any variable is undefined
-  set -u
   [[ -n $1 ]] || {
     bb_log_err "missing the branch variable"
     exit 1
@@ -106,6 +104,8 @@ deb_setup_mariadb_mirror() {
     branch="10.$prev_released"
     bb_log_info "using previous $branch released version for development branch $1"
   fi
+  # stop if any further variable is undefined
+  set -u
   bb_log_info "setup MariaDB repository for $branch branch"
   command -v wget >/dev/null || {
     bb_log_err "wget command not found"
