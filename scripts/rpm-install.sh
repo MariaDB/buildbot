@@ -41,7 +41,7 @@ rpm -qa | { grep -iE 'maria|mysql|galera' || true; }
 
 # Try several times, to avoid sporadic "The requested URL returned error: 404"
 made_cache=0
-for i in 1 2 3 4 5; do
+for i in {1..5}; do
   sudo rm -rf /var/cache/yum/*
   sudo yum clean all
   case $HOSTNAME in
