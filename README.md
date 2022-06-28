@@ -1,6 +1,8 @@
 # buildbot.mariadb.org
 
-[![BB container build](https://github.com/MariaDB/buildbot/actions/workflows/bb_containers.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/bb_containers.yml)
+[![bbw container build](https://github.com/MariaDB/buildbot/actions/workflows/bb_containers.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/bb_containers.yml)
+[![bbm conf check](https://github.com/MariaDB/buildbot/actions/workflows/bbm_check_conf.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/bbm_check_conf.yml)
+[![bbm build container](https://github.com/MariaDB/buildbot/actions/workflows/bbm_build_container.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/bbm_build_container.yml)
 
 ```console
 _________________________
