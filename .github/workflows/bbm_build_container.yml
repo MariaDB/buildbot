@@ -37,6 +37,9 @@ jobs:
           file: /home/runner/work/buildbot/buildbot/Dockerfile
           push: true
           tags: localhost:5000/test/bb-master:latest
+      - name: Check container
+        run: |
+          docker run -i localhost:5000/test/bb-master:latest buildbot --version
       - name: Check for registry credentials
         if: >
           github.ref == 'refs/heads/main' &&

@@ -3,10 +3,8 @@
 #   - use multiple containers to build (save space)
 #   - create bbm and bbm-web containers on quay.io
 
-FROM debian:11
+FROM debian:11 AS builder
 LABEL maintainer="MariaDB Buildbot maintainers"
-
-# This will make apt-get install without question
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Install required packages
@@ -53,4 +51,14 @@ RUN . /opt/buildbot/.venv/bin/activate \
     && python setup.py bdist_wheel \
     && pip install --no-cache-dir dist/*.whl
 
+# actual image, see https://docs.docker.com/develop/develop-images/multistage-build/
+FROM debian:11-slim
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update \
+    && apt-get -y install --no-install-recommends \
+      python3 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /opt/buildbot /opt/buildbot
 RUN ln -s /opt/buildbot/.venv/bin/buildbot /usr/local/bin/buildbot
