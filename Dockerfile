@@ -64,5 +64,5 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /opt/buildbot /opt/buildbot
+COPY --from=builder /opt/buildbot/.venv/ /opt/buildbot/.venv/
 RUN ln -s /opt/buildbot/.venv/bin/buildbot /usr/local/bin/buildbot
