@@ -1,5 +1,5 @@
 ---
-name: BB container build
+name: bbw container build
 
 on:
   push:
