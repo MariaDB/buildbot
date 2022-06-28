@@ -56,7 +56,9 @@ FROM debian:11-slim
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
     && apt-get -y install --no-install-recommends \
+      libmariadb-dev \
       python3 \
+      python3-distutils \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
