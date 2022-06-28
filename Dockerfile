@@ -10,6 +10,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 # Install required packages
 WORKDIR /root
 RUN apt-get update \
+    && apt-get upgrade -y \
     && apt-get -y install --no-install-recommends \
       build-essential \
       git \
@@ -55,6 +56,7 @@ RUN . /opt/buildbot/.venv/bin/activate \
 FROM debian:11-slim
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
+    && apt-get upgrade -y \
     && apt-get -y install --no-install-recommends \
       libmariadb-dev \
       python3 \
