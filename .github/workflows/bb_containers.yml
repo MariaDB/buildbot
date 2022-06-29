@@ -27,24 +27,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # TODO: missing ppc64le/debian:9 image
-          # TODO: problem with pip
-          # - dockerfile: rhel7.Dockerfile
-          #   image: rhel7-aarch64
-          #   platforms: linux/arm64/v8
-          - dockerfile: debian.Dockerfile pip.Dockerfile
-            image: debian:9
-            branch: 10.7
-            platforms: linux/amd64, linux/arm64/v8
-          - dockerfile: debian.Dockerfile pip.Dockerfile
-            image: debian:9
-            tag: debian9-386
-            branch: 10.7
-            platforms: linux/386
           - dockerfile: debian.Dockerfile
             image: debian:10
             branch: 10.7
-            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
+            platforms: linux/amd64, linux/arm64/v8
           - dockerfile: debian.Dockerfile
             image: debian:11
             branch: 10.7
@@ -77,36 +63,43 @@ jobs:
             branch: 10.7
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
           - dockerfile: debian.Dockerfile
-            image: ubuntu:21.10
-            branch: 10.7
-            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
-          - dockerfile: debian.Dockerfile
             image: ubuntu:22.04
             branch: 10.7
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
-          - dockerfile: fedora.Dockerfile
-            image: fedora:34
-            platforms: linux/amd64, linux/arm64/v8
           - dockerfile: fedora.Dockerfile
             image: fedora:35
             platforms: linux/amd64, linux/arm64/v8
           - dockerfile: fedora.Dockerfile
             image: fedora:36
             platforms: linux/amd64, linux/arm64/v8
+          - dockerfile: fedora.Dockerfile
+            image: fedora:37
+            platforms: linux/amd64, linux/arm64/v8
           - dockerfile: centos7.Dockerfile pip.Dockerfile
             image: centos:7
-            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
+            platforms: linux/amd64
           - dockerfile: centos.Dockerfile
             image: quay.io/centos/centos:stream8
             tag: centos-stream8
-            platforms: linux/amd64, linux/arm64/v8
+            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
+#          - dockerfile: centos.Dockerfile
+#            image: quay.io/centos/centos:stream9
+#            tag: centos-stream9
+#            platforms: linux/amd64
+# currently missing buildbot-worker package, but are getting from upstream currently (x86_64 only)
+# also missing twisted
+#            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
           - dockerfile: rhel7.Dockerfile pip.Dockerfile
             image: rhel7
-            platforms: linux/amd64, linux/ppc64le
+            platforms: linux/amd64
           - dockerfile: rhel8.Dockerfile
             image: ubi8
             tag: rhel8
-            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
+            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
+          - dockerfile: rhel8.Dockerfile
+            image: ubi9
+            tag: rhel9
+            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
     env:
       BUILD_RHEL: false
       DEPLOY_IMAGES: false
