@@ -8,17 +8,30 @@ FROM "$base_image"
 LABEL maintainer="MariaDB Buildbot maintainers"
 
 # Install updates and required packages
-RUN dnf -y --enablerepo=extras install epel-release \
+RUN source /etc/os-release \
     && dnf -y install 'dnf-command(config-manager)' \
-    && dnf config-manager --set-enabled powertools \
-    && dnf -y module enable mariadb-devel \
+    && case "$VERSION" in \
+    9) \
+      dnf -y install epel-release \
+      && dnf config-manager --set-enabled crb \
+      && curl https://github.com/buildbot/buildbot/releases/download/v3.5.0/buildbot-worker-linux-amd64-v3.5.0.bin -o /usr/bin/buildbot-worker \
+      && chmod a+x /usr/bin/buildbot-worker \
+      && BB= \
+      ;; \
+    *) \
+      dnf -y --enablerepo=extras install epel-release \
+      && dnf config-manager --set-enabled powertools \
+      && dnf -y module enable mariadb-devel \
+      && BB=buildbot-worker \
+      ;; \
+    esac \
     && dnf -y upgrade \
     && dnf -y groupinstall "Development Tools" \
     && dnf -y builddep mariadb-server \
     && dnf -y install \
     # not sure if needed
     # perl \
-    buildbot-worker \
+    $BB \
     ccache \
     check-devel \
     cracklib-devel \
