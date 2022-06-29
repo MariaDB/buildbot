@@ -58,17 +58,6 @@ case "${buildername#*ubuntu-}" in
     ;;
 esac
 
-# gradually exclude for other major version as
-# https://github.com/MariaDB/server/commit/c168e16782fc449f61412e5afc1c01d59b77c675
-# is merged up.
-case "$container_tag" in
-  10.[3456])
-    ;;
-  *)
-    pkgver=$base
-    ;;
-esac
-
 buildernamebase=${buildername#*-}
 builderarch=${buildername%%-*}
 
