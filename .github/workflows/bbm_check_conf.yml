@@ -4,17 +4,27 @@ name: bbm conf check
 on:
   push:
     paths:
+      - "builtbot.tac"
+      - "common_factories.py"
+      - "constants.py"
+      - "locks.py"
       - "master-galera/master.cfg"
       - "master-nonlatent/master.cfg"
       - "master-web/master.cfg"
       - "master.cfg"
+      - "utils.py"
       - .github/workflows/bbm_check_conf.yml
   pull_request:
     paths:
+      - "builtbot.tac"
+      - "common_factories.py"
+      - "constants.py"
+      - "locks.py"
       - "master-galera/master.cfg"
       - "master-nonlatent/master.cfg"
       - "master-web/master.cfg"
       - "master.cfg"
+      - "utils.py"
       - .github/workflows/bbm_check_conf.yml
 
 jobs:
