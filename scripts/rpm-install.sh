@@ -82,6 +82,8 @@ sudo yum -y --nogpgcheck install rpms/*.rpm
 sh -c 'g=/usr/lib*/galera*/libgalera_smm.so; echo -e "[galera]\nwsrep_provider=$g"' | sudo tee /etc/my.cnf.d/galera.cnf
 case "$systemdCapability" in
   yes)
+    systemd-analyze verify mariadb.service
+    systemd-analyze verify mariadb@.service
     if ! sudo systemctl start mariadb; then
       sudo journalctl -lxn 500 --no-pager -u mariadb.service
       sudo systemctl -l status mariadb.service --no-pager
