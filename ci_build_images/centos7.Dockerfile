@@ -38,6 +38,7 @@ RUN yum -y --enablerepo=extras install epel-release \
     pcre2-devel \
     python3 \
     python3-pip \
+    rpmlint \
     ruby \
     scons \
     snappy-devel \

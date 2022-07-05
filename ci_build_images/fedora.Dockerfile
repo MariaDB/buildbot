@@ -39,6 +39,7 @@ RUN dnf -y upgrade \
     python3-devel \
     readline-devel \
     rpm-build \
+    rpmlint \
     rubypick \
     scons \
     snappy-devel \
