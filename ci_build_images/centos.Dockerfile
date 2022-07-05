@@ -47,6 +47,7 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     python3-devel \
     python3-scons \
     readline-devel \
+    rpmlint \
     ruby \
     snappy-devel \
     subversion \
