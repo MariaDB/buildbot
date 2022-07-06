@@ -3,7 +3,6 @@
 .envrc
 __pycache__
 master-private.cfg
-master-protected-branches
 prof*
 venv
 workers
