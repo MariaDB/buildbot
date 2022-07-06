@@ -80,11 +80,11 @@ jobs:
             platforms: linux/amd64
           - dockerfile: centos.Dockerfile
             image: quay.io/centos/centos:stream8
-            tag: centos-stream8
+            tag: centosstream8
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
 #          - dockerfile: centos.Dockerfile
 #            image: quay.io/centos/centos:stream9
-#            tag: centos-stream9
+#            tag: centosstream9
 #            platforms: linux/amd64
 # currently missing buildbot-worker package, but are getting from upstream currently (x86_64 only)
 # also missing twisted
