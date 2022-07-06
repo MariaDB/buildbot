@@ -62,8 +62,10 @@ builders_big=["amd64-ubuntu-1804-bigtest"]
 builders_install = []
 builders_upgrade = []
 builders_autobake = []
+all_platforms = set()
 for os in os_info:
     for arch in os_info[os]['arch']:
+        all_platforms.add(arch)
         builder_name_autobake = arch + '-' + os + '-' + os_info[os]['type'] + '-autobake'
         builders_autobake.append(builder_name_autobake)
         builders_install.append(builder_name_autobake + '-install')

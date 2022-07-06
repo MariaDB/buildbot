@@ -37,6 +37,60 @@ def getScript(scriptname):
 
 # BUILD HELPERS
 
+# Helper function that creates a worker instance.
+def createWorker(worker_name_prefix, worker_id, worker_type, dockerfile, jobs=5, save_packages=False, shm_size='15G', worker_name_suffix=''):
+    worker_name = worker_name_prefix + str(worker_id) + '-docker'
+    name = worker_name + worker_type
+
+    i = worker_id
+    tls = None
+
+    if worker_name_prefix.startswith('hz'):
+        b_name = 'x64-bbw'
+    elif worker_name_prefix.startswith('intel'):
+        b_name = 'x64-bbw'
+    elif worker_name_prefix.startswith('p9'):
+        b_name = 'p9-bbw'
+    elif worker_name_prefix.startswith('amd'):
+        b_name = 'x64-bbw'
+    else:
+        b_name = worker_name_prefix
+    base_name = b_name + '-docker' + worker_type
+
+    volumes=['/srv/buildbot/ccache:/mnt/ccache', '/srv/buildbot/packages:/mnt/packages', '/mnt/autofs/master_packages/:/packages']
+    # Set master FQDN - for VPN machines it should be 100.64.100.1
+    fqdn = 'buildbot.mariadb.org'
+    if worker_name_prefix.startswith('intel') or worker_name_prefix.startswith('bg') or worker_name_prefix.startswith('amd'):
+        fqdn = '100.64.100.1'
+    if worker_name_prefix.startswith('p9-rhel'):
+        fqdn = '10.103.203.6'
+    if 'vladbogo' in dockerfile or 'quay' in dockerfile:
+        dockerfile_str = None
+        image_str = dockerfile
+        need_pull = True
+    else:
+        dockerfile_str = open("dockerfiles/" + dockerfile).read()
+        image_str = None
+        need_pull = False
+    if 'rhel' in worker_type and dockerfile_str is not None and not 'download' in dockerfile:
+        dockerfile_str = dockerfile_str % (private_config["private"]["rhel_sub"]["user"], config["private"]["rhel_sub"]["password"])
+    worker_instance = worker.DockerLatentWorker(name + worker_name_suffix, None,
+                        docker_host=private_config["private"]["docker_workers"][worker_name],
+                        image=image_str,
+                        dockerfile=dockerfile_str,
+                        tls=tls,
+                        autopull=True,
+                        alwaysPull=need_pull,
+                        followStartupLogs=False,
+                        masterFQDN=fqdn,
+                        build_wait_timeout=0,
+                        missing_timeout=600,
+                        max_builds=1,
+                        hostconfig={ 'shm_size':shm_size},
+                        volumes=volumes,
+                        properties={ 'jobs':jobs, 'save_packages':save_packages })
+    return ((base_name, name + worker_name_suffix), worker_instance)
+
 # git branch filter using fnmatch
 import fnmatch
 def staging_branch_fn(branch):
