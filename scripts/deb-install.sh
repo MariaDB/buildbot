@@ -64,8 +64,6 @@ wait_for_mariadb_upgrade
 # To avoid confusing errors in further logic, do an explicit check whether the
 # service is up and running
 if [[ $systemdCapability == "yes" ]]; then
-  sudo systemd-analyze verify mariadb.service
-  sudo systemd-analyze verify mariadb@.service
   if ! sudo systemctl status mariadb --no-pager; then
     sudo journalctl -xe --no-pager
     bb_log_warn "mariadb service isn't running properly after installation"
