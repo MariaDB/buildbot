@@ -66,9 +66,11 @@ for os in os_info:
     for arch in os_info[os]['arch']:
         builder_name_autobake = arch + '-' + os + '-' + os_info[os]['type'] + '-autobake'
         builders_autobake.append(builder_name_autobake)
-        builders_install.append(builder_name_autobake + '-install')
-        builders_upgrade.append(builder_name_autobake + '-minor-upgrade')
-        builders_upgrade.append(builder_name_autobake + '-major-upgrade')
+        # Currently there are no VMs for x86 and s390x and OpenSUSE and SLES
+        if arch not in ['s390x', 'x86'] and os not in ['opensuse-15', 'sles-12', 'sles-15']:
+            builders_install.append(builder_name_autobake + '-install')
+            builders_upgrade.append(builder_name_autobake + '-minor-upgrade')
+            builders_upgrade.append(builder_name_autobake + '-major-upgrade')
 
 builders_galera = list(map(lambda x: "gal-" + "-".join(x.split('-')[:3]), builders_autobake))
 

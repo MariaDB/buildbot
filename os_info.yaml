@@ -51,6 +51,11 @@ fedora-36:
     - amd64
     - aarch64
   type: rpm
+opensuse-15:
+  version_name: 15
+  arch:
+    - amd64
+  type: rpm
 rhel-7:
   version_name: 7
   arch:
@@ -62,13 +67,18 @@ rhel-8:
     - amd64
     - aarch64
     - ppc64le
+    - s390x
   type: rpm
-rhel-9:
-  version_name: 9
+sles-12:
+  version_name: 12
   arch:
     - amd64
-    - aarch64
-    - ppc64le
+  type: rpm
+sles-15:
+  version_name: 15
+  arch:
+    - amd64
+    - s390x
   type: rpm
 ubuntu-1804:
   version_name: bionic
@@ -83,6 +93,7 @@ ubuntu-2004:
     - amd64
     - aarch64
     - ppc64le
+    - s390x
   type: deb
 ubuntu-2204:
   version_name: jammy
@@ -90,4 +101,5 @@ ubuntu-2204:
     - amd64
     - aarch64
     - ppc64le
+    - s390x
   type: deb
