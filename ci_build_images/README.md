@@ -10,12 +10,12 @@ cat debian.Dockerfile common.Dockerfile >/tmp/Dockerfile
 docker build . -f /tmp/Dockerfile -t mariadb.org/buildbot/debian:sid --build-arg mariadb_branch=10.7 --build-arg base_image=debian:sid
 # ubuntu
 cat debian.Dockerfile common.Dockerfile >/tmp/Dockerfile
-docker build . -f /tmp/Dockerfile -t mariadb.org/buildbot/ubuntu:21.04 --build-arg mariadb_branch=10.7 --build-arg base_image=ubuntu:21.04
+docker build . -f /tmp/Dockerfile -t mariadb.org/buildbot/ubuntu:21.04 --build-arg mariadb_branch=10.7 --build-arg base_image=ubuntu:22.04
 # fedora
 cat fedora.Dockerfile common.Dockerfile >/tmp/Dockerfile
-docker build . -f /tmp/Dockerfile -t mariadb.org/buildbot/fedora:34 --build-arg base_image=fedora:34
+docker build . -f /tmp/Dockerfile -t mariadb.org/buildbot/fedora:34 --build-arg base_image=fedora:37
 # rhel8
-cat rhel8.Dockerfile common.Dockerfile >/tmp/Dockerfile
+cat rhel.Dockerfile common.Dockerfile >/tmp/Dockerfile
 docker build . -f /tmp/Dockerfile -t mariadb.org/buildbot/rhel:8 --build-arg "rhel_user=user" --build-arg "rhel_pwd=password"
 ```
 

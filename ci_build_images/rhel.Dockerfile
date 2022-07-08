@@ -1,20 +1,32 @@
 # Builbot worker for building MariaDB
 #
-# Provides a base RHEL-8 image with latest buildbot worker installed
+# Provides a base RHEL-8/9 image with latest buildbot worker installed
 # and MariaDB build dependencies
 
 ARG base_image
 FROM registry.access.redhat.com/$base_image
+ARG base_image
 LABEL maintainer="MariaDB Buildbot maintainers"
 
 # Install updates and required packages
+# hadolint ignore=SC2034,DL3041
 RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     --mount=type=secret,id=rhel_keyname,target=/run/secrets/rhel_keyname \
     subscription-manager register \
     --org="$(cat /run/secrets/rhel_orgid)" \
     --activationkey="$(cat /run/secrets/rhel_keyname)" \
-    && subscription-manager repos --enable "codeready-builder-for-rhel-8-$(uname -m)-rpms" \
-    && rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm \
+    && case $base_image in \
+    ubi9) \
+      v=9 ; \
+       # no buildbot-worker any more \
+      extra="fmt-devel python3-pip" ;; \
+    ubi8) \
+      v=8 ; \
+      # fmt-devel # >= 7.0 needed, epel8 has 6.2.1-1.el8 \
+      extra=buildbot-worker ;; \
+    esac \
+    && subscription-manager repos --enable "codeready-builder-for-rhel-${v}-$(uname -m)-rpms" \
+    && rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-"${v}".noarch.rpm \
     && dnf -y upgrade \
     && dnf -y groupinstall "Development Tools" \
     && dnf -y install \
@@ -23,14 +35,13 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     && dnf -y builddep mariadb-server \
     && dnf -y install \
     boost-devel \
-    buildbot-worker \
     ccache \
     check-devel \
     checkpolicy \
     coreutils \
     cracklib-devel \
     curl-devel \
-    # fmt-devel # >= 7.0 needed, epel8 has 6.2.1-1.el8
+    ${extra} \
     java-1.8.0-openjdk \
     jemalloc-devel --allowerasing \
     krb5-devel \
