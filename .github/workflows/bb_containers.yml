@@ -96,7 +96,7 @@ jobs:
             image: ubi8
             tag: rhel8
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
-          - dockerfile: rhel8.Dockerfile
+          - dockerfile: rhel8.Dockerfile pip.Dockerfile
             image: ubi9
             tag: rhel9
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
