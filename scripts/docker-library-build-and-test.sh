@@ -62,6 +62,8 @@ esac
 # https://github.com/MariaDB/server/commit/c168e16782fc449f61412e5afc1c01d59b77c675
 # is merged up.
 case "$branch" in
+  preview-10.10-optimizer*)
+    ;;
   preview-10.10*)
     pkgver=$base
     ;;
