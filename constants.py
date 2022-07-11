@@ -126,7 +126,7 @@ supportedPlatforms["10.5"] = [
         's390x-rhel-8',
         's390x-rhel-9',
         's390x-sles-15']
-supportedPlatforms["10.5"].append(supportedPlatforms["10.4"])
+supportedPlatforms["10.5"] += supportedPlatforms["10.4"]
 
 supportedPlatforms["10.6"] = [
         'aarch64-debian-sid',
@@ -138,7 +138,7 @@ supportedPlatforms["10.6"] = [
         'ppc64le-ubuntu-2204',
         's390x-ubuntu-2204',
         ]
-supportedPlatforms["10.6"].append(supportedPlatforms["10.6"])
+supportedPlatforms["10.6"] += supportedPlatforms["10.5"]
 
 supportedPlatforms["10.7"] = supportedPlatforms["10.6"]
 supportedPlatforms["10.8"] = supportedPlatforms["10.7"]
