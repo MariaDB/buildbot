@@ -1,5 +1,12 @@
 # those steps are common to all images
 
+# install qpress (MDEV-29043)
+COPY qpress/* /tmp/qpress/
+WORKDIR /tmp/qpress
+RUN make \
+    && cp qpress /usr/local/bin/ \
+    && rm -rf /tmp/qpress
+
 # Configure buildbot user
 RUN if grep -q '^buildbot:' /etc/passwd; then \
       usermod -s /bin/bash buildbot; \
