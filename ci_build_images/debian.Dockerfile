@@ -13,10 +13,12 @@ ENV CARGO_NET_GIT_FETCH_WITH_CLI=true
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Enable apt sources
-RUN if grep -q "ID=debian" /etc/os-release; then \
-      cat /etc/apt/sources.list | sed 's/^deb /deb-src /g' >>/etc/apt/sources.list; \
-    else \
-      sed -i~orig -e 's/# deb-src/deb-src/' /etc/apt/sources.list; \
+RUN if [ -f /etc/apt/sources.list ]; then \
+      sed 's/^deb /deb-src /g' /etc/apt/sources.list >/etc/apt/sources.list.d/debian-sources.list; \
+    fi \
+    # see man 5 sources.list (DEB822-STYLE FORMAT) \
+    && if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
+      sed -i 's/Types: deb/Types: deb deb-src/g' /etc/apt/sources.list.d/debian.sources; \
     fi
 
 # Install updates and required packages
