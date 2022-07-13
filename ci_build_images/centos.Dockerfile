@@ -46,6 +46,7 @@ RUN source /etc/os-release \
     python3-devel \
     python3-scons \
     readline-devel \
+    rpmlint \
     ruby \
     snappy-devel \
     subversion \
