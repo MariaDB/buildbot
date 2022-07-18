@@ -24,8 +24,6 @@ RUN apt-get update \
       apt-get -y install --no-install-recommends \
         libcairo2 \
         yarnpkg; \
-    fi \
-    && if [ "$master_type" = "master-web" ]; then \
       export PATH="/usr/share/nodejs/yarn/bin:$PATH"; \
       yarn global add gulp yo generator-buildbot-dashboard; \
     fi \
