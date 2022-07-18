@@ -1,13 +1,10 @@
-# Buildbot master container
-# FROM debian:11 AS builder
+# Buildbot master and master-web containers
 
-# TODO, use dive to do some cleaning!
 FROM debian:11-slim
 LABEL maintainer="MariaDB Buildbot maintainers"
 ARG DEBIAN_FRONTEND=noninteractive
 ARG master_type="master"
 
-# Install required packages
 WORKDIR /opt/buildbot
 # hadolint ignore=DL3003
 RUN apt-get update \
