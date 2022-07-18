@@ -30,16 +30,27 @@ jobs:
         run: |
           # //TEMP there is probably a better way to not include context
           mkdir empty
-      - name: Build image
+      - name: Build master image
         uses: docker/build-push-action@v2
         with:
           context: /home/runner/work/buildbot/buildbot/empty
           file: /home/runner/work/buildbot/buildbot/Dockerfile
           push: true
-          tags: localhost:5000/test/bb-master:latest
-      - name: Check container
+          tags: localhost:5000/test/bb-master:master
+      - name: Build master-web image
+        uses: docker/build-push-action@v2
+        with:
+          context: /home/runner/work/buildbot/buildbot/empty
+          build-args: |
+            master_type=master-web
+          file: /home/runner/work/buildbot/buildbot/Dockerfile
+          push: true
+          tags: localhost:5000/test/bb-master:master-web
+      - name: Check images
         run: |
-          docker run -i localhost:5000/test/bb-master:latest buildbot --version
+          docker run -i localhost:5000/test/bb-master:master buildbot --version
+          #//TEMP there is probably a better way for master-web here
+          docker run -i localhost:5000/test/bb-master:master-web buildbot --version
       - name: Check for registry credentials
         if: >
           github.ref == 'refs/heads/main' &&
@@ -66,9 +77,11 @@ jobs:
       - name: Push images to registry
         if: ${{ env.DEPLOY_IMAGES == 'true' }}
         run: |
-          msg="Push docker image to registry"
+          msg="Push docker images to registry"
           line="${msg//?/=}"
           printf "\n${line}\n${msg}\n${line}\n"
-          skopeo copy --all --src-tls-verify=0 \
-          docker://localhost:5000/test/bb-master:latest \
-          docker://quay.io/mariadb-foundation/bb-master:latest
+          for image in master master-web
+            skopeo copy --all --src-tls-verify=0 \
+            docker://localhost:5000/test/bb-master:${image} \
+            docker://quay.io/mariadb-foundation/bb-master:${image}
+          done
