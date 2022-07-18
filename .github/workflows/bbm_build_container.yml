@@ -80,7 +80,7 @@ jobs:
           msg="Push docker images to registry"
           line="${msg//?/=}"
           printf "\n${line}\n${msg}\n${line}\n"
-          for image in master master-web
+          for image in master master-web; do
             skopeo copy --all --src-tls-verify=0 \
             docker://localhost:5000/test/bb-master:${image} \
             docker://quay.io/mariadb-foundation/bb-master:${image}
