@@ -49,8 +49,8 @@ def createWorker(worker_name_prefix, worker_id, worker_type, dockerfile, jobs=5,
         b_name = 'x64-bbw'
     elif worker_name_prefix.startswith('intel'):
         b_name = 'x64-bbw'
-    elif worker_name_prefix.startswith('p9'):
-        b_name = 'p9-bbw'
+    elif worker_name_prefix.startswith('ppc64le'):
+        b_name = 'ppc64le-bbw'
     elif worker_name_prefix.startswith('amd'):
         b_name = 'x64-bbw'
     else:

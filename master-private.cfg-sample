@@ -9,6 +9,36 @@ private["zabbix_token"] = "zabbix_token"
 private["user_pass"]= {
     "admin":"user_pass",
 }
+private["master-variables"] = {
+    "max_builds": 15,
+    "starting_port": 9996,
+    "workers": {
+        "amd64": [
+                'amd-bbw1',
+                'amd-bbw2',
+                'intel-bbw1',
+            ],
+        "aarch64": [
+                'aarch64-bbw1',
+                'aarch64-bbw2',
+                'aarch64-bbw3',
+                'aarch64-bbw4',
+            ],
+        "ppc64le": [
+                'ppc64le-rhel8-bbw1',
+                'ppc64le-rhel7-bbw1',
+                'ppc64le-db-bbw1',
+            ],
+        "s390x": [
+                's390x-bbw1',
+                's390x-bbw2',
+                's390x-bbw3',
+            ],
+        "x86": [
+                'hz-bbw2',
+            ],
+    },
+}
 private["worker_pass"]= {
     "hz-bbw2-ubuntu1804":"1234",
     "hz-bbw2-libvirt-debian-10":"1234",
@@ -29,9 +59,9 @@ private["docker_workers"]= {
     "hz-bbw5-docker":"tcp://IP_address:port",
     "gsk-bbw1-docker":"tcp://IP_address:port",
     "bm-bbw1-docker":"tcp://IP_address:port",
-    "p9-rhel8-bbw1-docker":"tcp://IP_address:port",
-    "p9-rhel7-bbw1-docker":"tcp://IP_address:port",
-    "p9-db-bbw1-docker":"tcp://IP_address:port",
+    "ppc64le-rhel8-bbw1-docker":"tcp://IP_address:port",
+    "ppc64le-rhel7-bbw1-docker":"tcp://IP_address:port",
+    "ppc64le-db-bbw1-docker":"tcp://IP_address:port",
     "aarch64-bbw1-docker":"tcp://IP_address:port",
     "aarch64-bbw2-docker":"tcp://IP_address:port",
     "aarch64-bbw3-docker":"tcp://IP_address:port",

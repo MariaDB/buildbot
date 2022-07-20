@@ -6,3 +6,4 @@ master-private.cfg
 prof*
 venv
 workers
+autogen
