@@ -8,7 +8,7 @@ on:
       - "common_factories.py"
       - "constants.py"
       - "locks.py"
-      - "master-docker-nonstandard/master.cfg",
+      - "master-docker-nonstandard/master.cfg"
       - "master-galera/master.cfg"
       - "master-nonlatent/master.cfg"
       - "master-protected-branches/master.cfg"
