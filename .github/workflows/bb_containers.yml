@@ -149,11 +149,11 @@ jobs:
           # config-inline: |
           #   [worker.oci]
           #     max-parallelism = 3
-      - name: Generate Dockerfile
+      - name: Generate Dockerfile and necessary files
         run: |
           cd ${{ env.WORKDIR }}
-          pwd
           cat ${{ matrix.dockerfile }} common.Dockerfile >/home/runner/work/Dockerfile
+          cp -r qpress /home/runner/work
       - name: Check Dockerfile with hadolint
         run: |
           cp /home/runner/work/Dockerfile .
@@ -196,6 +196,7 @@ jobs:
             docker pull -q --platform "$platform" "$image"
             docker run -i "$image" buildbot-worker --version
             docker run -i "$image" dumb-init twistd --pidfile= -y /home/buildbot/buildbot.tac
+            docker run -u root -i "$image" qpress -r /etc /tmp/qpress.qp
           done
       - name: Check for registry credentials
         if: >
