@@ -120,12 +120,12 @@ deb_setup_mariadb_mirror() {
     bb_log_err "wget command not found"
     exit 1
   }
-  sudo wget https://mariadb.org/mariadb_release_signing_key.asc -O /etc/apt/trusted.gpg.d/mariadb_release_signing_key.asc || {
-    bb_log_err "mariadb repository key installation failed"
-    exit 1
-  }
   if wget -q --spider "https://deb.mariadb.org/$branch/$dist_name/dists/$version_name"; then
     sudo sh -c "echo 'deb https://deb.mariadb.org/$branch/$dist_name $version_name main' >/etc/apt/sources.list.d/mariadb.list"
+    sudo wget https://mariadb.org/mariadb_release_signing_key.asc -O /etc/apt/trusted.gpg.d/mariadb_release_signing_key.asc || {
+      bb_log_err "mariadb repository key installation failed"
+      exit 1
+    }
   else
     bb_log_skip "deb_setup_mariadb_mirror: $branch packages for $dist_name $version_name do not exist on https://deb.mariadb.org/"
   fi
