@@ -11,6 +11,7 @@ griddashboardapp = Flask('grid', root_path=os.path.dirname(__file__))
 # this allows to work on the template without having to restart Buildbot
 griddashboardapp.config['TEMPLATES_AUTO_RELOAD'] = True
 
+
 @griddashboardapp.route("/index.html")
 def main():
     # This code fetches build data from the data api, and give it to the template
@@ -28,7 +29,7 @@ def main():
     # properties are actually not used in the template example, but this is how you get more properties
     for build in builds:
         build['properties'] = griddashboardapp.buildbot_api.dataGet(("builds", build['buildid'], "properties"))
-        build['results_text'] = statusToString(build['results']) # translate result to string
+        build['results_text'] = statusToString(build['results'])  # translate result to string
         build['state'] = griddashboardapp.buildbot_api.dataGet(
                 ("builds", build['buildid']))
 
@@ -37,7 +38,7 @@ def main():
                 revisions.append(build["properties"]["revision"][0])
         except KeyError as e:
             # this means the build didn't get to the point of getting a revision,
-            # more than likely an environment isssue such as disk full, power outtage, etc...
+            # more than likely an environment issue such as disk full, power outtage, etc...
             print('Error', str(e))
             pass
 
