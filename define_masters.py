@@ -2,6 +2,8 @@ import yaml
 import os
 import shutil
 
+from constants import github_status_builders
+
 base_path = "autogen/"
 config = { "private": { } }
 exec(open("master-private.cfg").read(), config, { })
@@ -35,7 +37,7 @@ for arch in platforms:
         os.makedirs(dir_path)
 
         master_config = {}
-        master_config['builders'] = platforms[arch]
+        master_config['builders'] = list(filter(lambda x: x not in github_status_builders, platforms[arch]))
         master_config['workers'] = config['private']['master-variables']['workers'][arch]
         master_config['port'] = config['private']['master-variables']['starting_port'] + idx
         master_config['log_name'] = "master-docker-" + arch + "-" + str(master_id) + '.log'
@@ -50,5 +52,5 @@ for arch in platforms:
         with open(dir_path + '/buildbot.tac', 'w') as f:
             f.write(buildbot_tac)
         idx += 1
-    print(arch, len(platforms[arch]))
+    print(arch, len(master_config['builders']))
  
