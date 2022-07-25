@@ -144,7 +144,12 @@ supportedPlatforms["10.6"] += supportedPlatforms["10.5"]
 supportedPlatforms["10.7"] = supportedPlatforms["10.6"]
 supportedPlatforms["10.8"] = supportedPlatforms["10.7"]
 supportedPlatforms["10.9"] = supportedPlatforms["10.8"]
-supportedPlatforms["10.10"] = supportedPlatforms["10.9"]
+
+supportedPlatforms["10.10"] = [
+        'amd64-debian-11-aocc',
+        ]
+supportedPlatforms["10.10"] += supportedPlatforms["10.9"]
+
 supportedPlatforms["10.11"] = supportedPlatforms["10.10"]
 
 # Hack to remove all github_status_builders since they are triggered separately
