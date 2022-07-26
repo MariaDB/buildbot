@@ -121,6 +121,7 @@ supportedPlatforms["10.5"] = [
         'aix',
         'amd64-debian-11',
         'amd64-rhel-9',
+        'amd64-ubuntu-2004-msan',
         'ppc64le-debian-11',
         'ppc64le-rhel-9',
         's390x-ubuntu-2004',
