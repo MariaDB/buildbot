@@ -127,7 +127,8 @@ supportedPlatforms["10.5"] = [
         's390x-ubuntu-2004',
         's390x-rhel-8',
         's390x-rhel-9',
-        's390x-sles-15']
+        's390x-sles-15',
+        'x86-debian-sid']
 supportedPlatforms["10.5"] += supportedPlatforms["10.4"]
 
 supportedPlatforms["10.6"] = [
