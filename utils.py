@@ -289,7 +289,8 @@ def hasCompat(step):
     # For s390x there are no compat files
     if 's390x' in builderName:
         return False
-    return True
+    # Not needed for RHEL/Centos9 onwards
+    return util.Property('rpm_type')[-1] in ['7', '8']
 
 @util.renderer
 def getDockerLibraryNames(props):
