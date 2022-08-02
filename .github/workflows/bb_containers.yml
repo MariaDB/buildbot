@@ -100,6 +100,10 @@ jobs:
             image: ubi9
             tag: rhel9
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
+          - dockerfile: opensuse.Dockerfile pip.Dockerfile
+            image: opensuse/leap:15.3
+            tag: opensuse15
+            platforms: linux/amd64
     env:
       BUILD_RHEL: false
       DEPLOY_IMAGES: false
