@@ -70,8 +70,10 @@ rhel-8:
     - ppc64le
     - s390x
   type: rpm
-  mtr_additional_args:
+  additional_args:
     aarch64: -DPLUGIN_COLUMNSTORE=NO
+  mtr_additional_args:
+    s390x: " " # Remove --mem
 rhel-9:
   version_name: 9
   arch:
@@ -80,8 +82,10 @@ rhel-9:
     - ppc64le
     - s390x
   type: rpm
-  mtr_additional_args:
+  additional_args:
     aarch64: -DPLUGIN_COLUMNSTORE=NO
+  mtr_additional_args:
+    s390x: " " # Remove --mem
 sles-12:
   version_name: 12
   arch:
@@ -93,6 +97,8 @@ sles-15:
     - amd64
     - s390x
   type: rpm
+  mtr_additional_args:
+    s390x: " " # Remove --mem
 ubuntu-1804:
   version_name: bionic
   arch:
@@ -109,6 +115,8 @@ ubuntu-2004:
     - ppc64le
     - s390x
   type: deb
+  mtr_additional_args:
+    s390x: " " # Remove --mem
 ubuntu-2204:
   version_name: jammy
   arch:
@@ -117,3 +125,5 @@ ubuntu-2204:
     - ppc64le
     - s390x
   type: deb
+  mtr_additional_args:
+    s390x: " " # Remove --mem
