@@ -64,12 +64,17 @@ sudo yum search mysql | { grep "^mysql" || true; }
 sudo yum search maria | { grep "^maria" || true; }
 sudo yum search percona | { grep percona || true; }
 
-# setup repository
+# setup repository for galera dependency
 if wget -q --spider https://rpm.mariadb.org/"$master_branch/$arch"; then
   galbranch=$master_branch
 else
   # as long as the galera major version maps this is ok
   galbranch=10.8
+  if ! wget -q --spider https://rpm.mariadb.org/"$galbranch/$arch"; then
+    bb_log_err "https://rpm.mariadb.org/$galbranch/$arch does not exist"
+    bb_log_err "unable to setup repository for galera"
+    exit 1
+  fi
 fi
 sudo sh -c "echo '[galera]
 name=galera
