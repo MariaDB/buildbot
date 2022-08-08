@@ -31,7 +31,7 @@ err() {
 
 manual_run_switch() {
   # check if we are in Buildbot CI or not
-  if [[ $BB_CI != "true" ]]; then
+  if [[ $BB_CI != "True" ]]; then
     if [[ -z $1 ]]; then
       echo "Please provide the build URL, example:"
       echo "$0 https://buildbot.mariadb.org/#/builders/171/builds/7351"
