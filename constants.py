@@ -1,10 +1,21 @@
 import yaml
 
-with open('/srv/buildbot/master/os_info.yaml', 'r') as f:
-    os_info = yaml.safe_load(f)
+DEVELOPMENT_BRANCH = "10.10"
 
-branches_main=['10.3', '10.4', '10.5', '10.6', '10.7', '10.8', '10.9', '10.10', '10.11']
+# Used to trigger the approriate main branch
+branches_main = [
+        '10.3',
+        '10.4',
+        '10.5',
+        '10.6',
+        '10.7',
+        '10.8',
+        '10.9',
+        '10.10',
+        '10.11',
+        ]
 
+# Defines what builders report status to GitHub
 github_status_builders = [
         "amd64-centos-7",
         "amd64-debian-10",
@@ -14,74 +25,26 @@ github_status_builders = [
         "amd64-windows",
         ]
 
-release_builders = [
-        "aarch64-centos-stream8-rpm-autobake",
-        "aarch64-debian-10",
-        "aarch64-debian-10-deb-autobake",
-        "aarch64-debian-11",
-        "aarch64-debian-11-deb-autobake",
-        "aarch64-debian-sid",
-        "aarch64-debian-sid-deb-autobake",
-        "aarch64-fedora-35",
-        "aarch64-fedora-35-rpm-autobake",
-        "aarch64-fedora-36",
-        "aarch64-fedora-36-rpm-autobake",
-        "aarch64-rhel-8",
-        "aarch64-rhel-8-rpm-autobake",
-        "aarch64-rhel-9",
-        "aarch64-rhel-9-rpm-autobake",
-        "aarch64-ubuntu-1804",
-        "aarch64-ubuntu-1804-deb-autobake",
-        "aarch64-ubuntu-2004",
-        "aarch64-ubuntu-2004-deb-autobake",
-        "amd64-centos-stream8-rpm-autobake",
-        "amd64-debian-sid",
-        "amd64-debian-sid-deb-autobake",
-        "amd64-ubuntu-2004",
-        "amd64-ubuntu-2004-deb-autobake",
-        "ppc64le-centos-stream8-rpm-autobake",
-        "ppc64le-debian-11",
-        "ppc64le-debian-11-deb-autobake",
-        "ppc64le-debian-sid",
-        "ppc64le-debian-sid-deb-autobake",
-        "s390x-ubuntu-2004",
-        "s390x-ubuntu-2004-deb-autobake",
-        "s390x-ubuntu-2204",
-        "s390x-ubuntu-2204-deb-autobake",
-        "s390x-rhel-8",
-        "s390x-rhel-8-rpm-autobake",
-        "s390x-rhel-9",
-        "s390x-rhel-9-rpm-autobake",
-        "s390x-sles-15",
-        "s390x-sles-15-rpm-autobake",
+# Special builders triggering
+builders_big = ["amd64-ubuntu-1804-bigtest"]
+builders_dockerlibrary = ["amd64-rhel8-dockerlibrary"]
+builders_eco = [
+        "amd64-debian-10-eco-mysqljs",
+        "amd64-debian-10-eco-pymysql",
+        "amd64-ubuntu-2004-eco-dbdeployer",
+        "amd64-ubuntu-2004-eco-php",
         ]
 
-builders_big=["amd64-ubuntu-1804-bigtest"]
+# Defines branches for which we save packages
+savedPackageBranches = branches_main + [
+        "bb-*-release",
+        "bb-10.2-compatibility",
+        "preview-*",
+        "*-pkgtest-*",
+        ]
 
-# Generate install builders based on the os_info data
-builders_install = []
-builders_upgrade = []
-builders_autobake = []
-all_platforms = set()
-for os in os_info:
-    for arch in os_info[os]['arch']:
-        all_platforms.add(arch)
-        builder_name_autobake = arch + '-' + os + '-' + os_info[os]['type'] + '-autobake'
-        builders_autobake.append(builder_name_autobake)
-        # Currently there are no VMs for x86 and s390x and OpenSUSE and SLES
-        addInstall = True
-        if 'has_install' in os_info[os]:
-            addInstall = os_info[os]['has_install']
-        if arch not in ['s390x', 'x86'] and addInstall:
-            builders_install.append(builder_name_autobake + '-install')
-            builders_upgrade.append(builder_name_autobake + '-minor-upgrade')
-            builders_upgrade.append(builder_name_autobake + '-major-upgrade')
-
-builders_galera = list(map(lambda x: "gal-" + "-".join(x.split('-')[:3]), builders_autobake))
-
-builders_eco=["amd64-ubuntu-2004-eco-php", "amd64-debian-10-eco-pymysql", "amd64-debian-10-eco-mysqljs", "amd64-ubuntu-2004-eco-dbdeployer"]
-
-builders_dockerlibrary=["amd64-rhel8-dockerlibrary"]
+# The trees for which we save binary packages.
+releaseBranches = ["bb-*-release", "preview-10.*"]
 
 # Note:
 # Maximum supported branch is the one where the default distro MariaDB package major version <= branch
@@ -103,17 +66,18 @@ supportedPlatforms["10.3"] = [
         'amd64-ubuntu-1804-clang10',
         'amd64-ubuntu-1804-clang10-asan',
         'amd64-ubuntu-1804-clang6',
-        'amd64-ubuntu-2004-debug',
         'amd64-ubuntu-1804-valgrind',
         'amd64-ubuntu-2004',
         'amd64-ubuntu-2004-clang11',
+        'amd64-ubuntu-2004-debug',
         'amd64-windows',
         'ppc64le-centos-stream8',
         'ppc64le-rhel-8',
         'ppc64le-ubuntu-1804',
-        'ppc64le-ubuntu-2004-clang1x',
         'ppc64le-ubuntu-1804-without-server',
-        'ppc64le-ubuntu-2004']
+        'ppc64le-ubuntu-2004',
+        'ppc64le-ubuntu-2004-clang1x',
+        ]
 
 supportedPlatforms["10.4"] = supportedPlatforms["10.3"]
 
@@ -126,11 +90,12 @@ supportedPlatforms["10.5"] = [
         'amd64-ubuntu-2004-msan',
         'ppc64le-debian-11',
         'ppc64le-rhel-9',
-        's390x-ubuntu-2004',
         's390x-rhel-8',
         's390x-rhel-9',
         's390x-sles-15',
-        'x86-debian-sid']
+        's390x-ubuntu-2004',
+        'x86-debian-sid',
+        ]
 supportedPlatforms["10.5"] += supportedPlatforms["10.4"]
 
 supportedPlatforms["10.6"] = [
@@ -160,25 +125,32 @@ supportedPlatforms["10.11"] = supportedPlatforms["10.10"]
 for k in supportedPlatforms:
     supportedPlatforms[k] = list(filter(lambda x: x not in github_status_builders, supportedPlatforms[k]))
 
-DEVELOPMENT_BRANCH="10.10"
-RELEASABLE_BRANCHES="5.5 10.0 10.1 10.2 10.3 10.4 10.5 10.6 bb-5.5-release bb-10.0-release bb-10.1-release bb-10.2-release bb-10.3-release bb-10.4-release bb-10.5-release bb-10.6-release"
-savedPackageBranches= [
-        "5.5",
-        "10.0",
-        "10.1",
-        "10.2",
-        "10.3",
-        "10.4",
-        "10.5",
-        "10.6",
-        "10.7",
-        "10.8",
-        "10.9",
-        "10.10",
-        "10.11",
-        "bb-*-release",
-        "bb-10.2-compatibility",
-        "preview-*"]
+# =============================================================================
+# ============================ AUTO-GENERATED BELOW ===========================
+# The following code is auto-generated based on the content of os_info.yaml. 
+# Edit with care
 
-# The trees for which we save binary packages.
-releaseBranches = ["bb-*-release", "preview-10.*"]
+with open('/srv/buildbot/master/os_info.yaml', 'r') as f:
+    os_info = yaml.safe_load(f)
+
+# Generate install builders based on the os_info data
+builders_install = []
+builders_upgrade = []
+builders_autobake = []
+all_platforms = set()
+for os in os_info:
+    for arch in os_info[os]['arch']:
+        all_platforms.add(arch)
+        builder_name_autobake = arch + '-' + os + '-' + os_info[os]['type'] + '-autobake'
+        builders_autobake.append(builder_name_autobake)
+        # Currently there are no VMs for x86 and s390x and OpenSUSE and SLES
+        addInstall = True
+        if 'has_install' in os_info[os]:
+            addInstall = os_info[os]['has_install']
+        if arch not in ['s390x', 'x86'] and addInstall:
+            builders_install.append(builder_name_autobake + '-install')
+            builders_upgrade.append(builder_name_autobake + '-minor-upgrade')
+            builders_upgrade.append(builder_name_autobake + '-major-upgrade')
+
+builders_galera = list(map(lambda x: "gal-" + "-".join(x.split('-')[:3]), builders_autobake))
+
