@@ -69,8 +69,10 @@ for os in os_info:
         builder_name_autobake = arch + '-' + os + '-' + os_info[os]['type'] + '-autobake'
         builders_autobake.append(builder_name_autobake)
         # Currently there are no VMs for x86 and s390x and OpenSUSE and SLES
-        # RHEL-9 is unreleased, so until packages are available skip install/upgrade
-        if arch not in ['s390x', 'x86'] and os not in ['opensuse-15', 'rhel-9', 'sles-12', 'sles-15']:
+        addInstall = True
+        if 'has_install' in os_info[os]:
+            addInstall = os_info[os]['has_install']
+        if arch not in ['s390x', 'x86'] and addInstall:
             builders_install.append(builder_name_autobake + '-install')
             builders_upgrade.append(builder_name_autobake + '-minor-upgrade')
             builders_upgrade.append(builder_name_autobake + '-major-upgrade')
