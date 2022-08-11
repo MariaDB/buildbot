@@ -290,7 +290,7 @@ def hasCompat(step):
     if 's390x' in builderName:
         return False
     if 'rhel' in builderName or 'centos' in builderName:
-        return util.Property('rpm_type')[-1] in ['7', '8']
+        return step.getProperty('rpm_type')[-1] in ['7', '8']
     return True
 
 @util.renderer
