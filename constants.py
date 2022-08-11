@@ -119,6 +119,8 @@ supportedPlatforms["10.4"] = supportedPlatforms["10.3"]
 
 supportedPlatforms["10.5"] = [
         'aarch64-debian-11',
+        'aarch64-fedora-35',
+        'aarch64-fedora-36',
         'aarch64-rhel-9',
         'aix',
         'amd64-debian-11',
