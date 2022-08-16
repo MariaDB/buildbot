@@ -13,6 +13,7 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     subscription-manager register \
     --org="$(cat /run/secrets/rhel_orgid)" \
     --activationkey="$(cat /run/secrets/rhel_keyname)" \
+    && subscription-manager repos --enable=rhel-7-server-optional-rpms \
     && rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm \
     && yum -y upgrade \
     && yum-builddep -y mariadb-server \
