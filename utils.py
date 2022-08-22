@@ -38,7 +38,7 @@ def getScript(scriptname):
 # BUILD HELPERS
 
 # Helper function that creates a worker instance.
-def createWorker(worker_name_prefix, worker_id, worker_type, dockerfile, jobs=5, save_packages=False, shm_size='15G', worker_name_suffix=''):
+def createWorker(worker_name_prefix, worker_id, worker_type, dockerfile, jobs=5, save_packages=False, shm_size='15G', worker_name_suffix='', volumes=None):
     worker_name = worker_name_prefix + str(worker_id) + '-docker'
     name = worker_name + worker_type
 
@@ -57,12 +57,13 @@ def createWorker(worker_name_prefix, worker_id, worker_type, dockerfile, jobs=5,
         b_name = worker_name_prefix
     base_name = b_name + '-docker' + worker_type
 
-    volumes=['/srv/buildbot/ccache:/mnt/ccache', '/srv/buildbot/packages:/mnt/packages', '/mnt/autofs/master_packages/:/packages']
+    if volumes is None:
+        volumes=['/srv/buildbot/ccache:/mnt/ccache', '/srv/buildbot/packages:/mnt/packages', '/mnt/autofs/master_packages/:/packages']
     # Set master FQDN - for VPN machines it should be 100.64.100.1
     fqdn = 'buildbot.mariadb.org'
     if worker_name_prefix.startswith('intel') or worker_name_prefix.startswith('bg') or worker_name_prefix.startswith('amd'):
         fqdn = '100.64.100.1'
-    if worker_name_prefix.startswith('p9-rhel'):
+    if worker_name_prefix.startswith('ppc64le-rhel'):
         fqdn = '10.103.203.6'
     if 'vladbogo' in dockerfile or 'quay' in dockerfile:
         dockerfile_str = None
@@ -187,7 +188,9 @@ def ls2list(rc, stdout, stderr):
     return { 'packages' : lsFilenames }
 
 # Save packages for current branch?
-def savePackage(step):
+def savePackage(step, savedBranches=None):
+    if savedBranches is None:
+      savedBranches = savedPackageBranches
     builderName = str(step.getProperty("buildername"))
 
     # Debug builders do not create the bintar, so there are no packages to save
@@ -195,7 +198,7 @@ def savePackage(step):
       return False
 
     return step.getProperty("save_packages") and \
-           fnmatch_any(step.getProperty("branch"), savedPackageBranches)
+           fnmatch_any(step.getProperty("branch"), savedBranches)
 
 # Return a HTML file that contains links to MTR logs
 def getHTMLLogString():
