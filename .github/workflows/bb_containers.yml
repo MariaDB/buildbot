@@ -200,7 +200,7 @@ jobs:
             docker pull -q --platform "$platform" "$image"
             docker run -i "$image" buildbot-worker --version
             docker run -i "$image" dumb-init twistd --pidfile= -y /home/buildbot/buildbot.tac
-            docker run -u root -i "$image" qpress -r /etc /tmp/qpress.qp
+            docker run -u root -i "$image" bash -c "touch /tmp/foo && qpress -r /tmp /root/qpress.qp"
           done
       - name: Check for registry credentials
         if: >
