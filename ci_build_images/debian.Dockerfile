@@ -40,7 +40,6 @@ RUN apt-get update \
     build-essential \
     ccache \
     check \
-    dpatch \
     dumb-init \
     gawk \
     git \
