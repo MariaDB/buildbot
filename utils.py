@@ -21,7 +21,6 @@ def envFromProperties(envlist):
     for e in envlist:
         d[e] = util.Interpolate(f'%(prop:{e})s')
     d['tarbuildnum'] = util.Interpolate("%(prop:tarbuildnum)s")
-    d['releaseable_branches'] = RELEASABLE_BRANCHES
     d['development_branch']= DEVELOPMENT_BRANCH
     return d
 
