@@ -66,6 +66,10 @@ jobs:
             image: ubuntu:22.04
             branch: 10.7
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
+          - dockerfile: debian.Dockerfile
+            image: ubuntu:22.10
+            branch: 10.7
+            platforms: linux/amd64, linux/arm64/v8
           - dockerfile: fedora.Dockerfile
             image: fedora:35
             platforms: linux/amd64, linux/arm64/v8
