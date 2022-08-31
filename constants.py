@@ -1,6 +1,6 @@
 import yaml
 
-DEVELOPMENT_BRANCH = "10.10"
+DEVELOPMENT_BRANCH = "10.11"
 
 # Used to trigger the approriate main branch
 branches_main = [
