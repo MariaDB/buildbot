@@ -227,6 +227,9 @@ fi
 
 manifest_image_cleanup() {
   t=$1
+  if [ ! -f "$t" ]; then
+    return
+  fi
   # A manifest is an image type that podman can remove
   podman images --filter dangling=true --format '{{.ID}} {{.Digest}}' |
     while read -r line; do
