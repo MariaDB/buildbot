@@ -5,6 +5,7 @@ from buildbot.steps.mtrlogobserver import MTR, MtrLogObserver
 from buildbot.steps.source.github import GitHub
 from buildbot.process.remotecommand import RemoteCommand
 from twisted.internet import defer
+import re
 import sys
 import docker
 from datetime import timedelta, datetime
@@ -58,12 +59,10 @@ def createWorker(worker_name_prefix, worker_id, worker_type, dockerfile, jobs=5,
 
     if volumes is None:
         volumes=['/srv/buildbot/ccache:/mnt/ccache', '/srv/buildbot/packages:/mnt/packages', '/mnt/autofs/master_packages/:/packages']
-    # Set master FQDN - for VPN machines it should be 100.64.100.1
-    fqdn = 'buildbot.mariadb.org'
-    if worker_name_prefix.startswith('intel') or worker_name_prefix.startswith('bg') or worker_name_prefix.startswith('amd'):
-        fqdn = '100.64.100.1'
-    if worker_name_prefix.startswith('ppc64le-rhel'):
-        fqdn = '10.103.203.6'
+    # Set master FQDN - default to wireguard interface
+    fqdn = '100.64.100.1'
+    if re.match('aarch64-bbw[1-4]', worker_name_prefix) or worker_name_prefix.startswith('ppc64le-rhel'):
+        fqdn = 'buildbot.mariadb.org'
     if 'vladbogo' in dockerfile or 'quay' in dockerfile:
         dockerfile_str = None
         image_str = dockerfile
