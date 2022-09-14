@@ -1,0 +1,74 @@
+---
+name: eco container build
+
+on:
+  push:
+    paths:
+      - .github/workflows/eco_containers.yml
+      - "eco_build_images/**"
+  pull_request:
+    paths:
+      - .github/workflows/eco_containers.yml
+      - "eco_build_images/**"
+  schedule:
+    - cron: 24 3 * * 0
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: ${{ matrix.tag }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - containerfile: wordpress_phpunit_test_runner.Dockerfile
+            tag: wordpress_phpunit_test_runner
+            archs: amd64
+    env:
+      DEPLOY_IMAGES: false
+      WORKDIR: eco_build_images
+
+    steps:
+      - uses: actions/checkout@v3
+      #      - name: Set up QEMU
+      #        uses: docker/setup-qemu-action@v2
+      - name: Check Dockerfile with hadolint
+        run: |
+          docker run -i -v $(pwd)/${{ env.WORKDIR }}:/mnt -w /mnt \
+            hadolint/hadolint:latest hadolint ${{ matrix.containerfile }}
+      - name: Build with Buildah
+        id: build-image
+        uses: redhat-actions/buildah-build@v2
+        with:
+          image: quay.io/mariadb-foundation/bb-ecosystem
+          tags: ${{ matrix.tag }}
+          containerfiles: ${{ env.WORKDIR }}/${{ matrix.containerfile }}
+          context: ${{ env.WORKDIR }}
+          archs: ${{ matrix.archs }}
+          oci: true
+      - name: Check for registry credentials
+        if: >
+          github.ref == 'refs/heads/main' &&
+          github.repository == 'MariaDB/buildbot'
+        run: |
+          missing=()
+          [[ -n "${{ secrets.QUAY_USER }}" ]] || missing+=(QUAY_USER)
+          [[ -n "${{ secrets.QUAY_TOKEN }}" ]] || missing+=(QUAY_TOKEN)
+          for i in "${missing[@]}"; do
+            echo "Missing github secret: $i"
+          done
+          if (( ${#missing[@]} == 0 )); then
+            echo "DEPLOY_IMAGES=true" >> $GITHUB_ENV
+          else
+            echo "Not pushing images to registry"
+          fi
+      - name: Push To quay.io
+        id: push-to-quay
+        if: ${{ env.DEPLOY_IMAGES == 'true' }}
+        uses: redhat-actions/push-to-registry@v2
+        with:
+          image: ${{ steps.build-image.outputs.image }}
+          tags: ${{ steps.build-image.outputs.tags }}
+          registry: quay.io/mariadb-foundation
+          username: ${{ secrets.QUAY_USER }}
+          password: ${{ secrets.QUAY_TOKEN }}
