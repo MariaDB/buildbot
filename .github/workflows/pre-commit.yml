@@ -10,7 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.x"
-      - uses: pre-commit/action@v3.0.0
+      #//TEMP we need to check only modified files WRT main
+      - name: run pre-commit (all)
+        run: |
+          make venv
+          make install-pre-commit
+          source .venv/bin/activate
+          make pre-commit-run-all
