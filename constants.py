@@ -2,7 +2,7 @@ import yaml
 
 DEVELOPMENT_BRANCH = "10.11"
 
-# Used to trigger the approriate main branch
+# Used to trigger the appropriate main branch
 branches_main = [
         '10.3',
         '10.4',
@@ -130,7 +130,7 @@ for k in supportedPlatforms:
 
 # =============================================================================
 # ============================ AUTO-GENERATED BELOW ===========================
-# The following code is auto-generated based on the content of os_info.yaml. 
+# The following code is auto-generated based on the content of os_info.yaml.
 # Edit with care
 
 with open('/srv/buildbot/master/os_info.yaml', 'r') as f:
