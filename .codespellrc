@@ -1,2 +1,4 @@
 [codespell]
-ignore-words-list = crossreference
+ignore-words-list = crossreference,ro
+# following contains a typo in an INNODB test
+exclude = scripts/aix-build-and-test.sh

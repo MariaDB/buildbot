@@ -31,7 +31,8 @@ touch $VAR_SCRIPT_LOCK
 
 IGNORE_DIR="helper_files"
 
-typeset -r VAR_NFS_USAGE=$(df $VAR_NFS_DIR | tail -1 | awk '{print $5}')
+typeset -r VAR_NFS_USAGE
+VAR_NFS_USAGE=$(df $VAR_NFS_DIR | tail -1 | awk '{print $5}')
 if ((${VAR_NFS_USAGE/\%/} >= 70)); then
   echo_date "cleaning 10 oldest build"
   cd $VAR_NFS_DIR || err "cd $VAR_NFS_DIR"
@@ -39,12 +40,13 @@ if ((${VAR_NFS_USAGE/\%/} >= 70)); then
   ls -rt -I $IGNORE_DIR | head -10 | xargs rm -rv || err "cleaning 10 oldest build"
 fi
 
-typeset -r VAR_LOCAL_USAGE=$(df $VAR_LOCAL_DIR | tail -1 | awk '{print $5}')
+typeset -r VAR_LOCAL_USAGE
+VAR_LOCAL_USAGE=$(df $VAR_LOCAL_DIR | tail -1 | awk '{print $5}')
 if ((${VAR_LOCAL_USAGE/\%/} >= 77)); then
   echo_date "moving 10 oldest build"
   cd $VAR_LOCAL_DIR || err "cd $VAR_LOCAL_DIR"
   [[ -L older_builds ]] || err "older_builds not found"
-  # shellcheck disable=SC2012
+  # shellcheck disable=SC2010
   for dir in $(ls -rt -I $IGNORE_DIR | grep -v older_builds | head -10); do
     mv -v "$dir" older_builds/ || err "moving $dir to older_builds/"
   done
