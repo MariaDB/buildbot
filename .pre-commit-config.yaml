@@ -10,7 +10,6 @@ repos:
       - id: check-executables-have-shebangs
       - id: check-merge-conflict
       - id: check-symlinks
-      - id: check-toml
       - id: check-xml
       - id: check-yaml
         name: Check yaml files
