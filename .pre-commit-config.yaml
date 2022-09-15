@@ -57,24 +57,3 @@ repos:
         language: docker_image
         entry: hadolint/hadolint:latest hadolint
         files: Dockerfile
-      # - id: docker-prettier
-      #   name: Run prettier with docker
-      #   entry: tmknom/prettier:latest -l
-      #   language: docker_image
-      #   files: "\\.(\
-      #     css|less|scss\
-      #     |graphql|gql\
-      #     |html\
-      #     |js|jsx\
-      #     |json\
-      #     |md|markdown|mdown|mkdn\
-      #     |mdx\
-      #     |ts|tsx\
-      #     |vue\
-      #     |yaml|yml\
-      #     )$"
-      - id: docker-lychee
-        name: Run lychee on markdown files with docker
-        entry: lycheeverse/lychee
-        language: docker_image
-        types: [markdown]

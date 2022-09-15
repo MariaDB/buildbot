@@ -51,4 +51,4 @@ for arch in platforms:
             f.write(buildbot_tac)
         idx += 1
     print(arch, len(master_config['builders']))
- 
+
