@@ -58,13 +58,33 @@ jobs:
             branch: 10.7
             tag: ubuntu18.04-386
             platforms: linux/386
+          - dockerfile: debian.Dockerfile clang.Dockerfile
+            image: ubuntu:18.04
+            branch: 10.7
+            tag: ubuntu18.04-clang
+            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
+          - dockerfile: debian.Dockerfile clang.Dockerfile
+            image: ubuntu:18.04
+            branch: 10.7
+            tag: ubuntu18.04-386-clang
+            platforms: linux/386
           - dockerfile: debian.Dockerfile
             image: ubuntu:20.04
             branch: 10.7
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
+          - dockerfile: debian.Dockerfile clang.Dockerfile
+            image: ubuntu:20.04
+            branch: 10.7
+            tag: ubuntu20.04-clang
+            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
           - dockerfile: debian.Dockerfile
             image: ubuntu:22.04
             branch: 10.7
+            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
+          - dockerfile: debian.Dockerfile clang.Dockerfile
+            image: ubuntu:22.04
+            branch: 10.7
+            tag: ubuntu22.04-clang
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
           - dockerfile: debian.Dockerfile
             image: ubuntu:22.10
