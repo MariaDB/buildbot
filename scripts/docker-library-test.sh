@@ -7,7 +7,7 @@ buildername=${2}
 
 builderarch=${buildername%%-*}
 
-image=mariadb-${tarbuildnum}-${buildername}
+image=mariadb-${tarbuildnum}-${builderarch}
 
 #
 # TEST Image

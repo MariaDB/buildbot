@@ -70,7 +70,7 @@ annotate() {
 
 # Annotations - https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys
 build() {
-  image=mariadb-${tarbuildnum}-${buildername}
+  image=mariadb-${tarbuildnum}-${builderarch}
   buildah bud --tag "${image}" \
     --layers \
     --arch "$@" \

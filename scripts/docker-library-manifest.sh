@@ -40,7 +40,7 @@ annotate() {
   done
 }
 
-image=mariadb-${tarbuildnum}-${buildername}
+image=mariadb-${tarbuildnum}-${builderarch}
 
 origbuildimage=$image
 
