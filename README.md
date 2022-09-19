@@ -4,16 +4,26 @@
 [![bbm conf check](https://github.com/MariaDB/buildbot/actions/workflows/bbm_check_conf.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/bbm_check_conf.yml)
 [![bbm build container](https://github.com/MariaDB/buildbot/actions/workflows/bbm_build_container.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/bbm_build_container.yml)
 
+## pre-commit
+
+[![pre-commit](https://github.com/MariaDB/buildbot/actions/workflows/pre-commit.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/pre-commit.yml)
+
+Any code submitted to this project is checked with the
+[pre-commit](https://pre-commit.com/) framework. To make sure that your
+code will pass the checks, you can execute the pre-commit checks locally before
+"git pushing" your code.
+
+Here is how:
+
 ```console
-_________________________
-< Build all the things! >
--------------------------
-       \   ^__^
-        \  (oo)\_______
-           (__)\       )\/\
-               ||----w |
-               ||     ||
+make venv
+source .venv/bin/activate
+make install-pre-commit
+make pre-commit-run
 ```
+
+You can also [install](https://pre-commit.com/#install) the pre-commit tool so
+that any commit will be checked automatically.
 
 ## Overview
 
