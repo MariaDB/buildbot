@@ -94,6 +94,7 @@ supportedPlatforms["10.5"] = [
         'ppc64le-rhel-9',
         's390x-rhel-8',
         's390x-rhel-9',
+        's390x-sles-12',
         's390x-sles-15',
         's390x-ubuntu-2004',
         'x86-debian-sid',

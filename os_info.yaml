@@ -90,6 +90,7 @@ sles-12:
   version_name: 12
   arch:
     - amd64
+    - s390x
   type: rpm
   has_install: False
 sles-15:
