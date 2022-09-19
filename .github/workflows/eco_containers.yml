@@ -40,7 +40,7 @@ jobs:
         id: build-image
         uses: redhat-actions/buildah-build@v2
         with:
-          image: quay.io/mariadb-foundation/bb-ecosystem
+          image: bb-ecosystem
           tags: ${{ matrix.tag }}
           containerfiles: ${{ env.WORKDIR }}/${{ matrix.containerfile }}
           context: ${{ env.WORKDIR }}
