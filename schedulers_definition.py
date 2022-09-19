@@ -37,6 +37,6 @@ def getSchedulers():
             builderNames=getDockerLibraryNames)
     l.append(schedulerDockerlibrary)
 
-    l.append(schedulers.Triggerable(name="s_wordpress", builderNames=getDockerLibraryNames))
+    l.append(schedulers.Triggerable(name="s_wordpress", builderNames=getWordpressNames))
 
     return l

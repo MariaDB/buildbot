@@ -299,6 +299,10 @@ def hasCompat(step):
 def getDockerLibraryNames(props):
     return builders_dockerlibrary[0]
 
+@util.renderer
+def getWordpressNames(props):
+    return builders_wordpress[0]
+
 def hasDockerLibrary(step):
     # Can only build with a saved package
     if not savePackage(step):

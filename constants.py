@@ -34,6 +34,7 @@ builders_eco = [
         "amd64-ubuntu-2004-eco-dbdeployer",
         "amd64-ubuntu-2004-eco-php",
         ]
+builders_wordpress = ["amd64-rhel8-wordpress"]
 
 # Defines branches for which we save packages
 savedPackageBranches = branches_main + [
