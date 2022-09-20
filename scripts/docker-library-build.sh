@@ -88,3 +88,6 @@ if [ "${builderarch}" = aarch64 ]; then
 else
   build "${builderarch}"
 fi
+
+# tmp: make it so that the rm doesn't fail
+podman tag "${image}" "mariadb-${tarbuildnum}-${buildername}"
