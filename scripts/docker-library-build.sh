@@ -89,5 +89,6 @@ else
   build "${builderarch}"
 fi
 
-# tmp: make it so that the rm doesn't fail
-podman tag "${image}" "mariadb-${tarbuildnum}-${buildername}"
+if [ "${builderarch}" = amd64 ]; then
+  podman tag "${image}" "${image}-wordpress"
+fi
