@@ -59,7 +59,7 @@ export PDO_MYSQL_TEST_PASS="${MYSQL_TEST_PASSWD}"
 
 cd /code
 
-git config --global --add safe.directory /code/master
+git config --global --add safe.directory /code
 
 # https://stackoverflow.com/questions/3258243/check-if-pull-needed-in-git
 UPSTREAM='@{u}'
