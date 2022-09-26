@@ -85,7 +85,7 @@ def createWorker(worker_name_prefix, worker_id, worker_type, dockerfile, jobs=5,
                         build_wait_timeout=0,
                         missing_timeout=600,
                         max_builds=1,
-                        hostconfig={ 'shm_size':shm_size},
+                        hostconfig={'shm_size':shm_size, 'ulimits': [docker.types.Ulimit(name='memlock', soft=51200000, hard=51200000)]},
                         volumes=volumes,
                         properties={ 'jobs':jobs, 'save_packages':save_packages })
     return ((base_name, name + worker_name_suffix), worker_instance)
