@@ -17,19 +17,23 @@ manual_run_switch "$1"
 set -x
 
 upgrade_type_mode
-upgrade_test_type
+upgrade_test_type "$test_type"
 
 if [[ $arch == "ppc64le" ]]; then
   arch=ppc64el
 elif [[ $arch == "x86" ]]; then
   arch=i386
+elif [[ $arch == "aarch64" ]]; then
+  arch=arm64
 fi
 
 bb_log_info "Architecture, distribution and version based on VM name: $arch $dist_name $version_name"
 bb_log_info "Test properties"
 bb_log_info "  Systemd capability $systemdCapability"
 bb_log_info "  Major version $major_version"
-bb_log_info "  Previous major version $prev_major_version"
+if [[ $test_type == "major" ]]; then
+  bb_log_info "  Previous major version $prev_major_version"
+fi
 
 # This test can be performed in four modes:
 # - 'server' -- only mariadb-server is installed (with whatever dependencies it pulls) and upgraded.
@@ -47,8 +51,8 @@ df -kT
 
 # Check whether a previous version exists
 if ! wget "https://deb.mariadb.org/$prev_major_version/$dist_name/dists/$version_name/main/binary-$arch/Packages"; then
-  bb_log_warn "could not find the 'Packages' file for a previous version in MariaDB repo, skipping the test"
-  exit
+  bb_log_err "could not find the 'Packages' file for a previous version in MariaDB repo"
+  exit 1
 fi
 
 # Define the list of packages to install/upgrade
