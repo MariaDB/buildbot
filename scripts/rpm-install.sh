@@ -44,9 +44,10 @@ made_cache=0
 for i in {1..5}; do
   sudo rm -rf /var/cache/yum/*
   sudo yum clean all
-  case $HOSTNAME in
-    rhel8*) sudo subscription-manager refresh ;;
-  esac
+  source /etc/os-version
+  if [[ $ID == "rhel" ]]; then
+    sudo subscription-manager refresh
+  fi
   if sudo yum makecache; then
     made_cache=1
     break
