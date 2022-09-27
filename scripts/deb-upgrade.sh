@@ -49,12 +49,6 @@ df -kT
 
 set -x
 
-# Check whether a previous version exists
-if ! wget "https://deb.mariadb.org/$prev_major_version/$dist_name/dists/$version_name/main/binary-$arch/Packages"; then
-  bb_log_err "could not find the 'Packages' file for a previous version in MariaDB repo"
-  exit 1
-fi
-
 # Define the list of packages to install/upgrade
 case $test_mode in
   all)
@@ -100,8 +94,13 @@ deb_setup_mariadb_mirror "$prev_major_version"
 
 # We need to pin directory to ensure that installation happens from MariaDB
 # repo rather than from the default distro repo
+if [[ $prev_major_version == "10.2" ]]; then
+  mirror="archive.mariadb.org"
+else
+  mirror="deb.mariadb.org"
+fi
 sudo sh -c "echo 'Package: *' > /etc/apt/preferences.d/release"
-sudo sh -c "echo 'Pin: origin deb.mariadb.org' >> /etc/apt/preferences.d/release"
+sudo sh -c "echo 'Pin: origin $mirror' >> /etc/apt/preferences.d/release"
 sudo sh -c "echo 'Pin-Priority: 1000' >> /etc/apt/preferences.d/release"
 
 # apt get update may be running in the background (Ubuntu start).
