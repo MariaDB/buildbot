@@ -14,8 +14,6 @@ set -e
 # function to be able to run the script manually (see bash_lib.sh)
 manual_run_switch "$1"
 
-set -x
-
 # print disk usage
 df -kT
 
@@ -38,6 +36,8 @@ deb_setup_mariadb_mirror "$master_branch"
 deb_setup_bb_artifacts_mirror
 
 wget -O - "https://ci.mariadb.org/${tarbuildnum}/${parentbuildername}/debs/Packages.gz" | gunzip >Packages
+
+set -x
 
 # Due to MDEV-14622 and its effect on Spider installation,
 # Spider has to be installed separately after the server

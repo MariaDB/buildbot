@@ -14,8 +14,6 @@ set -e
 # function to be able to run the script manually (see bash_lib.sh)
 manual_run_switch "$1"
 
-set -x
-
 # print disk usage
 df -kT
 
@@ -38,6 +36,8 @@ done
 # esac
 
 rpm -qa | { grep -iE 'maria|mysql|galera' || true; }
+
+set -x
 
 # Try several times, to avoid sporadic "The requested URL returned error: 404"
 made_cache=0

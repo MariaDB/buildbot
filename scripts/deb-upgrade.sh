@@ -14,8 +14,6 @@ set -e
 # function to be able to run the script manually (see bash_lib.sh)
 manual_run_switch "$1"
 
-set -x
-
 upgrade_type_mode
 upgrade_test_type "$test_type"
 
@@ -48,6 +46,8 @@ dpkg -l | grep -iE 'maria|mysql|galera' || true
 lsb_release -a
 uname -a
 df -kT
+
+set -x
 
 # Check whether a previous version exists
 if ! wget "https://deb.mariadb.org/$prev_major_version/$dist_name/dists/$version_name/main/binary-$arch/Packages"; then

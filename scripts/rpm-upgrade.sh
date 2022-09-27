@@ -51,6 +51,8 @@ uname -a
 df -kT
 set -e
 
+set -x
+
 # Check whether a previous version exists
 if [[ $prev_major_version == "10.2" ]]; then
   mirror="https://archive.mariadb.org/mariadb-10.2/yum"
