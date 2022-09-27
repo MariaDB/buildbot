@@ -25,13 +25,7 @@ elif [[ $arch == "aarch64" ]]; then
   arch=arm64
 fi
 
-bb_log_info "Architecture, distribution and version based on VM name: $arch $dist_name $version_name"
-bb_log_info "Test properties"
-bb_log_info "  Systemd capability $systemdCapability"
-bb_log_info "  Major version $major_version"
-if [[ $test_type == "major" ]]; then
-  bb_log_info "  Previous major version $prev_major_version"
-fi
+bb_print_env
 
 # This test can be performed in four modes:
 # - 'server' -- only mariadb-server is installed (with whatever dependencies it pulls) and upgraded.
@@ -40,12 +34,6 @@ fi
 #               to make sure upgrade does not require new dependencies
 # - 'columnstore' -- mariadb-server and mariadb-plugin-columnstore are installed
 bb_log_info "Current test mode: $test_mode"
-
-# Environment
-dpkg -l | grep -iE 'maria|mysql|galera' || true
-lsb_release -a
-uname -a
-df -kT
 
 set -x
 

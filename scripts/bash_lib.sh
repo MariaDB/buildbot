@@ -65,6 +65,33 @@ manual_run_switch() {
   fi
 }
 
+bb_print_env() {
+  # Environment
+  source /etc/os-release
+  echo -e "\nDistribution: $PRETTY_NAME"
+  echo "Architecture: $arch"
+  echo -e "Systemd capability: $systemdCapability"
+  echo "MariaDB version: ${mariadb_version/mariadb-/}"
+  if [[ $test_type == "major" ]]; then
+    echo "MariaDB previous major version: $prev_major_version"
+  fi
+  echo -e "\nKernel:"
+  uname -a
+  echo -e "\nUlimits:"
+  ulimit -a
+  echo -e "\nDisk usage:"
+  df -kT
+
+  if command -v dpkg >/dev/null; then
+    package_manager="dpkg -l"
+  else
+    package_manager="rpm -qa"
+  fi
+  echo -e "\nMariaDB related packages installed (should be empty):"
+  $package_manager | grep -iE 'maria|mysql|galera' || true
+  echo ""
+}
+
 apt_get_update() {
   bb_log_info "update apt cache"
   res=1

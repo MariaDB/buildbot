@@ -14,9 +14,6 @@ set -e
 # function to be able to run the script manually (see bash_lib.sh)
 manual_run_switch "$1"
 
-# print disk usage
-df -kT
-
 # Mandatory variables
 for var in arch master_branch; do
   if [[ -z $var ]]; then
@@ -24,6 +21,8 @@ for var in arch master_branch; do
     exit 1
   fi
 done
+
+bb_print_env
 
 # # //TEMP this should be done in the VM preparation
 # case "$master_branch" in
@@ -34,8 +33,6 @@ done
 #     sudo sh -c \"PATH=$PATH:/usr/sbin getenforce || true\"
 #     ;;
 # esac
-
-rpm -qa | { grep -iE 'maria|mysql|galera' || true; }
 
 set -x
 

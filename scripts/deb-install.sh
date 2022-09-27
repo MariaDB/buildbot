@@ -14,8 +14,7 @@ set -e
 # function to be able to run the script manually (see bash_lib.sh)
 manual_run_switch "$1"
 
-# print disk usage
-df -kT
+bb_print_env
 
 # check that no related packages are present
 # this should be a fresh and clean VM
