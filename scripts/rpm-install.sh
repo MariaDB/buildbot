@@ -44,7 +44,7 @@ made_cache=0
 for i in {1..5}; do
   sudo rm -rf /var/cache/yum/*
   sudo yum clean all
-  source /etc/os-version
+  source /etc/os-release
   if [[ $ID == "rhel" ]]; then
     sudo subscription-manager refresh
   fi
