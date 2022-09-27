@@ -61,7 +61,7 @@ def createWorker(worker_name_prefix, worker_id, worker_type, dockerfile, jobs=5,
         volumes=['/srv/buildbot/ccache:/mnt/ccache', '/srv/buildbot/packages:/mnt/packages', '/mnt/autofs/master_packages/:/packages']
     # Set master FQDN - default to wireguard interface
     fqdn = '100.64.100.1'
-    if re.match('aarch64-bbw[1-4]', worker_name_prefix) or worker_name_prefix.startswith('ppc64le-rhel'):
+    if re.match('aarch64-bbw[1-4]', worker_name) or worker_name.startswith('ppc64le-rhel'):
         fqdn = 'buildbot.mariadb.org'
     if 'vladbogo' in dockerfile or 'quay' in dockerfile:
         dockerfile_str = None
