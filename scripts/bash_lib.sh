@@ -156,7 +156,7 @@ upgrade_type_mode() {
 }
 
 upgrade_test_type() {
-  case $test_type in
+  case $1 in
     "minor")
       prev_major_version=$major_version
       ;;
@@ -166,7 +166,7 @@ upgrade_test_type() {
       prev_major_version="10.$prev_minor_version"
       ;;
     *)
-      log_bb_err "test type not provided"
+      bb_log_err "test type not provided"
       exit 1
       ;;
   esac

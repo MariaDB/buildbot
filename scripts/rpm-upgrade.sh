@@ -14,10 +14,8 @@ set -e
 # function to be able to run the script manually (see bash_lib.sh)
 manual_run_switch "$1"
 
-set -x
-
 upgrade_type_mode
-upgrade_test_type
+upgrade_test_type "$test_type"
 
 package_version=${mariadb_version/mariadb-/}
 distro=$version_name
@@ -26,14 +24,16 @@ if [[ $distro == "sles123" ]]; then
   distro="sles12"
 fi
 
-repo_dist_arch=$distro-$arch
+repo_dist_arch=$arch
 bb_log_info "Architecture and distribution based on VM name: $repo_dist_arch"
 bb_log_info "Test properties"
 bb_log_info "  Systemd capability     $systemdCapability"
 bb_log_info "  Test type              $test_type"
 bb_log_info "  Test mode              $test_mode"
 bb_log_info "  Major version          $major_version"
-bb_log_info "  Previous major version $prev_major_version"
+if [[ $test_type == "major" ]]; then
+  bb_log_info "  Previous major version $prev_major_version"
+fi
 
 # This test can be performed in four modes:
 # - 'server' -- only mariadb-server is installed (with whatever dependencies it pulls) and upgraded.
@@ -52,7 +52,13 @@ df -kT
 set -e
 
 # Check whether a previous version exists
-if ! wget "https://yum.mariadb.org/$prev_major_version/$repo_dist_arch/repodata" -O repodata.list; then
+if [[ $prev_major_version == "10.2" ]]; then
+  mirror="https://archive.mariadb.org/mariadb-10.2/yum"
+else
+  mirror="https://yum.mariadb.org/$prev_major_version"
+fi
+
+if ! wget "$mirror/$repo_dist_arch/repodata" -O repodata.list; then
   bb_log_err "could not find the 'repodata' folder for a previous version in MariaDB repo"
   exit 1
 fi
@@ -61,7 +67,7 @@ fi
 case $test_mode in
   all | deps | columnstore)
     primary_xml=$(grep 'primary.xml.gz' repodata.list | sed -e 's/.*href="\(.*-primary.xml\)\.gz\".*/\\1/')
-    if ! wget "https://yum.mariadb.org/$prev_major_version/$repo_dist_arch/repodata/$primary_xml.gz"; then
+    if ! wget "$mirror/$repo_dist_arch/repodata/$primary_xml.gz"; then
       bb_log_err "Couldn't download primary.xml.gz from the repository"
       exit 1
     fi
@@ -147,7 +153,7 @@ fi
 
 sudo sh -c "echo '[mariadb]
 name=MariaDB
-baseurl=https://yum.mariadb.org/$prev_major_version/$repo_dist_arch
+baseurl=$mirror/$repo_dist_arch
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1' > $repo_location/MariaDB.repo"
 
