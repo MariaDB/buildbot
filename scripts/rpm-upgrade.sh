@@ -53,8 +53,8 @@ set -e
 
 # Check whether a previous version exists
 if ! wget "https://yum.mariadb.org/$prev_major_version/$repo_dist_arch/repodata" -O repodata.list; then
-  bb_log_warn "could not find the 'repodata' folder for a previous version in MariaDB repo, skipping the test"
-  exit
+  bb_log_err "could not find the 'repodata' folder for a previous version in MariaDB repo"
+  exit 1
 fi
 
 # Define the list of packages to install/upgrade
