@@ -93,6 +93,16 @@ bb_print_env() {
   echo -e "\nDisk usage:"
   df -kT
 
+  # make sure SELinux is in Enforcing mode
+  if [[ -f /etc/selinux/config ]]; then
+    selinux_status=$(getenforce)
+    if [[ $selinux_status != "Enforcing" ]]; then
+      bb_log_warn "Selinux is not in enforcing mode ($selinux_status)"
+    else
+      echo -e "\nSelinux status: $selinux_status"
+    fi
+  fi
+
   if command -v dpkg >/dev/null; then
     package_manager="dpkg -l"
   else
@@ -101,13 +111,6 @@ bb_print_env() {
   echo -e "\nMariaDB related packages installed (should be empty):"
   $package_manager | grep -iE 'maria|mysql|galera' || true
   echo ""
-
-  # make sure SELinux is in Enforcing mode
-  if [[ -f /etc/selinux/config ]]; then
-    if [[ $(getenforce) != "Enforcing" ]]; then
-      bb_log_warn "Selinux is not in enforcing mode"
-    fi
-  fi
 }
 
 apt_get_update() {
