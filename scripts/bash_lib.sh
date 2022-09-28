@@ -101,6 +101,13 @@ bb_print_env() {
   echo -e "\nMariaDB related packages installed (should be empty):"
   $package_manager | grep -iE 'maria|mysql|galera' || true
   echo ""
+
+  # make sure SELinux is in Enforcing mode
+  if [[ -f /etc/selinux/config ]]; then
+    if [[ $(getenforce) != "Enforcing" ]]; then
+      bb_log_warn "Selinux is not in enforcing mode"
+    fi
+  fi
 }
 
 apt_get_update() {
