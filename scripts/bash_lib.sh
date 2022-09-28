@@ -5,26 +5,37 @@
 # . ./bash_lib.sh
 
 bb_log_info() {
+  set +x
   echo >&1 "INFO: $*"
+  set -x
 }
 
 bb_log_warn() {
+  set +x
   echo >&1 "WARNING: $*"
+  set -x
 }
 
 bb_log_skip() {
+  set +x
   echo >&1 "SKIP: $*"
+  set -x
 }
 
 bb_log_err() {
+  set +x
   echo >&2 "ERROR: $*"
+  set -x
 }
 
 bb_log_ok() {
+  set +x
   echo >&1 "OK: $*"
+  set -x
 }
 
 err() {
+  set +x
   echo >&2 "ERROR: $*"
   exit 1
 }
@@ -158,7 +169,8 @@ deb_setup_mariadb_mirror() {
       exit 1
     }
   else
-    bb_log_skip "deb_setup_mariadb_mirror: $branch packages for $dist_name $version_name do not exist on https://deb.mariadb.org/"
+    bb_log_err "deb_setup_mariadb_mirror: $branch packages for $dist_name $version_name does not exist on https://deb.mariadb.org/"
+    exit 1
   fi
   set +u
 }
@@ -281,8 +293,21 @@ store_mariadb_server_info() {
 
 check_upgraded_versions() {
   for file in /tmp/version.old /tmp/version.new; do
-    [[ -f $file ]] || bb_log_err "$file not found"
+    [[ -f $file ]] || {
+      bb_log_err "$file not found"
+      exit 1
+    }
   done
+  # check that a major upgrade was done
+  if [[ $test_type == "major" ]]; then
+    old_major_digit_incr=$(($(cut -d "." -f2 /tmp/version.old) + 1))
+    new_major_digit=$(cut -d "." -f2 /tmp/version.new)
+    ((old_major_digit_incr == new_major_digit)) || {
+      bb_log_err "This does not look like a major upgrade:"
+      diff -u /tmp/version.old /tmp/version.new
+      exit 1
+    }
+  fi
   if diff -u /tmp/version.old /tmp/version.new; then
     bb_log_err "server version has not changed after upgrade"
     bb_log_err "it can be a false positive if we forgot to bump version after release,"
