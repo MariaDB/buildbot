@@ -139,12 +139,8 @@ sudo sh -c "echo '[mariadb]
 name=MariaDB
 baseurl=$mirror/$arch
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
-gpgcheck=1' > $repo_location/MariaDB.repo"
-
-# Add fix for MDEV-20673 to rhel8/centos8 repo
-case $HOSTNAME in
-  rhel8* | centos8*) sudo sh -c "echo 'module_hotfixes = 1' >> $repo_location/MariaDB.repo" ;;
-esac
+gpgcheck=1
+module_hotfixes=1' >$repo_location/MariaDB.repo"
 
 # Workaround for TODO-1479 (errors upon reading from SUSE repos):
 # sudo rm -rf
