@@ -85,7 +85,7 @@ jobs:
             image: ubuntu:22.04
             branch: 10.7
             tag: ubuntu22.04-clang
-            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
+            platforms: linux/amd64, linux/arm64/v8, linux/s390x
           - dockerfile: debian.Dockerfile
             image: ubuntu:22.10
             branch: 10.7
