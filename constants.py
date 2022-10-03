@@ -19,9 +19,12 @@ branches_main = [
 github_status_builders = [
         "amd64-centos-7",
         "amd64-debian-10",
+        "amd64-debian-10-debug-embedded",
+        "amd64-debian-11-debug-ps-embedded",
         "amd64-fedora-35",
         "amd64-ubuntu-2004-clang11",
         "amd64-ubuntu-2004-debug",
+        "amd64-ubuntu-2204-debug-ps",
         "amd64-windows",
         ]
 
@@ -60,6 +63,8 @@ supportedPlatforms["10.3"] = [
         'amd64-centos-7',
         'amd64-centos-stream8',
         'amd64-debian-10',
+        'amd64-debian-10-debug-embedded',
+        'amd64-debian-11-debug-ps-embedded',
         'amd64-opensuse-15',
         'amd64-rhel-7',
         'amd64-rhel-8',
@@ -71,7 +76,9 @@ supportedPlatforms["10.3"] = [
         'amd64-ubuntu-2004',
         'amd64-ubuntu-2004-clang11',
         'amd64-ubuntu-2004-debug',
+        'amd64-ubuntu-2204-debug-ps',
         'amd64-windows',
+        'amd64-windows-packages',
         'ppc64le-centos-stream8',
         'ppc64le-rhel-8',
         'ppc64le-ubuntu-1804',
