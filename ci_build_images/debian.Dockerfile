@@ -43,6 +43,7 @@ RUN apt-get update \
     dumb-init \
     gawk \
     git \
+    gnutls-dev \
     iputils-ping \
     libasio-dev \
     libboost-dev \
@@ -60,6 +61,6 @@ RUN apt-get update \
     fi \
     # install Debian 9 only deps \
     && if grep -q 'stretch' /etc/apt/sources.list; then \
-        apt-get -y install --no-install-recommends gnutls-dev python3-pip; \
+        apt-get -y install --no-install-recommends python3-pip; \
     fi \
     && apt-get clean
