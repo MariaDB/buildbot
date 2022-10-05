@@ -38,7 +38,11 @@ def getScript(scriptname):
 # BUILD HELPERS
 
 # Helper function that creates a worker instance.
-def createWorker(worker_name_prefix, worker_id, worker_type, dockerfile, jobs=5, save_packages=False, shm_size='15G', worker_name_suffix='', volumes=None):
+def createWorker(worker_name_prefix, worker_id, worker_type, dockerfile, jobs=5,
+                 save_packages=False, shm_size='15G', worker_name_suffix='',
+                 volumes=['/srv/buildbot/ccache:/mnt/ccache',
+                          '/srv/buildbot/packages:/mnt/packages',
+                          '/mnt/autofs/master_packages/:/packages']):
     worker_name = worker_name_prefix + str(worker_id) + '-docker'
     name = worker_name + worker_type
 
@@ -57,8 +61,6 @@ def createWorker(worker_name_prefix, worker_id, worker_type, dockerfile, jobs=5,
         b_name = worker_name_prefix
     base_name = b_name + '-docker' + worker_type
 
-    if volumes is None:
-        volumes=['/srv/buildbot/ccache:/mnt/ccache', '/srv/buildbot/packages:/mnt/packages', '/mnt/autofs/master_packages/:/packages']
     # Set master FQDN - default to wireguard interface
     fqdn = '100.64.100.1'
     if re.match('aarch64-bbw[1-4]', worker_name) or worker_name.startswith('ppc64le-rhel'):
@@ -186,9 +188,7 @@ def ls2list(rc, stdout, stderr):
     return { 'packages' : lsFilenames }
 
 # Save packages for current branch?
-def savePackage(step, savedBranches=None):
-    if savedBranches is None:
-      savedBranches = savedPackageBranches
+def savePackage(step, savedBranches=savedPackageBranches):
     builderName = str(step.getProperty("buildername"))
 
     # Debug builders do not create the bintar, so there are no packages to save
