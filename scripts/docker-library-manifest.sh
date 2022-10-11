@@ -140,11 +140,10 @@ manifest_image_cleanup() {
         podman rmi "$id"
       fi
     done
-  rm "$t"
+  rm -f "$t"
 }
 
 if (($(buildah manifest inspect "$devmanifest" | jq '.manifests | length') >= expected)); then
-  container_tag=${container_tag%_triggerbb}
   t=$(mktemp)
   buildah manifest inspect "$devmanifest" | tee "${t}"
   trap 'manifest_image_cleanup "$t"' EXIT
@@ -159,18 +158,15 @@ if (($(buildah manifest inspect "$devmanifest" | jq '.manifests | length') >= ex
 
   buildah images
   # lost and forgotten (or just didn't make enough manifest items - build failure on an arch)
-  # Note *: coming to a buildah update sometime - epnoc timestamps - https://github.com/containers/buildah/pull/3482
   lastweek=$(date +%s --date='1 week ago')
   # old ubuntu and base images that got updated so are Dangling
-  podman images --format=json | jq ".[] | select(.Created <= $lastweek and .Dangling) | .Id" | xargs --no-run-if-empty podman rmi || echo "continuing cleanup anyway"
+  podman images --format=json | jq ".[] | .Id as \$id |  select(.Created <= $lastweek ) | any( .Names[]? ; startswith(\"mariadb\")) | \$id" | xargs --no-run-if-empty podman rmi || echo "continuing cleanup anyway"
   # clean buildah containers
   buildah containers --format "{{.ContainerID}}" | xargs --no-run-if-empty buildah rm
   # clean images
-  # (Note *) buildah images --json |  jq ".[] | select(.readonly ==false) |  select(.created <= $lastweek) | select( .names == null) | .id" | xargs --no-run-if-empty buildah rmi
-  buildah images --json | jq ".[] | select(.readonly ==false) |  select(.createdatraw | sub(\"(?<full>[^.]*).[0-9]+Z\"; \"\\(.full)Z\") | fromdateiso8601 <= $lastweek) | select( .names == null) | .id" | xargs --no-run-if-empty buildah rmi
+  buildah images --json |  jq ".[] | select(.readonly ==false) |  select(.created <= $lastweek) | select( .names == null) | .id" | xargs --no-run-if-empty buildah rmi
   # clean manifests
-  # (Note *) buildah images --json |  jq ".[] | select(.readonly ==false) |  select(.created <= $lastweek) | select( try .names[0]? catch \"\" | startswith(\"localhost/mariadb-\") ) | .id" | xargs --no-run-if-empty buildah manifest rm
-  buildah images --json | jq ".[] | select(.readonly ==false) |  select(.createdatraw | sub(\"(?<full>[^.]*).[0-9]+Z\"; \"\\(.full)Z\") | fromdateiso8601 <= $lastweek) | select( try .names[0]? catch \"\" | startswith(\"localhost/mariadb-\") ) | .id" | xargs --no-run-if-empty buildah manifest rm
+  buildah images --json |  jq ".[] | select(.readonly ==false) |  select(.created <= $lastweek) | select( try .names[0]? catch \"\" | startswith(\"localhost/mariadb-\") ) | .id" | xargs --no-run-if-empty buildah manifest rm
   buildah images
 fi
 
