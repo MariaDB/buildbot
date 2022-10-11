@@ -93,7 +93,7 @@ buildmanifest() {
 devmanifest=mariadb-devel-${container_tag}-$commit
 
 trap 'buildah rm "$container"' EXIT
-buildmanifest mariadb-devel "$devmanifest" "$container"
+buildmanifest "$devmanifest" "$container"
 
 #
 # MAKE Debug manifest
@@ -110,7 +110,7 @@ buildah run --add-history "$container" sh -c \
 
 debugmanifest=mariadb-debug-${container_tag}-$commit
 
-buildmanifest mariadb-debug "$debugmanifest" "$container" --rm
+buildmanifest "$debugmanifest" "$container" --rm
 
 buildah rmi "$origbuildimage"
 
