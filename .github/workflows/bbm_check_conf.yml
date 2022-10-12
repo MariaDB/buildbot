@@ -4,10 +4,13 @@ name: bbm conf check
 on:
   push:
     paths:
+      - ".github/workflows/bbm_check_conf.yml"
+      - "autogen/**"
       - "builtbot.tac"
       - "common_factories.py"
       - "constants.py"
       - "locks.py"
+      - "master-docker-nonstandard/master.cfg"
       - "master-galera/master.cfg"
       - "master-nonlatent/master.cfg"
       - "master-protected-branches/master.cfg"
@@ -15,13 +18,15 @@ on:
       - "master.cfg"
       - "utils.py"
       - "validate_master_cfg.sh"
-      - .github/workflows/bbm_check_conf.yml
   pull_request:
     paths:
+      - ".github/workflows/bbm_check_conf.yml"
+      - "autogen/**"
       - "builtbot.tac"
       - "common_factories.py"
       - "constants.py"
       - "locks.py"
+      - "master-docker-nonstandard/master.cfg"
       - "master-galera/master.cfg"
       - "master-nonlatent/master.cfg"
       - "master-protected-branches/master.cfg"
@@ -29,7 +34,6 @@ on:
       - "master.cfg"
       - "utils.py"
       - "validate_master_cfg.sh"
-      - .github/workflows/bbm_check_conf.yml
 
 jobs:
   build:
