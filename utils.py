@@ -292,6 +292,8 @@ def hasCompat(step):
         return False
     if 'rhel' in builderName or 'centos' in builderName:
         return step.getProperty('rpm_type')[-1] in ['7', '8']
+    if 'fedora' in builderName:
+        return step.getProperty('rpm_type')[-1] in ['35', '36']
     return True
 
 @util.renderer
