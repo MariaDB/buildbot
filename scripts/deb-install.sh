@@ -55,6 +55,7 @@ fi
 # apt get update may be running in the background (Ubuntu start).
 apt_get_update
 
+# //TEMP check if no apt-get running (see: https://buildbot.mariadb.org/#/builders/171)
 sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 apt-get install -y $package_list $columnstore_package_list"
 
 # MDEV-14622: Wait for mysql_upgrade running in the background to finish
