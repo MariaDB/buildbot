@@ -131,6 +131,31 @@ apt_get_update() {
   fi
 }
 
+yum_makecache() {
+  # Try several times, to avoid sporadic "The requested URL returned error: 404"
+  made_cache=0
+  for i in {1..5}; do
+    sudo rm -rf /var/cache/yum/*
+    sudo yum clean all
+    source /etc/os-release
+    if [[ $ID == "rhel" ]]; then
+      sudo subscription-manager refresh
+    fi
+    if sudo yum makecache; then
+      made_cache=1
+      break
+    else
+      bb_log_info "try several times ($i), to avoid sporadic The requested URL returned error: 404"
+      sleep 5
+    fi
+  done
+
+  if ((made_cache != 1)); then
+    bb_log_err "failed to make cache"
+    exit 1
+  fi
+}
+
 wait_for_mariadb_upgrade() {
   res=1
   for i in {1..20}; do

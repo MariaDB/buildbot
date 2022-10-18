@@ -36,6 +36,8 @@ bb_log_info "Current test mode: $test_mode"
 
 set -x
 
+yum_makecache
+
 # Check whether a previous version exists
 if [[ $prev_major_version == "10.2" ]]; then
   mirror="https://archive.mariadb.org/mariadb-10.2/yum"
