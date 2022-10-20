@@ -60,6 +60,7 @@ supportedPlatforms["10.3"] = [
         'aarch64-rhel-8',
         'aarch64-ubuntu-1804',
         'aarch64-ubuntu-2004',
+        'aarch64-ubuntu-2004-debug',
         'amd64-centos-7',
         'amd64-centos-stream8',
         'amd64-debian-10',
@@ -85,6 +86,7 @@ supportedPlatforms["10.3"] = [
         'ppc64le-ubuntu-1804-without-server',
         'ppc64le-ubuntu-2004',
         'ppc64le-ubuntu-2004-clang1x',
+        'ppc64le-ubuntu-2004-debug',
         ]
 
 supportedPlatforms["10.4"] = supportedPlatforms["10.3"]
