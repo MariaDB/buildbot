@@ -18,8 +18,10 @@ branches_main = [
 # Defines what builders report status to GitHub
 github_status_builders = [
         "amd64-centos-7",
+        "amd64-centos-7-rpm-autobake",
         "amd64-debian-10",
         "amd64-debian-10-debug-embedded",
+        "amd64-debian-10-deb-autobake",
         "amd64-debian-11-debug-ps-embedded",
         "amd64-fedora-35",
         "amd64-ubuntu-2004-clang11",
