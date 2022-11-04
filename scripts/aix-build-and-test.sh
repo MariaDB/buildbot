@@ -38,7 +38,7 @@ build() {
     -DLIBFMT_INCLUDE_DIR="$HOME"/inst-fmt/include \
     -DCMAKE_LIBRARY_PATH="$HOME"/inst-fmt/lib \
     -Dhave_C__Wl___as_needed= \
-    -DPLUGIN_AUTH_GSSAPI=NO -DPLUGIN_HANDLERSOCKET=NO \
+    -DPLUGIN_AUTH_GSSAPI=NO -DPLUGIN_TYPE_MYSQL_JSON=NO \
   make -j"$(("$jobs" * 2))"
   /opt/bin/ccache --show-stats
 }
