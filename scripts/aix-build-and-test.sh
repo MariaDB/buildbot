@@ -37,7 +37,7 @@ build() {
     -DPLUGIN_WSREP_INFO=NO \
     -DLIBFMT_INCLUDE_DIR="$HOME"/inst-fmt/include \
     -DCMAKE_LIBRARY_PATH="$HOME"/inst-fmt/lib \
-    -DCONC_GSSAPI_PLUGIN_TYPE=OFF
+    -Dhave_C__Wl___as_needed=
   make -j"$(("$jobs" * 2))"
   /opt/bin/ccache --show-stats
 }
