@@ -140,7 +140,7 @@ fi
 sudo sh -c "echo '[mariadb]
 name=MariaDB
 baseurl=$mirror/$arch
-gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB_v2
 gpgcheck=1
 module_hotfixes=1' >$repo_location/MariaDB.repo"
 
