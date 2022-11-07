@@ -57,7 +57,7 @@ fi
 sudo sh -c "echo '[galera]
 name=galera
 baseurl=https://rpm.mariadb.org/$galbranch/$arch
-gpgkey=https://rpm.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgkey=https://rpm.mariadb.org/RPM-GPG-KEY-MariaDB_v2
 gpgcheck=1' >/etc/yum.repos.d/galera.repo"
 
 sudo cat /etc/yum.repos.d/galera.repo
