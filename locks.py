@@ -34,9 +34,9 @@ bg_bbw3_lock = util.MasterLock('bg_bbw3_lock', maxCount=2)
 bg_bbw4_lock = util.MasterLock('bg_bbw4_lock', maxCount=2)
 win_bbw1_lock = util.MasterLock('win_bbw1_lock', maxCount=1)
 win_bbw2_lock = util.MasterLock('win_bbw2_lock', maxCount=4)
-s390x_bbw1_lock = util.MasterLock('s390x_bbw1_lock', maxCount=2)
-s390x_bbw2_lock = util.MasterLock('s390x_bbw2_lock', maxCount=2)
-s390x_bbw3_lock = util.MasterLock('s390x_bbw3_lock', maxCount=2)
+s390x_bbw1_lock = util.MasterLock('s390x_bbw1_lock', maxCount=3)
+s390x_bbw2_lock = util.MasterLock('s390x_bbw2_lock', maxCount=3)
+s390x_bbw3_lock = util.MasterLock('s390x_bbw3_lock', maxCount=3)
 
 @util.renderer
 def getLocks(props):

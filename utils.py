@@ -152,7 +152,7 @@ def canStartBuild(builder, wfb, request):
     worker_name = private_config["private"]["worker_name_mapping"][worker_prefix]
     load = getMetric(worker_name, "BB_accept_new_build")
 
-    if float(load) > 50:
+    if float(load) > 60:
         worker.quarantine_timeout = 60
         worker.putInQuarantine()
         return False
