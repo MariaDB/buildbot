@@ -43,7 +43,8 @@ def getQuickBuildFactory(mtrDbPool):
     f_quick_build.addStep(steps.MTR(logfiles={"mysqld*": "/buildbot/mysql_logs.html"}, command=
         ["sh", "-c", util.Interpolate("cd mysql-test && exec perl mysql-test-run.pl --verbose-restart --force --retry=3 --max-save-core=1 --max-save-datadir=1 --max-test-fail=20 --mem --testcase-timeout=8 --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s", mtr_additional_args=util.Property('mtr_additional_args', default=''), jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN)'))], timeout=600, haltOnFailure="true", parallel=mtrJobsMultiplier, dbpool=mtrDbPool, autoCreateTables=True))
     f_quick_build.addStep(steps.ShellCommand(name="move mysqld log files", alwaysRun=True, command=['bash', '-c', util.Interpolate(moveMTRLogs(), jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN)'))]))
-    f_quick_build.addStep(steps.DirectoryUpload(name="save mysqld log files", compress="bz2", alwaysRun=True,  workersrc='/buildbot/logs/', masterdest=util.Interpolate('/srv/buildbot/packages/' + '%(prop:tarbuildnum)s' + '/logs/' + '%(prop:buildername)s' )))
+    f_quick_build.addStep(steps.ShellCommand(name="create var archive", alwaysRun=True, command=['bash', '-c', util.Interpolate(createVar())], doStepIf=hasFailed))
+    f_quick_build.addStep(steps.DirectoryUpload(name="save log files", compress="bz2", alwaysRun=True,  workersrc='/buildbot/logs/', masterdest=util.Interpolate('/srv/buildbot/packages/' + '%(prop:tarbuildnum)s' + '/logs/' + '%(prop:buildername)s' )))
     ## trigger packages
     f_quick_build.addStep(steps.Trigger(schedulerNames=['s_packages'], waitForFinish=False, updateSourceStamp=False, alwaysRun=True,
         set_properties={"parentbuildername": Property('buildername'), "tarbuildnum" : Property("tarbuildnum"), "mariadb_version" : Property("mariadb_version"), "master_branch" : Property("master_branch")}, doStepIf=hasAutobake))

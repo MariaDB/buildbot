@@ -1,5 +1,6 @@
 from buildbot.plugins import *
 from buildbot.process.properties import Property, Properties
+from buildbot.process.results import FAILURE
 from buildbot.steps.shell import ShellCommand, Compile, Test, SetPropertyFromCommand
 from buildbot.steps.mtrlogobserver import MTR, MtrLogObserver
 from buildbot.steps.source.github import GitHub
@@ -206,9 +207,21 @@ echo '<!DOCTYPE html>
 <body>' >> /buildbot/mysql_logs.html
 
 echo '<a href="https://ci.mariadb.org/%(prop:tarbuildnum)s/logs/%(prop:buildername)s/">mysqld* log dir</a><br>' >> /buildbot/mysql_logs.html
+echo '<a href="https://ci.mariadb.org/%(prop:tarbuildnum)s/logs/%(prop:buildername)s/var.tar.gz">var.tar.gz</a><br>' >> /buildbot/mysql_logs.html
 
 echo '</body>
 </html>' >> /buildbot/mysql_logs.html"""
+
+def hasFailed(step):
+    return step.build.results == FAILURE
+
+def createVar():
+    return """
+if [ -d mysql-test/var ]; then
+    tar zcf var.tar.gz mysql-test/var/*/log mysql-test/var/log
+    mv var.tar.gz /buildbot/logs/
+fi
+"""
 
 # Function to move the MTR logs to a known location so that they can be saved
 def moveMTRLogs():
