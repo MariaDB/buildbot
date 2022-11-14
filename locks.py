@@ -17,7 +17,7 @@ hz_bbw4_lock = util.MasterLock('hz_bbw4_lock', maxCount=9)
 hz_bbw5_lock = util.MasterLock('hz_bbw5_lock', maxCount=9)
 amd_bbw1_lock = util.MasterLock('amd_bbw1_lock', maxCount=6)
 amd_bbw2_lock = util.MasterLock('amd_bbw2_lock', maxCount=8)
-intel_bbw1_lock = util.MasterLock('intel_bbw1_lock', maxCount=9)
+intel_bbw1_lock = util.MasterLock('intel_bbw1_lock', maxCount=7)
 p9_rhel8_bbw1_lock = util.MasterLock('p9_rhel8_bbw1_lock', maxCount=9)
 p9_rhel7_bbw1_lock = util.MasterLock('p9_rhel7_bbw1_lock', maxCount=6)
 p9_db_bbw1_lock = util.MasterLock('p9_db_bbw1_lock', maxCount=12)
@@ -26,6 +26,8 @@ aarch_bbw2_lock = util.MasterLock('aarch64_bbw2_lock', maxCount=2)
 aarch_bbw3_lock = util.MasterLock('aarch64_bbw3_lock', maxCount=2)
 aarch_bbw4_lock = util.MasterLock('aarch64_bbw4_lock', maxCount=2)
 aarch_bbw5_lock = util.MasterLock('aarch64_bbw5_lock', maxCount=15)
+aarch_bbw6_lock = util.MasterLock('aarch64_bbw6_lock', maxCount=15)
+aarch_bbw7_lock = util.MasterLock('aarch64_bbw7_lock', maxCount=15)
 apexis_bbw1_lock = util.MasterLock('apexis_bbw1_lock', maxCount=1)
 apexis_bbw2_lock = util.MasterLock('apexis_bbw2_lock', maxCount=1)
 bg_bbw1_lock = util.MasterLock('bg_bbw1_lock', maxCount=3)
@@ -77,6 +79,10 @@ def getLocks(props):
         locks = locks + [aarch_bbw4_lock.access('counting')]
     if 'aarch64-bbw5-docker' in worker_name:
         locks = locks + [aarch_bbw5_lock.access('counting')]
+    if 'aarch64-bbw6-docker' in worker_name:
+        locks = locks + [aarch_bbw6_lock.access('counting')]
+    if 'aarch64-bbw7-docker' in worker_name:
+        locks = locks + [aarch_bbw7_lock.access('counting')]
     if 'fjord1-docker' in worker_name:
         locks = locks + [apexis_bbw1_lock.access('counting')]
     if 'fjord2-docker' in worker_name:
