@@ -30,7 +30,7 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     && dnf -y install \
     # not sure if needed \
     # perl \
-    ${extra} \
+    "${extra}" \
     ccache \
     check-devel \
     cracklib-devel \
