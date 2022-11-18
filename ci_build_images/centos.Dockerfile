@@ -8,6 +8,7 @@ FROM "$base_image"
 LABEL maintainer="MariaDB Buildbot maintainers"
 
 # Install updates and required packages
+# hadolint ignore=SC2086
 RUN dnf -y install 'dnf-command(config-manager)' \
     && source /etc/os-release \
     && case "$VERSION" in \
@@ -30,7 +31,7 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     && dnf -y install \
     # not sure if needed \
     # perl \
-    "${extra}" \
+    ${extra} \
     ccache \
     check-devel \
     cracklib-devel \

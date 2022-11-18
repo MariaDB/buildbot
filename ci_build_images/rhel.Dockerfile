@@ -9,7 +9,7 @@ ARG base_image
 LABEL maintainer="MariaDB Buildbot maintainers"
 
 # Install updates and required packages
-# hadolint ignore=SC2034,DL3041
+# hadolint ignore=SC2034,DL3041,SC2086
 RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     --mount=type=secret,id=rhel_keyname,target=/run/secrets/rhel_keyname \
     subscription-manager register \
@@ -36,7 +36,7 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     "https://kojipkgs.fedoraproject.org/packages/Judy/1.0.5/28.fc36/$(arch)/Judy-devel-1.0.5-28.fc36.$(arch).rpm" \
     && dnf -y builddep mariadb-server \
     && dnf -y install \
-    "${extra}" \
+    ${extra} \
     boost-devel \
     ccache \
     check-devel \
