@@ -1,6 +1,6 @@
 import yaml
 
-DEVELOPMENT_BRANCH = "10.11"
+DEVELOPMENT_BRANCH = "11.0"
 
 # Used to trigger the appropriate main branch
 branches_main = [
@@ -13,6 +13,7 @@ branches_main = [
         '10.9',
         '10.10',
         '10.11',
+        '11.0',
         ]
 
 # Defines what builders report status to GitHub
@@ -50,7 +51,7 @@ savedPackageBranches = branches_main + [
         ]
 
 # The trees for which we save binary packages.
-releaseBranches = ["bb-*-release", "preview-10.*"]
+releaseBranches = ["bb-*-release", "preview-*"]
 
 # Note:
 # Maximum supported branch is the one where the default distro MariaDB package major version <= branch
@@ -141,6 +142,7 @@ supportedPlatforms["10.10"] = [
 supportedPlatforms["10.10"] += supportedPlatforms["10.9"]
 
 supportedPlatforms["10.11"] = supportedPlatforms["10.10"]
+supportedPlatforms["11.0"] = supportedPlatforms["10.10"]
 
 # Hack to remove all github_status_builders since they are triggered separately
 for k in supportedPlatforms:
