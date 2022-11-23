@@ -14,6 +14,7 @@ RUN apt-get update \
       git \
       libmariadb-dev \
       libvirt-dev \
+      netcat \
       pkg-config \
       python3 \
       python3-dev \
