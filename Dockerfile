@@ -55,7 +55,6 @@ RUN apt-get update \
     # cleaning \
     && apt-get purge -y \
       build-essential \
-      git \
       pkg-config \
       python3-dev \
       python3-pip \
