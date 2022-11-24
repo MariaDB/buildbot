@@ -34,8 +34,11 @@ RUN apt-get update \
     && if [ "$master_type" = "master-web" ]; then \
       make frontend; \
     fi \
-    && pip install --no-cache-dir pip -U \
     && pip install --no-cache-dir wheel \
+    && pip install --no-cache-dir autobahn==20.7.1 PyJWT==1.7.1 \
+    && cd master && python setup.py bdist_wheel \
+    && pip install --no-cache-dir dist/*.whl \
+    && pip install --no-cache-dir pip -U \
     && pip install --no-cache-dir \
       buildbot-prometheus \
       buildbot-worker \
@@ -47,8 +50,6 @@ RUN apt-get update \
       pyzabbix \
       sqlalchemy==1.3.23 \
       treq \
-    && cd master && python setup.py bdist_wheel \
-    && pip install --no-cache-dir dist/*.whl \
     && if [ "$master_type" = "master-web" ]; then \
       pip install --no-cache-dir pyjade; \
     fi \
