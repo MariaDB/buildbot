@@ -42,7 +42,7 @@ RUN apt-get update \
     && pip install --no-cache-dir \
       buildbot-prometheus \
       buildbot-worker \
-      docker \
+      docker==4.3.1 \
       flask \
       libvirt-python \
       mock \
