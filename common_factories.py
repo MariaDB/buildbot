@@ -16,17 +16,21 @@ def downloadSourceTarball():
              descriptionDone="fetching source tarball...done",
              haltOnFailure=True,
              command=["bash", "-xc", util.Interpolate("""
-  d=/mnt/packages/
-  f="%(prop:tarbuildnum)s_%(prop:mariadb_version)s.tar.gz"
-  find $d -type f -mtime +2 -delete -ls
-  for i in `seq 1 10`;
-  do
-    if flock "$d$f" wget -cO "$d$f" "https://ci.mariadb.org/%(prop:tarbuildnum)s/%(prop:mariadb_version)s.tar.gz"; then
+    d=/mnt/packages/
+    f="%(prop:tarbuildnum)s_%(prop:mariadb_version)s.tar.gz"
+    find $d -type f -mtime +2 -delete -ls
+    for i in {1..10}; do
+      res=1
+      if flock "$d$f" wget -cO "$d$f" "https://ci.mariadb.org/%(prop:tarbuildnum)s/%(prop:mariadb_version)s.tar.gz"; then
+        res=0
         break
-    else
-        sleep $i
-    fi
-  done
+      else
+        sleep "$i"
+      fi
+      if ((res != 0)); then
+        exit $res
+      fi
+    done
 """)])
 
 def getQuickBuildFactory(mtrDbPool):
