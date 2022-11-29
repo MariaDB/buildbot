@@ -108,6 +108,11 @@ jobs:
             image: opensuse/leap:15.3
             tag: opensuse15
             platforms: linux/amd64
+          - dockerfile: debian.Dockerfile msan.Dockerfile
+            image: ubuntu:22.04
+            branch: 10.7
+            tag: ubuntu22.04-msan
+            platforms: linux/amd64
     env:
       BUILD_RHEL: false
       DEPLOY_IMAGES: false
