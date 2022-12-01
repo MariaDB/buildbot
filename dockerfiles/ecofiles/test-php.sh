@@ -5,8 +5,7 @@ set -xeuvo pipefail
 
 declare -A buildopts=(
 	[mysqlnd]='--enable-mysqlnd --with-mysqli=mysqlnd --with-pdo-mysql=mysqlnd'
-	[mysqlclient]='--with-mysqli=/usr/bin/mysql_config --with-pdo-mysql=/usr/'
-	[mariadbclient]='--with-mysqli=/usr/local/mariadb/bin/mysql_config --with-pdo-mysql=/usr/local/mariadb'
+	[mariadbclient]='--with-mysqli --with-pdo-mysql=/usr/local/mariadb'
 )
 
 branch=${1:-master}
