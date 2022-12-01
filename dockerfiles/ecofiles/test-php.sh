@@ -113,9 +113,6 @@ echo "BRANCH: $branch"
 echo "BUILD: $opt"
 
 builddir="/build/${branch}-${opt}"
-
-rm -rf "$builddir"
-
 mkdir -p "$builddir"
 cd "$builddir"
 if [ "$codedir"/configure -nt config.log ]
