@@ -20,7 +20,7 @@ fi
 
 # variable needed to make mysqli_expire_password test pass
 # only exists on 10.4+
-/usr/local/mariadb/bin/mysql -u root -e 'set global disconnect_on_expired_password=1' \
+/usr/local/mariadb/bin/mysql -u root -e '/*M!100403 set global disconnect_on_expired_password=1 */' \
 	|| :
 /usr/local/mariadb/bin/mysql -u root -e 'set password=password("letmein")' \
 	|| :
