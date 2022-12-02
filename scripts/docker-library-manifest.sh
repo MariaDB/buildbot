@@ -154,6 +154,7 @@ if (($(buildah manifest inspect "$devmanifest" | jq '.manifests | length') >= ex
   earliest=$(jq '.major_releases[-1].release_id' < "$t")
   for tag in "$verylatest" "$latest" "$earliest" ; do
     if [ \""$container_tag"\" == "$tag" ]; then
+      tag="${tag//\"}"
       buildah manifest push --all "$devmanifest" "docker://quay.io/mariadb-foundation/mariadb-devel:$tag"
     fi
   done
