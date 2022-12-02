@@ -22,8 +22,6 @@ fi
 # only exists on 10.4+
 /usr/local/mariadb/bin/mysql -u root -e '/*M!100403 set global disconnect_on_expired_password=1 */' \
 	|| :
-/usr/local/mariadb/bin/mysql -u root -e 'set password=password("letmein")' \
-	|| :
 # pam test - https://github.com/php/php-src/pull/6667
 /usr/local/mariadb/bin/mysql -u root -e "INSTALL SONAME 'auth_pam'" \
 	|| :
@@ -39,6 +37,8 @@ export MYSQL_TEST_SOCKET=/tmp/mysql.sock
 export MYSQL_TEST_USER=root
 export MYSQL_TEST_PASSWD=letmein
 
+/usr/local/mariadb/bin/mysql -u root -e "set password=password('$MYSQL_TEST_PASSWD')" \
+	|| :
 # Controlling Environment variables from ./ext/mysqli/tests/connect.inc
 # MYSQL_TEST_{HOST,PORT,USER,PASSWD,DB
 # ENGINE,SOCKET
