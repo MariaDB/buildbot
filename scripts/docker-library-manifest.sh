@@ -146,15 +146,15 @@ manifest_image_cleanup() {
 if (($(buildah manifest inspect "$devmanifest" | jq '.manifests | length') >= expected)); then
   t=$(mktemp)
 
+  declare -A specialtags
   if ! wget -nv https://downloads.mariadb.org/rest-api/mariadb/ -O "$t"; then
     >&2 echo "Wget failed"
   fi
-  verylatest=$(jq '.major_releases[0].release_id' < "$t")
-  latest=$(jq '.major_releases | map(select(.release_status == "Stable"))[0].release_id' < "$t")
-  earliest=$(jq '.major_releases[-1].release_id' < "$t")
-  for tag in "$verylatest" "$latest" "$earliest" ; do
-    if [ \""$container_tag"\" == "$tag" ]; then
-      tag="${tag//\"}"
+  specialtags['verylatest']=$(jq '.major_releases[0].release_id' < "$t")
+  specialtags['latest']=$(jq '.major_releases | map(select(.release_status == "Stable"))[0].release_id' < "$t")
+  specialtags['earliest']=$(jq '.major_releases[-1].release_id' < "$t")
+  for tag in "${!specialtags[@]}"; do
+    if [ \""$container_tag"\" == "${specialtags[$tag]}" ]; then
       buildah manifest push --all "$devmanifest" "docker://quay.io/mariadb-foundation/mariadb-devel:$tag"
     fi
   done
