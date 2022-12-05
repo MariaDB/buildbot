@@ -24,6 +24,7 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     check-devel \
     cmake3 \
     cracklib-devel \
+    createrepo \
     curl-devel \
     jemalloc-devel \
     libffi-devel \
