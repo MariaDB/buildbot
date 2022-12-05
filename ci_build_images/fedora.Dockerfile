@@ -19,6 +19,7 @@ RUN dnf -y upgrade \
     bzip2-libs \
     ccache \
     check-devel \
+    createrepo \
     curl-devel \
     dumb-init \
     flex \
