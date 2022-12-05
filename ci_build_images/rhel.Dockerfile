@@ -43,6 +43,7 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     checkpolicy \
     coreutils \
     cracklib-devel \
+    createrepo \
     curl-devel \
     java-1.8.0-openjdk \
     jemalloc-devel --allowerasing \

@@ -35,6 +35,7 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     ccache \
     check-devel \
     cracklib-devel \
+    createrepo \
     curl-devel \
     java-1.8.0-openjdk \
     java-1.8.0-openjdk-devel \
