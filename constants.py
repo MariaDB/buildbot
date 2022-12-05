@@ -48,7 +48,7 @@ savedPackageBranches = branches_main + [
         "bb-*-release",
         "bb-10.2-compatibility",
         "preview-*",
-        "*-pkgtest-*",
+        "*pkgtest*",
         ]
 
 # The trees for which we save binary packages.
