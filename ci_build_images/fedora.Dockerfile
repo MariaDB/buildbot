@@ -43,5 +43,6 @@ RUN dnf -y upgrade \
     unixODBC \
     unixODBC-devel \
     wget \
+    which \
     && if [ "$(uname -m)" = "x86_64" ]; then dnf -y install libpmem-devel; fi \
     && dnf clean all
