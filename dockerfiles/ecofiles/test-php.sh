@@ -25,9 +25,6 @@ fi
 # pam test - https://github.com/php/php-src/pull/6667
 /usr/local/mariadb/bin/mysql -u root -e "INSTALL SONAME 'auth_pam'" \
 	|| :
-# tests mysqli_set_charset, mysqli_options, mysqli_character_set assume utf8mb3 (from 10.6.1)
-/usr/local/mariadb/bin/mysql -u root -e "/*M!100601 SET GLOBAL OLD_MODE = CONCAT(@@OLD_MODE, ',UTF8_IS_UTF8MB3') */" \
-	|| :
 
 
 export MYSQL_TEST_DB=test
@@ -45,11 +42,8 @@ export MYSQL_TEST_PASSWD=letmein
 # CONNECT_FLAGS - integer for mysqli_real_connect
 
 export PDO_MYSQL_TEST_DSN="mysql:host=127.0.0.1;dbname=${MYSQL_TEST_DB}"
-export PDO_TEST_DSN="${PDO_MYSQL_TEST_DSN}"
 export PDO_MYSQL_TEST_USER="${MYSQL_TEST_USER}"
-export PDO_TEST_USER="${PDO_MYSQL_TEST_USER}"
 export PDO_MYSQL_TEST_PASS="${MYSQL_TEST_PASSWD}"
-export PDO_TEST_PASS="${PDO_MYSQL_TEST_PASS}"
 #
 # ./ext/pdo_mysql/tests/mysql_pdo_test.inc
 # PDO_MYSQL_TEST_DSN, = mysql:host=localhost;dbname=test
@@ -142,6 +136,9 @@ case "${branch}" in
 		mysqlifailtests+=( bug34810 )
 		mysqlifailtests+=( mysqli_class_mysqli_interface )
 		mysqlifailtests+=( mysqli_reap_async_query )
+		mysqlifailtests+=( mysqli_character_set ) # 001+ [008 + utf8mb3] [2019] Invalid characterset or character set not supported
+		mysqlifailtests+=( mysqli_options ) # 013+ [009] Setting charset name 'utf8mb3' has failed
+		mysqlifailtests+=( mysqli_set_charset ) # 001+ [017] Cannot set character set to 'utf8mb3', [2019] Invalid characterset or character set not supported \n002+
 		;&
 	PHP-7\.3)
 		mysqlifailtests+=( mysqli_stmt_get_result_metadata_fetch_field ) # https://github.com/php/php-src/pull/6484 - fixed 7.4
@@ -153,20 +150,25 @@ case "${branch}" in
 	PHP-8\.0)
 		pdofailtests+=( bug_38546 )
 		;&
+	PHP-8\.1)
+		mysqlifailtests+=( mysqli_real_connect mysqli_real_connect_pconn mysqli_connect_oo mysqli_report ) # https://github.com/php/php-src/commit/b6b4a628a5009024f9abca664f6a25d64b6f64d6
+		;&
 	master)
-		mysqlifailtests+=( mysqli_change_user ) # will below 3 - fail on 7.1, not mdb-10.2. TODO
-		mysqlifailtests+=( mysqli_change_user_old ) # TODO
-		mysqlifailtests+=( mysqli_change_user_oo ) # TODO
-		mysqlifailtests+=( mysqli_class_mysqli_properties_no_conn ) # TODO
-		pdofailtests+=( pdo_mysql_prepare_load_data ) # 8.0, not 7.4 TODO investigate
-		pdofailtests+=( pdo_mysql_attr_oracle_nulls ) # 8.0, not 7.4. TODO investigate
-		mysqlifailtests+=( mysqli_debug )
-		mysqlifailtests+=( mysqli_debug_append )
-		mysqlifailtests+=( mysqli_debug_control_string )
-		mysqlifailtests+=( mysqli_debug_mysqlnd_control_string )
-		mysqlifailtests+=( mysqli_debug_mysqlnd_only )
-		mysqlifailtests+=( mysqli_class_mysqli_interface ) # 8.0, not 7.1
-		mysqlifailtests+=( mysqli_auth_pam ) # Access denied for user 'pamtest'@'localhost' (using password: NO) - but password is.
+		mysqlifailtests+=( mysqli_reap_async_query_error mysqli_execute_query.phpt ) # https://github.com/php/php-src/pull/10029
+		mysqlifailtests+=( mysqli_connect ) # Using Password - like b6b4a628a5009024f9
+		#mysqlifailtests+=( mysqli_change_user ) # will below 3 - fail on 7.1, not mdb-10.2. TODO
+		#mysqlifailtests+=( mysqli_change_user_old ) # TODO
+		#mysqlifailtests+=( mysqli_change_user_oo ) # TODO
+		#mysqlifailtests+=( mysqli_class_mysqli_properties_no_conn ) # TODO
+		#pdofailtests+=( pdo_mysql_prepare_load_data ) # 8.0, not 7.4 TODO investigate
+		#pdofailtests+=( pdo_mysql_attr_oracle_nulls ) # 8.0, not 7.4. TODO investigate
+		#mysqlifailtests+=( mysqli_debug )
+		#mysqlifailtests+=( mysqli_debug_append )
+		#mysqlifailtests+=( mysqli_debug_control_string )
+		#mysqlifailtests+=( mysqli_debug_mysqlnd_control_string )
+		#mysqlifailtests+=( mysqli_debug_mysqlnd_only )
+		#mysqlifailtests+=( mysqli_class_mysqli_interface ) # 8.0, not 7.1
+		#mysqlifailtests+=( mysqli_auth_pam ) # Access denied for user 'pamtest'@'localhost' (using password: NO) - but password is.
 
 esac
 
