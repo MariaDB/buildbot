@@ -41,9 +41,11 @@ export MYSQL_TEST_PASSWD=letmein
 # ENGINE,SOCKET
 # CONNECT_FLAGS - integer for mysqli_real_connect
 
-export PDO_MYSQL_TEST_DSN="mysql:host=127.0.0.1;dbname=${MYSQL_TEST_DB}"
+export PDO_MYSQL_TEST_HOST="${MYSQL_TEST_HOST}"
 export PDO_MYSQL_TEST_USER="${MYSQL_TEST_USER}"
 export PDO_MYSQL_TEST_PASS="${MYSQL_TEST_PASSWD}"
+export PDO_MYSQL_TEST_SOCKET="${MYSQL_TEST_SOCKET}"
+export PDO_MYSQL_TEST_DSN="mysql:host=${PDO_MYSQL_TEST_HOST};dbname=${MYSQL_TEST_DB};socket=${PDO_MYSQL_TEST_SOCKET}"
 #
 # ./ext/pdo_mysql/tests/mysql_pdo_test.inc
 # PDO_MYSQL_TEST_DSN, = mysql:host=localhost;dbname=test
