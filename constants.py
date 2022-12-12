@@ -13,6 +13,7 @@ branches_main = [
         '10.9',
         '10.10',
         '10.11',
+        '10.12',
         '11.0',
         ]
 
@@ -142,7 +143,8 @@ supportedPlatforms["10.10"] = [
 supportedPlatforms["10.10"] += supportedPlatforms["10.9"]
 
 supportedPlatforms["10.11"] = supportedPlatforms["10.10"]
-supportedPlatforms["11.0"] = supportedPlatforms["10.10"]
+supportedPlatforms["10.12"] = supportedPlatforms["10.11"]
+supportedPlatforms["11.0"] = supportedPlatforms["10.11"]
 
 # Hack to remove all github_status_builders since they are triggered separately
 for k in supportedPlatforms:

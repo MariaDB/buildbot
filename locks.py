@@ -12,7 +12,7 @@ from constants import *
 #main_master_lock = util.MasterLock('main_master_lock', maxCount=30)
 
 hz_bbw1_lock = util.MasterLock('hz_bbw1_lock', maxCount=9)
-hz_bbw2_lock = util.MasterLock('hz_bbw2_lock', maxCount=7)
+hz_bbw2_lock = util.MasterLock('hz_bbw2_lock', maxCount=1)
 hz_bbw4_lock = util.MasterLock('hz_bbw4_lock', maxCount=9)
 hz_bbw5_lock = util.MasterLock('hz_bbw5_lock', maxCount=9)
 amd_bbw1_lock = util.MasterLock('amd_bbw1_lock', maxCount=6)
