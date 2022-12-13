@@ -146,6 +146,11 @@ supportedPlatforms["10.11"] = supportedPlatforms["10.10"]
 supportedPlatforms["10.12"] = supportedPlatforms["10.11"]
 supportedPlatforms["11.0"] = supportedPlatforms["10.11"]
 
+# Define environment variables for MTR step
+MTR_ENV = {
+    'MTR_PRINT_CORE': 'medium',
+    }
+
 # Hack to remove all github_status_builders since they are triggered separately
 for k in supportedPlatforms:
     supportedPlatforms[k] = list(filter(lambda x: x not in github_status_builders, supportedPlatforms[k]))
