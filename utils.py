@@ -100,17 +100,30 @@ def downloadSourceTarball():
              descriptionDone="fetching source tarball...done",
              haltOnFailure=True,
              command=["bash", "-xc", util.Interpolate("""
-  d=/mnt/packages/
-  f="%(prop:tarbuildnum)s_%(prop:mariadb_version)s.tar.gz"
-  find $d -type f -mtime +2 -delete -ls
-  for i in `seq 1 10`;
-  do
-    if flock "$d$f" wget -cO "$d$f" "https://ci.mariadb.org/%(prop:tarbuildnum)s/%(prop:mariadb_version)s.tar.gz"; then
-        break
-    else
-        sleep $i
+    d=/mnt/packages/
+    f="%(prop:tarbuildnum)s_%(prop:mariadb_version)s.tar.gz"
+    find $d -type f -mtime +2 -delete -ls
+
+    # Do not use flock for AIX
+    os=$(uname -s)
+    use_flock=""
+    if [[ $os != "AIX" ]]; then
+      use_flock="flock \"$d$f\" "
     fi
-  done
+    cmd="$use_flock wget -cO \"$d$f\" \"https://ci.mariadb.org/%(prop:tarbuildnum)s/%(prop:mariadb_version)s.tar.gz\""
+
+    res=1
+    for i in {1..10}; do
+      if eval "$cmd"; then
+        res=0
+        break
+      else
+        sleep "$i"
+      fi
+    done
+    if ((res != 0)); then
+      exit $res
+    fi
 """)])
 
 # git branch filter using fnmatch
