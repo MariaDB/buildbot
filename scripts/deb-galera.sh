@@ -92,7 +92,7 @@ if [[ $sst_mode == "mariabackup" ]]; then
   # Before 10.3, MariaBackup packages have a version number in them, e.g. mariadb-backup-10.2 etc.
   # First, try to find the generic package, if can't, then the name with the number
 
-  if ((${master_branch/10./} > 3)); then
+  if [ "$master_branch" != 10.3 ]; then
     mbackup="mariadb-backup"
   else
     #//TEMP to be tested !!
