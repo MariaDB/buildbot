@@ -184,7 +184,7 @@ deb_setup_mariadb_mirror() {
   if [[ $branch == "$development_branch" ]]; then
     #TOFIX - temp hack
     prev_released=$((${branch/1[0-9]./} - 1))
-    if (( prev_release < 0 )); then
+    if (( prev_released < 0 )); then
       branch="10.11"
     else
       branch="10.$prev_released"
