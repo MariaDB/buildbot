@@ -248,7 +248,7 @@ upgrade_test_type() {
     "major")
       #TOFIX - temp hack
       minor_version=${major_version/1[0-9]./}
-      if (( minor_version < 0 )); then
+      if (( minor_version == 0 )); then
         prev_minor_version=11
       else
         prev_minor_version=$((minor_version - 1))
