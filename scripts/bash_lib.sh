@@ -184,7 +184,11 @@ deb_setup_mariadb_mirror() {
   if [[ $branch == "$development_branch" ]]; then
     #TOFIX - temp hack
     prev_released=$((${branch/1[0-9]./} - 1))
-    branch="10.$prev_released"
+    if (( prev_release < 0 )); then
+      branch="10.11"
+    else
+      branch="10.$prev_released"
+    fi
     bb_log_info "using previous $branch released version for development branch $1"
   fi
   bb_log_info "setup MariaDB repository for $branch branch"
@@ -244,7 +248,11 @@ upgrade_test_type() {
     "major")
       #TOFIX - temp hack
       minor_version=${major_version/1[0-9]./}
-      prev_minor_version=$((minor_version - 1))
+      if (( minor_version < 0 )); then
+        prev_minor_version=11
+      else
+        prev_minor_version=$((minor_version - 1))
+      fi
       prev_major_version="10.$prev_minor_version"
       ;;
     *)
