@@ -79,7 +79,7 @@ case "$systemdCapability" in
     ;;
 esac
 
-if ((${master_branch/10./} >= 4)); then
+if [ "${master_branch}" != "10.3" ]; then
   bb_log_info "uninstallation of Cracklib plugin may fail if it wasn't installed, it's quite all right"
   if sudo mysql -e "uninstall soname 'cracklib_password_check.so'"; then
     # shellcheck disable=SC2034
