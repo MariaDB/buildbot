@@ -184,7 +184,7 @@ deb_setup_mariadb_mirror() {
   if [[ $branch == "$development_branch" ]]; then
     #TOFIX - temp hack
     prev_released=$((${branch/1[0-9]./} - 1))
-    if (( prev_released < 0 )); then
+    if ((prev_released < 0)); then
       branch="10.11"
     else
       branch="10.$prev_released"
@@ -248,7 +248,7 @@ upgrade_test_type() {
     "major")
       #TOFIX - temp hack
       minor_version=${major_version/1[0-9]./}
-      if (( minor_version == 0 )); then
+      if ((minor_version == 0)); then
         prev_minor_version=11
       else
         prev_minor_version=$((minor_version - 1))
@@ -345,13 +345,25 @@ check_upgraded_versions() {
   done
   # check that a major upgrade was done
   if [[ $test_type == "major" ]]; then
-    old_major_digit_incr=$(($(cut -d "." -f2 /tmp/version.old) + 1))
-    new_major_digit=$(cut -d "." -f2 /tmp/version.new)
-    ((old_major_digit_incr == new_major_digit)) || {
-      bb_log_err "This does not look like a major upgrade:"
-      diff -u /tmp/version.old /tmp/version.new
-      exit 1
-    }
+    old_branch_digit=$(cut -d "." -f1 </tmp/version.old)
+    old_major_digit=$(cut -d "." -f2 </tmp/version.old)
+    new_branch_digit=$(cut -d "." -f1 </tmp/version.new)
+    new_major_digit=$(cut -d "." -f2 </tmp/version.new)
+    # treat 10.11.* -> 11.0.* upgrade specifically
+    if ((old_branch_digit == 10)) && ((old_major_digit == 11)); then
+      if ((new_branch_digit == 11)) && ((new_major_digit != 0)); then
+        bb_log_err "This does not look like a major upgrade from 10.11 to 11.0:"
+        diff -u /tmp/version.old /tmp/version.new
+        exit 1
+      fi
+    else
+      old_major_digit_incr=$((old_major_digit + 1))
+      ((old_major_digit_incr == new_major_digit)) || {
+        bb_log_err "This does not look like a major upgrade:"
+        diff -u /tmp/version.old /tmp/version.new
+        exit 1
+      }
+    fi
   fi
   if diff -u /tmp/version.old /tmp/version.new; then
     bb_log_err "server version has not changed after upgrade"
