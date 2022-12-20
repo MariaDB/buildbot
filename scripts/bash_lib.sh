@@ -49,7 +49,7 @@ manual_run_switch() {
       exit 1
     else
       # define environment variables from build properties
-      for cmd in jq wget; do
+      for cmd in jq sudo wget; do
         command -v $cmd >/dev/null ||
           err "$cmd command not found"
       done
