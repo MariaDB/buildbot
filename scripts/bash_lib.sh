@@ -182,7 +182,8 @@ deb_setup_mariadb_mirror() {
   }
   branch=$1
   if [[ $branch == "$development_branch" ]]; then
-    prev_released=$((${branch/10./} - 1))
+    #TOFIX - temp hack
+    prev_released=$((${branch/1[0-9]./} - 1))
     branch="10.$prev_released"
     bb_log_info "using previous $branch released version for development branch $1"
   fi
@@ -241,7 +242,8 @@ upgrade_test_type() {
       prev_major_version=$major_version
       ;;
     "major")
-      minor_version=${major_version/10./}
+      #TOFIX - temp hack
+      minor_version=${major_version/1[0-9]./}
       prev_minor_version=$((minor_version - 1))
       prev_major_version="10.$prev_minor_version"
       ;;
@@ -253,7 +255,7 @@ upgrade_test_type() {
 }
 
 check_mariadb_server_and_create_structures() {
-  if ((${prev_major_version/10./} > 3)); then
+  if [ "$prev_major_version" != 10.3 ]; then
     # 10.4+ uses unix_socket by default
     sudo mysql -e "set password=password('rootpass')"
   else

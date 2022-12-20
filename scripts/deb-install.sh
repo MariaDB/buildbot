@@ -93,7 +93,7 @@ if [[ -n $spider_package_list ]]; then
 fi
 
 # Unix socket (after 10.3)
-if ((${master_branch/10./} > 3)); then
+if [ "${master_branch}" != 10.3 ]; then
   sudo mysql -e "set password=password('rootpass')"
 else
   # Even without unix_socket, on some of VMs the password might be not

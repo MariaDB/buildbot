@@ -158,7 +158,7 @@ check_mariadb_server_and_create_structures
 if [[ $test_mode == "all" ]]; then
   # Due to MDEV-14560, we have to restart the server to get the full list of engines
   # MDEV-14560 is fixed in 10.2
-  if ((${prev_major_version/10./} > 2)); then
+  if [ "${prev_major_version}" != 10.2 ]; then
     control_mariadb_server restart
   fi
 fi
