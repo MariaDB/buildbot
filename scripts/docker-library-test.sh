@@ -20,7 +20,7 @@ else
 fi
 
 # clean images if test does not succeed
-trap 'buildah rmi "$image"' EXIT
+#trap 'buildah rmi "$image"' EXIT
 
 mariadb-docker/.test/run.sh "$image"
 trap - EXIT
