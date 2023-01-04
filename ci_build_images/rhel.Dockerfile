@@ -27,6 +27,9 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
       extra="buildbot-worker"; \
       ;; \
     esac \
+    && if [ "$(arch)" != "s390x" ]; then \
+         extra="$extra libpmem-devel"; \
+       fi \
     && subscription-manager repos --enable "codeready-builder-for-rhel-${v}-$(uname -m)-rpms" \
     && rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-"${v}".noarch.rpm \
     && dnf -y upgrade \
