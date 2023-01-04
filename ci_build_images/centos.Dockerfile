@@ -56,6 +56,7 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     which \
     xz-devel \
     yum-utils \
+    && if [ "$(uname -m)" = "x86_64" ]; then dnf -y install libpmem-devel; fi \
     && dnf clean all \
     # dumb-init rpm is not available on centos (official repo) \
     && curl -sL "https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_$(uname -m)" >/usr/local/bin/dumb-init \
