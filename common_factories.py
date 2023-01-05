@@ -22,7 +22,7 @@ def getQuickBuildFactory(mtrDbPool):
 
     f_quick_build.addStep(steps.MTR(
         logfiles={"mysqld*": "/buildbot/mysql_logs.html"},
-        command=["sh", "-c", util.Interpolate("cd mysql-test && exec perl mysql-test-run.pl --verbose-restart --force --retry=3 --max-save-core=1 --max-save-datadir=1 --max-test-fail=20 --mem --testcase-timeout=8 --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s", mtr_additional_args=util.Property('mtr_additional_args', default=''), jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN)'))],
+        command=["sh", "-c", util.Interpolate("cd mysql-test && exec perl mysql-test-run.pl --verbose-restart --force --retry=3 --max-save-core=1 --max-save-datadir=1 --max-test-fail=20 --mem --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s", mtr_additional_args=util.Property('mtr_additional_args', default=''), jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN)'))],
         timeout=600,
         haltOnFailure="true",
         parallel=mtrJobsMultiplier,
