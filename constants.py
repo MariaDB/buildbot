@@ -143,6 +143,10 @@ supportedPlatforms["10.10"] = [
 supportedPlatforms["10.10"] += supportedPlatforms["10.9"]
 
 supportedPlatforms["10.11"] = supportedPlatforms["10.10"]
+supportedPlatforms["10.11"] += [
+        'aarch64-ubuntu-2304',
+        'amd64-ubuntu-2304',
+        ]
 supportedPlatforms["10.12"] = supportedPlatforms["10.11"]
 supportedPlatforms["11.0"] = supportedPlatforms["10.11"]
 
