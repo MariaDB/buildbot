@@ -25,7 +25,7 @@ github_status_builders = [
         "amd64-debian-10-debug-embedded",
         "amd64-debian-10-deb-autobake",
         "amd64-debian-11-debug-ps-embedded",
-        "amd64-fedora-35",
+        "amd64-fedora-36",
         "amd64-ubuntu-2004-clang11",
         "amd64-ubuntu-2004-debug",
         "amd64-ubuntu-2204-debug-ps",
@@ -97,13 +97,11 @@ supportedPlatforms["10.4"] = supportedPlatforms["10.3"]
 
 supportedPlatforms["10.5"] = [
         'aarch64-debian-11',
-        'aarch64-fedora-35',
         'aarch64-fedora-36',
         'aarch64-fedora-37',
         'aarch64-rhel-9',
         'aix',
         'amd64-debian-11',
-        'amd64-fedora-35',
         'amd64-fedora-36',
         'amd64-fedora-37',
         'amd64-rhel-9',

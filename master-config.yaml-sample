@@ -4,8 +4,8 @@ builders:
 - aarch64-debian-10
 - aarch64-debian-11
 - aarch64-debian-sid
-- aarch64-fedora-35
 - aarch64-fedora-36
+- aarch64-fedora-37
 - aarch64-rhel-8
 - aarch64-rhel-9
 - aarch64-ubuntu-1804
