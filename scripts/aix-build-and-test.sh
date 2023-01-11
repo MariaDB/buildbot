@@ -83,6 +83,7 @@ EOF
 clean() {
   ls -ad "$@" || echo "not there I guess"
   rm -rf "$@" 2>/dev/null
+  rm -r /buildbot/mysql_logs.html
 }
 
 export TMPDIR="$HOME/tmp"
