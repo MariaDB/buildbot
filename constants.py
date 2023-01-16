@@ -152,7 +152,7 @@ supportedPlatforms["11.0"] = supportedPlatforms["10.11"]
 
 # Define environment variables for MTR step
 MTR_ENV = {
-    'MTR_PRINT_CORE': 'medium',
+    'MTR_PRINT_CORE': 'detailed',
     }
 
 # Hack to remove all github_status_builders since they are triggered separately
