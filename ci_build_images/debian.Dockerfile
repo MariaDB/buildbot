@@ -64,3 +64,7 @@ RUN apt-get update \
         apt-get -y install --no-install-recommends python3-pip; \
     fi \
     && apt-get clean
+
+
+# remove ubuntu user - 23.04+
+RUN userdel --force --remove ubuntu || echo 'just making sure ubuntu user is gone'
