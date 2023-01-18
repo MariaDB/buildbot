@@ -130,7 +130,9 @@ jobs:
             echo "TAG=${TAG_TMP/:/}" >>$GITHUB_ENV
           fi
       - name: Check for rhel subscription credentials
-        if: (contains(matrix.dockerfile, 'rhel'))
+        if: >
+          (contains(matrix.dockerfile, 'rhel')) &&
+          github.ref == 'refs/heads/main'
         run: |
           missing=()
           [[ -n "${{ secrets.RHEL_ORGID }}" ]] || missing+=(RHEL_ORGID)
@@ -195,6 +197,21 @@ jobs:
           push: true
           tags: localhost:5000/test/bb-worker:${{ env.TAG }}
       - name: Check multi-arch container
+        if: (!contains(matrix.dockerfile, 'rhel'))
+        run: |
+          for p in ${{ matrix.platforms }}; do
+            platform="${p/,/}"
+            image="localhost:5000/test/bb-worker:${{ env.TAG }}"
+            msg="Testing docker image $image on platform $platform"
+            line="${msg//?/=}"
+            printf "\n${line}\n${msg}\n${line}\n"
+            docker pull -q --platform "$platform" "$image"
+            docker run -i "$image" buildbot-worker --version
+            docker run -i "$image" dumb-init twistd --pidfile= -y /home/buildbot/buildbot.tac
+            docker run -u root -i "$image" bash -c "touch /tmp/foo && qpress -r /tmp /root/qpress.qp"
+          done
+      - name: Check multi-arch container (rhel)
+        if: ${{ env.BUILD_RHEL == 'true' }}
         run: |
           for p in ${{ matrix.platforms }}; do
             platform="${p/,/}"
