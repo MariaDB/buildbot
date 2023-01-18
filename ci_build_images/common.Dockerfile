@@ -8,7 +8,10 @@ RUN make \
     && rm -rf /tmp/qpress
 
 # Configure buildbot user
-RUN if grep -q '^buildbot:' /etc/passwd; then \
+RUN if getent passwd 1000; then \
+        userdel --force --remove "$(getent passwd 1000 | cut -d: -f1)"; \
+    fi \
+    && if grep -q '^buildbot:' /etc/passwd; then \
       usermod -s /bin/bash buildbot; \
       usermod -d /home/buildbot buildbot; \
     else \
