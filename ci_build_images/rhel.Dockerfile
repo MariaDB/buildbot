@@ -9,12 +9,14 @@ ARG base_image
 LABEL maintainer="MariaDB Buildbot maintainers"
 
 # Install updates and required packages
+# see: https://access.redhat.com/discussions/5889431 for rhsm/config.py hack.
 # hadolint ignore=SC2034,DL3041,SC2086
 RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     --mount=type=secret,id=rhel_keyname,target=/run/secrets/rhel_keyname \
-    subscription-manager register \
-    --org="$(cat /run/secrets/rhel_orgid)" \
-    --activationkey="$(cat /run/secrets/rhel_keyname)" \
+    sed -i 's/\(def in_container():\)/\1\n    return False/g' /usr/lib64/python*/*-packages/rhsm/config.py \
+    && subscription-manager register \
+         --org="$(cat /run/secrets/rhel_orgid)" \
+         --activationkey="$(cat /run/secrets/rhel_keyname)" \
     && case $base_image in \
     ubi9) \
       v=9; \
