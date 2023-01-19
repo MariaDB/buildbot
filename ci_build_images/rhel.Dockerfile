@@ -13,8 +13,7 @@ LABEL maintainer="MariaDB Buildbot maintainers"
 # hadolint ignore=SC2034,DL3041,SC2086
 RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     --mount=type=secret,id=rhel_keyname,target=/run/secrets/rhel_keyname \
-    grep -C 10 SMDEV_CONTAINER_OFF /usr/lib64/python*/*-packages/rhsm/config.py \
-    && sed -i 's/\(def in_container():\)/\1\n    return False/g' /usr/lib64/python*/*-packages/rhsm/config.py \
+    sed -i 's/\(def in_container():\)/\1\n    return False/g' /usr/lib64/python*/*-packages/rhsm/config.py \
     && subscription-manager register \
          --org="$(cat /run/secrets/rhel_orgid)" \
          --activationkey="$(cat /run/secrets/rhel_keyname)" \
