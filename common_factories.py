@@ -89,7 +89,7 @@ def getRpmAutobakeFactory(mtrDbPool):
         haltOnFailure=True,
         command=util.Interpolate(
             'mkdir -p ' + '/packages/' + '%(prop:tarbuildnum)s' + '/' + '%(prop:buildername)s'+
-            ' && cp -r rpms srpms sha256sums.txt' + ' /packages/' + '%(prop:tarbuildnum)s' + '/' + '%(prop:buildername)s' + '/' +
+            ' && cp -r rpms srpms' + ' /packages/' + '%(prop:tarbuildnum)s' + '/' + '%(prop:buildername)s' + '/' +
             ' && sync /packages/' + '%(prop:tarbuildnum)s'
             ),
         doStepIf=lambda step: hasFiles(step) and savePackage(step),
