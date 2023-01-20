@@ -80,6 +80,12 @@ def getRpmAutobakeFactory(mtrDbPool):
             fi
             mv *.rpm rpms/
             createrepo rpms/
+            cat << EOF > MariaDB.repo
+[MariaDB-%(prop:branch)s]
+name=MariaDB %(prop:branch)s repo (build %(prop:tarbuildnum)s)
+baseurl=https://ci.mariadb.org/%(prop:tarbuildnum)s/%(prop:buildername)s/rpms
+gpgcheck=0
+EOF
         """)]))
     #f_rpm_autobake.addStep(steps.MultipleFileUpload(workersrcs=util.Property('packages'),
     #    masterdest=util.Interpolate('/srv/buildbot/packages/' + '%(prop:tarbuildnum)s' + '/' + '%(prop:buildername)s'), mode=0o755, url=util.Interpolate('https://ci.mariadb.org/' + "%(prop:tarbuildnum)s" + "/" + '%(prop:buildername)s' + "/"), doStepIf=lambda step: hasFiles(step) and savePackage(step)))
@@ -89,19 +95,13 @@ def getRpmAutobakeFactory(mtrDbPool):
         haltOnFailure=True,
         command=util.Interpolate(
             'mkdir -p ' + '/packages/' + '%(prop:tarbuildnum)s' + '/' + '%(prop:buildername)s'+
-            ' && cp -r rpms srpms' + ' /packages/' + '%(prop:tarbuildnum)s' + '/' + '%(prop:buildername)s' + '/' +
+            ' && cp -r MariaDB.repo rpms srpms /packages/' + '%(prop:tarbuildnum)s' + '/' + '%(prop:buildername)s' + '/' +
             ' && sync /packages/' + '%(prop:tarbuildnum)s'
             ),
         doStepIf=lambda step: hasFiles(step) and savePackage(step),
         descriptionDone=util.Interpolate("""
-Repository available with:
-cat << EOF > /etc/yum.repo.d/MariaDB.repo
-[MariaDB-%(prop:branch)s]
-name=MariaDB  %(prop:branch)srepo (build %(prop:tarbuildnum)s)
-baseurl=https://ci.mariadb.org/%(prop:tarbuildnum)s/%(prop:buildername)s/
-gpgcheck=0
-EOF
-""")))
+Repository available with: curl https://ci.mariadb.org/%(prop:tarbuildnum)s/%(prop:buildername)s/MariaDB.repo -o /etc/yum.repos.d/MariaDB.repo""")
+    ))
     f_rpm_autobake.addStep(steps.Trigger(name='install', schedulerNames=['s_install'], waitForFinish=False, updateSourceStamp=False,
         set_properties={"tarbuildnum" : Property("tarbuildnum"), "mariadb_version" : Property("mariadb_version"), "master_branch" : Property("master_branch"), "parentbuildername": Property("buildername")}, doStepIf=lambda step: hasInstall(step) and savePackage(step) and hasFiles(step)))
     f_rpm_autobake.addStep(steps.Trigger(name='major-minor-upgrade', schedulerNames=['s_upgrade'], waitForFinish=False, updateSourceStamp=False,
