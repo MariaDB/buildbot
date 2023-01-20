@@ -26,31 +26,28 @@ jobs:
       - name: Check Dockerfile with hadolint
         run: |
           docker run -i -v $(pwd):/mnt -w /mnt hadolint/hadolint:latest hadolint /mnt/Dockerfile
-      - name: Create empty context
+      - name: Set up env vars
         run: |
-          # //TEMP there is probably a better way to not include context
-          mkdir empty
+          echo "REPO=bb-master" >>$GITHUB_ENV
       - name: Build master image
-        uses: docker/build-push-action@v2
-        with:
-          context: /home/runner/work/buildbot/buildbot/empty
-          file: /home/runner/work/buildbot/buildbot/Dockerfile
-          push: true
-          tags: localhost:5000/test/bb-master:master
+        run: |
+            podman build . --tag ${{ env.REPO }}:master
       - name: Build master-web image
-        uses: docker/build-push-action@v2
-        with:
-          context: /home/runner/work/buildbot/buildbot/empty
-          build-args: |
-            master_type=master-web
-          file: /home/runner/work/buildbot/buildbot/Dockerfile
-          push: true
-          tags: localhost:5000/test/bb-master:master-web
+        run: |
+            podman build . --tag ${{ env.REPO }}:master-web \
+              --build-arg master_type=master-web
+      - name: Push images to local registry
+        run: |
+          for img in master master-web; do
+            podman push --tls-verify=0 \
+              ${{ env.REPO }}:$img \
+              docker://localhost:5000/${{ env.REPO }}:$img
+          done
       - name: Check images
         run: |
-          docker run -i localhost:5000/test/bb-master:master buildbot --version
+          docker run -i localhost:5000/${{ env.REPO }}:master buildbot --version
           #//TEMP there is probably a better way for master-web here
-          docker run -i localhost:5000/test/bb-master:master-web buildbot --version
+          docker run -i localhost:5000/${{ env.REPO }}:master-web buildbot --version
       - name: Check for registry credentials
         if: >
           github.ref == 'refs/heads/main' &&
@@ -82,6 +79,6 @@ jobs:
           printf "\n${line}\n${msg}\n${line}\n"
           for image in master master-web; do
             skopeo copy --all --src-tls-verify=0 \
-            docker://localhost:5000/test/bb-master:${image} \
-            docker://quay.io/mariadb-foundation/bb-master:${image}
+            docker://localhost:5000/${{ env.REPO }}:${image} \
+            docker://quay.io/mariadb-foundation/${{ env.REPO }}:${image}
           done

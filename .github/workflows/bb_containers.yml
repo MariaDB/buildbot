@@ -19,9 +19,6 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-        # this is needed because we restart the docker daemon for experimental
-        # support
-        options: "--restart always"
     name: ${{ matrix.image }} (${{ matrix.tag }} ${{ matrix.platforms }})
     strategy:
       fail-fast: false
@@ -124,11 +121,12 @@ jobs:
             exit 1
           }
           if [[ -n "${{ matrix.tag }}" ]]; then
-            echo "TAG=${{ matrix.tag }}" >>$GITHUB_ENV
+            echo "IMG=${{ matrix.tag }}" >>$GITHUB_ENV
           else
             TAG_TMP=${{ matrix.image }}
-            echo "TAG=${TAG_TMP/:/}" >>$GITHUB_ENV
+            echo "IMG=${TAG_TMP/:/}" >>$GITHUB_ENV
           fi
+          echo "REPO=bb-worker" >>$GITHUB_ENV
       - name: Check for rhel subscription credentials
         if: >
           (contains(matrix.dockerfile, 'rhel')) &&
@@ -142,24 +140,6 @@ jobs:
           done
           (( ${#missing[@]} == 0 )) || exit 1
           echo "BUILD_RHEL=true" >> $GITHUB_ENV
-      - name: Enable experimental support
-        run: |
-          config='/etc/docker/daemon.json'
-          if [[ -e "$config" ]]; then
-            sudo sed -i -e 's/{/{ "experimental": true, /' "$config"
-          else
-            echo '{ "experimental": true }' | sudo tee "$config"
-          fi
-          sudo systemctl restart docker
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
-      - name: Set up Docker Buildx (local builds)
-        uses: docker/setup-buildx-action@v1
-        with:
-          driver-opts: network=host
-          # config-inline: |
-          #   [worker.oci]
-          #     max-parallelism = 3
       - name: Generate Dockerfile and necessary files
         run: |
           cd ${{ env.WORKDIR }}
@@ -169,39 +149,60 @@ jobs:
         run: |
           cp /home/runner/work/Dockerfile .
           docker run -i -v $(pwd):/mnt -w /mnt hadolint/hadolint:latest hadolint /mnt/Dockerfile
+      - name: Install qemu-user-static
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-user-static
       - name: Build image
         if: (!contains(matrix.dockerfile, 'rhel'))
-        uses: docker/build-push-action@v2
-        with:
-          build-args: |
-            base_image=${{ matrix.image }}
-            mariadb_branch=${{ matrix.branch }}
-          context: /home/runner/work
-          file: /home/runner/work/Dockerfile
-          platforms: ${{ matrix.platforms }}
-          push: true
-          tags: localhost:5000/test/bb-worker:${{ env.TAG }}
+        run: |
+          podman manifest create ${{ env.REPO }}:${{ env.IMG }}
+          for arch in $(echo ${{ matrix.platforms }} | sed 's/,/ /g'); do
+            msg="Build $arch:"
+            line="${msg//?/=}"
+            printf "\n${line}\n${msg}\n${line}\n"
+            podman buildx build --tag ${{ env.REPO }}:${{ env.IMG }}-${arch//\//-} \
+              --platform $arch \
+              --manifest ${{ env.REPO }}:${{ env.IMG }} \
+              -f /home/runner/work/Dockerfile \
+              --build-arg base_image=${{ matrix.image }} \
+              --build-arg mariadb_branch=${{ matrix.branch }}
+          done
+          podman images
       - name: Build image (rhel)
         if: ${{ env.BUILD_RHEL == 'true' }}
-        uses: docker/build-push-action@v2
-        with:
-          build-args: |
-            base_image=${{ matrix.image }}
-            mariadb_branch=${{ matrix.branch }}
-          secrets: |
-            "rhel_orgid=${{ secrets.RHEL_ORGID }}"
-            "rhel_keyname=${{ secrets.RHEL_KEYNAME }}"
-          context: /home/runner/work
-          file: /home/runner/work/Dockerfile
-          platforms: ${{ matrix.platforms }}
-          push: true
-          tags: localhost:5000/test/bb-worker:${{ env.TAG }}
+        run: |
+          podman manifest create ${{ env.REPO }}:${{ env.IMG }}
+          for arch in $(echo ${{ matrix.platforms }} | sed 's/,/ /g'); do
+            msg="Build $arch:"
+            line="${msg//?/=}"
+            printf "\n${line}\n${msg}\n${line}\n"
+            podman buildx build --tag ${{ env.REPO }}:${{ env.IMG }}-${arch//\//-} \
+              --platform $arch \
+              --manifest ${{ env.REPO }}:${{ env.IMG }} \
+              -f /home/runner/work/Dockerfile \
+              --build-arg base_image=${{ matrix.image }} \
+              --build-arg mariadb_branch=${{ matrix.branch }}
+          done
+          podman images
+      - name: Push images to local registry
+        if: (!contains(matrix.dockerfile, 'rhel'))
+        run: |
+          podman manifest push --tls-verify=0 \
+            --all ${{ env.REPO }}:${{ env.IMG }} \
+            docker://localhost:5000/${{ env.REPO }}:${{ env.IMG }}
+      - name: Push images to local registry (rhel)
+        if: ${{ env.BUILD_RHEL == 'true' }}
+        run: |
+          podman manifest push --tls-verify=0 \
+            --all ${{ env.REPO }}:${{ env.IMG }} \
+            docker://localhost:5000/${{ env.REPO }}:${{ env.IMG }}
       - name: Check multi-arch container
         if: (!contains(matrix.dockerfile, 'rhel'))
         run: |
           for p in ${{ matrix.platforms }}; do
             platform="${p/,/}"
-            image="localhost:5000/test/bb-worker:${{ env.TAG }}"
+            image="localhost:5000/bb-worker:${{ env.IMG }}"
             msg="Testing docker image $image on platform $platform"
             line="${msg//?/=}"
             printf "\n${line}\n${msg}\n${line}\n"
@@ -215,7 +216,7 @@ jobs:
         run: |
           for p in ${{ matrix.platforms }}; do
             platform="${p/,/}"
-            image="localhost:5000/test/bb-worker:${{ env.TAG }}"
+            image="localhost:5000/bb-worker:${{ env.IMG }}"
             msg="Testing docker image $image on platform $platform"
             line="${msg//?/=}"
             printf "\n${line}\n${msg}\n${line}\n"
@@ -250,9 +251,9 @@ jobs:
       - name: Push images to registry
         if: ${{ env.DEPLOY_IMAGES == 'true' }}
         run: |
-          msg="Push docker image to registry (${{ env.TAG }})"
+          msg="Push docker image to registry (${{ env.IMG }})"
           line="${msg//?/=}"
           printf "\n${line}\n${msg}\n${line}\n"
           skopeo copy --all --src-tls-verify=0 \
-          docker://localhost:5000/test/bb-worker:${{ env.TAG }} \
-          docker://quay.io/mariadb-foundation/bb-worker:${{ env.TAG }}
+          docker://localhost:5000/bb-worker:${{ env.IMG }} \
+          docker://quay.io/mariadb-foundation/bb-worker:${{ env.IMG }}
