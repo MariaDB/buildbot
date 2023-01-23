@@ -27,6 +27,7 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     cracklib-devel \
     createrepo \
     curl-devel \
+    galera \
     jemalloc-devel \
     libffi-devel \
     libxml2-devel \
@@ -50,3 +51,5 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     && chmod +x /usr/local/bin/dumb-init
 
 ENV CRYPTOGRAPHY_ALLOW_OPENSSL_102=1
+
+ENV WSREP_PROVIDER=/usr/lib64/galera/libgalera_smm.so
