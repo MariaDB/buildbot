@@ -37,6 +37,7 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     cracklib-devel \
     createrepo \
     curl-devel \
+    galera \
     java-1.8.0-openjdk \
     java-1.8.0-openjdk-devel \
     jemalloc-devel \
@@ -62,3 +63,5 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     # dumb-init rpm is not available on centos (official repo) \
     && curl -sL "https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_$(uname -m)" >/usr/local/bin/dumb-init \
     && chmod +x /usr/local/bin/dumb-init
+
+ENV WSREP_PROVIDER=/usr/lib64/galera/libgalera_smm.so

@@ -24,6 +24,7 @@ RUN dnf -y upgrade \
     dumb-init \
     flex \
     fmt-devel \
+    galera \
     java-latest-openjdk \
     java-latest-openjdk-devel \
     java-latest-openjdk-headless \
@@ -49,3 +50,5 @@ RUN dnf -y upgrade \
     && if [ "$VERSION_ID" = 36 ]; then dnf -y install gnutls-devel; fi \
     && if [ "$(uname -m)" = "x86_64" ]; then dnf -y install libpmem-devel; fi \
     && dnf clean all
+
+ENV WSREP_PROVIDER=/usr/lib64/galera/libgalera_smm.so

@@ -23,6 +23,7 @@ RUN yum -y --enablerepo=extras install epel-release \
     cracklib-devel \
     createrepo \
     curl-devel \
+    galera \
     gnutls-devel \
     java-1.8.0-openjdk \
     java-1.8.0-openjdk-devel \
@@ -55,3 +56,5 @@ RUN yum -y --enablerepo=extras install epel-release \
     # dumb-init rpm is not available on centos
     && curl -sL "https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_$(uname -m)" >/usr/local/bin/dumb-init \
     && chmod +x /usr/local/bin/dumb-init
+
+ENV WSREP_PROVIDER=/usr/lib64/galera/libgalera_smm.so

@@ -53,6 +53,7 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     cracklib-devel \
     createrepo \
     curl-devel \
+    galera \
     java-1.8.0-openjdk \
     jemalloc-devel --allowerasing \
     krb5-devel \
@@ -89,3 +90,5 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     # dumb-init rpm is not available on rhel \
     && curl -sL "https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_$(uname -m)" >/usr/local/bin/dumb-init \
     && chmod +x /usr/local/bin/dumb-init
+
+ENV WSREP_PROVIDER=/usr/lib64/galera/libgalera_smm.so

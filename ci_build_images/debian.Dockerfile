@@ -56,6 +56,9 @@ RUN apt-get update \
     scons \
     sudo  \
     wget \
+    && if ! grep -qE 'bionic|buster' /etc/apt/sources.list; then \
+      apt-get -y install --no-install-recommends galera-4 galera-arbitrator-4; \
+    fi \
     && if ! grep -q 'stretch' /etc/apt/sources.list; then \
       apt-get -y install --no-install-recommends python3-buildbot-worker; \
     fi \
@@ -64,3 +67,5 @@ RUN apt-get update \
         apt-get -y install --no-install-recommends python3-pip; \
     fi \
     && apt-get clean
+
+ENV WSREP_PROVIDER=/usr/lib/galera/libgalera_smm.so
