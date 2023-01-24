@@ -231,7 +231,13 @@ def hasFailed(step):
 def createVar():
     return """
 if [ -d mysql-test/var ]; then
-    tar zcf var.tar.gz mysql-test/var/*/log mysql-test/var/log
+    extra=
+    if [ -f  ./mysql-test/var/log/*/mysqld.*/data/core*gz ]; then
+      if [ -f sql/mysqld ]; then extra=sql/mysqld; fi
+      if [ -f sql/mariadbd ]; then extra=sql/mariadbd; fi
+      extra=mysql-test/var/[0-9]*/{mysqld.[0-9],my.cnf}
+    fi
+    tar zcf var.tar.gz mysql-test/var/*/log mysql-test/var/log ${extra}
     mv var.tar.gz /buildbot/logs/
 fi
 """
