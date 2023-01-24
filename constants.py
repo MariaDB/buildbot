@@ -112,19 +112,15 @@ supportedPlatforms["10.5"] = [
         's390x-sles-12',
         's390x-sles-15',
         's390x-ubuntu-2004',
-        'x86-debian-sid',
         ]
 supportedPlatforms["10.5"] += supportedPlatforms["10.4"]
 
 supportedPlatforms["10.6"] = [
-        'aarch64-debian-sid',
         'aarch64-ubuntu-2204',
         'aarch64-ubuntu-2210',
-        'amd64-debian-sid',
         'amd64-ubuntu-2004-fulltest',
         'amd64-ubuntu-2204',
         'amd64-ubuntu-2210',
-        'ppc64le-debian-sid',
         'ppc64le-ubuntu-2204',
         's390x-ubuntu-2204',
         ]
@@ -141,8 +137,12 @@ supportedPlatforms["10.10"] += supportedPlatforms["10.9"]
 
 supportedPlatforms["10.11"] = supportedPlatforms["10.10"]
 supportedPlatforms["10.11"] += [
+        'aarch64-debian-sid',
         'aarch64-ubuntu-2304',
+        'amd64-debian-sid',
         'amd64-ubuntu-2304',
+        'ppc64le-debian-sid',
+        'x86-debian-sid',
         ]
 supportedPlatforms["11.0"] = supportedPlatforms["10.11"]
 
