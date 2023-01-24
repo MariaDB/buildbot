@@ -42,12 +42,12 @@ jobs:
             platforms: linux/amd64
           - dockerfile: debian.Dockerfile
             image: debian:sid
-            branch: 10.7
+            branch: 10.11
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
           - dockerfile: debian.Dockerfile
             image: debian:sid
             tag: debiansid-386
-            branch: 10.7
+            branch: 10.11
             platforms: linux/386
           - dockerfile: debian.Dockerfile
             image: ubuntu:18.04
