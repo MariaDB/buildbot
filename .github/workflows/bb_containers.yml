@@ -172,18 +172,24 @@ jobs:
       - name: Build image (rhel)
         if: ${{ env.BUILD_RHEL == 'true' }}
         run: |
+          # create secrets
+          echo "${{ secrets.RHEL_ORGID }}" >rhel_orgid
+          echo "${{ secrets.RHEL_KEYNAME }}" >rhel_keyname
           podman manifest create ${{ env.REPO }}:${{ env.IMG }}
           for arch in $(echo ${{ matrix.platforms }} | sed 's/,/ /g'); do
             msg="Build $arch:"
             line="${msg//?/=}"
             printf "\n${line}\n${msg}\n${line}\n"
             podman buildx build --tag ${{ env.REPO }}:${{ env.IMG }}-${arch//\//-} \
+              --secret id=rhel_orgid,src=./rhel_orgid \
+              --secret id=rhel_keyname,src=./rhel_keyname \
               --platform $arch \
               --manifest ${{ env.REPO }}:${{ env.IMG }} \
               -f /home/runner/work/Dockerfile \
               --build-arg base_image=${{ matrix.image }} \
               --build-arg mariadb_branch=${{ matrix.branch }}
           done
+          rm -f rhel_orgid rhel_keyname
           podman images
       - name: Push images to local registry
         if: (!contains(matrix.dockerfile, 'rhel'))
