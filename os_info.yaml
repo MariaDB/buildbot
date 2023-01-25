@@ -136,3 +136,4 @@ ubuntu-2304:
     - amd64
     - aarch64
   type: deb
+  has_install: False
