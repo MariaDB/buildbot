@@ -34,6 +34,14 @@ debian-11:
     - aarch64
     - ppc64le
   type: deb
+debian-12:
+  version_name: bookworm
+  arch:
+    - amd64
+    - aarch64
+    - ppc64le
+  type: deb
+  has_install: False
 debian-sid:
   version_name: sid
   arch:
