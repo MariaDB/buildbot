@@ -32,6 +32,10 @@ jobs:
             image: debian:11
             branch: 10.7
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
+          - dockerfile: debian.Dockerfile
+            image: debian:bookworm
+            branch: 10.11
+            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
           - dockerfile: debian.Dockerfile aocc.Dockerfile
             image: debian:11
             tag: debian11-aocc
