@@ -137,12 +137,15 @@ supportedPlatforms["10.10"] += supportedPlatforms["10.9"]
 
 supportedPlatforms["10.11"] = supportedPlatforms["10.10"]
 supportedPlatforms["10.11"] += [
+        'aarch64-debian-12',
         'aarch64-debian-sid',
         'aarch64-ubuntu-2304',
+        'amd64-debian-12',
         'amd64-debian-sid',
         'amd64-ubuntu-2304',
         'ppc64le-debian-sid',
         'x86-debian-sid',
+        'ppc64le-debian-12',
         ]
 supportedPlatforms["11.0"] = supportedPlatforms["10.11"]
 
