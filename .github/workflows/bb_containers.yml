@@ -145,6 +145,11 @@ jobs:
           cd ${{ env.WORKDIR }}
           cat ${{ matrix.dockerfile }} common.Dockerfile >/home/runner/work/Dockerfile
           cp -r qpress /home/runner/work
+      - name: No wsrep on 32 bit platforms
+        if: >
+          (contains(matrix.platforms, 'linux/386'))
+        run: |
+          sed -i -e '/WSREP_PROVIDER/d' /home/runner/work/Dockerfile
       - name: Check Dockerfile with hadolint
         run: |
           cp /home/runner/work/Dockerfile .

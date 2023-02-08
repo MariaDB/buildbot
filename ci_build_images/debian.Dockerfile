@@ -23,9 +23,14 @@ RUN if [ -f /etc/apt/sources.list ]; then \
 
 # Install updates and required packages
 # see: https://cryptography.io/en/latest/installation/
-RUN apt-get update \
+RUN . /etc/os-release; \
+    apt-get update \
     && apt-get -y upgrade \
     && apt-get -y install --no-install-recommends curl ca-certificates devscripts equivs lsb-release \
+    && echo "deb [trusted=yes] https://buildbot.mariadb.net/archive/builds/mariadb-4.x/latest/kvm-deb-${VERSION_CODENAME}-$(dpkg --print-architecture)-gal/debs ./" > /etc/apt/sources.list.d/galera-4.list \
+    && sed -i -e s/arm64/aarch64/ -e s/ppc64el/ppc64le/ /etc/apt/sources.list.d/galera-4.list \
+    && if [ "${VERSION_CODENAME}" = bookworm ] || [ "${VERSION_CODENAME}" = lunar ] || [ "$(getconf LONG_BIT)" = 32 ]; then rm /etc/apt/sources.list.d/galera-4.list; fi \
+    && apt-get update \
     && curl -skO https://raw.githubusercontent.com/MariaDB/server/$mariadb_branch/debian/control \
     && mkdir debian \
     && mv control debian/control \
@@ -56,8 +61,8 @@ RUN apt-get update \
     scons \
     sudo  \
     wget \
-    && if ! grep -qE 'bionic|buster' /etc/apt/sources.list; then \
-      apt-get -y install --no-install-recommends galera-4 galera-arbitrator-4; \
+    && if [ "$(getconf LONG_BIT)" = 64 ]; then \
+      apt-get -y install --no-install-recommends galera-4; \
     fi \
     && if ! grep -q 'stretch' /etc/apt/sources.list; then \
       apt-get -y install --no-install-recommends python3-buildbot-worker; \
