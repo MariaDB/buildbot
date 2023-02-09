@@ -1,3 +1,5 @@
+
+# msan.Dockerfile
 # this is to create images with MSAN for BB workers
 WORKDIR /tmp/msan
 
@@ -5,9 +7,9 @@ ENV MSAN_LIBDIR=/msan-libs
 
 RUN mkdir $MSAN_LIBDIR \
     && curl -sL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor -o /usr/share/keyrings/llvm-snapshot.gpg \
-    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/llvm-snapshot.gpg] \
+    && echo "deb [signed-by=/usr/share/keyrings/llvm-snapshot.gpg] \
     http://apt.llvm.org/jammy/ llvm-toolchain-jammy-15 main" > /etc/apt/sources.list.d/llvm-toolchain.list \
-    && echo "deb-src [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/llvm-snapshot.gpg] \
+    && echo "deb-src [signed-by=/usr/share/keyrings/llvm-snapshot.gpg] \
     http://apt.llvm.org/jammy/ llvm-toolchain-jammy-15 main" >> /etc/apt/sources.list.d/llvm-toolchain.list \
     && apt-get update \
     && apt-get -y install --no-install-recommends clang-15 \
@@ -24,7 +26,7 @@ RUN mkdir $MSAN_LIBDIR \
         -DLLVM_USE_SANITIZER=Memory \
     && make -C build install -j "$(nproc)" \
     && cp -aL build/lib/libc++.so* $MSAN_LIBDIR \
-    && find . -mindepth 1 -maxdepth 1 -exec rm -rf {} \; \
+    && rm -rf -- * \
     \
     && apt-get source gnutls28 \
     && mv gnutls28-*/* . \
@@ -34,12 +36,12 @@ RUN mkdir $MSAN_LIBDIR \
     && ./configure \
         --with-included-libtasn1 \
         --with-included-unistring \
-	    --without-p11-kit \
+        --without-p11-kit \
         --disable-hardware-acceleration \
         -with-libnettle-prefix=/usr \
     && make -j "$(nproc)" \
     && cp -aL lib/.libs/libgnutls.so* $MSAN_LIBDIR \
-    && find . -mindepth 1 -maxdepth 1 -exec rm -rf {} \; \
+    && rm -rf -- * \
     \
     && apt-get source nettle \
     && mv nettle-*/* . \
@@ -48,7 +50,7 @@ RUN mkdir $MSAN_LIBDIR \
         --disable-assembler \
     && make -j "$(nproc)" \
     && cp -aL .lib/lib*.so* $MSAN_LIBDIR \
-    && find . -mindepth 1 -maxdepth 1 -exec rm -rf {} \; \
+    && rm -rf -- * \
     \
     && apt-get source libidn2 \
     && mv libidn2-*/* . \
@@ -57,7 +59,7 @@ RUN mkdir $MSAN_LIBDIR \
         --enable-valgrind-tests=no \
     && make -j "$(nproc)" \
     && cp -aL lib/.libs/libidn2.so* $MSAN_LIBDIR \
-    && find . -mindepth 1 -maxdepth 1 -exec rm -rf {} \; \
+    && rm -rf -- * \
     \
     && apt-get source gmp \
     && mv gmp-*/* . \
@@ -66,7 +68,7 @@ RUN mkdir $MSAN_LIBDIR \
         --disable-assembly \
     && make -j "$(nproc)" \
     && cp -aL .libs/libgmp.so* $MSAN_LIBDIR \
-    && find . -mindepth 1 -maxdepth 1 -exec rm -rf {} \; \
+    && rm -rf -- * \
     \
     && apt-get source cracklib2 \
     && mv cracklib2-*/* . \
@@ -77,6 +79,6 @@ RUN mkdir $MSAN_LIBDIR \
     && make install \
     && create-cracklib-dict ./dicts/cracklib-small \
     && cp -aL lib/.libs/*.so* $MSAN_LIBDIR \
-    && find . -mindepth 1 -maxdepth 1 -exec rm -rf {} \; \
-    \
+    && rm -rf -- * \
+    && rm -rf /tmp/msan \
     && apt-get clean

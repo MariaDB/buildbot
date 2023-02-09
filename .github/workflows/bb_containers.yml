@@ -63,6 +63,11 @@ jobs:
             image: ubuntu:22.04
             branch: 10.7
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
+          - dockerfile: debian.Dockerfile msan.Dockerfile
+            image: ubuntu:22.04
+            branch: 10.7
+            tag: ubuntu22.04-msan
+            platforms: linux/amd64
           - dockerfile: debian.Dockerfile
             image: ubuntu:22.10
             branch: 10.7
@@ -105,11 +110,6 @@ jobs:
           - dockerfile: opensuse.Dockerfile pip.Dockerfile
             image: opensuse/leap:15.3
             tag: opensuse15
-            platforms: linux/amd64
-          - dockerfile: debian.Dockerfile msan.Dockerfile
-            image: ubuntu:22.04
-            branch: 10.7
-            tag: ubuntu22.04-msan
             platforms: linux/amd64
     env:
       BUILD_RHEL: false

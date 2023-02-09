@@ -1,3 +1,5 @@
+
+# pip.Dockerfile
 # We install buildbot-worker from packages but for some OS it is not available
 # and need to be installed via pip.
 
