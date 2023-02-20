@@ -154,10 +154,6 @@ MTR_ENV = {
     'MTR_PRINT_CORE': 'detailed',
     }
 
-# Hack to remove all github_status_builders since they are triggered separately
-for k in supportedPlatforms:
-    supportedPlatforms[k] = list(filter(lambda x: x not in github_status_builders, supportedPlatforms[k]))
-
 # =============================================================================
 # ============================ AUTO-GENERATED BELOW ===========================
 # The following code is auto-generated based on the content of os_info.yaml.
