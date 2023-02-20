@@ -9,9 +9,8 @@ def getSchedulers():
         builderNames=getBranchBuilderNames))
 
     schedulerProtectedBranches = schedulers.Triggerable(name="s_protected_branches",
-        builderNames=github_status_builders)
+        builderNames=getProtectedBuilderNames)
     l.append(schedulerProtectedBranches)
-
 
     schedulerPackages = schedulers.Triggerable(name="s_packages",
             builderNames=getAutobakeBuilderNames)

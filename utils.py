@@ -408,7 +408,21 @@ def getArch(props):
 def getBranchBuilderNames(props):
     mBranch = props.getProperty("master_branch")
 
-    return supportedPlatforms[mBranch]
+    builders = list(filter(
+        lambda x: x not in github_status_builders,
+        supportedPlatforms[mBranch]))
+
+    return builders
+
+@util.renderer
+def getProtectedBuilderNames(props):
+    mBranch = props.getProperty("master_branch")
+
+    builders = list(filter(
+        lambda x: x in supportedPlatforms[mBranch],
+        github_status_builders))
+
+    return builders
 
 @util.renderer
 def getAutobakeBuilderNames(props):
