@@ -388,6 +388,14 @@ def hasAutobake(props):
             return True
     return False
 
+def hasGalera(props):
+    builderName = str(props.getProperty("buildername"))
+
+    for b in builders_galera:
+        if builderName in b:
+            return True
+    return False
+
 def hasBigtest(props):
     builderName = str(props.getProperty("buildername"))
 
