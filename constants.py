@@ -41,6 +41,11 @@ builders_eco = [
         "amd64-ubuntu-2004-eco-php",
         ]
 builders_wordpress = ["amd64-rhel8-wordpress"]
+builders_galera = [
+        "aarch64-debian-12",
+        "amd64-fedora-37",
+        "amd64-ubuntu-2304",
+        ]
 
 # Defines branches for which we save packages
 savedPackageBranches = branches_main + [

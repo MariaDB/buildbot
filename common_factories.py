@@ -23,7 +23,13 @@ def getQuickBuildFactory(mtrDbPool):
 
     f_quick_build.addStep(steps.MTR(
         logfiles={"mysqld*": "/buildbot/mysql_logs.html"},
-        command=["sh", "-c", util.Interpolate("cd mysql-test && exec perl mysql-test-run.pl --verbose-restart --force --retry=3 --max-save-core=1 --max-save-datadir=1 --max-test-fail=20 --mem --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s", mtr_additional_args=util.Property('mtr_additional_args', default=''), jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN)'))],
+        command=["sh", "-c", util.Interpolate("""
+            cd mysql-test &&
+            exec perl mysql-test-run.pl --verbose-restart --force --retry=3 --max-save-core=1 --max-save-datadir=1 --max-test-fail=20 --mem --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s
+            """,
+            mtr_additional_args=util.Property('mtr_additional_args', default=''),
+            jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN)'),
+        )],
         timeout=600,
         haltOnFailure="true",
         parallel=mtrJobsMultiplier,
@@ -31,9 +37,30 @@ def getQuickBuildFactory(mtrDbPool):
         autoCreateTables=True,
         env=MTR_ENV,
     ))
-    f_quick_build.addStep(steps.ShellCommand(name="move mysqld log files", alwaysRun=True, command=['bash', '-c', util.Interpolate(moveMTRLogs(), jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN)'))]))
+    f_quick_build.addStep(steps.ShellCommand(name="move mariadb log files", alwaysRun=True, command=['bash', '-c', util.Interpolate(moveMTRLogs(), jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN'))]))
+    f_quick_build.addStep(steps.MTR(
+        logfiles={"mysqld*": "/buildbot/mysql_logs.html"},
+        command=["sh", "-c", util.Interpolate("""
+           cd mysql-test &&
+           if [ -f "$WSREP_PROVIDER" ]; then exec perl mysql-test-run.pl --verbose-restart --force --retry=3 --max-save-core=1 --max-save-datadir=1 --max-test-fail=20 --mem --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s --suite=wsrep,galera,galera_3nodes,galera_3nodes_sr; fi
+           """,
+           mtr_additional_args=util.Property('mtr_additional_args', default=''),
+           jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN)'))],
+        timeout=600,
+        haltOnFailure="true",
+        parallel=mtrJobsMultiplier,
+        dbpool=mtrDbPool,
+        autoCreateTables=True,
+        env=MTR_ENV,
+        doStepIf=hasGalera
+    ))
+    f_quick_build.addStep(steps.ShellCommand(name="move mariadb galera log files", alwaysRun=True, command=['bash', '-c',
+        util.Interpolate("mv /buildbot/logs /buildbot/logs_main\n" + moveMTRLogs() + "\nmv /buildbot/logs /buildbot/logs_galera; mv /buildbot/logs_main /buildbot/logs\n",
+                         jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN)'))
+        ],doStepIf=hasGalera))
     f_quick_build.addStep(steps.ShellCommand(name="create var archive", alwaysRun=True, command=['bash', '-c', util.Interpolate(createVar())], doStepIf=hasFailed))
     f_quick_build.addStep(steps.DirectoryUpload(name="save log files", compress="bz2", alwaysRun=True,  workersrc='/buildbot/logs/', masterdest=util.Interpolate('/srv/buildbot/packages/' + '%(prop:tarbuildnum)s' + '/logs/' + '%(prop:buildername)s' )))
+
     ## trigger packages
     f_quick_build.addStep(steps.Trigger(schedulerNames=['s_packages'], waitForFinish=False, updateSourceStamp=False, alwaysRun=True,
         set_properties={"parentbuildername": Property('buildername'), "tarbuildnum" : Property("tarbuildnum"), "mariadb_version" : Property("mariadb_version"), "master_branch" : Property("master_branch")}, doStepIf=hasAutobake))
