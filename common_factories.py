@@ -18,8 +18,17 @@ def getQuickBuildFactory(mtrDbPool):
     f_quick_build.addStep(steps.ShellCommand(command=util.Interpolate("tar -xvzf /mnt/packages/%(prop:tarbuildnum)s_%(prop:mariadb_version)s.tar.gz --strip-components=1")))
     f_quick_build.addStep(steps.ShellCommand(name="create html log file", command=['bash', '-c', util.Interpolate(getHTMLLogString(), jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN)'))]))
     # build steps
-    f_quick_build.addStep(steps.Compile(command=
-      ["sh", "-c", util.Interpolate("cmake . -DCMAKE_BUILD_TYPE=%(kw:build_type)s -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER=%(kw:c_compiler)s -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=%(kw:cxx_compiler)s -DPLUGIN_TOKUDB=NO -DPLUGIN_MROONGA=NO -DPLUGIN_SPIDER=NO -DPLUGIN_OQGRAPH=NO -DPLUGIN_PERFSCHEMA=%(kw:perf_schema)s -DPLUGIN_SPHINX=NO %(kw:additional_args)s && make -j%(kw:jobs)s %(kw:create_package)s", perf_schema=util.Property('perf_schema', default='YES'), build_type=util.Property('build_type', default='RelWithDebInfo'), jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN)'), c_compiler=util.Property('c_compiler', default='gcc'), cxx_compiler=util.Property('cxx_compiler', default='g++'), additional_args=util.Property('additional_args', default=''), create_package=util.Property('create_package', default='package') )], env={'CCACHE_DIR':'/mnt/ccache'}, haltOnFailure="true"))
+    f_quick_build.addStep(steps.Compile(
+        command=["sh", "-c", util.Interpolate("cmake . -DCMAKE_BUILD_TYPE=%(kw:build_type)s -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER=%(kw:c_compiler)s -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=%(kw:cxx_compiler)s -DPLUGIN_TOKUDB=NO -DPLUGIN_MROONGA=NO -DPLUGIN_SPIDER=NO -DPLUGIN_OQGRAPH=NO -DPLUGIN_PERFSCHEMA=%(kw:perf_schema)s -DPLUGIN_SPHINX=NO %(kw:additional_args)s && make %(kw:verbose_build)s -j%(kw:jobs)s %(kw:create_package)s",
+            perf_schema=util.Property('perf_schema', default='YES'),
+            build_type=util.Property('build_type', default='RelWithDebInfo'),
+            jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN)'),
+            c_compiler=util.Property('c_compiler', default='gcc'),
+            cxx_compiler=util.Property('cxx_compiler', default='g++'),
+            additional_args=util.Property('additional_args', default=''),
+            create_package=util.Property('create_package', default='package'),
+            verbose_build=util.Property('verbose_build', default=''),
+        )], env={'CCACHE_DIR':'/mnt/ccache'}, haltOnFailure="true"))
 
     f_quick_build.addStep(steps.MTR(
         logfiles={"mysqld*": "/buildbot/mysql_logs.html"},
