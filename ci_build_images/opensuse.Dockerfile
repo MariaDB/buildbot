@@ -31,6 +31,7 @@ RUN zypper update -y && \
     python-pip \
     python3-pip \
     rpm-build \
+    rpmlint \
     scons \
     snappy-devel \
     subversion \
