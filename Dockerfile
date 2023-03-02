@@ -26,7 +26,7 @@ RUN apt-get update \
         libcairo2 \
         yarnpkg; \
       export PATH="/usr/share/nodejs/yarn/bin:$PATH"; \
-      yarn global add gulp yo generator-buildbot-dashboard; \
+      yarn global --ignore-engines add gulp yo generator-buildbot-dashboard; \
     fi \
     && git clone --branch grid https://github.com/vladbogo/buildbot . \
     && python3 -m venv .venv \
