@@ -48,7 +48,23 @@ jobs:
           docker run -i localhost:5000/${{ env.REPO }}:master buildbot --version
           #//TEMP there is probably a better way for master-web here
           docker run -i localhost:5000/${{ env.REPO }}:master-web buildbot --version
-      - name: Check for registry credentials
+      - name: Login to ghcr.io
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push images to ghcr.io
+        run: |
+          msg="Push docker images to ghcr.io"
+          line="${msg//?/=}"
+          printf "\n${line}\n${msg}\n${line}\n"
+          for image in master master-web; do
+            skopeo copy --all --src-tls-verify=0 \
+            docker://localhost:5000/${{ env.REPO }}:${image} \
+            docker://ghcr.io/$GITHUB_REPOSITORY:${image}
+          done
+      - name: Check for quay.io registry credentials
         if: >
           github.ref == 'refs/heads/main' &&
           github.repository == 'MariaDB/buildbot'
@@ -62,26 +78,8 @@ jobs:
           if (( ${#missing[@]} == 0 )); then
             echo "DEPLOY_IMAGES=true" >> $GITHUB_ENV
           else
-            echo "Not pushing images to registry"
+            echo "Not pushing images to quay.io"
           fi
-      - name: Login to ghcr.io
-        if: ${{ env.DEPLOY_IMAGES == 'true' }}
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Push images to ghcr.io
-        if: ${{ env.DEPLOY_IMAGES == 'true' }}
-        run: |
-          msg="Push docker images to ghcr.io"
-          line="${msg//?/=}"
-          printf "\n${line}\n${msg}\n${line}\n"
-          for image in master master-web; do
-            skopeo copy --all --src-tls-verify=0 \
-            docker://localhost:5000/${{ env.REPO }}:${image} \
-            docker://ghcr.io/mariadb/buildbot:${image}
-          done
       - name: Login to quay.io
         if: ${{ env.DEPLOY_IMAGES == 'true' }}
         uses: docker/login-action@v2
