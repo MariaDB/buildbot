@@ -276,7 +276,7 @@ jobs:
           printf "\n${line}\n${msg}\n${line}\n"
           skopeo copy --all --src-tls-verify=0 \
             docker://localhost:5000/${{ env.REPO }}:${{ env.IMG }} \
-            docker://ghcr.io/${{ GITHUB_REPOSITORY }}:${{ env.IMG }}
+            docker://ghcr.io/$GITHUB_REPOSITORY:${{ env.IMG }}
       - name: Login to registry
         if: ${{ env.DEPLOY_IMAGES == 'true' }}
         uses: docker/login-action@v2
