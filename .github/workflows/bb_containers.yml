@@ -263,6 +263,22 @@ jobs:
           else
             echo "Not pushing images to registry"
           fi
+      - name: Login to ghcr.io
+        if: ${{ env.DEPLOY_IMAGES == 'true' }}
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Push images to ghcr.io
+        if: ${{ env.DEPLOY_IMAGES == 'true' }}
+        run: |
+          msg="Push docker image to ghcr.io (${{ env.IMG }})"
+          line="${msg//?/=}"
+          printf "\n${line}\n${msg}\n${line}\n"
+          skopeo copy --all --src-tls-verify=0 \
+            docker://localhost:5000/${{ env.REPO }}:${{ env.IMG }} \
+            docker://ghcr.io/mariadb/buildbot:${{ env.IMG }}
       - name: Login to registry
         if: ${{ env.DEPLOY_IMAGES == 'true' }}
         uses: docker/login-action@v2
@@ -270,12 +286,12 @@ jobs:
           registry: quay.io
           username: ${{ secrets.QUAY_USER }}
           password: ${{ secrets.QUAY_TOKEN }}
-      - name: Push images to registry
+      - name: Push images to quay.io
         if: ${{ env.DEPLOY_IMAGES == 'true' }}
         run: |
-          msg="Push docker image to registry (${{ env.IMG }})"
+          msg="Push docker image to quay.io (${{ env.IMG }})"
           line="${msg//?/=}"
           printf "\n${line}\n${msg}\n${line}\n"
           skopeo copy --all --src-tls-verify=0 \
-          docker://localhost:5000/bb-worker:${{ env.IMG }} \
-          docker://quay.io/mariadb-foundation/bb-worker:${{ env.IMG }}
+          docker://localhost:5000/${{ env.REPO }}:${{ env.IMG }} \
+          docker://quay.io/mariadb-foundation/${{ env.REPO }}:${{ env.IMG }}
