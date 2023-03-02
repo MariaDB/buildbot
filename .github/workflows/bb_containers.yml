@@ -260,7 +260,7 @@ jobs:
           printf "\n${line}\n${msg}\n${line}\n"
           skopeo copy --all --src-tls-verify=0 \
             docker://localhost:5000/${{ env.REPO }}:${{ env.IMG }} \
-            docker://ghcr.io/$GITHUB_REPOSITORY:${{ env.IMG }}
+            docker://ghcr.io/${GITHUB_REPOSITORY,,}:${{ env.IMG }}
       - name: Check for quay.io registry credentials
         if: >
           github.ref == 'refs/heads/main' &&

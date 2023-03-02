@@ -62,7 +62,7 @@ jobs:
           for image in master master-web; do
             skopeo copy --all --src-tls-verify=0 \
             docker://localhost:5000/${{ env.REPO }}:${image} \
-            docker://ghcr.io/$GITHUB_REPOSITORY:${image}
+            docker://ghcr.io/${{GITHUB_REPOSITORY,,}:${image}
           done
       - name: Check for quay.io registry credentials
         if: >
