@@ -21,6 +21,7 @@ RUN zypper update -y && \
     git \
     glibc-locale \
     gnutls-devel \
+    jemalloc-devel \
     libcurl-devel \
     libffi-devel \
     liblz4-devel \
