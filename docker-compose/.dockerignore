@@ -1,0 +1,4 @@
+buildbot/
+db/
+logs/
+mariadb/

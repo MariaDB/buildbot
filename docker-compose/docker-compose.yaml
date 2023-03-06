@@ -1,0 +1,66 @@
+---
+version: "3.7"
+services:
+  mariadb:
+    image: mariadb:10.5
+    restart: unless-stopped
+    environment:
+      - MARIADB_ROOT_PASSWORD=password
+      - MARIADB_DATABASE=buildbot
+      - MARIADB_USER=buildmaster
+      - MARIADB_PASSWORD=password
+    networks:
+      net_back:
+    healthcheck:
+      test: ['CMD', "mariadb-admin", "--password=password", "--protocol", "tcp", "ping"]
+    volumes:
+      - ./db/buildbot_dump.sql:/docker-entrypoint-initdb.d/buildbot.sql
+      - ./mariadb/tmp:/tmp/mariadb
+      - ./mariadb/data:/var/lib/mysql
+    command: --tmpdir=/tmp/mariadb
+
+  crossbar:
+    image: crossbario/crossbar
+    restart: unless-stopped
+    networks:
+      net_back:
+
+  master-web:
+    image: quay.io/mariadb-foundation/bb-master:master-web
+    restart: unless-stopped
+    volumes:
+      - ./logs:/var/log/buildbot
+      - ./config:/srv/buildbot-config
+      - ./start-bbm-web.sh:/usr/local/bin/start-bbm-web.sh
+      - ./buildbot/:/srv/buildbot/master
+    entrypoint:
+      - /usr/local/bin/start-bbm-web.sh
+    networks:
+      net_front:
+      net_back:
+    ports:
+      - "127.0.0.1:8010:8010"
+    depends_on:
+      - mariadb
+      - crossbar
+
+networks:
+  net_front:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.200.0.0/28
+    driver_opts:
+      com.docker.network.enable_ipv6: "false"
+      com.docker.network.bridge.name: "br_bb_front"
+  net_back:
+    driver: bridge
+    internal: true
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.16.201.0/28
+    driver_opts:
+      com.docker.network.enable_ipv6: "false"
+      com.docker.network.bridge.name: "br_bb_back"
