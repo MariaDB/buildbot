@@ -1,0 +1,7 @@
+db
+db/
+buildbot/
+buildbot
+logs/
+mariadb/
+config/master-private.cfg
