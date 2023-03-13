@@ -70,6 +70,7 @@ supportedPlatforms["10.3"] = [
         'aarch64-ubuntu-2004',
         'aarch64-ubuntu-2004-debug',
         'amd64-centos-7',
+        'amd64-centos-7-bintar',
         'amd64-centos-stream8',
         'amd64-debian-10',
         'amd64-debian-10-debug-embedded',
