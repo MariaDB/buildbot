@@ -15,9 +15,8 @@ services:
       test: ['CMD', "mariadb-admin", "--password=password", "--protocol", "tcp", "ping"]
     volumes:
       - ./db/buildbot_dump.sql:/docker-entrypoint-initdb.d/buildbot.sql
-      - ./mariadb/tmp:/tmp/mariadb
-      - ./mariadb/data:/var/lib/mysql
-    command: --tmpdir=/tmp/mariadb
+      - ./mariadb:/var/lib/mysql
+    command: --tmpdir=/var/lib/mysql/tmp
 
   crossbar:
     image: crossbario/crossbar

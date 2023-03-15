@@ -17,7 +17,7 @@ git clone https://github.com/MariaDB/buildbot.git
 cd buildbot/docker-compose
 ln -s config/master-private.cfg-sample config/master-private.cfg
 ln -s ../ buildbot
-mkdir -p logs db mariadb mariadb/tmp mariadb/data
+mkdir -p logs db mariadb/tmp
 cd db
 wget https://ci.mariadb.org/helper_files/buildbot_dump.sql.gz
 gzip -d buildbot_dump.sql.gz
