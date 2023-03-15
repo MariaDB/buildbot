@@ -1,6 +1,6 @@
 import yaml
 
-DEVELOPMENT_BRANCH = "11.0"
+DEVELOPMENT_BRANCH = "11.1"
 
 # Used to trigger the appropriate main branch
 branches_main = [
@@ -14,6 +14,7 @@ branches_main = [
         '10.10',
         '10.11',
         '11.0',
+        '11.1',
         ]
 
 # Defines what builders report status to GitHub
@@ -148,6 +149,7 @@ supportedPlatforms["10.11"] += [
         'ppc64le-debian-12',
         ]
 supportedPlatforms["11.0"] = supportedPlatforms["10.11"]
+supportedPlatforms["11.1"] = supportedPlatforms["11.0"]
 
 # Define environment variables for MTR step
 MTR_ENV = {
