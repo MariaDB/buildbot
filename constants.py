@@ -8,7 +8,6 @@ branches_main = [
         '10.4',
         '10.5',
         '10.6',
-        '10.7',
         '10.8',
         '10.9',
         '10.10',
@@ -123,8 +122,7 @@ supportedPlatforms["10.6"] = [
         ]
 supportedPlatforms["10.6"] += supportedPlatforms["10.5"]
 
-supportedPlatforms["10.7"] = supportedPlatforms["10.6"]
-supportedPlatforms["10.8"] = supportedPlatforms["10.7"]
+supportedPlatforms["10.8"] = supportedPlatforms["10.6"]
 supportedPlatforms["10.9"] = supportedPlatforms["10.8"]
 
 supportedPlatforms["10.10"] = [
