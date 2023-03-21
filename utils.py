@@ -232,10 +232,12 @@ def createVar():
     return """
 if [ -d mysql-test/var ]; then
     extra=
-    if [ -f  ./mysql-test/var/log/*/mysqld.*/data/core*gz ]; then
-      if [ -f sql/mysqld ]; then extra=sql/mysqld; fi
-      if [ -f sql/mariadbd ]; then extra=sql/mariadbd; fi
-      extra=mysql-test/var/[0-9]*/{mysqld.[0-9],my.cnf}
+    if compgen -G ./mysql-test/var/log/*/mysqld.*/data/core*gz > /dev/null; then
+      if compgen -G mysql-test/var/[0-9]*/{mysqld.[0-9],my.cnf} > /dev/null; then
+        extra=mysql-test/var/[0-9]*/{mysqld.[0-9],my.cnf}
+      fi
+      if [ -f sql/mysqld ]; then extra="$extra sql/mysqld"; fi
+      if [ -f sql/mariadbd ]; then extra="$extra sql/mariadbd"; fi
     fi
     tar zcf var.tar.gz mysql-test/var/*/log mysql-test/var/log ${extra}
     mv var.tar.gz /buildbot/logs/
