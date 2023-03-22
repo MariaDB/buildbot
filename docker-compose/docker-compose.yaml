@@ -43,13 +43,255 @@ services:
       - mariadb
       - crossbar
 
+  autogen_aarch64-master-0:
+    image: quay.io/mariadb-foundation/bb-master:master
+    restart: unless-stopped
+    volumes:
+      - ./logs:/var/log/buildbot
+      - ./config:/srv/buildbot-config
+      - ./start.sh:/usr/local/bin/start.sh
+      - ./buildbot/:/srv/buildbot/master
+    entrypoint:
+      - /bin/bash
+      - -c
+      - "/usr/local/bin/start.sh autogen/aarch64-master-0"
+    networks:
+      net_front:
+      net_back:
+    ports:
+      - "127.0.0.1:8011:8011"
+    depends_on:
+      - mariadb
+      - crossbar
+
+
+  autogen_amd64-master-0:
+    image: quay.io/mariadb-foundation/bb-master:master
+    restart: unless-stopped
+    volumes:
+      - ./logs:/var/log/buildbot
+      - ./config:/srv/buildbot-config
+      - ./start.sh:/usr/local/bin/start.sh
+      - ./buildbot/:/srv/buildbot/master
+    entrypoint:
+      - /bin/bash
+      - -c
+      - "/usr/local/bin/start.sh autogen/amd64-master-0"
+    networks:
+      net_front:
+      net_back:
+    ports:
+      - "127.0.0.1:8012:8012"
+    depends_on:
+      - mariadb
+      - crossbar
+
+
+  autogen_amd64-master-1:
+    image: quay.io/mariadb-foundation/bb-master:master
+    restart: unless-stopped
+    volumes:
+      - ./logs:/var/log/buildbot
+      - ./config:/srv/buildbot-config
+      - ./start.sh:/usr/local/bin/start.sh
+      - ./buildbot/:/srv/buildbot/master
+    entrypoint:
+      - /bin/bash
+      - -c
+      - "/usr/local/bin/start.sh autogen/amd64-master-1"
+    networks:
+      net_front:
+      net_back:
+    ports:
+      - "127.0.0.1:8013:8013"
+    depends_on:
+      - mariadb
+      - crossbar
+
+
+  autogen_ppc64le-master-0:
+    image: quay.io/mariadb-foundation/bb-master:master
+    restart: unless-stopped
+    volumes:
+      - ./logs:/var/log/buildbot
+      - ./config:/srv/buildbot-config
+      - ./start.sh:/usr/local/bin/start.sh
+      - ./buildbot/:/srv/buildbot/master
+    entrypoint:
+      - /bin/bash
+      - -c
+      - "/usr/local/bin/start.sh autogen/ppc64le-master-0"
+    networks:
+      net_front:
+      net_back:
+    ports:
+      - "127.0.0.1:8014:8014"
+    depends_on:
+      - mariadb
+      - crossbar
+
+
+  autogen_s390x-master-0:
+    image: quay.io/mariadb-foundation/bb-master:master
+    restart: unless-stopped
+    volumes:
+      - ./logs:/var/log/buildbot
+      - ./config:/srv/buildbot-config
+      - ./start.sh:/usr/local/bin/start.sh
+      - ./buildbot/:/srv/buildbot/master
+    entrypoint:
+      - /bin/bash
+      - -c
+      - "/usr/local/bin/start.sh autogen/s390x-master-0"
+    networks:
+      net_front:
+      net_back:
+    ports:
+      - "127.0.0.1:8015:8015"
+    depends_on:
+      - mariadb
+      - crossbar
+
+
+  autogen_x86-master-0:
+    image: quay.io/mariadb-foundation/bb-master:master
+    restart: unless-stopped
+    volumes:
+      - ./logs:/var/log/buildbot
+      - ./config:/srv/buildbot-config
+      - ./start.sh:/usr/local/bin/start.sh
+      - ./buildbot/:/srv/buildbot/master
+    entrypoint:
+      - /bin/bash
+      - -c
+      - "/usr/local/bin/start.sh autogen/x86-master-0"
+    networks:
+      net_front:
+      net_back:
+    ports:
+      - "127.0.0.1:8016:8016"
+    depends_on:
+      - mariadb
+      - crossbar
+
+
+  master-docker-nonstandard:
+    image: quay.io/mariadb-foundation/bb-master:master
+    restart: unless-stopped
+    volumes:
+      - ./logs:/var/log/buildbot
+      - ./config:/srv/buildbot-config
+      - ./start.sh:/usr/local/bin/start.sh
+      - ./buildbot/:/srv/buildbot/master
+    entrypoint:
+      - /bin/bash
+      - -c
+      - "/usr/local/bin/start.sh master-docker-nonstandard"
+    networks:
+      net_front:
+      net_back:
+    ports:
+      - "127.0.0.1:8017:8017"
+    depends_on:
+      - mariadb
+      - crossbar
+
+
+  master-galera:
+    image: quay.io/mariadb-foundation/bb-master:master
+    restart: unless-stopped
+    volumes:
+      - ./logs:/var/log/buildbot
+      - ./config:/srv/buildbot-config
+      - ./start.sh:/usr/local/bin/start.sh
+      - ./buildbot/:/srv/buildbot/master
+    entrypoint:
+      - /bin/bash
+      - -c
+      - "/usr/local/bin/start.sh master-galera"
+    networks:
+      net_front:
+      net_back:
+    ports:
+      - "127.0.0.1:8018:8018"
+    depends_on:
+      - mariadb
+      - crossbar
+
+
+  master-libvirt:
+    image: quay.io/mariadb-foundation/bb-master:master
+    restart: unless-stopped
+    volumes:
+      - ./logs:/var/log/buildbot
+      - ./config:/srv/buildbot-config
+      - ./start.sh:/usr/local/bin/start.sh
+      - ./buildbot/:/srv/buildbot/master
+    entrypoint:
+      - /bin/bash
+      - -c
+      - "/usr/local/bin/start.sh master-libvirt"
+    networks:
+      net_front:
+      net_back:
+    ports:
+      - "127.0.0.1:8019:8019"
+    depends_on:
+      - mariadb
+      - crossbar
+
+
+  master-nonlatent:
+    image: quay.io/mariadb-foundation/bb-master:master
+    restart: unless-stopped
+    volumes:
+      - ./logs:/var/log/buildbot
+      - ./config:/srv/buildbot-config
+      - ./start.sh:/usr/local/bin/start.sh
+      - ./buildbot/:/srv/buildbot/master
+    entrypoint:
+      - /bin/bash
+      - -c
+      - "/usr/local/bin/start.sh master-nonlatent"
+    networks:
+      net_front:
+      net_back:
+    ports:
+      - "127.0.0.1:8020:8020"
+    depends_on:
+      - mariadb
+      - crossbar
+
+
+  master-protected-branches:
+    image: quay.io/mariadb-foundation/bb-master:master
+    restart: unless-stopped
+    volumes:
+      - ./logs:/var/log/buildbot
+      - ./config:/srv/buildbot-config
+      - ./start.sh:/usr/local/bin/start.sh
+      - ./buildbot/:/srv/buildbot/master
+    entrypoint:
+      - /bin/bash
+      - -c
+      - "/usr/local/bin/start.sh master-protected-branches"
+    networks:
+      net_front:
+      net_back:
+    ports:
+      - "127.0.0.1:8021:8021"
+    depends_on:
+      - mariadb
+      - crossbar
+
+
 networks:
   net_front:
     driver: bridge
     ipam:
       driver: default
       config:
-        - subnet: 172.200.0.0/28
+        - subnet: 172.200.0.0/24
     driver_opts:
       com.docker.network.enable_ipv6: "false"
       com.docker.network.bridge.name: "br_bb_front"
@@ -59,7 +301,7 @@ networks:
     ipam:
       driver: default
       config:
-        - subnet: 172.16.201.0/28
+        - subnet: 172.16.201.0/24
     driver_opts:
       com.docker.network.enable_ipv6: "false"
       com.docker.network.bridge.name: "br_bb_back"
