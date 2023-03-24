@@ -56,6 +56,7 @@ RUN . /etc/os-release; \
     libboost-program-options-dev \
     libffi-dev \
     libssl-dev \
+    lintian \
     python3-dev \
     python3-setuptools \
     scons \
