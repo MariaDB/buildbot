@@ -43,6 +43,11 @@ jobs:
             tag: debian11-aocc
             branch: 10.7
             platforms: linux/amd64
+          - dockerfile: debian.Dockerfile msan.Dockerfile
+            image: debian:11
+            branch: 10.7
+            tag: debian11-msan
+            platforms: linux/amd64
           - dockerfile: debian.Dockerfile
             image: debian:sid
             branch: 10.11
@@ -69,11 +74,6 @@ jobs:
             image: ubuntu:22.04
             branch: 10.7
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
-          - dockerfile: debian.Dockerfile msan.Dockerfile
-            image: ubuntu:22.04
-            branch: 10.7
-            tag: ubuntu22.04-msan
-            platforms: linux/amd64
           - dockerfile: debian.Dockerfile
             image: ubuntu:22.10
             branch: 10.7
