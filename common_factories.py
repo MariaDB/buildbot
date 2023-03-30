@@ -88,6 +88,9 @@ name=MariaDB %(prop:branch)s repo (build %(prop:tarbuildnum)s)
 baseurl=https://ci.mariadb.org/%(prop:tarbuildnum)s/%(prop:buildername)s/rpms
 gpgcheck=0
 EOF
+            if [ "%(prop:rpm_type)s" = rhel8 ] || [ "%(prop:rpm_type)s" = centosstream8 ]; then
+                echo "module_hotfixes = 1" >> MariaDB.repo
+            fi
         """)]))
     #f_rpm_autobake.addStep(steps.MultipleFileUpload(workersrcs=util.Property('packages'),
     #    masterdest=util.Interpolate('/srv/buildbot/packages/' + '%(prop:tarbuildnum)s' + '/' + '%(prop:buildername)s'), mode=0o755, url=util.Interpolate('https://ci.mariadb.org/' + "%(prop:tarbuildnum)s" + "/" + '%(prop:buildername)s' + "/"), doStepIf=lambda step: hasFiles(step) and savePackage(step)))
