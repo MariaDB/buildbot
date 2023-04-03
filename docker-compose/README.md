@@ -16,7 +16,7 @@ To run buildbot locally with a pre-initialized DB to populate some fields
 git clone https://github.com/MariaDB/buildbot.git
 cd buildbot/docker-compose
 ln -s config/master-private.cfg-sample config/master-private.cfg
-ln -s ../ buildbot
+ln -s ../buildbot
 mkdir -p logs db mariadb/tmp
 cd db
 wget https://ci.mariadb.org/helper_files/buildbot_dump.sql.gz
