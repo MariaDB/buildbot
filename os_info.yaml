@@ -62,6 +62,12 @@ fedora-37:
     - amd64
     - aarch64
   type: rpm
+fedora-38:
+  version_name: 38
+  arch:
+    - amd64
+    - aarch64
+  type: rpm
 opensuse-15:
   version_name: 15
   arch:

@@ -88,6 +88,9 @@ jobs:
           - dockerfile: fedora.Dockerfile
             image: fedora:37
             platforms: linux/amd64, linux/arm64/v8
+          - dockerfile: fedora.Dockerfile
+            image: fedora:38
+            platforms: linux/amd64, linux/arm64/v8
           - dockerfile: centos7.Dockerfile pip.Dockerfile
             image: centos:7
             platforms: linux/amd64
