@@ -32,6 +32,8 @@
                 a(href="#grid?branch=11.0") 11.0
                 | ,
                 a(href="#grid?branch=11.1") 11.1
+                | ,
+                a(href="#grid?branch=11.2") 11.2
             label Results
             select.form-control(ng-model="C.result", ng-change="C.changeResult(C.result)", ng-options="r.code as r.text for r in C.results")
                 option(value="") (all)
