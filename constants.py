@@ -93,7 +93,7 @@ supportedPlatforms["10.3"] = [
         'ppc64le-ubuntu-2004-debug',
         ]
 
-supportedPlatforms["10.4"] = supportedPlatforms["10.3"]
+supportedPlatforms["10.4"] = supportedPlatforms["10.3"].copy()
 
 supportedPlatforms["10.5"] = [
         'aarch64-centos-stream9',
@@ -133,15 +133,15 @@ supportedPlatforms["10.6"] = [
         ]
 supportedPlatforms["10.6"] += supportedPlatforms["10.5"]
 
-supportedPlatforms["10.8"] = supportedPlatforms["10.6"]
-supportedPlatforms["10.9"] = supportedPlatforms["10.8"]
+supportedPlatforms["10.8"] = supportedPlatforms["10.6"].copy()
+supportedPlatforms["10.9"] = supportedPlatforms["10.8"].copy()
 
 supportedPlatforms["10.10"] = [
         'amd64-debian-11-aocc',
         ]
 supportedPlatforms["10.10"] += supportedPlatforms["10.9"]
 
-supportedPlatforms["10.11"] = supportedPlatforms["10.10"]
+supportedPlatforms["10.11"] = supportedPlatforms["10.10"].copy()
 supportedPlatforms["10.11"] += [
         'aarch64-debian-12',
         'aarch64-debian-sid',
@@ -153,9 +153,10 @@ supportedPlatforms["10.11"] += [
         'x86-debian-sid',
         'ppc64le-debian-12',
         ]
-supportedPlatforms["11.0"] = supportedPlatforms["10.11"]
-supportedPlatforms["11.1"] = supportedPlatforms["11.0"]
-supportedPlatforms["11.2"] = supportedPlatforms["11.1"]
+
+supportedPlatforms["11.0"] = supportedPlatforms["10.11"].copy()
+supportedPlatforms["11.1"] = supportedPlatforms["11.0"].copy()
+supportedPlatforms["11.2"] = supportedPlatforms["11.1"].copy()
 
 # Define environment variables for MTR step
 MTR_ENV = {
