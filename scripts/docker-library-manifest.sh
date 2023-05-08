@@ -152,7 +152,9 @@ if (($(buildah manifest inspect "$devmanifest" | jq '.manifests | length') >= ex
   fi
   specialtags['verylatest']=$(jq '.major_releases[0].release_id' < "$t")
   specialtags['latest']=$(jq '.major_releases | map(select(.release_status == "Stable"))[0].release_id' < "$t")
+  specialtags['latest-lts']=$(jq '.major_releases | map(select(.release_status == "Stable" and .release_support_status == "Long Term Support"))[0].release_id' < "$t")
   specialtags['earliest']=$(jq '.major_releases[-1].release_id' < "$t")
+  specialtags['earliest-lts']=$(jq '.major_releases | map(select(.release_status == "Stable" and .release_support_status == "Long Term Support"))[-1].release_id' < "$t")
   for tag in "${!specialtags[@]}"; do
     if [ \""$container_tag"\" == "${specialtags[$tag]}" ]; then
       buildah manifest push --all "$devmanifest" "docker://quay.io/mariadb-foundation/mariadb-devel:$tag"
