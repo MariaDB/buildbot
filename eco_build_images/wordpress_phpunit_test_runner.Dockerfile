@@ -17,7 +17,7 @@ RUN apt-get update ; \
 	&& docker-php-ext-install -j"$(nproc)" gd mysqli \
         && rm -rf /var/lib/apt/lists/*
 
-# Waiting on upstream PRs #176, 177, #179, with issue #178 as added bonus
+# Waiting on upstream PRs #176, 177, with issue #178 as added bonus
 RUN git clone --branch all_changes --single-branch --depth 1 https://github.com/grooverdan/phpunit-test-runner.git /phpunit-test-runner
 
 # because of https://github.com/WordPress/wordpress-develop/commit/db0290b04264de1fa791b6973ce3122ccc160a90
