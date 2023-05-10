@@ -17,10 +17,10 @@ hz_bbw4_lock = util.MasterLock('hz_bbw4_lock', maxCount=9)
 hz_bbw5_lock = util.MasterLock('hz_bbw5_lock', maxCount=9)
 amd_bbw1_lock = util.MasterLock('amd_bbw1_lock', maxCount=6)
 amd_bbw2_lock = util.MasterLock('amd_bbw2_lock', maxCount=8)
-intel_bbw1_lock = util.MasterLock('intel_bbw1_lock', maxCount=7)
-p9_rhel8_bbw1_lock = util.MasterLock('p9_rhel8_bbw1_lock', maxCount=9)
+intel_bbw1_lock = util.MasterLock('intel_bbw1_lock', maxCount=5)
+p9_rhel8_bbw1_lock = util.MasterLock('p9_rhel8_bbw1_lock', maxCount=6)
 p9_rhel7_bbw1_lock = util.MasterLock('p9_rhel7_bbw1_lock', maxCount=6)
-p9_db_bbw1_lock = util.MasterLock('p9_db_bbw1_lock', maxCount=12)
+p9_db_bbw1_lock = util.MasterLock('p9_db_bbw1_lock', maxCount=8)
 aarch_bbw1_lock = util.MasterLock('aarch64_bbw1_lock', maxCount=2)
 aarch_bbw2_lock = util.MasterLock('aarch64_bbw2_lock', maxCount=2)
 aarch_bbw3_lock = util.MasterLock('aarch64_bbw3_lock', maxCount=2)
@@ -39,6 +39,8 @@ win_bbw2_lock = util.MasterLock('win_bbw2_lock', maxCount=4)
 s390x_bbw1_lock = util.MasterLock('s390x_bbw1_lock', maxCount=3)
 s390x_bbw2_lock = util.MasterLock('s390x_bbw2_lock', maxCount=3)
 s390x_bbw3_lock = util.MasterLock('s390x_bbw3_lock', maxCount=3)
+s390x_bbw4_lock = util.MasterLock('s390x_bbw4_lock', maxCount=3)
+s390x_bbw5_lock = util.MasterLock('s390x_bbw5_lock', maxCount=3)
 
 @util.renderer
 def getLocks(props):
@@ -105,6 +107,10 @@ def getLocks(props):
         locks = locks + [s390x_bbw2_lock.access('counting')]
     if 's390x-bbw3-docker' in worker_name:
         locks = locks + [s390x_bbw3_lock.access('counting')]
+    if 's390x-bbw4-docker' in worker_name:
+        locks = locks + [s390x_bbw4_lock.access('counting')]
+    if 's390x-bbw5-docker' in worker_name:
+        locks = locks + [s390x_bbw5_lock.access('counting')]
     if 'amd-bbw1-docker' in worker_name:
         locks = locks + [amd_bbw1_lock.access('counting')]
     if 'amd-bbw2-docker' in worker_name:
