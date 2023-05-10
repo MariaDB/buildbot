@@ -49,16 +49,21 @@ RUN . /etc/os-release; \
     gawk \
     git \
     gnutls-dev \
+    iproute2 \
     iputils-ping \
     libasio-dev \
     libboost-dev \
     libboost-filesystem-dev \
     libboost-program-options-dev \
+    libdbi-perl \
     libffi-dev \
     libssl-dev \
+    lsof \
     python3-dev \
     python3-setuptools \
+    rsync \
     scons \
+    socat \
     sudo  \
     wget \
     && if [ "$(getconf LONG_BIT)" = 64 ]; then \

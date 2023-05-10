@@ -25,6 +25,8 @@ RUN dnf -y upgrade \
     flex \
     fmt-devel \
     galera \
+    gawk \
+    iproute \
     java-latest-openjdk \
     java-latest-openjdk-devel \
     java-latest-openjdk-headless \
@@ -33,6 +35,8 @@ RUN dnf -y upgrade \
     libevent-devel \
     libffi-devel \
     liburing-devel \
+    libdbi \
+    lsof \
     lzo \
     lzo-devel \
     python-unversioned-command \
@@ -40,9 +44,11 @@ RUN dnf -y upgrade \
     readline-devel \
     rpm-build \
     rpmlint \
+    rsync \
     rubypick \
     scons \
     snappy-devel \
+    socat \
     unixODBC \
     unixODBC-devel \
     wget \
