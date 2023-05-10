@@ -38,6 +38,7 @@ def getQuickBuildFactory(mtrDbPool):
         env=MTR_ENV,
     ))
     f_quick_build.addStep(steps.ShellCommand(name="move mariadb log files", alwaysRun=True, command=['bash', '-c', util.Interpolate(moveMTRLogs(), jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN'))]))
+    f_quick_build.addStep(steps.ShellCommand(name="create var archive", alwaysRun=True, command=['bash', '-c', util.Interpolate(createVar())], doStepIf=hasFailed))
     f_quick_build.addStep(steps.MTR(
         logfiles={"mysqld*": "/buildbot/mysql_logs.html"},
         command=["sh", "-c", util.Interpolate("""
@@ -58,7 +59,6 @@ def getQuickBuildFactory(mtrDbPool):
         util.Interpolate("mv /buildbot/logs /buildbot/logs_main\n" + moveMTRLogs() + "\nmv /buildbot/logs /buildbot/logs_galera; mv /buildbot/logs_main /buildbot/logs\n",
                          jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN)'))
         ],doStepIf=hasGalera))
-    f_quick_build.addStep(steps.ShellCommand(name="create var archive", alwaysRun=True, command=['bash', '-c', util.Interpolate(createVar())], doStepIf=hasFailed))
     f_quick_build.addStep(steps.DirectoryUpload(name="save log files", compress="bz2", alwaysRun=True,  workersrc='/buildbot/logs/', masterdest=util.Interpolate('/srv/buildbot/packages/' + '%(prop:tarbuildnum)s' + '/logs/' + '%(prop:buildername)s' )))
 
     ## trigger packages

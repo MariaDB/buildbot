@@ -391,7 +391,7 @@ def hasAutobake(props):
 def hasGalera(props):
     builderName = str(props.getProperty("buildername"))
 
-    for b in builders_galera:
+    for b in builders_galera_mtr:
         if builderName in b:
             return True
     return False
