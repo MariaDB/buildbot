@@ -28,6 +28,7 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     createrepo \
     curl-devel \
     galera \
+    java-latest-openjdk \
     jemalloc-devel \
     libffi-devel \
     libxml2-devel \
