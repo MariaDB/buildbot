@@ -45,6 +45,7 @@ RUN . /etc/os-release; \
     build-essential \
     ccache \
     check \
+    default-jdk \
     dumb-init \
     gawk \
     git \
