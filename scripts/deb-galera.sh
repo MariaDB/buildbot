@@ -222,7 +222,7 @@ for i in {1..10}; do
     break
   fi
   date +'%Y-%m-%dT%H:%M:%S%z'
-  sudo tail -n 5 /var/lib/node1/node1.err || true
+  sudo tail -n 25 /var/lib/node1/node1.err || true
 done
 set -x
 if [ "$res" != "0" ]; then
@@ -252,6 +252,10 @@ for node in 2 3; do
       res=0
       break
     fi
+    if [ ! -f /tmp/node${node}.pid ]; then
+       bb_log_info "missing pid file, assumed to have terminated"
+       break
+    fi
     bb_log_info "still waiting for node $node to come up ($i)..."
     date +'%Y-%m-%dT%H:%M:%S%z'
     sudo tail -n 5 /var/lib/node${node}/node${node}.err || true
@@ -259,6 +263,7 @@ for node in 2 3; do
   set -x
   if [ "$res" != "0" ]; then
     bb_log_err "failed to start node $node or to connect to it after the start"
+    sudo tail -n 50 /var/lib/node${node}/node${node}.err || true
     store_logs
     exit 1
   fi
