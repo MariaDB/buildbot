@@ -5,7 +5,7 @@
 
 ARG base_image
 FROM "$base_image"
-ARG mariadb_branch=10.7
+ARG mariadb_branch=11.1
 LABEL maintainer="MariaDB Buildbot maintainers"
 ENV CARGO_NET_GIT_FETCH_WITH_CLI=true
 
@@ -31,7 +31,7 @@ RUN . /etc/os-release; \
     && sed -i -e s/arm64/aarch64/ -e s/ppc64el/ppc64le/ /etc/apt/sources.list.d/galera-4.list \
     && if [ "${VERSION_CODENAME}" = bookworm ] || [ "${VERSION_CODENAME}" = lunar ] || [ "$(getconf LONG_BIT)" = 32 ]; then rm /etc/apt/sources.list.d/galera-4.list; fi \
     && apt-get update \
-    && curl -skO https://raw.githubusercontent.com/MariaDB/server/$mariadb_branch/debian/control \
+    && curl -skO https://raw.githubusercontent.com/MariaDB/server/44e4b93316be8df130c6d87880da3500d83dbe10/debian/control \
     && mkdir debian \
     && mv control debian/control \
     && touch debian/rules VERSION debian/not-installed \
