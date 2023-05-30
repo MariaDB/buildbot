@@ -253,8 +253,7 @@ for node in 2 3; do
       break
     fi
     if [ ! -f /tmp/node${node}.pid ]; then
-       bb_log_info "missing pid file, assumed to have terminated"
-       break
+       bb_log_info "missing pid file"
     fi
     bb_log_info "still waiting for node $node to come up ($i)..."
     date +'%Y-%m-%dT%H:%M:%S%z'
