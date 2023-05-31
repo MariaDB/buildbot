@@ -60,6 +60,7 @@ RUN . /etc/os-release; \
     libffi-dev \
     libssl-dev \
     lsof \
+    python3-buildbot-worker \
     python3-dev \
     python3-setuptools \
     rsync \
@@ -70,12 +71,8 @@ RUN . /etc/os-release; \
     && if [ "$(getconf LONG_BIT)" = 64 ]; then \
       apt-get -y install --no-install-recommends galera-4; \
     fi \
-    && if ! grep -q 'stretch' /etc/apt/sources.list; then \
-      apt-get -y install --no-install-recommends python3-buildbot-worker; \
-    fi \
-    # install Debian 9 only deps \
-    && if grep -q 'stretch' /etc/apt/sources.list; then \
-        apt-get -y install --no-install-recommends python3-pip; \
+    && if ! grep -q 'bionic' /etc/apt/sources.list; then \
+      apt-get -y install --no-install-recommends flex; \
     fi \
     && apt-get clean
 
