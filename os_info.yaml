@@ -87,8 +87,6 @@ rhel-8:
     - ppc64le
     - s390x
   type: rpm
-  mtr_additional_args:
-    aarch64: -DPLUGIN_COLUMNSTORE=NO
 rhel-9:
   version_name: 9
   arch:
@@ -97,8 +95,6 @@ rhel-9:
     - ppc64le
     - s390x
   type: rpm
-  mtr_additional_args:
-    aarch64: -DPLUGIN_COLUMNSTORE=NO
   has_install: False
 sles-12:
   version_name: 12
