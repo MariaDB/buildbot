@@ -27,7 +27,6 @@ RUN dnf -y upgrade \
     galera \
     gawk \
     iproute \
-    java-latest-openjdk \
     java-latest-openjdk-devel \
     java-latest-openjdk-headless \
     jemalloc-devel \
