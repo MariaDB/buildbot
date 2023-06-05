@@ -6,17 +6,19 @@ Command line example to manually build containers:
 
 ```console
 # debian
-cat debian.Dockerfile common.Dockerfile >/tmp/Dockerfile
-docker build . -f /tmp/Dockerfile -t mariadb.org/buildbot/debian:sid --build-arg mariadb_branch=10.7 --build-arg base_image=debian:sid
+cat debian.Dockerfile common.Dockerfile >Dockerfile
+docker build . -t mariadb.org/buildbot/debian:sid --build-arg mariadb_branch=10.7 --build-arg base_image=debian:sid
 # ubuntu
-cat debian.Dockerfile common.Dockerfile >/tmp/Dockerfile
-docker build . -f /tmp/Dockerfile -t mariadb.org/buildbot/ubuntu:21.04 --build-arg mariadb_branch=10.7 --build-arg base_image=ubuntu:22.04
+cat debian.Dockerfile common.Dockerfile >Dockerfile
+docker build . -t mariadb.org/buildbot/ubuntu:21.04 --build-arg mariadb_branch=10.7 --build-arg base_image=ubuntu:22.04
 # fedora
-cat fedora.Dockerfile common.Dockerfile >/tmp/Dockerfile
-docker build . -f /tmp/Dockerfile -t mariadb.org/buildbot/fedora:34 --build-arg base_image=fedora:37
-# rhel8
-cat rhel.Dockerfile common.Dockerfile >/tmp/Dockerfile
-docker build . -f /tmp/Dockerfile -t mariadb.org/buildbot/rhel:8 --build-arg "rhel_user=user" --build-arg "rhel_pwd=password"
+cat fedora.Dockerfile common.Dockerfile >Dockerfile
+docker build . -t mariadb.org/buildbot/fedora:34 --build-arg base_image=fedora:37
+# rhel9
+cat rhel.Dockerfile common.Dockerfile >Dockerfile
+echo "12345_KEYNAME" >rhel_keyname
+echo "12345_ORGID" >rhel_orgid
+docker build . -t mariadb.org/buildbot/rhel:9 --build-arg "base_image=ubi9" --secret id=rhel_orgid,src=./rhel_orgid --secret id=rhel_keyname,src=./rhel_keyname
 ```
 
 ## search for missing dependencies

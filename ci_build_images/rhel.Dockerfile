@@ -10,6 +10,7 @@ LABEL maintainer="MariaDB Buildbot maintainers"
 
 # Install updates and required packages
 # see: https://access.redhat.com/discussions/5889431 for rhsm/config.py hack.
+ENV SMDEV_CONTAINER_OFF=1
 # hadolint ignore=SC2034,DL3041,SC2086
 RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     --mount=type=secret,id=rhel_keyname,target=/run/secrets/rhel_keyname \
