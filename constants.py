@@ -25,6 +25,7 @@ github_status_builders = [
         "amd64-debian-10-debug-embedded",
         "amd64-debian-10-deb-autobake",
         "amd64-debian-11-debug-ps-embedded",
+        "amd64-debian-11-msan",
         "amd64-fedora-36",
         "amd64-ubuntu-2004-debug",
         "amd64-ubuntu-2204-debug-ps",
