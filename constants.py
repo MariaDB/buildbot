@@ -4,11 +4,9 @@ DEVELOPMENT_BRANCH = "11.2"
 
 # Used to trigger the appropriate main branch
 branches_main = [
-        '10.3',
         '10.4',
         '10.5',
         '10.6',
-        '10.8',
         '10.9',
         '10.10',
         '10.11',
@@ -26,14 +24,14 @@ github_status_builders = [
         "amd64-debian-10-deb-autobake",
         "amd64-debian-11-debug-ps-embedded",
         "amd64-debian-11-msan",
-        "amd64-fedora-36",
+        "amd64-fedora-38",
         "amd64-ubuntu-2004-debug",
         "amd64-ubuntu-2204-debug-ps",
         "amd64-windows",
         ]
 
 # Special builders triggering
-builders_big = ["amd64-ubuntu-1804-bigtest"]
+builders_big = ["amd64-ubuntu-2204-bigtest"]
 builders_dockerlibrary = ["amd64-rhel8-dockerlibrary"]
 builders_eco = [
         "amd64-debian-10-eco-mysqljs",
@@ -63,11 +61,10 @@ releaseBranches = ["bb-*-release", "preview-*"]
 # Maximum supported branch is the one where the default distro MariaDB package major version <= branch
 # For example, if Debian 10 has MariaDB 10.3 by default, we don't support MariaDB 10.2 on it.
 supportedPlatforms = {}
-supportedPlatforms["10.3"] = [
+supportedPlatforms["10.4"] = [
         'aarch64-centos-stream8',
         'aarch64-debian-10',
         'aarch64-rhel-8',
-        'aarch64-ubuntu-1804',
         'aarch64-ubuntu-2004',
         'aarch64-ubuntu-2004-debug',
         'amd64-centos-7',
@@ -75,12 +72,11 @@ supportedPlatforms["10.3"] = [
         'amd64-centos-stream8',
         'amd64-debian-10',
         'amd64-debian-10-debug-embedded',
+        'amd64-debian-11-asan',
         'amd64-debian-11-debug-ps-embedded',
         'amd64-opensuse-15',
         'amd64-rhel-7',
         'amd64-rhel-8',
-        'amd64-ubuntu-1804',
-        'amd64-ubuntu-1804-clang10-asan',
         'amd64-ubuntu-2004',
         'amd64-ubuntu-2004-debug',
         'amd64-ubuntu-2204-debug-ps',
@@ -89,18 +85,13 @@ supportedPlatforms["10.3"] = [
         'amd64-windows-packages',
         'ppc64le-centos-stream8',
         'ppc64le-rhel-8',
-        'ppc64le-ubuntu-1804',
-        'ppc64le-ubuntu-1804-without-server',
         'ppc64le-ubuntu-2004',
         'ppc64le-ubuntu-2004-debug',
         ]
 
-supportedPlatforms["10.4"] = supportedPlatforms["10.3"].copy()
-
 supportedPlatforms["10.5"] = [
         'aarch64-centos-stream9',
         'aarch64-debian-11',
-        'aarch64-fedora-36',
         'aarch64-fedora-37',
         'aarch64-fedora-38',
         'aarch64-rhel-9',
@@ -108,7 +99,6 @@ supportedPlatforms["10.5"] = [
         'amd64-centos-stream9',
         'amd64-debian-11',
         'amd64-debian-11-msan',
-        'amd64-fedora-36',
         'amd64-fedora-37',
         'amd64-fedora-38',
         'amd64-rhel-9',
