@@ -41,8 +41,8 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     && dnf -y upgrade \
     && dnf -y groupinstall "Development Tools" \
     && dnf -y install \
-    "https://kojipkgs.fedoraproject.org/packages/Judy/1.0.5/28.fc36/$(arch)/Judy-1.0.5-28.fc36.$(arch).rpm" \
-    "https://kojipkgs.fedoraproject.org/packages/Judy/1.0.5/28.fc36/$(arch)/Judy-devel-1.0.5-28.fc36.$(arch).rpm" \
+    "https://kojipkgs.fedoraproject.org/packages/Judy/1.0.5/31.fc38/$(arch)/Judy-1.0.5-31.fc38.$(arch).rpm" \
+    "https://kojipkgs.fedoraproject.org/packages/Judy/1.0.5/31.fc38/$(arch)/Judy-devel-1.0.5-31.fc38.$(arch).rpm" \
     && dnf -y builddep mariadb-server \
     && dnf -y install \
     ${extra} \

@@ -53,7 +53,6 @@ RUN dnf -y upgrade \
     wget \
     which \
     && source /etc/os-release \
-    && if [ "$VERSION_ID" = 36 ]; then dnf -y install gnutls-devel; fi \
     && if [ "$(uname -m)" = "x86_64" ]; then dnf -y install libpmem-devel; fi \
     && dnf clean all
 

@@ -50,12 +50,6 @@ debian-sid:
     - ppc64le
     - x86
   type: deb
-fedora-36:
-  version_name: 36
-  arch:
-    - amd64
-    - aarch64
-  type: rpm
 fedora-37:
   version_name: 37
   arch:
@@ -110,14 +104,6 @@ sles-15:
     - s390x
   type: rpm
   has_install: False
-ubuntu-1804:
-  version_name: bionic
-  arch:
-    - amd64
-    - aarch64
-    - ppc64le
-    - x86
-  type: deb
 ubuntu-2004:
   version_name: focal
   arch:
@@ -142,6 +128,13 @@ ubuntu-2210:
   type: deb
 ubuntu-2304:
   version_name: lunar
+  arch:
+    - amd64
+    - aarch64
+  type: deb
+  has_install: False
+ubuntu-2310:
+  version_name: mantic
   arch:
     - amd64
     - aarch64

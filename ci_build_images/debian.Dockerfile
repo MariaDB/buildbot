@@ -29,7 +29,8 @@ RUN . /etc/os-release; \
     && apt-get -y install --no-install-recommends curl ca-certificates devscripts equivs lsb-release \
     && echo "deb [trusted=yes] https://buildbot.mariadb.net/archive/builds/mariadb-4.x/latest/kvm-deb-${VERSION_CODENAME}-$(dpkg --print-architecture)-gal/debs ./" > /etc/apt/sources.list.d/galera-4.list \
     && sed -i -e s/arm64/aarch64/ -e s/ppc64el/ppc64le/ /etc/apt/sources.list.d/galera-4.list \
-    && if [ "${VERSION_CODENAME}" = bookworm ] || [ "${VERSION_CODENAME}" = lunar ] || [ "$(getconf LONG_BIT)" = 32 ]; then rm /etc/apt/sources.list.d/galera-4.list; fi \
+    && if [ "${VERSION_CODENAME}" = lunar ] && [ "$(dpkg --print-architecture)" = arm64 ]; then rm /etc/apt/sources.list.d/galera-4.list; fi \
+    && if [ "${VERSION_CODENAME}" = bookworm ] || [ "${VERSION_CODENAME}" = mantic ] || [ "$(getconf LONG_BIT)" = 32 ]; then rm /etc/apt/sources.list.d/galera-4.list; fi \
     && apt-get update \
     && curl -skO https://raw.githubusercontent.com/MariaDB/server/44e4b93316be8df130c6d87880da3500d83dbe10/debian/control \
     && mkdir debian \
