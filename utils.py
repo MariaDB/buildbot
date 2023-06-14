@@ -343,9 +343,7 @@ def hasDockerLibrary(step):
     builderName = str(step.getProperty("buildername"))
 
     # from https://github.com/MariaDB/mariadb-docker/blob/next/update.sh#L7-L15
-    if fnmatch.fnmatch(branch, '10.2'):
-        dockerbase = "ubuntu-1804-deb-autobake"
-    elif fnmatch.fnmatch(branch, '10.[3-7]'):
+    if fnmatch.fnmatch(branch, '10.[4-6]'):
         dockerbase = "ubuntu-2004-deb-autobake"
     else:
         dockerbase = "ubuntu-2204-deb-autobake"

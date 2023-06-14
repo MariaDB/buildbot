@@ -26,26 +26,26 @@ jobs:
         include:
           - dockerfile: debian.Dockerfile
             image: debian:10
-            branch: 10.7
+            branch: 10.11
             platforms: linux/amd64, linux/arm64/v8
           - dockerfile: debian.Dockerfile
             image: debian:11
-            branch: 10.7
+            branch: 10.11
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
           - dockerfile: debian.Dockerfile
             # replace with debian:12 when available and remove tag
-            image: debian:bookworm
+            image: debian:12
             tag: debian12
             branch: 10.11
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
           - dockerfile: debian.Dockerfile aocc.Dockerfile
             image: debian:11
             tag: debian11-aocc
-            branch: 10.7
+            branch: 10.11
             platforms: linux/amd64
           - dockerfile: debian.Dockerfile msan.Dockerfile
             image: debian:11
-            branch: 10.7
+            branch: 10.11
             tag: debian11-msan
             platforms: linux/amd64
           - dockerfile: debian.Dockerfile
@@ -58,32 +58,24 @@ jobs:
             branch: 10.11
             platforms: linux/386
           - dockerfile: debian.Dockerfile
-            image: ubuntu:18.04
-            branch: 10.7
-            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
-          - dockerfile: debian.Dockerfile
-            image: ubuntu:18.04
-            branch: 10.7
-            tag: ubuntu18.04-386
-            platforms: linux/386
-          - dockerfile: debian.Dockerfile
             image: ubuntu:20.04
-            branch: 10.7
+            branch: 10.11
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
           - dockerfile: debian.Dockerfile
             image: ubuntu:22.04
-            branch: 10.7
+            branch: 10.11
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
           - dockerfile: debian.Dockerfile
             image: ubuntu:22.10
-            branch: 10.7
+            branch: 10.11
             platforms: linux/amd64, linux/arm64/v8
           - dockerfile: debian.Dockerfile
             image: ubuntu:23.04
             branch: 10.11
             platforms: linux/amd64, linux/arm64/v8
-          - dockerfile: fedora.Dockerfile
-            image: fedora:36
+          - dockerfile: debian.Dockerfile
+            image: ubuntu:23.10
+            branch: 10.11
             platforms: linux/amd64, linux/arm64/v8
           - dockerfile: fedora.Dockerfile
             image: fedora:37

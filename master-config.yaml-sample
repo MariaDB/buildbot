@@ -3,14 +3,15 @@ builders:
 - aarch64-centos-stream9
 - aarch64-debian-10
 - aarch64-debian-11
+- aarch64-debian-12
 - aarch64-debian-sid
-- aarch64-fedora-36
 - aarch64-fedora-37
+- aarch64-fedora-38
 - aarch64-rhel-8
 - aarch64-rhel-9
-- aarch64-ubuntu-1804
 - aarch64-ubuntu-2004
 - aarch64-ubuntu-2204
+- aarch64-ubuntu-2304
 log_name: master-docker-aarch64-0.log
 port: 9998
 workers:
