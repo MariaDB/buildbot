@@ -11,7 +11,9 @@ commit=${4:-0}
 branch=${5:-${master_branch}}
 
 # keep in sync with docker-cleanup script
-if [[ $branch =~ ^preview ]]; then
+if [[ $branch = *pkgtest* ]]; then
+  container_tag=${branch#bb-}
+elif [[ $branch =~ ^preview ]]; then
   container_tag=${branch#preview-}
 else
   container_tag=$master_branch
