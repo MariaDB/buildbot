@@ -79,6 +79,7 @@ supportedPlatforms["10.4"] = [
         'amd64-ubuntu-1804-clang10-asan',
         'amd64-ubuntu-2004',
         'amd64-ubuntu-2004-debug',
+        'amd64-ubuntu-2004-fulltest',
         'amd64-ubuntu-2204-debug-ps',
         'amd64-ubuntu-2204-valgrind',
         'amd64-windows',
@@ -117,7 +118,6 @@ supportedPlatforms["10.5"] += supportedPlatforms["10.4"]
 supportedPlatforms["10.6"] = [
         'aarch64-ubuntu-2204',
         'aarch64-ubuntu-2210',
-        'amd64-ubuntu-2004-fulltest',
         'amd64-ubuntu-2204',
         'amd64-ubuntu-2210',
         'ppc64le-ubuntu-2204',
