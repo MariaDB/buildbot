@@ -64,6 +64,7 @@ supportedPlatforms = {}
 supportedPlatforms["10.4"] = [
         'aarch64-centos-stream8',
         'aarch64-debian-10',
+        'aarch64-debian-10-bintar',
         'aarch64-rhel-8',
         'aarch64-ubuntu-2004',
         'aarch64-ubuntu-2004-debug',
