@@ -12,7 +12,7 @@ from constants import *
 
 def getQuickBuildFactory(mtrDbPool):
     f_quick_build = util.BuildFactory()
-    f_quick_build.addStep(steps.ShellCommand(name="Show kernel and ulimit", command=['bash', '-c', 'uname -a && ulimit -a']))
+    f_quick_build.addStep(steps.ShellCommand(name="Environment details", command=['bash', '-c', 'date -u && uname -a && ulimit -a']))
     f_quick_build.addStep(steps.SetProperty(property="dockerfile", value=util.Interpolate("%(kw:url)s", url=dockerfile), description="dockerfile"))
     f_quick_build.addStep(downloadSourceTarball())
     f_quick_build.addStep(steps.ShellCommand(command=util.Interpolate("tar -xvzf /mnt/packages/%(prop:tarbuildnum)s_%(prop:mariadb_version)s.tar.gz --strip-components=1")))
@@ -86,7 +86,7 @@ def getQuickBuildFactory(mtrDbPool):
 def getRpmAutobakeFactory(mtrDbPool):
     ## f_rpm_autobake
     f_rpm_autobake= util.BuildFactory()
-    f_rpm_autobake.addStep(steps.ShellCommand(name="Show kernel and ulimit", command=['bash', '-c', 'uname -a && ulimit -a']))
+    f_rpm_autobake.addStep(steps.ShellCommand(name="Environment details", command=['bash', '-c', 'date -u && uname -a && ulimit -a']))
     f_rpm_autobake.addStep(steps.SetProperty(property="dockerfile", value=util.Interpolate("%(kw:url)s", url=dockerfile), description="dockerfile"))
     f_rpm_autobake.workdir=f_rpm_autobake.workdir + "/padding_for_CPACK_RPM_BUILD_SOURCE_DIRS_PREFIX/"
     f_rpm_autobake.addStep(steps.ShellCommand(name='fetch packages for MariaDB-compat', command=["sh", "-c", util.Interpolate('wget --no-check-certificate -cO ../MariaDB-shared-5.3.%(kw:arch)s.rpm "https://ci.mariadb.org/helper_files/mariadb-shared-5.3-%(kw:arch)s.rpm" && wget -cO ../MariaDB-shared-10.1.%(kw:arch)s.rpm "https://ci.mariadb.org/helper_files/mariadb-shared-10.1-kvm-rpm-%(kw:rpm_type)s-%(kw:arch)s.rpm"', arch=getArch, rpm_type=util.Property('rpm_type'))], doStepIf=hasCompat))
