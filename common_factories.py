@@ -19,7 +19,7 @@ def getQuickBuildFactory(mtrDbPool):
     f_quick_build.addStep(steps.ShellCommand(name="create html log file", command=['bash', '-c', util.Interpolate(getHTMLLogString(), jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN)'))]))
     # build steps
     f_quick_build.addStep(steps.Compile(
-        command=["sh", "-c", util.Interpolate("cmake . -DCMAKE_BUILD_TYPE=%(kw:build_type)s -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER=%(kw:c_compiler)s -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=%(kw:cxx_compiler)s -DPLUGIN_TOKUDB=NO -DPLUGIN_MROONGA=NO -DPLUGIN_SPIDER=NO -DPLUGIN_OQGRAPH=NO -DPLUGIN_PERFSCHEMA=%(kw:perf_schema)s -DPLUGIN_SPHINX=NO %(kw:additional_args)s && make %(kw:verbose_build)s -j%(kw:jobs)s %(kw:create_package)s",
+        command=["sh", "-c", util.Interpolate("cmake . -DCMAKE_BUILD_TYPE=%(kw:build_type)s -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER=%(kw:c_compiler)s -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=%(kw:cxx_compiler)s -DPLUGIN_TOKUDB=NO -DPLUGIN_MROONGA=NO -DPLUGIN_SPIDER=%(kw:spider_changed)s -DPLUGIN_OQGRAPH=NO -DPLUGIN_PERFSCHEMA=%(kw:perf_schema)s -DPLUGIN_SPHINX=NO %(kw:additional_args)s && make %(kw:verbose_build)s -j%(kw:jobs)s %(kw:create_package)s",
             perf_schema=util.Property('perf_schema', default='YES'),
             build_type=util.Property('build_type', default='RelWithDebInfo'),
             jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN)'),
@@ -28,15 +28,19 @@ def getQuickBuildFactory(mtrDbPool):
             additional_args=util.Property('additional_args', default=''),
             create_package=util.Property('create_package', default='package'),
             verbose_build=util.Property('verbose_build', default=''),
+            spider_changed=util.Property('spider_changed', default='NO'),
         )], env={'CCACHE_DIR':'/mnt/ccache'}, haltOnFailure="true"))
-
     f_quick_build.addStep(steps.MTR(
         logfiles={"mysqld*": "/buildbot/mysql_logs.html"},
         command=["sh", "-c", util.Interpolate("""
             cd mysql-test &&
             exec perl mysql-test-run.pl --verbose-restart --force --retry=3 --max-save-core=1 --max-save-datadir=1 --max-test-fail=20 --mem --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s
             """,
-            mtr_additional_args=util.Property('mtr_additional_args', default=''),
+            mtr_additional_args=util.Transform(
+                lambda spider_changed, mtr_additional_args: mtr_additional_args.replace('--suite=main', '--suite=main,spider,spider/bg,spider/bugfix,spider/feature,spider/regression/e1121,spider/regression/e112122') if spider_changed == 'YES' else mtr_additional_args,
+                util.Property('spider_changed'),
+                util.Property('mtr_additional_args', default=''),
+            ),
             jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN)'),
         )],
         timeout=600,
