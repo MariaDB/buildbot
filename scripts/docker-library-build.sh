@@ -37,9 +37,11 @@ container_tag=${container_tag,,*}
 case "${buildername#*ubuntu-}" in
   2204-deb-autobake)
     pkgver=ubu2204
+    bbnet=jammy
     ;;
   2004-deb-autobake)
     pkgver=ubu2004
+    bbnet=focal
     ;;
   *)
     echo "unknown base buildername $buildername"
@@ -74,7 +76,7 @@ build() {
   buildah bud --tag "${image}" \
     --layers \
     --arch "$@" \
-    --build-arg REPOSITORY="[trusted=yes] https://ci.mariadb.org/$tarbuildnum/${buildername}/debs ./" \
+    --build-arg REPOSITORY="[trusted=yes] https://ci.mariadb.org/$tarbuildnum/${buildername}/debs ./\ndeb [trusted=yes] https://buildbot.mariadb.net/archive/builds/mariadb-4.x/latest/kvm-deb-${bbnet}-${builderarch}-gal/debs/ ./" \
     --build-arg MARIADB_VERSION="1:$mariadb_version+maria~$pkgver" \
     "${annotations[@]}" \
     "mariadb-docker/$master_branch"
