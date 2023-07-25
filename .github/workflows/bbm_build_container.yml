@@ -1,6 +1,7 @@
 ---
 name: bbm build container
 
+
 on:
   push:
     paths:
@@ -22,10 +23,10 @@ jobs:
           - 5000:5000
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Check Dockerfile with hadolint
         run: |
-          docker run -i -v $(pwd):/mnt -w /mnt hadolint/hadolint:latest hadolint /mnt/Dockerfile
+          docker run -i -v $(pwd):/mnt -w /mnt ghcr.io/hadolint/hadolint:latest hadolint /mnt/Dockerfile
       - name: Set up env vars
         run: |
           echo "REPO=bb-master" >>$GITHUB_ENV
