@@ -158,7 +158,7 @@ jobs:
       - name: Check Dockerfile with hadolint
         run: |
           cp /home/runner/work/Dockerfile .
-          docker run -i -v $(pwd):/mnt -w /mnt hadolint/hadolint:latest hadolint /mnt/Dockerfile
+          docker run -i -v $(pwd):/mnt -w /mnt ghcr.io/hadolint/hadolint:latest hadolint /mnt/Dockerfile
       - name: Install qemu-user-static
         run: |
           sudo apt-get update
