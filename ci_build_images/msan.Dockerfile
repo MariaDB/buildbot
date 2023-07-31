@@ -14,7 +14,7 @@ ENV PATH=$MSAN_LIBDIR/bin:$PATH
 RUN mkdir $MSAN_LIBDIR \
     && mkdir $MSAN_LIBDIR/bin \
     && printf '#!/bin/sh\nunset LD_LIBRARY_PATH\nexec llvm-symbolizer-15 "$@"' > $MSAN_SYMBOLIZER_PATH \
-    && printf '#!/bin/sh\nunset LD_LIBRARY_PATH\nexec gdb "$@"' > $GDB_PATH \
+    && printf '#!/bin/sh\nunset LD_LIBRARY_PATH\nexec /usr/bin/gdb "$@"' > $GDB_PATH \
     && curl -sL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor -o /usr/share/keyrings/llvm-snapshot.gpg \
     && echo "deb [signed-by=/usr/share/keyrings/llvm-snapshot.gpg] \
     http://apt.llvm.org/bullseye/ llvm-toolchain-bullseye-15 main" > /etc/apt/sources.list.d/llvm-toolchain.list \
