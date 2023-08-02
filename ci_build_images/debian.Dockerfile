@@ -75,6 +75,9 @@ RUN . /etc/os-release; \
     && if ! grep -q 'bionic' /etc/apt/sources.list; then \
       apt-get -y install --no-install-recommends flex; \
     fi \
+    && if ! grep -q 'jammy' /etc/apt/sources.list; then \
+      apt-get -y install --no-install-recommends clang-14; \
+    fi \
     && apt-get clean
 
 ENV WSREP_PROVIDER=/usr/lib/galera/libgalera_smm.so
