@@ -76,6 +76,11 @@ jobs:
             image: ubuntu:23.10
             branch: 10.11
             platforms: linux/amd64, linux/arm64/v8
+          - dockerfile: debian.Dockerfile
+            image: docker.io/intel/oneapi-hpckit:latest
+            tag: ubuntu-icc
+            branch: 10.11
+            platforms: linux/amd64
           - dockerfile: fedora.Dockerfile
             image: fedora:37
             platforms: linux/amd64, linux/arm64/v8
