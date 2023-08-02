@@ -74,8 +74,11 @@ RUN . /etc/os-release; \
     && if [ "$(getconf LONG_BIT)" = 64 ]; then \
       apt-get -y install --no-install-recommends galera-4; \
     fi \
-    && if ! grep -q 'bionic' /etc/apt/sources.list; then \
+    && if [ "${VERSION_CODENAME}" != bionic ]; then \
       apt-get -y install --no-install-recommends flex; \
+    fi \
+    && if [ "${VERSION_CODENAME}" = jammy ]; then \
+      apt-get -y install --no-install-recommends clang-14; \
     fi \
     && apt-get clean
 
