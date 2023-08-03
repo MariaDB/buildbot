@@ -6,12 +6,9 @@ set -o pipefail
 set -o posix
 
 err() {
-  echo_red >&2 "ERROR: $*"
+  echo >&2 "ERROR: $*"
   exit 1
 }
-
-cd /srv/buildbot/master || err "cd /srv/buildbot/master"
-ln -sf /srv/buildbot-config/master-private.cfg master-private.cfg
 
 cd "/srv/buildbot/master/"
 # Generate master configs
@@ -31,5 +28,8 @@ while ! nc -z crossbar 8080; do
   sleep 0.1
 done
 echo "Crossbar started"
+
+# loop for debug
+# while true; do date && sleep 30; done
 
 buildbot start --nodaemon

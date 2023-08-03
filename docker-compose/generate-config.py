@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+
+# TODO vlad:
+# - generate directly into docker-compose.yaml file
+# - generate only 1 blank lines between block (not 2)
+
 master_directories = [
     "autogen/aarch64-master-0",
     "autogen/amd64-master-0",
@@ -16,15 +22,14 @@ docker_compose_template = """
   {master_name}:
     image: quay.io/mariadb-foundation/bb-master:master
     restart: unless-stopped
+    container_name: {master_name}
     volumes:
       - ./logs:/var/log/buildbot
-      - ./config:/srv/buildbot-config
-      - ./start.sh:/usr/local/bin/start.sh
       - ./buildbot/:/srv/buildbot/master
     entrypoint:
       - /bin/bash
       - -c
-      - "/usr/local/bin/start.sh {master_directory}"
+      - "/srv/buildbot/master/docker-compose/start.sh {master_directory}"
     networks:
       net_front:
       net_back:
