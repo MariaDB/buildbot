@@ -2,8 +2,9 @@
 version: "3.7"
 services:
   mariadb:
-    image: mariadb:10.5
+    image: mariadb:10.6
     restart: unless-stopped
+    container_name: mariadb
     environment:
       - MARIADB_ROOT_PASSWORD=password
       - MARIADB_DATABASE=buildbot
@@ -14,26 +15,26 @@ services:
     healthcheck:
       test: ['CMD', "mariadb-admin", "--password=password", "--protocol", "tcp", "ping"]
     volumes:
-      - ./db/buildbot_dump.sql:/docker-entrypoint-initdb.d/buildbot.sql
-      - ./mariadb:/var/lib/mysql
-    command: --tmpdir=/var/lib/mysql/tmp
+      - ./db:/docker-entrypoint-initdb.d:ro
+      - ./mariadb:/var/lib/mysql:rw
+    # command: --tmpdir=/var/lib/mysql/tmp
 
   crossbar:
     image: crossbario/crossbar
     restart: unless-stopped
+    container_name: crossbar
     networks:
       net_back:
 
   master-web:
     image: quay.io/mariadb-foundation/bb-master:master-web
     restart: unless-stopped
+    container_name: master-web
     volumes:
       - ./logs:/var/log/buildbot
-      - ./config:/srv/buildbot-config
-      - ./start-bbm-web.sh:/usr/local/bin/start-bbm-web.sh
       - ./buildbot/:/srv/buildbot/master
     entrypoint:
-      - /usr/local/bin/start-bbm-web.sh
+      - /srv/buildbot/master/docker-compose/start-bbm-web.sh
     networks:
       net_front:
       net_back:
@@ -46,15 +47,14 @@ services:
   autogen_aarch64-master-0:
     image: quay.io/mariadb-foundation/bb-master:master
     restart: unless-stopped
+    container_name: autogen_aarch64-master-0
     volumes:
       - ./logs:/var/log/buildbot
-      - ./config:/srv/buildbot-config
-      - ./start.sh:/usr/local/bin/start.sh
       - ./buildbot/:/srv/buildbot/master
     entrypoint:
       - /bin/bash
       - -c
-      - "/usr/local/bin/start.sh autogen/aarch64-master-0"
+      - "/srv/buildbot/master/docker-compose/start.sh autogen/aarch64-master-0"
     networks:
       net_front:
       net_back:
@@ -64,19 +64,17 @@ services:
       - mariadb
       - crossbar
 
-
   autogen_amd64-master-0:
     image: quay.io/mariadb-foundation/bb-master:master
     restart: unless-stopped
+    container_name: autogen_amd64-master-0
     volumes:
       - ./logs:/var/log/buildbot
-      - ./config:/srv/buildbot-config
-      - ./start.sh:/usr/local/bin/start.sh
       - ./buildbot/:/srv/buildbot/master
     entrypoint:
       - /bin/bash
       - -c
-      - "/usr/local/bin/start.sh autogen/amd64-master-0"
+      - "/srv/buildbot/master/docker-compose/start.sh autogen/amd64-master-0"
     networks:
       net_front:
       net_back:
@@ -86,19 +84,17 @@ services:
       - mariadb
       - crossbar
 
-
   autogen_amd64-master-1:
     image: quay.io/mariadb-foundation/bb-master:master
     restart: unless-stopped
+    container_name: autogen_amd64-master-1
     volumes:
       - ./logs:/var/log/buildbot
-      - ./config:/srv/buildbot-config
-      - ./start.sh:/usr/local/bin/start.sh
       - ./buildbot/:/srv/buildbot/master
     entrypoint:
       - /bin/bash
       - -c
-      - "/usr/local/bin/start.sh autogen/amd64-master-1"
+      - "/srv/buildbot/master/docker-compose/start.sh autogen/amd64-master-1"
     networks:
       net_front:
       net_back:
@@ -108,19 +104,17 @@ services:
       - mariadb
       - crossbar
 
-
   autogen_ppc64le-master-0:
     image: quay.io/mariadb-foundation/bb-master:master
     restart: unless-stopped
+    container_name: autogen_ppc64le-master-0
     volumes:
       - ./logs:/var/log/buildbot
-      - ./config:/srv/buildbot-config
-      - ./start.sh:/usr/local/bin/start.sh
       - ./buildbot/:/srv/buildbot/master
     entrypoint:
       - /bin/bash
       - -c
-      - "/usr/local/bin/start.sh autogen/ppc64le-master-0"
+      - "/srv/buildbot/master/docker-compose/start.sh autogen/ppc64le-master-0"
     networks:
       net_front:
       net_back:
@@ -130,19 +124,17 @@ services:
       - mariadb
       - crossbar
 
-
   autogen_s390x-master-0:
     image: quay.io/mariadb-foundation/bb-master:master
     restart: unless-stopped
+    container_name: autogen_s390x-master-0
     volumes:
       - ./logs:/var/log/buildbot
-      - ./config:/srv/buildbot-config
-      - ./start.sh:/usr/local/bin/start.sh
       - ./buildbot/:/srv/buildbot/master
     entrypoint:
       - /bin/bash
       - -c
-      - "/usr/local/bin/start.sh autogen/s390x-master-0"
+      - "/srv/buildbot/master/docker-compose/start.sh autogen/s390x-master-0"
     networks:
       net_front:
       net_back:
@@ -152,19 +144,17 @@ services:
       - mariadb
       - crossbar
 
-
   autogen_x86-master-0:
     image: quay.io/mariadb-foundation/bb-master:master
     restart: unless-stopped
+    container_name: autogen_x86-master-0
     volumes:
       - ./logs:/var/log/buildbot
-      - ./config:/srv/buildbot-config
-      - ./start.sh:/usr/local/bin/start.sh
       - ./buildbot/:/srv/buildbot/master
     entrypoint:
       - /bin/bash
       - -c
-      - "/usr/local/bin/start.sh autogen/x86-master-0"
+      - "/srv/buildbot/master/docker-compose/start.sh autogen/x86-master-0"
     networks:
       net_front:
       net_back:
@@ -174,19 +164,17 @@ services:
       - mariadb
       - crossbar
 
-
   master-docker-nonstandard:
     image: quay.io/mariadb-foundation/bb-master:master
     restart: unless-stopped
+    container_name: master-docker-nonstandard
     volumes:
       - ./logs:/var/log/buildbot
-      - ./config:/srv/buildbot-config
-      - ./start.sh:/usr/local/bin/start.sh
       - ./buildbot/:/srv/buildbot/master
     entrypoint:
       - /bin/bash
       - -c
-      - "/usr/local/bin/start.sh master-docker-nonstandard"
+      - "/srv/buildbot/master/docker-compose/start.sh master-docker-nonstandard"
     networks:
       net_front:
       net_back:
@@ -196,19 +184,17 @@ services:
       - mariadb
       - crossbar
 
-
   master-galera:
     image: quay.io/mariadb-foundation/bb-master:master
     restart: unless-stopped
+    container_name: master-galera
     volumes:
       - ./logs:/var/log/buildbot
-      - ./config:/srv/buildbot-config
-      - ./start.sh:/usr/local/bin/start.sh
       - ./buildbot/:/srv/buildbot/master
     entrypoint:
       - /bin/bash
       - -c
-      - "/usr/local/bin/start.sh master-galera"
+      - "/srv/buildbot/master/docker-compose/start.sh master-galera"
     networks:
       net_front:
       net_back:
@@ -218,63 +204,57 @@ services:
       - mariadb
       - crossbar
 
+  # master-libvirt:
+  #   image: quay.io/mariadb-foundation/bb-master:master
+  #   restart: unless-stopped
+  #   container_name: master-libvirt
+  #   volumes:
+  #     - ./logs:/var/log/buildbot
+  #     - ./buildbot/:/srv/buildbot/master
+  #   entrypoint:
+  #     - /bin/bash
+  #     - -c
+  #     - "/srv/buildbot/master/docker-compose/start.sh master-libvirt"
+  #   networks:
+  #     net_front:
+  #     net_back:
+  #   ports:
+  #     - "127.0.0.1:8019:8019"
+  #   depends_on:
+  #     - mariadb
+  #     - crossbar
 
-  master-libvirt:
-    image: quay.io/mariadb-foundation/bb-master:master
-    restart: unless-stopped
-    volumes:
-      - ./logs:/var/log/buildbot
-      - ./config:/srv/buildbot-config
-      - ./start.sh:/usr/local/bin/start.sh
-      - ./buildbot/:/srv/buildbot/master
-    entrypoint:
-      - /bin/bash
-      - -c
-      - "/usr/local/bin/start.sh master-libvirt"
-    networks:
-      net_front:
-      net_back:
-    ports:
-      - "127.0.0.1:8019:8019"
-    depends_on:
-      - mariadb
-      - crossbar
-
-
-  master-nonlatent:
-    image: quay.io/mariadb-foundation/bb-master:master
-    restart: unless-stopped
-    volumes:
-      - ./logs:/var/log/buildbot
-      - ./config:/srv/buildbot-config
-      - ./start.sh:/usr/local/bin/start.sh
-      - ./buildbot/:/srv/buildbot/master
-    entrypoint:
-      - /bin/bash
-      - -c
-      - "/usr/local/bin/start.sh master-nonlatent"
-    networks:
-      net_front:
-      net_back:
-    ports:
-      - "127.0.0.1:8020:8020"
-    depends_on:
-      - mariadb
-      - crossbar
-
+  # master-nonlatent:
+  #   image: quay.io/mariadb-foundation/bb-master:master
+  #   restart: unless-stopped
+  #   container_name: master-nonlatent
+  #   volumes:
+  #     - ./logs:/var/log/buildbot
+  #     - ./buildbot/:/srv/buildbot/master
+  #   entrypoint:
+  #     - /bin/bash
+  #     - -c
+  #     - "/srv/buildbot/master/docker-compose/start.sh master-nonlatent"
+  #   networks:
+  #     net_front:
+  #     net_back:
+  #   ports:
+  #     - "127.0.0.1:8020:8020"
+  #   depends_on:
+  #     - mariadb
+  #     - crossbar
 
   master-protected-branches:
     image: quay.io/mariadb-foundation/bb-master:master
     restart: unless-stopped
+    container_name: master-protected-branches
     volumes:
       - ./logs:/var/log/buildbot
-      - ./config:/srv/buildbot-config
-      - ./start.sh:/usr/local/bin/start.sh
       - ./buildbot/:/srv/buildbot/master
     entrypoint:
       - /bin/bash
       - -c
-      - "/usr/local/bin/start.sh master-protected-branches"
+      - "/srv/buildbot/master/docker-compose/start.sh master-protected-branches"
     networks:
       net_front:
       net_back:
@@ -283,7 +263,6 @@ services:
     depends_on:
       - mariadb
       - crossbar
-
 
 networks:
   net_front:
