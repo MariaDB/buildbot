@@ -1,5 +1,3 @@
-import os
-
 master_directories = [
     "autogen/aarch64-master-0",
     "autogen/amd64-master-0",
