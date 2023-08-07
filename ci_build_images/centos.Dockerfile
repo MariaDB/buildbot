@@ -40,7 +40,7 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     flex \
     galera \
     java-1.8.0-openjdk-devel \
-    java-1.8.0-openjdk-headless \
+    java-1.8.0-openjdk \
     jemalloc-devel \
     libcurl-devel \
     libevent-devel \

@@ -28,7 +28,7 @@ RUN dnf -y upgrade \
     gawk \
     iproute \
     java-latest-openjdk-devel \
-    java-latest-openjdk-headless \
+    java-latest-openjdk \
     jemalloc-devel \
     libcurl-devel \
     libevent-devel \

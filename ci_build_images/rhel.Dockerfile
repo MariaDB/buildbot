@@ -57,7 +57,7 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     flex \
     galera \
     java-1.8.0-openjdk-devel \
-    java-1.8.0-openjdk-headless \
+    java-1.8.0-openjdk \
     jemalloc-devel --allowerasing \
     krb5-devel \
     libaio-devel \
