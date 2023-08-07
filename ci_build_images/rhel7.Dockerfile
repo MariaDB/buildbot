@@ -29,7 +29,7 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     curl-devel \
     galera \
     java-latest-openjdk-devel \
-    java-latest-openjdk-headless \
+    java-latest-openjdk \
     jemalloc-devel \
     libffi-devel \
     libxml2-devel \

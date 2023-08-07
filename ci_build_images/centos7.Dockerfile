@@ -26,7 +26,7 @@ RUN yum -y --enablerepo=extras install epel-release \
     galera \
     gnutls-devel \
     java-1.8.0-openjdk-devel \
-    java-1.8.0-openjdk-headless \
+    java-1.8.0-openjdk \
     jemalloc-devel \
     libcurl-devel \
     libevent-devel \
