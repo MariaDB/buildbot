@@ -4,5 +4,4 @@ __pycache__
 ci_build_images
 docker-compose/logs
 docker-compose/mariadb
-dockerfiles
 master-private.cfg
