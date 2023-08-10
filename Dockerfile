@@ -35,7 +35,7 @@ RUN apt-get update \
     && if [ "$master_type" = "master-web" ]; then \
       make frontend; \
     fi \
-    && pip install --no-cache-dir wheel \
+    && pip install --no-cache-dir python-dotenv wheel \
     && pip install --no-cache-dir autobahn==20.7.1 PyJWT==1.7.1 \
     && cd master && python setup.py bdist_wheel \
     && pip install --no-cache-dir dist/*.whl \
