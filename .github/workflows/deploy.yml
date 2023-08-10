@@ -1,0 +1,35 @@
+---
+name: deploy
+
+on:
+  push:
+    paths:
+      - "autogen/**"
+      - "docker-compose/**"
+      - "master-**"
+      - "master.cfg"
+  pull_request:
+    paths:
+      - "autogen/**"
+      - "docker-compose/**"
+      - "master-**"
+      - "master.cfg"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: deploy
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: deploy dev
+        if: >
+          github.ref == 'refs/heads/dev' &&
+          github.repository == 'MariaDB/buildbot'
+        run: |
+          install -m 600 -D /dev/null ~/.ssh/id_ed25519
+          install -m 600 -D /dev/null ~/.ssh/known_hosts
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" >~/.ssh/id_ed25519
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" >~/.ssh/known_hosts
+          rsync -a --progress -e "ssh -p ${{ secrets.SERVER_PORT }}" ./ ${{ secrets.USER }}@${{ secrets.SERVER_IP }}:/srv/dev/
+          rm ~/.ssh/id_ed25519
