@@ -31,6 +31,11 @@ services:
     image: quay.io/mariadb-foundation/bb-master:master-web
     restart: unless-stopped
     container_name: master-web
+    environment:
+      - MQ_ROUTER_URL
+      - TITLE_URL
+      - TITLE
+      - BUILDMASTER_URL
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -49,6 +54,11 @@ services:
     image: quay.io/mariadb-foundation/bb-master:master
     restart: unless-stopped
     container_name: autogen_aarch64-master-0
+    environment:
+      - MQ_ROUTER_URL
+      - TITLE_URL
+      - TITLE
+      - BUILDMASTER_URL
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -69,6 +79,11 @@ services:
     image: quay.io/mariadb-foundation/bb-master:master
     restart: unless-stopped
     container_name: autogen_amd64-master-0
+    environment:
+      - MQ_ROUTER_URL
+      - TITLE_URL
+      - TITLE
+      - BUILDMASTER_URL
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -89,6 +104,11 @@ services:
     image: quay.io/mariadb-foundation/bb-master:master
     restart: unless-stopped
     container_name: autogen_amd64-master-1
+    environment:
+      - MQ_ROUTER_URL
+      - TITLE_URL
+      - TITLE
+      - BUILDMASTER_URL
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -109,6 +129,11 @@ services:
     image: quay.io/mariadb-foundation/bb-master:master
     restart: unless-stopped
     container_name: autogen_ppc64le-master-0
+    environment:
+      - MQ_ROUTER_URL
+      - TITLE_URL
+      - TITLE
+      - BUILDMASTER_URL
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -129,6 +154,11 @@ services:
     image: quay.io/mariadb-foundation/bb-master:master
     restart: unless-stopped
     container_name: autogen_s390x-master-0
+    environment:
+      - MQ_ROUTER_URL
+      - TITLE_URL
+      - TITLE
+      - BUILDMASTER_URL
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -149,6 +179,11 @@ services:
     image: quay.io/mariadb-foundation/bb-master:master
     restart: unless-stopped
     container_name: autogen_x86-master-0
+    environment:
+      - MQ_ROUTER_URL
+      - TITLE_URL
+      - TITLE
+      - BUILDMASTER_URL
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -169,6 +204,11 @@ services:
     image: quay.io/mariadb-foundation/bb-master:master
     restart: unless-stopped
     container_name: master-docker-nonstandard
+    environment:
+      - MQ_ROUTER_URL
+      - TITLE_URL
+      - TITLE
+      - BUILDMASTER_URL
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -189,6 +229,11 @@ services:
     image: quay.io/mariadb-foundation/bb-master:master
     restart: unless-stopped
     container_name: master-galera
+    environment:
+      - MQ_ROUTER_URL
+      - TITLE_URL
+      - TITLE
+      - BUILDMASTER_URL
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -209,6 +254,11 @@ services:
     image: quay.io/mariadb-foundation/bb-master:master
     restart: unless-stopped
     container_name: master-protected-branches
+    environment:
+      - MQ_ROUTER_URL
+      - TITLE_URL
+      - TITLE
+      - BUILDMASTER_URL
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
