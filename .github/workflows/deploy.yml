@@ -57,6 +57,7 @@ jobs:
           ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} "docker-compose -f /srv/dev/docker-compose/docker-compose.yaml up -d"
       - name: clean
         if: >
+          always() &&
           github.ref == 'refs/heads/dev' &&
           github.repository == 'MariaDB/buildbot'
         run: |
