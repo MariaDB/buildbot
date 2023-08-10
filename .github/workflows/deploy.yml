@@ -4,12 +4,14 @@ name: deploy
 on:
   push:
     paths:
+      - ".github/workflows/deploy.yml"
       - "autogen/**"
       - "docker-compose/**"
       - "master-**"
       - "master.cfg"
   pull_request:
     paths:
+      - ".github/workflows/deploy.yml"
       - "autogen/**"
       - "docker-compose/**"
       - "master-**"
