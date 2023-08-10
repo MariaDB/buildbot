@@ -1,4 +1,6 @@
 .*
+*.log
+__pycache__
 ci_build_images
 docker-compose/logs
 docker-compose/mariadb
