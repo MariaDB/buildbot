@@ -15,6 +15,7 @@ RUN apt-get update \
       libmariadb-dev \
       libvirt-dev \
       netcat \
+      openssh-client \
       pkg-config \
       python3 \
       python3-dev \
