@@ -1,5 +1,5 @@
 ---
-exclude: "dockerfiles|ci_build_images/qpress"
+exclude: "dockerfiles|ci_build_images/qpress|cross-reference/crossreference/cr/static/cr/font-awesome"
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.3.0
