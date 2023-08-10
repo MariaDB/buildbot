@@ -1,12 +1,12 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import yaml
 import os
 import shutil
 
 base_path = "autogen/"
-config = { "private": { } }
-exec(open("master-private.cfg").read(), config, { })
+config = {"private": {}}
+exec(open("master-private.cfg").read(), config, {})
 
 with open('os_info.yaml', 'r') as f:
     os_info = yaml.safe_load(f)
@@ -53,4 +53,3 @@ for arch in platforms:
             f.write(buildbot_tac)
         idx += 1
     print(arch, len(master_config['builders']))
-

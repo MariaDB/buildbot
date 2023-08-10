@@ -26,5 +26,7 @@ echo "MariaDB started"
 # while true; do date && sleep 30; done
 
 cd /srv/buildbot/master/master-web || err "cd /srv/buildbot/master/master-web"
+# shellcheck disable=SC2226
+[[ -f master-private.cfg ]] || ln -s ../master-private.cfg
 buildbot upgrade-master /srv/buildbot/master/master-web
 buildbot start --nodaemon
