@@ -10,10 +10,6 @@ err() {
   exit 1
 }
 
-cd "/srv/buildbot/master/"
-# Generate master configs
-/opt/buildbot/.venv/bin/python define_masters.py
-
 # Make sure to pass the master name as the first argument
 cd "/srv/buildbot/master/$1" || err "cd /srv/buildbot/master/$1"
 
