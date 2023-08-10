@@ -48,13 +48,14 @@ jobs:
         run: |
           rsync -a --progress --delete --exclude-from=rsync.exclude -e "ssh -p ${{ secrets.SERVER_PORT }}" ./ ${{ secrets.USER }}@${{ secrets.SERVER_IP }}:/srv/dev/
           ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} "cd /srv/dev/docker-compose/ && ./generate-config.py"
+          ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} "cd /srv/dev/ && ./define_masters.py"
           ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} "cd /srv/dev/docker-compose/ && ln -sf .. buildbot"
       - name: start stack
         if: >
           github.ref == 'refs/heads/dev' &&
           github.repository == 'MariaDB/buildbot'
         run: |
-          ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} "docker-compose -f /srv/dev/docker-compose/docker-compose.yaml up -d"
+          ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} "cd /srv/dev/docker-compose && docker-compose pull && docker-compose up -d"
       - name: clean
         if: >
           always() &&
