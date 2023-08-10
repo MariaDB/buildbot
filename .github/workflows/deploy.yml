@@ -35,5 +35,5 @@ jobs:
           echo "${{ secrets.SSH_KNOWN_HOSTS }}" >~/.ssh/known_hosts
           ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} "docker-compose -f /srv/dev/docker-compose/docker-compose.yaml down"
           rsync -a --progress --exclude-from=rsync.exclude -e "ssh -p ${{ secrets.SERVER_PORT }}" ./ ${{ secrets.USER }}@${{ secrets.SERVER_IP }}:/srv/dev/
-          ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} "cd /srv/dev/docker-compose/ && ./generate-config.py && docker-compose up -d"
+          ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} "cd /srv/dev/docker-compose/ && ./generate-config.py && docker-compose -f /srv/dev/docker-compose/docker-compose.yaml up -d"
           rm ~/.ssh/id_ed25519
