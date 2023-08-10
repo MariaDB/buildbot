@@ -8,3 +8,4 @@ venv
 workers
 autogen
 master-config.yaml
+.venv
