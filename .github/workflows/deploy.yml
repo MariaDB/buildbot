@@ -1,0 +1,39 @@
+---
+name: deploy
+
+on:
+  push:
+    paths:
+      - ".github/workflows/deploy.yml"
+      - "autogen/**"
+      - "docker-compose/**"
+      - "master-**"
+      - "master.cfg"
+  pull_request:
+    paths:
+      - ".github/workflows/deploy.yml"
+      - "autogen/**"
+      - "docker-compose/**"
+      - "master-**"
+      - "master.cfg"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: deploy
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: deploy dev
+        if: >
+          github.ref == 'refs/heads/dev' &&
+          github.repository == 'MariaDB/buildbot'
+        run: |
+          install -m 600 -D /dev/null ~/.ssh/id_ed25519
+          install -m 600 -D /dev/null ~/.ssh/known_hosts
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" >~/.ssh/id_ed25519
+          echo "${{ secrets.SSH_KNOWN_HOSTS }}" >~/.ssh/known_hosts
+          ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} "docker-compose -f /srv/dev/docker-compose/docker-compose.yaml down"
+          rsync -a --progress --exclude-from=rsync.exclude -e "ssh -p ${{ secrets.SERVER_PORT }}" ./ ${{ secrets.USER }}@${{ secrets.SERVER_IP }}:/srv/dev/
+          ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} "cd /srv/dev/docker-compose/ && ./generate-config.py && docker-compose -f /srv/dev/docker-compose/docker-compose.yaml up -d"
+          rm ~/.ssh/id_ed25519
