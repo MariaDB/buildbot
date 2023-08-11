@@ -27,6 +27,19 @@ services:
     networks:
       net_back:
 
+  nginx:
+    image: nginx:latest
+    restart: unless-stopped
+    container_name: nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d/:/etc/nginx/conf.d/:ro
+      - /srv/buildbot/packages:/srv/buildbot/packages:ro
+    ports:
+      - "127.0.0.1:8080:80"
+    networks:
+      net_front:
+
   master-web:
     image: quay.io/mariadb-foundation/bb-master:master-web
     restart: unless-stopped
