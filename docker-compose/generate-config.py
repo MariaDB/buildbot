@@ -9,9 +9,9 @@ master_directories = [
     "autogen/x86-master-0",
     "master-docker-nonstandard",
     "master-galera",
-# TODO Enable these once it's more clear what needs to be done
+    "master-nonlatent",
+# TODO Enable this once it's more clear what needs to be done
 #    "master-libvirt",
-#    "master-nonlatent",
     "master-protected-branches",
 ]
 
