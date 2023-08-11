@@ -13,6 +13,9 @@ err() {
 # Make sure to pass the master name as the first argument
 cd "/srv/buildbot/master/$1" || err "cd /srv/buildbot/master/$1"
 
+# shellcheck disable=SC2226
+[[ -f master-private.cfg ]] || ln -s ../master-private.cfg
+
 echo "Waiting for MariaDB to start..."
 while ! nc -z mariadb 3306; do
   sleep 0.1
