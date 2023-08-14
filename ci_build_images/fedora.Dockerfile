@@ -27,8 +27,8 @@ RUN dnf -y upgrade \
     galera \
     gawk \
     iproute \
-    java-latest-openjdk-devel \
-    java-latest-openjdk \
+    java-1.8.0-openjdk-devel \
+    java-1.8.0-openjdk \
     jemalloc-devel \
     libcurl-devel \
     libevent-devel \
