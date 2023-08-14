@@ -53,10 +53,12 @@ def getQuickBuildFactory(mtrDbPool):
     f_quick_build.addStep(steps.ShellCommand(name="move mariadb log files", alwaysRun=True, command=['bash', '-c', util.Interpolate(moveMTRLogs(), jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN'))]))
     f_quick_build.addStep(steps.ShellCommand(name="create var archive", alwaysRun=True, command=['bash', '-c', util.Interpolate(createVar())], doStepIf=hasFailed))
     f_quick_build.addStep(steps.MTR(
+        description="testing galera",
+        descriptionDone="test galera",
         logfiles={"mysqld*": "/buildbot/mysql_logs.html"},
         command=["sh", "-c", util.Interpolate("""
            cd mysql-test &&
-           if [ -f "$WSREP_PROVIDER" ]; then exec perl mysql-test-run.pl --verbose-restart --force --retry=3 --max-save-core=1 --max-save-datadir=1 --max-test-fail=20 --mem --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s --suite=wsrep,galera,galera_3nodes,galera_3nodes_sr; fi
+           if [ -f "$WSREP_PROVIDER" ]; then exec perl mysql-test-run.pl --verbose-restart --force --retry=3 --max-save-core=1 --max-save-datadir=1 --max-test-fail=20 --mem --big-test --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s --suite=wsrep,galera,galera_3nodes,galera_3nodes_sr; fi
            """,
            mtr_additional_args=util.Property('mtr_additional_args', default=''),
            jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN)'))],
