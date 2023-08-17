@@ -47,8 +47,9 @@ services:
     environment:
       - MQ_ROUTER_URL
       - TITLE_URL
-      - TITLE
       - BUILDMASTER_URL
+      - TITLE
+      - PORT=8010
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -70,8 +71,9 @@ services:
     environment:
       - MQ_ROUTER_URL
       - TITLE_URL
-      - TITLE
       - BUILDMASTER_URL
+      - TITLE
+      - PORT=9996
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -83,7 +85,7 @@ services:
       net_front:
       net_back:
     ports:
-      - "127.0.0.1:8011:8011"
+      - "127.0.0.1:9996:9996"
     depends_on:
       - mariadb
       - crossbar
@@ -95,8 +97,9 @@ services:
     environment:
       - MQ_ROUTER_URL
       - TITLE_URL
-      - TITLE
       - BUILDMASTER_URL
+      - TITLE
+      - PORT=9997
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -108,7 +111,7 @@ services:
       net_front:
       net_back:
     ports:
-      - "127.0.0.1:8012:8012"
+      - "127.0.0.1:9997:9997"
     depends_on:
       - mariadb
       - crossbar
@@ -120,8 +123,9 @@ services:
     environment:
       - MQ_ROUTER_URL
       - TITLE_URL
-      - TITLE
       - BUILDMASTER_URL
+      - TITLE
+      - PORT=9998
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -133,7 +137,7 @@ services:
       net_front:
       net_back:
     ports:
-      - "127.0.0.1:8013:8013"
+      - "127.0.0.1:9998:9998"
     depends_on:
       - mariadb
       - crossbar
@@ -145,8 +149,9 @@ services:
     environment:
       - MQ_ROUTER_URL
       - TITLE_URL
-      - TITLE
       - BUILDMASTER_URL
+      - TITLE
+      - PORT=9999
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -158,7 +163,7 @@ services:
       net_front:
       net_back:
     ports:
-      - "127.0.0.1:8014:8014"
+      - "127.0.0.1:9999:9999"
     depends_on:
       - mariadb
       - crossbar
@@ -170,8 +175,9 @@ services:
     environment:
       - MQ_ROUTER_URL
       - TITLE_URL
-      - TITLE
       - BUILDMASTER_URL
+      - TITLE
+      - PORT=10000
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -183,7 +189,7 @@ services:
       net_front:
       net_back:
     ports:
-      - "127.0.0.1:8015:8015"
+      - "127.0.0.1:10000:10000"
     depends_on:
       - mariadb
       - crossbar
@@ -195,8 +201,9 @@ services:
     environment:
       - MQ_ROUTER_URL
       - TITLE_URL
-      - TITLE
       - BUILDMASTER_URL
+      - TITLE
+      - PORT=10001
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -208,7 +215,7 @@ services:
       net_front:
       net_back:
     ports:
-      - "127.0.0.1:8016:8016"
+      - "127.0.0.1:10001:10001"
     depends_on:
       - mariadb
       - crossbar
@@ -220,8 +227,9 @@ services:
     environment:
       - MQ_ROUTER_URL
       - TITLE_URL
-      - TITLE
       - BUILDMASTER_URL
+      - TITLE
+      - PORT=10002
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -233,7 +241,7 @@ services:
       net_front:
       net_back:
     ports:
-      - "127.0.0.1:8017:8017"
+      - "127.0.0.1:10002:10002"
     depends_on:
       - mariadb
       - crossbar
@@ -245,8 +253,9 @@ services:
     environment:
       - MQ_ROUTER_URL
       - TITLE_URL
-      - TITLE
       - BUILDMASTER_URL
+      - TITLE
+      - PORT=10003
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -258,7 +267,33 @@ services:
       net_front:
       net_back:
     ports:
-      - "127.0.0.1:8018:8018"
+      - "127.0.0.1:10003:10003"
+    depends_on:
+      - mariadb
+      - crossbar
+
+  master-nonlatent:
+    image: quay.io/mariadb-foundation/bb-master:master
+    restart: unless-stopped
+    container_name: master-nonlatent
+    environment:
+      - MQ_ROUTER_URL
+      - TITLE_URL
+      - BUILDMASTER_URL
+      - TITLE
+      - PORT=10004
+    volumes:
+      - ./logs:/var/log/buildbot
+      - ./buildbot/:/srv/buildbot/master
+    entrypoint:
+      - /bin/bash
+      - -c
+      - "/srv/buildbot/master/docker-compose/start.sh master-nonlatent"
+    networks:
+      net_front:
+      net_back:
+    ports:
+      - "127.0.0.1:10004:10004"
     depends_on:
       - mariadb
       - crossbar
@@ -270,8 +305,9 @@ services:
     environment:
       - MQ_ROUTER_URL
       - TITLE_URL
-      - TITLE
       - BUILDMASTER_URL
+      - TITLE
+      - PORT=10005
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -283,7 +319,7 @@ services:
       net_front:
       net_back:
     ports:
-      - "127.0.0.1:8019:8019"
+      - "127.0.0.1:10005:10005"
     depends_on:
       - mariadb
       - crossbar
