@@ -39,7 +39,9 @@ for arch in platforms:
         master_config = {}
         master_config['builders'] = platforms[arch]
         master_config['workers'] = config['private']['master-variables']['workers'][arch]
-        master_config['port'] = config['private']['master-variables']['starting_port'] + idx
+
+        starting_port = int(os.getenv('PORT', default=config['private']['master-variables']['starting_port']))
+        master_config['port'] = starting_port + idx
         master_config['log_name'] = "master-docker-" + arch + "-" + str(master_id) + '.log'
 
         with open(dir_path + '/master-config.yaml', 'w') as f:
