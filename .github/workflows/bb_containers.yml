@@ -259,13 +259,19 @@ jobs:
           fi
       - name: Login to ghcr.io
         uses: docker/login-action@v2
-        if: (!contains(matrix.dockerfile, 'rhel'))
+        # this should make it possible to build images in main forks.
+        if: >
+          (!contains(matrix.dockerfile, 'rhel')) &&
+          github.head_ref == 'main'
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Push images to ghcr.io
-        if: (!contains(matrix.dockerfile, 'rhel'))
+        # this should make it possible to build images in main forks.
+        if: >
+          (!contains(matrix.dockerfile, 'rhel')) &&
+          github.head_ref == 'main'
         run: |
           msg="Push docker image to ghcr.io (${{ env.IMG }})"
           line="${msg//?/=}"
