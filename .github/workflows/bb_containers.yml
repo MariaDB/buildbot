@@ -242,9 +242,6 @@ jobs:
             docker run -u root -i "$image" bash -c "touch /tmp/foo && qpress -r /tmp /root/qpress.qp"
           done
       - name: Check for registry credentials
-        if: >
-          github.ref == 'refs/heads/main' &&
-          github.repository == 'MariaDB/buildbot'
         run: |
           missing=()
           [[ -n "${{ secrets.QUAY_USER }}" ]] || missing+=(QUAY_USER)
@@ -258,20 +255,14 @@ jobs:
             echo "Not pushing images to registry"
           fi
       - name: Login to ghcr.io
+        if: ${{ env.DEPLOY_IMAGES == 'true' }}
         uses: docker/login-action@v2
-        # this should make it possible to build images in main forks.
-        if: >
-          (!contains(matrix.dockerfile, 'rhel')) &&
-          github.head_ref == 'main'
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Push images to ghcr.io
-        # this should make it possible to build images in main forks.
-        if: >
-          (!contains(matrix.dockerfile, 'rhel')) &&
-          github.head_ref == 'main'
+        if: ${{ env.DEPLOY_IMAGES == 'true' }}
         run: |
           msg="Push docker image to ghcr.io (${{ env.IMG }})"
           line="${msg//?/=}"
