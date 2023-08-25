@@ -13,7 +13,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['buildbot.mariadb.org', 'localhost']
 
 # Application definition
 INSTALLED_APPS = [
@@ -59,6 +59,10 @@ TEMPLATES = [
 # Database
 DATABASES = {
     'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, "db.sqlite3"),
+    },
+    'mariadb': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': os.getenv('DB_NAME'),
         'USER': os.getenv('DB_USER'),
@@ -67,6 +71,8 @@ DATABASES = {
         'PORT': '3306',
     }
 }
+
+DATABASE_ROUTERS = ['cr.router.MariaDBRouter']
 
 AUTH_PASSWORD_VALIDATORS = [
     {
