@@ -3,3 +3,5 @@ cross-reference-venv
 __pycache__
 migrations
 .env
+staticfiles
+.venv

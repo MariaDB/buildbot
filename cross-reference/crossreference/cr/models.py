@@ -226,6 +226,7 @@ def select_test_failures(filters, include_failures=True):
 
   # Apply the limit filer and get related models to limit the no. of queries
   if test_failure_filters is not None:
+    test_failure_filters = test_failure_filters.order_by('-test_run_id__dt')
     test_failure_filters = test_failure_filters[0:limit]
     test_failure_filters = test_failure_filters.select_related('test_run_id')
 
