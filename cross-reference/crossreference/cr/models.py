@@ -5,7 +5,6 @@ import re
 from django.db import connection
 from datetime import datetime
 
-
 class TestRun(models.Model):
   branch = models.CharField(max_length=100, blank=True, null=True)
   revision = models.CharField(max_length=256, blank=True, null=True)
@@ -32,6 +31,10 @@ class TestFailure(models.Model):
   test_variant = models.CharField(max_length=64)
   info_text = models.CharField(max_length=255, blank=True, null=True)
   failure_text = models.TextField(blank=True, null=True)
+
+  @property
+  def platform(self):
+    return self.test_run_id.platform
 
   class Meta:
     managed = False
@@ -229,7 +232,6 @@ def select_test_failures(filters, include_failures=True):
     test_failure_filters = test_failure_filters.order_by('-test_run_id__dt')
     test_failure_filters = test_failure_filters[0:limit]
     test_failure_filters = test_failure_filters.select_related('test_run_id')
-
 
   result = {
     'test_runs': test_failure_filters,

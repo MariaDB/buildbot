@@ -94,7 +94,7 @@
                 <td> [<a href="https://buildbot.mariadb.org/#/builders/{{ test.test_run_id.revision }}/builds/{{ test.test_run_id.bbnum }}" > Build details </a>] </td>
                 <td>{{test.test_run_id.branch}}</td>
                 <td>{{test.test_run_id.revision| slice:9}}</td>
-                <td>{{test.test_run_id.platform.name}}</td>
+                <td>{{test.platform}}</td>
                 <td>{{test.test_run_id.dt|date:'Y-m-d H:i' }}</td>
                 <td>{{test.test_run_id.bbnum}}</td>
                 <td>{{test.test_run_id.typ}}</td>
