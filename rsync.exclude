@@ -1,5 +1,6 @@
-.*
 *.log
+.*
+__Janitor
 __pycache__
 autogen
 ci_build_images
