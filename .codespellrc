@@ -2,3 +2,4 @@
 ignore-words-list = crossreference,ro
 # following contains a typo in an INNODB test
 exclude = scripts/aix-build-and-test.sh
+skip = cross-reference/crossreference/cr/static/*
