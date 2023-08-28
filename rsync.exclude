@@ -1,5 +1,5 @@
 *.log
-.*
+.git*
 __Janitor
 __pycache__
 autogen
