@@ -73,10 +73,15 @@ annotate() {
 # Annotations - https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys
 build() {
   image=mariadb-${tarbuildnum}-${builderarch}
+  local galera_repo="deb [trusted=yes] https://buildbot.mariadb.net/archive/builds/mariadb-4.x/latest/kvm-deb-${bbnet}-${builderarch}-gal/debs/ ./"
+  # s390x broken https://github.com/MariaDB/buildbot/pull/165
+  if [ "$1" = s390x ]; then
+    galera_repo=""
+  fi
   buildah bud --tag "${image}" \
     --layers \
     --arch "$@" \
-    --build-arg REPOSITORY="[trusted=yes] https://ci.mariadb.org/$tarbuildnum/${buildername}/debs ./\ndeb [trusted=yes] https://buildbot.mariadb.net/archive/builds/mariadb-4.x/latest/kvm-deb-${bbnet}-${builderarch}-gal/debs/ ./" \
+    --build-arg REPOSITORY="[trusted=yes] https://ci.mariadb.org/$tarbuildnum/${buildername}/debs ./\n$galera_repo" \
     --build-arg MARIADB_VERSION="1:$mariadb_version+maria~$pkgver" \
     "${annotations[@]}" \
     "mariadb-docker/$master_branch"
