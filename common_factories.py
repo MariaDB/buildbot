@@ -34,7 +34,7 @@ def getQuickBuildFactory(mtrDbPool):
         logfiles={"mysqld*": "/buildbot/mysql_logs.html"},
         command=["sh", "-c", util.Interpolate("""
             cd mysql-test &&
-            exec perl mysql-test-run.pl --verbose-restart --force --retry=3 --max-save-core=1 --max-save-datadir=1 --max-test-fail=20 --mem --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s
+            exec perl mysql-test-run.pl --verbose-restart --force --retry=3 --max-save-core=1 --max-save-datadir=10 --max-test-fail=20 --mem --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s
             """,
             mtr_additional_args=util.Transform(
                 lambda spider_changed, mtr_additional_args: mtr_additional_args.replace('--suite=main', '--suite=main,spider,spider/bg,spider/bugfix,spider/feature,spider/regression/e1121,spider/regression/e112122') if spider_changed == 'YES' else mtr_additional_args,
@@ -58,7 +58,7 @@ def getQuickBuildFactory(mtrDbPool):
         logfiles={"mysqld*": "/buildbot/mysql_logs.html"},
         command=["sh", "-c", util.Interpolate("""
            cd mysql-test &&
-           if [ -f "$WSREP_PROVIDER" ]; then exec perl mysql-test-run.pl --verbose-restart --force --retry=3 --max-save-core=1 --max-save-datadir=1 --max-test-fail=20 --mem --big-test --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s --suite=wsrep,galera,galera_3nodes,galera_3nodes_sr; fi
+           if [ -f "$WSREP_PROVIDER" ]; then exec perl mysql-test-run.pl --verbose-restart --force --retry=3 --max-save-core=1 --max-save-datadir=10 --max-test-fail=20 --mem --big-test --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s --suite=wsrep,galera,galera_3nodes,galera_3nodes_sr; fi
            """,
            mtr_additional_args=util.Property('mtr_additional_args', default=''),
            jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN)'))],

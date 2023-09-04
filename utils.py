@@ -232,7 +232,7 @@ if [ -d mysql-test/var ]; then
       if [ -f sql/mysqld ]; then extra="$extra sql/mysqld"; fi
       if [ -f sql/mariadbd ]; then extra="$extra sql/mariadbd"; fi
     fi
-    tar zcf var.tar.gz mysql-test/var/*/log mysql-test/var/log ${extra}
+    tar zcf var.tar.gz mysql-test/var/*/log/*.err mysql-test/var/log ${extra}
     mv var.tar.gz /buildbot/logs/
 fi
 """
