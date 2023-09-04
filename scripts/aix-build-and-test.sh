@@ -81,7 +81,7 @@ main.mysql_client_test : mysqltest: At line 27: exec of '/home/buildbot/aix/buil
 EOF
   # for saving logs
   ln -s build/mysql-test .
-  mysql-test/mysql-test-run.pl --verbose-restart --force --retry=3 --max-save-core=1 --max-save-datadir=1 \
+  mysql-test/mysql-test-run.pl --verbose-restart --force --retry=3 --max-save-core=1 --max-save-datadir=10 \
     --max-test-fail=20 --testcase-timeout=2 --parallel="$jobs" --skip-test-list="$PWD/../unstable-tests"
 
 }
