@@ -44,6 +44,7 @@ RUN . /etc/os-release; \
     && apt-get -y build-dep -q mariadb-server \
     && apt-get -y install --no-install-recommends \
     build-essential \
+    bzip2 \
     ccache \
     check \
     default-jdk\
@@ -57,6 +58,7 @@ RUN . /etc/os-release; \
     libboost-dev \
     libboost-filesystem-dev \
     libboost-program-options-dev \
+    libbz2-dev \
     libdbi-perl \
     libffi-dev \
     libssl-dev \

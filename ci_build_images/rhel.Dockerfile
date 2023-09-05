@@ -47,6 +47,8 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     && dnf -y install \
     ${extra} \
     boost-devel \
+    bzip \
+    bzip2-devel \
     ccache \
     check-devel \
     checkpolicy \

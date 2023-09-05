@@ -32,6 +32,8 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     # not sure if needed \
     # perl \
     ${extra} \
+    bzip2 \
+    bzip2-devel \
     ccache \
     check-devel \
     cracklib-devel \
