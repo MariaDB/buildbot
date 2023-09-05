@@ -17,6 +17,8 @@ RUN yum -y --enablerepo=extras install epel-release \
     && yum -y install \
     Judy-devel \
     boost-devel \
+    bzip2 \
+    bzip2-devel \
     ccache \
     check-devel \
     cmake3 \
