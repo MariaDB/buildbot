@@ -22,6 +22,9 @@ RUN zypper update -y && \
     glibc-locale \
     gnutls-devel \
     jemalloc-devel \
+    libboost_filesystem1_66_0-devel \
+    libboost_program_options1_66_0-devel \
+    libboost_system1_66_0-devel \
     libcurl-devel \
     libffi-devel \
     liblz4-devel \
