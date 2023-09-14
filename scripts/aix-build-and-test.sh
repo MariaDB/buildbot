@@ -74,7 +74,9 @@ plugins.test_sql_service : plugins sigh
 plugins.password_reuse_check : plugins sigh
 plugins.compression_load : plugins sigh
 innodb.innodb_28867993 : need supression -[ERROR] InnoDB: File ./ib_logfile2: 'delete' returned OS error 201.
-rpl.rpl_row_img_sequence_min : At line 42: popen("\$MYSQL_BINLOG \$mysqld_datadir/\$binlog_filename -vv > \$assert_file", "r") failed
+rpl.rpl_row_img_sequence_min : MDEV-30222 fork failed sleep 1 second and redo: Resource temporarily unavailable  At line 42: popen("\$MYSQL_BINLOG \$mysqld_datadir/\$binlog_filename -vv > \$assert_file", "r") failed
+rpl.rpl_xa_empty_transaction : NDEV-30222
+rpl.rpl_row_img_sequence_noblob : NDEV-30222
 main.mysql_client_test : mysqltest: At line 27: exec of '/home/buildbot/aix/build/build/tests/mysql_client_test - possibly LIBPATH related
 EOF
   # for saving logs
