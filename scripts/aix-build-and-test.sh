@@ -7,7 +7,10 @@ build_deps() {
   wget https://github.com/fmtlib/fmt/archive/refs/tags/${v}.tar.gz -O - | tar -zxf -
   mkdir -p build-fmt
   cd build-fmt
-  cmake -DCMAKE_INSTALL_PREFIX="$HOME"/inst-fmt -DFMT_MODULE=ON -DFMT_DOC=OFF -DFMT_TEST=OFF ../fmt-$v/
+  cmake -DCMAKE_CXX_COMPILER=g++-11 -DCMAKE_COMPILER_IS_GNUCXX=0 \
+	  -DCMAKE_INSTALL_PREFIX="$HOME"/inst-fmt \
+	  -DFMT_DOC=OFF -DFMT_TEST=OFF \
+	  ../fmt-$v/
   cmake --build .
   cmake --install .
   cd ..
