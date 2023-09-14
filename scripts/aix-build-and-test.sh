@@ -3,10 +3,11 @@
 set -xeuv
 
 build_deps() {
-  wget https://github.com/fmtlib/fmt/archive/refs/tags/8.0.1.tar.gz -O - | tar -zxf -
+  v=10.1.1
+  wget https://github.com/fmtlib/fmt/archive/refs/tags/${v}.tar.gz -O - | tar -zxf -
   mkdir -p build-fmt
   cd build-fmt
-  cmake -DCMAKE_INSTALL_PREFIX="$HOME"/inst-fmt -DFMT_MODULE=ON -DFMT_DOC=OFF -DFMT_TEST=OFF ../fmt-8.0.1/
+  cmake -DCMAKE_INSTALL_PREFIX="$HOME"/inst-fmt -DFMT_MODULE=ON -DFMT_DOC=OFF -DFMT_TEST=OFF ../fmt-$v/
   cmake --build .
   cmake --install .
   cd ..
@@ -23,8 +24,8 @@ build() {
   cmake ../"$source" -DCMAKE_BUILD_TYPE="$2" \
     -DCMAKE_C_LAUNCHER=/opt/bin/ccache \
     -DCMAKE_CXX_LAUNCHER=/opt/bin/ccache \
-    -DCMAKE_C_COMPILER=gcc-10 \
-    -DCMAKE_CXX_COMPILER=g++-10 \
+    -DCMAKE_C_COMPILER=gcc-11 \
+    -DCMAKE_CXX_COMPILER=g++-11 \
     -DCMAKE_AR=/usr/bin/ar \
     -DCMAKE_PREFIX_PATH=/opt/freeware/ \
     -DCMAKE_REQUIRED_LINK_OPTIONS=-L/opt/freeware/lib \
@@ -88,7 +89,7 @@ clean() {
 
 export TMPDIR="$HOME/tmp"
 # gcc-10 paths found by looking at nm /opt/freeware/.../libstdc++.a | grep {missing symbol}
-export LIBPATH=/opt/freeware/lib/gcc/powerpc-ibm-aix7.1.0.0/10/pthread/:/opt/freeware/lib/gcc/powerpc-ibm-aix7.1.0.0/10:/usr/lib:"$PWD/build/libmariadb/libmariadb/"
+export LIBPATH=/opt/freeware/lib/gcc/powerpc-ibm-aix7.1.0.0/11/pthread/:/opt/freeware/lib/gcc/powerpc-ibm-aix7.1.0.0/11:/usr/lib:"$PWD/build/libmariadb/libmariadb/"
 
 jobs=${4:-12}
 
