@@ -120,12 +120,6 @@ ubuntu-2204:
     - ppc64le
     - s390x
   type: deb
-ubuntu-2210:
-  version_name: kinetic
-  arch:
-    - amd64
-    - aarch64
-  type: deb
 ubuntu-2304:
   version_name: lunar
   arch:
