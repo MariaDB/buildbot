@@ -25,7 +25,6 @@ debian-10:
   arch:
     - amd64
     - aarch64
-    - ppc64le
   type: deb
 debian-11:
   version_name: bullseye
