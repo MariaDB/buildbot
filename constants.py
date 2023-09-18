@@ -108,6 +108,7 @@ supportedPlatforms["10.5"] = [
         'amd64-centos-stream9',
         'amd64-debian-11',
         'amd64-debian-11-msan',
+        'amd64-debian-12-asan-ubsan',
         'amd64-fedora-37',
         'amd64-fedora-38',
         'amd64-rhel-9',
