@@ -74,6 +74,7 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     openssl-devel \
     pam-devel \
     pcre2-devel \
+    perl-autodie \
     pkgconfig \
     policycoreutils \
     python3 \
