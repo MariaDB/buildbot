@@ -49,6 +49,7 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     libffi-devel \
     libxml2-devel \
     libzstd-devel \
+    perl-autodie \
     python3-devel \
     python3-scons \
     readline-devel \

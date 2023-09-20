@@ -38,6 +38,7 @@ RUN dnf -y upgrade \
     lsof \
     lzo \
     lzo-devel \
+    perl-autodie \
     python-unversioned-command \
     python3-devel \
     readline-devel \
