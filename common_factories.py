@@ -1,4 +1,5 @@
 from buildbot.plugins import *
+from buildbot.process import results
 from buildbot.process.properties import Property, Properties
 from buildbot.steps.package.rpm.rpmlint import RpmLint
 from buildbot.steps.shell import ShellCommand, Compile, Test, SetPropertyFromCommand
@@ -10,6 +11,30 @@ from twisted.internet import defer
 from utils import *
 from constants import *
 
+class FetchTestData(steps.BuildStep):
+    def __init__(self, mtrDbPool, **kwargs):
+        self.mtrDbPool = mtrDbPool
+        super().__init__(**kwargs)
+
+    @defer.inlineCallbacks
+    def run(self):
+        master_branch = self.getProperty('master_branch')
+        typ = 'nm'
+        limit = 50
+        overlimit = 1000
+
+        if master_branch:
+            query = """
+            select concat(test_name,',',test_variant) from (select id, test_name,test_variant from test_failure,test_run where branch like '%%%s%%' and test_run_id=id order by test_run_id desc limit %d) x group by test_name,test_variant order by max(id) desc limit %d
+            """
+            tests = yield self.mtrDbPool.runQuery(query % (master_branch, overlimit, limit))
+            tests = list(t[0] for t in tests)
+            if tests:
+                test_args = ' '.join(tests)
+                self.setProperty('failed_tests', test_args)
+
+        return results.SUCCESS
+
 def getBaseBuildFactory(mtrDbPool, mtrArgs):
     f_quick_build = util.BuildFactory()
     f_quick_build.addStep(steps.ShellCommand(name="Environment details", command=['bash', '-c', 'date -u && uname -a && ulimit -a']))
@@ -17,6 +42,7 @@ def getBaseBuildFactory(mtrDbPool, mtrArgs):
     f_quick_build.addStep(downloadSourceTarball())
     f_quick_build.addStep(steps.ShellCommand(command=util.Interpolate("tar -xvzf /mnt/packages/%(prop:tarbuildnum)s_%(prop:mariadb_version)s.tar.gz --strip-components=1")))
     f_quick_build.addStep(steps.ShellCommand(name="create html log file", command=['bash', '-c', util.Interpolate(getHTMLLogString(), jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN)'))]))
+    f_quick_build.addStep(FetchTestData(mtrDbPool=mtrDbPool))
     # build steps
     f_quick_build.addStep(steps.Compile(
         command=["sh", "-c", util.Interpolate("cmake . -DCMAKE_BUILD_TYPE=%(kw:build_type)s -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER=%(kw:c_compiler)s -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=%(kw:cxx_compiler)s -DPLUGIN_TOKUDB=NO -DPLUGIN_MROONGA=NO -DPLUGIN_SPIDER=%(kw:spider_changed)s -DPLUGIN_OQGRAPH=NO -DPLUGIN_PERFSCHEMA=%(kw:perf_schema)s -DPLUGIN_SPHINX=NO %(kw:additional_args)s && make %(kw:verbose_build)s -j%(kw:jobs)s %(kw:create_package)s",
@@ -95,17 +121,9 @@ def getLastNFailedBuildFactory(mtrDbPool):
     @util.renderer
     def getTests(props):
         mtr_additional_args = props.getProperty('mtr_additional_args', '--suite=main')
-        master_branch = props.getProperty('master_branch')
-        typ='nm'       # TODO: pass an an argument
-        limit=50       # TODO: tune
-        overlimit=1000 # TODO: auto-adjust
-
-        if master_branch:
-            tests = yield mtrDbPool.runQuery("""
-            select concat(test_name,',',test_variant) from (select id, test_name,test_variant from test_failure,test_run where branch like '%%%s%%' and typ='%s' and test_run_id=id order by test_run_id desc limit %d) x group by test_name,test_variant order by max(id) desc limit %d
-            """, (master_branch,typ,overlimit,limit))
-            if tests:
-                mtr_additional_args.replace('--suite=main', ' '.join(tests))
+        failed_tests = props.getProperty('failed_tests', None)
+        if failed_tests:
+            mtr_additional_args = mtr_additional_args.replace('--suite=main', failed_tests)
 
         return mtr_additional_args
 
