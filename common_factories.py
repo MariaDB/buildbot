@@ -10,8 +10,7 @@ from twisted.internet import defer
 from utils import *
 from constants import *
 
-
-def getQuickBuildFactory(mtrDbPool):
+def getBaseBuildFactory(mtrDbPool, mtrArgs):
     f_quick_build = util.BuildFactory()
     f_quick_build.addStep(
         steps.ShellCommand(
@@ -79,53 +78,23 @@ def getQuickBuildFactory(mtrDbPool):
                     """
             cd mysql-test &&
             exec perl mysql-test-run.pl --verbose-restart --force --retry=3 --max-save-core=1 --max-save-datadir=10 --max-test-fail=20 --mem --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s
-            """,
-                    mtr_additional_args=util.Property(
-                        "mtr_additional_args", default=""
-                    ),
-                    jobs=util.Property("jobs", default="$(getconf _NPROCESSORS_ONLN)"),
-                ),
-            ],
-            timeout=950,
-            haltOnFailure="true",
-            parallel=mtrJobsMultiplier,
-            dbpool=mtrDbPool,
-            autoCreateTables=True,
-            env=MTR_ENV,
-        )
-    )
-    f_quick_build.addStep(
-        steps.ShellCommand(
-            name="move mariadb log files",
-            alwaysRun=True,
-            command=[
-                "bash",
-                "-c",
-                util.Interpolate(
-                    moveMTRLogs(),
-                    jobs=util.Property("jobs", default="$(getconf _NPROCESSORS_ONLN"),
-                ),
-            ],
-        )
-    )
-    f_quick_build.addStep(
-        steps.ShellCommand(
-            name="create var archive",
-            alwaysRun=True,
-            command=["bash", "-c", util.Interpolate(createVar())],
-            doStepIf=hasFailed,
-        )
-    )
-    f_quick_build.addStep(
-        steps.MTR(
-            description="testing galera",
-            descriptionDone="test galera",
-            logfiles={"mysqld*": "/buildbot/mysql_logs.html"},
-            command=[
-                "sh",
-                "-c",
-                util.Interpolate(
-                    """
+            """, mtr_additional_args=mtrArgs,
+            jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN)'),
+        )],
+        timeout=950,
+        haltOnFailure="true",
+        parallel=mtrJobsMultiplier,
+        dbpool=mtrDbPool,
+        autoCreateTables=True,
+        env=MTR_ENV,
+    ))
+    f_quick_build.addStep(steps.ShellCommand(name="move mariadb log files", alwaysRun=True, command=['bash', '-c', util.Interpolate(moveMTRLogs(), jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN'))]))
+    f_quick_build.addStep(steps.ShellCommand(name="create var archive", alwaysRun=True, command=['bash', '-c', util.Interpolate(createVar())], doStepIf=hasFailed))
+    f_quick_build.addStep(steps.MTR(
+        description="testing galera",
+        descriptionDone="test galera",
+        logfiles={"mysqld*": "/buildbot/mysql_logs.html"},
+        command=["sh", "-c", util.Interpolate("""
            cd mysql-test &&
            if [ -f "$WSREP_PROVIDER" ]; then exec perl mysql-test-run.pl --verbose-restart --force --retry=3 --max-save-core=1 --max-save-datadir=10 --max-test-fail=20 --mem --big-test --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s --suite=wsrep,galera,galera_3nodes,galera_3nodes_sr; fi
            """,
@@ -255,6 +224,30 @@ def getQuickBuildFactory(mtrDbPool):
     )
     return f_quick_build
 
+def getQuickBuildFactory(mtrDbPool):
+    return getBaseBuildFactory(mtrDbPool,util.Property(
+                        "mtr_additional_args", default=""
+                    ))
+
+def getLastNFailedBuildFactory(mtrDbPool):
+    @util.renderer
+    def getTests(props):
+        mtr_additional_args = props.getProperty('mtr_additional_args', '--suite=main')
+        master_branch = props.getProperty('master_branch')
+        typ='nm'       # TODO: pass an an argument
+        limit=50       # TODO: tune
+        overlimit=1000 # TODO: auto-adjust
+
+        if master_branch:
+            tests = yield mtrDbPool.runQuery("""
+            select concat(test_name,',',test_variant) from (select id, test_name,test_variant from test_failure,test_run where branch like '%%%s%%' and typ='%s' and test_run_id=id order by test_run_id desc limit %d) x group by test_name,test_variant order by max(id) desc limit %d
+            """, (master_branch,typ,overlimit,limit))
+            if tests:
+                mtr_additional_args.replace('--suite=main', ' '.join(tests))
+
+        return mtr_additional_args
+
+    return getBaseBuildFactory(mtrDbPool, getTests)
 
 def getRpmAutobakeFactory(mtrDbPool):
     ## f_rpm_autobake
