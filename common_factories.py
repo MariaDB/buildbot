@@ -1,4 +1,5 @@
 from buildbot.plugins import *
+from buildbot.process import results
 from buildbot.process.properties import Property, Properties
 from buildbot.steps.package.rpm.rpmlint import RpmLint
 from buildbot.steps.shell import ShellCommand, Compile, Test, SetPropertyFromCommand
@@ -9,6 +10,30 @@ from twisted.internet import defer
 
 from utils import *
 from constants import *
+
+class FetchTestData(steps.BuildStep):
+    def __init__(self, mtrDbPool, **kwargs):
+        self.mtrDbPool = mtrDbPool
+        super().__init__(**kwargs)
+
+    @defer.inlineCallbacks
+    def run(self):
+        master_branch = self.getProperty('master_branch')
+        typ = 'nm'
+        limit = 50
+        overlimit = 1000
+
+        if master_branch:
+            query = """
+            select concat(test_name,',',test_variant) from (select id, test_name,test_variant from test_failure,test_run where branch like '%%%s%%' and test_run_id=id order by test_run_id desc limit %d) x group by test_name,test_variant order by max(id) desc limit %d
+            """
+            tests = yield self.mtrDbPool.runQuery(query % (master_branch, overlimit, limit))
+            tests = list(t[0] for t in tests)
+            if tests:
+                test_args = ' '.join(tests)
+                self.setProperty('failed_tests', test_args)
+
+        return results.SUCCESS
 
 def getBaseBuildFactory(mtrDbPool, mtrArgs):
     f_quick_build = util.BuildFactory()
@@ -46,6 +71,7 @@ def getBaseBuildFactory(mtrDbPool, mtrArgs):
             ],
         )
     )
+    f_quick_build.addStep(FetchTestData(mtrDbPool=mtrDbPool))
     # build steps
     f_quick_build.addStep(
         steps.Compile(
@@ -233,17 +259,9 @@ def getLastNFailedBuildFactory(mtrDbPool):
     @util.renderer
     def getTests(props):
         mtr_additional_args = props.getProperty('mtr_additional_args', '--suite=main')
-        master_branch = props.getProperty('master_branch')
-        typ='nm'       # TODO: pass an an argument
-        limit=50       # TODO: tune
-        overlimit=1000 # TODO: auto-adjust
-
-        if master_branch:
-            tests = yield mtrDbPool.runQuery("""
-            select concat(test_name,',',test_variant) from (select id, test_name,test_variant from test_failure,test_run where branch like '%%%s%%' and typ='%s' and test_run_id=id order by test_run_id desc limit %d) x group by test_name,test_variant order by max(id) desc limit %d
-            """, (master_branch,typ,overlimit,limit))
-            if tests:
-                mtr_additional_args.replace('--suite=main', ' '.join(tests))
+        failed_tests = props.getProperty('failed_tests', None)
+        if failed_tests:
+            mtr_additional_args = mtr_additional_args.replace('--suite=main', failed_tests)
 
         return mtr_additional_args
 
