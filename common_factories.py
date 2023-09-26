@@ -10,7 +10,7 @@ from twisted.internet import defer
 from utils import *
 from constants import *
 
-def getQuickBuildFactory(mtrDbPool):
+def getBaseBuildFactory(mtrDbPool, mtrArgs):
     f_quick_build = util.BuildFactory()
     f_quick_build.addStep(steps.ShellCommand(name="Environment details", command=['bash', '-c', 'date -u && uname -a && ulimit -a']))
     f_quick_build.addStep(steps.SetProperty(property="dockerfile", value=util.Interpolate("%(kw:url)s", url=dockerfile), description="dockerfile"))
@@ -35,12 +35,7 @@ def getQuickBuildFactory(mtrDbPool):
         command=["sh", "-c", util.Interpolate("""
             cd mysql-test &&
             exec perl mysql-test-run.pl --verbose-restart --force --retry=3 --max-save-core=1 --max-save-datadir=10 --max-test-fail=20 --mem --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s
-            """,
-            mtr_additional_args=util.Transform(
-                lambda spider_changed, mtr_additional_args: mtr_additional_args.replace('--suite=main', '--suite=main,spider,spider/bg,spider/bugfix,spider/feature,spider/regression/e1121,spider/regression/e112122') if spider_changed == 'YES' else mtr_additional_args,
-                util.Property('spider_changed'),
-                util.Property('mtr_additional_args', default=''),
-            ),
+            """, mtr_additional_args=mtrArgs,
             jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN)'),
         )],
         timeout=950,
@@ -88,6 +83,33 @@ def getQuickBuildFactory(mtrDbPool):
     f_quick_build.addStep(steps.Trigger(name='eco', schedulerNames=['s_eco'], waitForFinish=False, updateSourceStamp=False, set_properties={"parentbuildername": Property("buildername"), "tarbuildnum" : Property("tarbuildnum"), "mariadb_binary": Property("mariadb_binary"), "mariadb_version" : Property("mariadb_version"), "master_branch" : Property("master_branch"), "parentbuildername": Property("buildername")}, doStepIf=lambda step: savePackage(step) and hasEco(step)))
     f_quick_build.addStep(steps.ShellCommand(name="cleanup", command="rm -r * .* 2> /dev/null || true", alwaysRun=True))
     return f_quick_build
+
+def getQuickBuildFactory(mtrDbPool):
+    return getBaseBuildFactory(mtrDbPool, util.Transform(
+                lambda spider_changed, mtr_additional_args: mtr_additional_args.replace('--suite=main', '--suite=main,spider,spider/bg,spider/bugfix,spider/feature,spider/regression/e1121,spider/regression/e112122') if spider_changed == 'YES' else mtr_additional_args,
+                util.Property('spider_changed'),
+                util.Property('mtr_additional_args', default=''),
+           ))
+
+def getLastNFailedBuildFactory(mtrDbPool):
+    @util.renderer
+    def getTests(props):
+        mtr_additional_args = props.getProperty('mtr_additional_args', '--suite=main')
+        master_branch = props.getProperty('master_branch')
+        typ='nm'       # TODO: pass an an argument
+        limit=50       # TODO: tune
+        overlimit=1000 # TODO: auto-adjust
+
+        if master_branch:
+            tests = yield mtrDbPool.runQuery("""
+            select concat(test_name,',',test_variant) from (select id, test_name,test_variant from test_failure,test_run where branch like '%%%s%%' and typ='%s' and test_run_id=id order by test_run_id desc limit %d) x group by test_name,test_variant order by max(id) desc limit %d
+            """, (master_branch,typ,overlimit,limit))
+            if tests:
+                mtr_additional_args.replace('--suite=main', ' '.join(tests))
+
+        return mtr_additional_args
+
+    return getBaseBuildFactory(mtrDbPool, getTests)
 
 def getRpmAutobakeFactory(mtrDbPool):
     ## f_rpm_autobake
