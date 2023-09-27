@@ -154,7 +154,7 @@ def select_test_failures(filters, include_failures=True):
     ],
     'failure_text': [
       {
-        'pattern': '^timeout$',
+        'pattern': '^[^*].*[^*]$',
         'filter': [('failure_text__icontains', 'AND')],
         'replace': False
       },
