@@ -25,7 +25,7 @@ class FetchTestData(steps.BuildStep):
 
         if master_branch:
             query = """
-            select concat(test_name,',',test_variant) from (select id, test_name,test_variant from test_failure,test_run where branch like '%%%s%%' and test_run_id=id order by test_run_id desc limit %d) x group by test_name,test_variant order by max(id) desc limit %d
+            select concat(test_name,',',test_variant) from (select id, test_name,test_variant from test_failure,test_run where branch='%s' and test_run_id=id order by test_run_id desc limit %d) x group by test_name,test_variant order by max(id) desc limit %d
             """
             tests = yield self.mtrDbPool.runQuery(query % (master_branch, overlimit, limit))
             tests = list(t[0] for t in tests)
