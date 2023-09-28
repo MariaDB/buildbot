@@ -11,10 +11,10 @@ from twisted.internet import defer
 from utils import *
 from constants import *
 
-class FetchTestData(steps.BuildStep):
+class FetchTestData(MTR):
     def __init__(self, mtrDbPool, **kwargs):
         self.mtrDbPool = mtrDbPool
-        super().__init__(**kwargs)
+        super().__init__(dbpool=mtrDbPool, **kwargs)
 
     @defer.inlineCallbacks
     def run(self):
@@ -27,7 +27,7 @@ class FetchTestData(steps.BuildStep):
             query = """
             select concat(test_name,',',test_variant) from (select id, test_name,test_variant from test_failure,test_run where branch='%s' and test_run_id=id order by test_run_id desc limit %d) x group by test_name,test_variant order by max(id) desc limit %d
             """
-            tests = yield self.mtrDbPool.runQuery(query % (master_branch, overlimit, limit))
+            tests = yield self.runQueryWithRetry(query % (master_branch, overlimit, limit))
             tests = list(t[0] for t in tests)
             if tests:
                 test_args = ' '.join(tests)
@@ -71,7 +71,7 @@ def getBaseBuildFactory(mtrDbPool, mtrArgs):
             ],
         )
     )
-    f_quick_build.addStep(FetchTestData(mtrDbPool=mtrDbPool))
+    f_quick_build.addStep(FetchTestData(name="Get last N failed tests", mtrDbPool=mtrDbPool))
     # build steps
     f_quick_build.addStep(
         steps.Compile(
