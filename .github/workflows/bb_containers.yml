@@ -226,6 +226,10 @@ jobs:
       - name: Check multi-arch container (rhel)
         if: ${{ env.BUILD_RHEL == 'true' }}
         run: |
+          # make space on the runner (rhel9 can't finish otherwise)
+          if [[ -d $HOME/.local/share/containers ]]; then
+            sudo rm -rf $HOME/.local/share/containers
+          fi
           for p in ${{ matrix.platforms }}; do
             platform="${p/,/}"
             image="localhost:5000/bb-worker:${{ env.IMG }}"
