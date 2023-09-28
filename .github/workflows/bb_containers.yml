@@ -163,6 +163,10 @@ jobs:
             docker://localhost:5000/${{ env.REPO }}:${{ env.IMG }}
       - name: Check multi-arch container
         run: |
+          # make some space on the runner
+          if [[ -d $HOME/.local/share/containers ]]; then
+            sudo rm -rf $HOME/.local/share/containers
+          fi
           for p in ${{ matrix.platforms }}; do
             platform="${p/,/}"
             image="localhost:5000/bb-worker:${{ env.IMG }}"
