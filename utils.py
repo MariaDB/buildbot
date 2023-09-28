@@ -228,7 +228,8 @@ def createVar():
     return """
 if [ -d mysql-test/var ]; then
     extra=
-    if compgen -G  ./mysql-test/var/*/log/*/mysqld.*/data/core* > /dev/null; then
+    if compgen -G  ./mysql-test/var/*/log/*/mysqld.*/data/core* > /dev/null ||
+      compgen -G ./mysql-test/var/log/*/core* > /dev/null; then
       if [ -f sql/mysqld ]; then extra="$extra sql/mysqld"; fi
       if [ -f sql/mariadbd ]; then extra="$extra sql/mariadbd"; fi
     fi
