@@ -1,14 +1,14 @@
 ---
-name: bbw container build
+name: bbw container build (rhel)
 
 on:
   push:
     paths:
-      - .github/workflows/bb_containers.yml
+      - .github/workflows/bb_containers_rhel.yml
       - "ci_build_images/**"
   pull_request:
     paths:
-      - .github/workflows/bb_containers.yml
+      - .github/workflows/bb_containers_rhel.yml
       - "ci_build_images/**"
 
 jobs:
@@ -24,78 +24,17 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - dockerfile: debian.Dockerfile
-            image: debian:10
-            branch: 10.11
-            platforms: linux/amd64, linux/arm64/v8
-          - dockerfile: debian.Dockerfile
-            image: debian:11
-            branch: 10.11
-            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
-          - dockerfile: debian.Dockerfile
-            image: debian:12
-            tag: debian12
-            branch: 10.11
-            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
-          - dockerfile: debian.Dockerfile aocc.Dockerfile
-            image: debian:11
-            tag: debian11-aocc
-            branch: 10.11
+          - dockerfile: rhel7.Dockerfile pip.Dockerfile
+            image: rhel7
             platforms: linux/amd64
-          - dockerfile: debian.Dockerfile msan.Dockerfile
-            image: debian:11
-            branch: 10.11
-            tag: debian11-msan
-            platforms: linux/amd64
-          - dockerfile: debian.Dockerfile
-            image: debian:sid
-            branch: 10.11
-            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
-          - dockerfile: debian.Dockerfile
-            image: debian:sid
-            tag: debiansid-386
-            branch: 10.11
-            platforms: linux/386
-          - dockerfile: debian.Dockerfile
-            image: ubuntu:20.04
-            branch: 10.11
+          - dockerfile: rhel.Dockerfile
+            image: ubi8
+            tag: rhel8
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
-          - dockerfile: debian.Dockerfile
-            image: ubuntu:22.04
-            branch: 10.11
+          - dockerfile: rhel.Dockerfile pip.Dockerfile
+            image: ubi9
+            tag: rhel9
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
-          - dockerfile: debian.Dockerfile
-            image: ubuntu:23.04
-            branch: 10.11
-            platforms: linux/amd64, linux/arm64/v8
-          - dockerfile: debian.Dockerfile
-            image: ubuntu:23.10
-            branch: 10.11
-            platforms: linux/amd64, linux/arm64/v8
-          - dockerfile: fedora.Dockerfile
-            image: fedora:37
-            platforms: linux/amd64, linux/arm64/v8
-          - dockerfile: fedora.Dockerfile
-            image: fedora:38
-            platforms: linux/amd64, linux/arm64/v8
-          - dockerfile: centos7.Dockerfile pip.Dockerfile
-            image: centos:7
-            platforms: linux/amd64
-          - dockerfile: centos.Dockerfile
-            image: quay.io/centos/centos:stream8
-            tag: centosstream8
-            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
-          - dockerfile: centos.Dockerfile pip.Dockerfile
-            image: quay.io/centos/centos:stream9
-            tag: centosstream9
-            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
-            # //TEMP Error: Unable to find a match: ccache python3-scons (on
-            # s390x)
-            # platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
-          - dockerfile: opensuse.Dockerfile pip.Dockerfile
-            image: opensuse/leap:15.3
-            tag: opensuse15
-            platforms: linux/amd64
     env:
       BUILD_RHEL: false
       DEPLOY_IMAGES: false
@@ -117,19 +56,23 @@ jobs:
             echo "IMG=${TAG_TMP/:/}" >>$GITHUB_ENV
           fi
           echo "REPO=bb-worker" >>$GITHUB_ENV
+      - name: Check for rhel subscription credentials
+        run: |
+          missing=()
+          [[ -n "${{ secrets.RHEL_ORGID }}" ]] || missing+=(RHEL_ORGID)
+          [[ -n "${{ secrets.RHEL_KEYNAME }}" ]] || missing+=(RHEL_KEYNAME)
+          for i in "${missing[@]}"; do
+            echo "Missing github secret: $i"
+          done
+          (( ${#missing[@]} == 0 )) || exit 1
+          echo "BUILD_RHEL=true" >> $GITHUB_ENV
       - name: Generate Dockerfile and necessary files
         run: |
           cd ${{ env.WORKDIR }}
           cat ${{ matrix.dockerfile }} common.Dockerfile >$GITHUB_WORKSPACE/Dockerfile
           cp -r qpress $GITHUB_WORKSPACE
-      - name: No wsrep on 32 bit platforms
-        if: >
-          (contains(matrix.platforms, 'linux/386'))
-        run: |
-          sed -i -e '/WSREP_PROVIDER/d' /home/runner/work/Dockerfile
       - name: Check Dockerfile with hadolint
         run: |
-          cp /home/runner/work/Dockerfile .
           docker run -i -v $(pwd):/mnt -w /mnt ghcr.io/hadolint/hadolint:latest hadolint /mnt/Dockerfile
       - name: Install qemu-user-static
         run: |
@@ -142,21 +85,29 @@ jobs:
           # https://access.redhat.com/discussions/672313#comment-2360508
           sudo chronyc -a makestep
       - name: Build image
+        if: ${{ env.BUILD_RHEL == 'true' }}
         run: |
+          # create secrets
+          echo "${{ secrets.RHEL_ORGID }}" >rhel_orgid
+          echo "${{ secrets.RHEL_KEYNAME }}" >rhel_keyname
           podman manifest create ${{ env.REPO }}:${{ env.IMG }}
           for arch in $(echo ${{ matrix.platforms }} | sed 's/,/ /g'); do
             msg="Build $arch:"
             line="${msg//?/=}"
             printf "\n${line}\n${msg}\n${line}\n"
             podman buildx build --tag ${{ env.REPO }}:${{ env.IMG }}-${arch//\//-} \
+              --secret id=rhel_orgid,src=./rhel_orgid \
+              --secret id=rhel_keyname,src=./rhel_keyname \
               --platform $arch \
               --manifest ${{ env.REPO }}:${{ env.IMG }} \
               -f $GITHUB_WORKSPACE/Dockerfile \
               --build-arg base_image=${{ matrix.image }} \
               --build-arg mariadb_branch=${{ matrix.branch }}
           done
+          rm -f rhel_orgid rhel_keyname
           podman images
       - name: Push images to local registry
+        if: ${{ env.BUILD_RHEL == 'true' }}
         run: |
           podman manifest push --tls-verify=0 \
             --all ${{ env.REPO }}:${{ env.IMG }} \
