@@ -74,12 +74,8 @@ annotate() {
 build() {
   image=mariadb-${tarbuildnum}-${builderarch}
   local galera_repo="deb [trusted=yes] https://buildbot.mariadb.net/archive/builds/mariadb-4.x/latest/kvm-deb-${bbnet}-${builderarch}-gal/debs/ ./"
-  # ppc64le missing - https://buildbot.mariadb.net/archive/builds/mariadb-4.x/latest/kvm-deb-jammy-ppc64le-gal/
-  if [ "$1" = ppc64le ] && [ "$bbnet" = jammy ]; then
-    galera_repo=""
-  fi
-  # s390x broken https://github.com/MariaDB/buildbot/pull/165
-  if [ "$1" = s390x ]; then
+  # s390x on focal broken - test failure  gcache_tests -> gcache::RbStore - https://buildbot.mariadb.org/#/builders/gal-s390x-ubuntu-2004
+  if [ "$1" = s390x ] && [ "$bbnet" = focal ]; then
     galera_repo=""
   fi
   buildah bud --tag "${image}" \
