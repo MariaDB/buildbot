@@ -126,10 +126,9 @@ jobs:
         if: >
           (contains(matrix.platforms, 'linux/386'))
         run: |
-          sed -i -e '/WSREP_PROVIDER/d' /home/runner/work/Dockerfile
+          sed -i -e '/WSREP_PROVIDER/d' $GITHUB_WORKSPACE/Dockerfile
       - name: Check Dockerfile with hadolint
         run: |
-          cp /home/runner/work/Dockerfile .
           docker run -i -v $(pwd):/mnt -w /mnt ghcr.io/hadolint/hadolint:latest hadolint /mnt/Dockerfile
       - name: Install qemu-user-static
         run: |
