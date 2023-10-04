@@ -45,10 +45,10 @@ services:
     restart: unless-stopped
     container_name: master-web
     environment:
-      - MQ_ROUTER_URL
-      - TITLE_URL
-      - BUILDMASTER_URL
       - TITLE
+      - TITLE_URL
+      - MQ_ROUTER_URL
+      - BUILDMASTER_URL
       - PORT=8010
     volumes:
       - ./logs:/var/log/buildbot
@@ -69,10 +69,10 @@ services:
     restart: unless-stopped
     container_name: autogen_aarch64-master-0
     environment:
-      - MQ_ROUTER_URL
-      - TITLE_URL
-      - BUILDMASTER_URL
       - TITLE
+      - TITLE_URL
+      - MQ_ROUTER_URL
+      - BUILDMASTER_URL
       - PORT=9996
     volumes:
       - ./logs:/var/log/buildbot
@@ -95,10 +95,10 @@ services:
     restart: unless-stopped
     container_name: autogen_amd64-master-0
     environment:
-      - MQ_ROUTER_URL
-      - TITLE_URL
-      - BUILDMASTER_URL
       - TITLE
+      - TITLE_URL
+      - MQ_ROUTER_URL
+      - BUILDMASTER_URL
       - PORT=9997
     volumes:
       - ./logs:/var/log/buildbot
@@ -121,10 +121,10 @@ services:
     restart: unless-stopped
     container_name: autogen_amd64-master-1
     environment:
-      - MQ_ROUTER_URL
-      - TITLE_URL
-      - BUILDMASTER_URL
       - TITLE
+      - TITLE_URL
+      - MQ_ROUTER_URL
+      - BUILDMASTER_URL
       - PORT=9998
     volumes:
       - ./logs:/var/log/buildbot
@@ -147,10 +147,10 @@ services:
     restart: unless-stopped
     container_name: autogen_ppc64le-master-0
     environment:
-      - MQ_ROUTER_URL
-      - TITLE_URL
-      - BUILDMASTER_URL
       - TITLE
+      - TITLE_URL
+      - MQ_ROUTER_URL
+      - BUILDMASTER_URL
       - PORT=9999
     volumes:
       - ./logs:/var/log/buildbot
@@ -173,10 +173,10 @@ services:
     restart: unless-stopped
     container_name: autogen_s390x-master-0
     environment:
-      - MQ_ROUTER_URL
-      - TITLE_URL
-      - BUILDMASTER_URL
       - TITLE
+      - TITLE_URL
+      - MQ_ROUTER_URL
+      - BUILDMASTER_URL
       - PORT=10000
     volumes:
       - ./logs:/var/log/buildbot
@@ -199,10 +199,10 @@ services:
     restart: unless-stopped
     container_name: autogen_x86-master-0
     environment:
-      - MQ_ROUTER_URL
-      - TITLE_URL
-      - BUILDMASTER_URL
       - TITLE
+      - TITLE_URL
+      - MQ_ROUTER_URL
+      - BUILDMASTER_URL
       - PORT=10001
     volumes:
       - ./logs:/var/log/buildbot
@@ -225,10 +225,10 @@ services:
     restart: unless-stopped
     container_name: master-docker-nonstandard
     environment:
-      - MQ_ROUTER_URL
-      - TITLE_URL
-      - BUILDMASTER_URL
       - TITLE
+      - TITLE_URL
+      - MQ_ROUTER_URL
+      - BUILDMASTER_URL
       - PORT=10002
     volumes:
       - ./logs:/var/log/buildbot
@@ -251,10 +251,10 @@ services:
     restart: unless-stopped
     container_name: master-galera
     environment:
-      - MQ_ROUTER_URL
-      - TITLE_URL
-      - BUILDMASTER_URL
       - TITLE
+      - TITLE_URL
+      - MQ_ROUTER_URL
+      - BUILDMASTER_URL
       - PORT=10003
     volumes:
       - ./logs:/var/log/buildbot
@@ -272,42 +272,16 @@ services:
       - mariadb
       - crossbar
 
-  master-nonlatent:
-    image: quay.io/mariadb-foundation/bb-master:master
-    restart: unless-stopped
-    container_name: master-nonlatent
-    environment:
-      - MQ_ROUTER_URL
-      - TITLE_URL
-      - BUILDMASTER_URL
-      - TITLE
-      - PORT=10004
-    volumes:
-      - ./logs:/var/log/buildbot
-      - ./buildbot/:/srv/buildbot/master
-    entrypoint:
-      - /bin/bash
-      - -c
-      - "/srv/buildbot/master/docker-compose/start.sh master-nonlatent"
-    networks:
-      net_front:
-      net_back:
-    ports:
-      - "127.0.0.1:10004:10004"
-    depends_on:
-      - mariadb
-      - crossbar
-
   master-protected-branches:
     image: quay.io/mariadb-foundation/bb-master:master
     restart: unless-stopped
     container_name: master-protected-branches
     environment:
-      - MQ_ROUTER_URL
-      - TITLE_URL
-      - BUILDMASTER_URL
       - TITLE
-      - PORT=10005
+      - TITLE_URL
+      - MQ_ROUTER_URL
+      - BUILDMASTER_URL
+      - PORT=10004
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -319,7 +293,7 @@ services:
       net_front:
       net_back:
     ports:
-      - "127.0.0.1:10005:10005"
+      - "127.0.0.1:10004:10004"
     depends_on:
       - mariadb
       - crossbar
