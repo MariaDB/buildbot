@@ -40,7 +40,8 @@ services:
     healthcheck:
       test: ['CMD', "mariadb-admin", "--password=password", "--protocol", "tcp", "ping"]
     volumes:
-      - ./db:/docker-entrypoint-initdb.d:ro
+    # Only needed during GSOC
+    # - ./db:/docker-entrypoint-initdb.d:ro
       - ./mariadb:/var/lib/mysql:rw
     # command: --tmpdir=/var/lib/mysql/tmp
 
@@ -99,7 +100,7 @@ DOCKER_COMPOSE_TEMPLATE = """
       net_front:
       net_back:
     ports:
-      - "127.0.0.1:{port}:{port}"
+      - "100.64.101.1:{port}:{port}"
     depends_on:
       - mariadb
       - crossbar

@@ -16,7 +16,8 @@ services:
     healthcheck:
       test: ['CMD', "mariadb-admin", "--password=password", "--protocol", "tcp", "ping"]
     volumes:
-      - ./db:/docker-entrypoint-initdb.d:ro
+    # Only needed during GSOC
+    # - ./db:/docker-entrypoint-initdb.d:ro
       - ./mariadb:/var/lib/mysql:rw
     # command: --tmpdir=/var/lib/mysql/tmp
 
@@ -45,10 +46,10 @@ services:
     restart: unless-stopped
     container_name: master-web
     environment:
+      - BUILDMASTER_URL
       - TITLE
       - TITLE_URL
       - MQ_ROUTER_URL
-      - BUILDMASTER_URL
       - PORT=8010
     volumes:
       - ./logs:/var/log/buildbot
@@ -69,10 +70,10 @@ services:
     restart: unless-stopped
     container_name: autogen_aarch64-master-0
     environment:
+      - BUILDMASTER_URL
       - TITLE
       - TITLE_URL
       - MQ_ROUTER_URL
-      - BUILDMASTER_URL
       - PORT=9996
     volumes:
       - ./logs:/var/log/buildbot
@@ -95,10 +96,10 @@ services:
     restart: unless-stopped
     container_name: autogen_amd64-master-0
     environment:
+      - BUILDMASTER_URL
       - TITLE
       - TITLE_URL
       - MQ_ROUTER_URL
-      - BUILDMASTER_URL
       - PORT=9997
     volumes:
       - ./logs:/var/log/buildbot
@@ -121,10 +122,10 @@ services:
     restart: unless-stopped
     container_name: autogen_amd64-master-1
     environment:
+      - BUILDMASTER_URL
       - TITLE
       - TITLE_URL
       - MQ_ROUTER_URL
-      - BUILDMASTER_URL
       - PORT=9998
     volumes:
       - ./logs:/var/log/buildbot
@@ -147,10 +148,10 @@ services:
     restart: unless-stopped
     container_name: autogen_ppc64le-master-0
     environment:
+      - BUILDMASTER_URL
       - TITLE
       - TITLE_URL
       - MQ_ROUTER_URL
-      - BUILDMASTER_URL
       - PORT=9999
     volumes:
       - ./logs:/var/log/buildbot
@@ -173,10 +174,10 @@ services:
     restart: unless-stopped
     container_name: autogen_s390x-master-0
     environment:
+      - BUILDMASTER_URL
       - TITLE
       - TITLE_URL
       - MQ_ROUTER_URL
-      - BUILDMASTER_URL
       - PORT=10000
     volumes:
       - ./logs:/var/log/buildbot
@@ -199,10 +200,10 @@ services:
     restart: unless-stopped
     container_name: autogen_x86-master-0
     environment:
+      - BUILDMASTER_URL
       - TITLE
       - TITLE_URL
       - MQ_ROUTER_URL
-      - BUILDMASTER_URL
       - PORT=10001
     volumes:
       - ./logs:/var/log/buildbot
@@ -225,10 +226,10 @@ services:
     restart: unless-stopped
     container_name: master-docker-nonstandard
     environment:
+      - BUILDMASTER_URL
       - TITLE
       - TITLE_URL
       - MQ_ROUTER_URL
-      - BUILDMASTER_URL
       - PORT=10002
     volumes:
       - ./logs:/var/log/buildbot
@@ -251,10 +252,10 @@ services:
     restart: unless-stopped
     container_name: master-galera
     environment:
+      - BUILDMASTER_URL
       - TITLE
       - TITLE_URL
       - MQ_ROUTER_URL
-      - BUILDMASTER_URL
       - PORT=10003
     volumes:
       - ./logs:/var/log/buildbot
@@ -277,10 +278,10 @@ services:
     restart: unless-stopped
     container_name: master-protected-branches
     environment:
+      - BUILDMASTER_URL
       - TITLE
       - TITLE_URL
       - MQ_ROUTER_URL
-      - BUILDMASTER_URL
       - PORT=10004
     volumes:
       - ./logs:/var/log/buildbot
