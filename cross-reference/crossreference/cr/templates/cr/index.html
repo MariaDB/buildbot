@@ -91,7 +91,7 @@
     	</thead>
         {% for test in test_runs %}
             <tr class="expandable">
-                <td> [<a href="https://buildbot.mariadb.org/#/builders/{{ test.test_run_id.revision }}/builds/{{ test.test_run_id.bbnum }}" > Build details </a>] </td>
+                <td> [<a href="https://buildbot.mariadb.org/#/builders/{{ test.test_run_id.platform_name }}/builds/{{ test.test_run_id.bbnum }}" > Build details </a>] </td>
                 <td>{{test.test_run_id.branch}}</td>
                 <td>{{test.test_run_id.revision| slice:9}}</td>
                 <td>{{test.platform}}</td>

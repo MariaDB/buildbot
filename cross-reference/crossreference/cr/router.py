@@ -1,4 +1,4 @@
-from .models import TestRun, TestFailure
+from .models import TestRun, TestFailure, Builder
 
 class MariaDBRouter:
     """
@@ -6,7 +6,7 @@ class MariaDBRouter:
     """
 
     def db_for_read(self, model, **hints):
-        if model in [TestRun, TestFailure]:
+        if model in [TestRun, TestFailure, Builder]:
             return 'mariadb'
         return 'default'
 

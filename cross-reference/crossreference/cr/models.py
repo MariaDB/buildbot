@@ -5,6 +5,16 @@ import re
 from django.db import connection
 from datetime import datetime
 
+class Builder(models.Model):
+    id = models.IntegerField(primary_key=True)
+    name = models.TextField()
+    description = models.TextField(null=True, blank=True)
+    name_hash = models.CharField(max_length=40, unique=True)
+
+    class Meta:
+        managed = False
+        db_table = 'builders'
+
 class TestRun(models.Model):
   branch = models.CharField(max_length=100, blank=True, null=True)
   revision = models.CharField(max_length=256, blank=True, null=True)
@@ -13,6 +23,11 @@ class TestRun(models.Model):
   bbnum = models.IntegerField()
   typ = models.CharField(max_length=32)
   info = models.CharField(max_length=255, blank=True, null=True)
+
+  @property
+  def platform_name(self):
+      builder = Builder.objects.filter(name=self.platform).first()
+      return builder.id if builder else None
 
   class Meta:
     managed = False
