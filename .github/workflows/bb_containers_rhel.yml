@@ -57,6 +57,9 @@ jobs:
           fi
           echo "REPO=bb-worker" >>$GITHUB_ENV
       - name: Check for rhel subscription credentials
+        if: >
+          github.repository == 'mariadb/buildbot' &&
+          github.ref == 'refs/heads/main'
         run: |
           missing=()
           [[ -n "${{ secrets.RHEL_ORGID }}" ]] || missing+=(RHEL_ORGID)
@@ -75,10 +78,12 @@ jobs:
         run: |
           docker run -i -v $(pwd):/mnt -w /mnt ghcr.io/hadolint/hadolint:latest hadolint /mnt/Dockerfile
       - name: Install qemu-user-static
+        if: ${{ env.BUILD_RHEL == 'true' }}
         run: |
           sudo apt-get update
           sudo apt-get install -y qemu-user-static
       - name: Make sure that time is in sync
+        if: ${{ env.BUILD_RHEL == 'true' }}
         run: |
           # RHEL subscription needs that time and date
           # is correct and is syncing with an NTP-server
@@ -113,6 +118,7 @@ jobs:
             --all ${{ env.REPO }}:${{ env.IMG }} \
             docker://localhost:5000/${{ env.REPO }}:${{ env.IMG }}
       - name: Check multi-arch container
+        if: ${{ env.BUILD_RHEL == 'true' }}
         run: |
           # make some space on the runner
           if [[ -d $HOME/.local/share/containers ]]; then
@@ -130,6 +136,7 @@ jobs:
             docker run -u root -i "$image" bash -c "touch /tmp/foo && qpress -r /tmp /root/qpress.qp"
           done
       - name: Check for registry credentials
+        if: ${{ env.BUILD_RHEL == 'true' }}
         run: |
           missing=()
           [[ -n "${{ secrets.QUAY_USER }}" ]] || missing+=(QUAY_USER)
