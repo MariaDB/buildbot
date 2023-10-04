@@ -16,7 +16,7 @@ MASTER_DIRECTORIES = [
     "autogen/x86-master-0",
     "master-docker-nonstandard",
     "master-galera",
-    "master-nonlatent",
+    # "master-nonlatent",
 # TODO Enable this once it's more clear what needs to be done
 #    "master-libvirt",
     "master-protected-branches",
