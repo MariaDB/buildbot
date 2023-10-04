@@ -32,6 +32,7 @@ RUN zypper update -y && \
     liblz4-devel \
     libxml2-devel \
     openssl-devel \
+    perl-Net-SSLeay \
     policycoreutils \
     python-devel \
     python-pip \
