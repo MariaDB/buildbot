@@ -6,6 +6,7 @@ from buildbot.steps.mtrlogobserver import MTR, MtrLogObserver
 from buildbot.steps.source.github import GitHub
 from buildbot.process.remotecommand import RemoteCommand
 from twisted.internet import defer
+import os
 import re
 import sys
 import docker
@@ -63,7 +64,7 @@ def createWorker(worker_name_prefix, worker_id, worker_type, dockerfile, jobs=5,
     base_name = b_name + '-docker' + worker_type
 
     # Set master FQDN - default to wireguard interface
-    fqdn = '100.64.100.1'
+    fqdn =  os.getenv('BUILDMASTER_WG_IP', default='100.64.100.1')
     if re.match('aarch64-bbw[1-4]', worker_name):
         fqdn = 'buildbot.mariadb.org'
     if 'vladbogo' in dockerfile or 'quay' in dockerfile:
