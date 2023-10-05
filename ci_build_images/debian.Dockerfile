@@ -27,6 +27,7 @@ RUN . /etc/os-release; \
     apt-get update \
     && apt-get -y upgrade \
     && apt-get -y install --no-install-recommends curl ca-certificates devscripts equivs lsb-release \
+    && if [ "${VERSION_CODENAME}" = lunar ]; then apt-get -y install --no-install-recommends g++-10; fi \
     && echo "deb [trusted=yes] https://buildbot.mariadb.net/archive/builds/mariadb-4.x/latest/kvm-deb-${VERSION_CODENAME}-$(dpkg --print-architecture)-gal/debs ./" > /etc/apt/sources.list.d/galera-4.list \
     && sed -i -e s/arm64/aarch64/ -e s/ppc64el/ppc64le/ /etc/apt/sources.list.d/galera-4.list \
     && if [ "${VERSION_CODENAME}" = lunar ] && [ "$(dpkg --print-architecture)" = arm64 ]; then rm /etc/apt/sources.list.d/galera-4.list; fi \
