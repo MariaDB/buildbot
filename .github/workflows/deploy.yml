@@ -2,22 +2,9 @@
 name: deploy
 
 on:
-  push:
-    paths:
-      - ".github/workflows/deploy.yml"
-      - "autogen/**"
-      - "docker-compose/**"
-      - "master-**"
-      - "master.cfg"
-      - "rsync.exclude"
-  pull_request:
-    paths:
-      - ".github/workflows/deploy.yml"
-      - "autogen/**"
-      - "docker-compose/**"
-      - "master-**"
-      - "master.cfg"
-      - "rsync.exclude"
+  workflow_run:
+    workflows: ["bbm-check-conf", "pre-commit"]
+    types: [completed]
 
 jobs:
   build:
