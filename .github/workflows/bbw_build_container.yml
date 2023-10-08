@@ -1,14 +1,14 @@
 ---
-name: bbw container build
+name: bbw-build-container
 
 on:
   push:
     paths:
-      - .github/workflows/bb_containers.yml
+      - .github/workflows/bbw_build_container.yml
       - "ci_build_images/**"
   pull_request:
     paths:
-      - .github/workflows/bb_containers.yml
+      - .github/workflows/bbw_build_container.yml
       - "ci_build_images/**"
 
 jobs:

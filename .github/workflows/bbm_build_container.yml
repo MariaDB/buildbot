@@ -1,6 +1,5 @@
 ---
-name: bbm build container
-
+name: bbm-build-container
 
 on:
   push:
@@ -32,11 +31,11 @@ jobs:
           echo "REPO=bb-master" >>$GITHUB_ENV
       - name: Build master image
         run: |
-            podman build . --tag ${{ env.REPO }}:master
+          podman build . --tag ${{ env.REPO }}:master
       - name: Build master-web image
         run: |
-            podman build . --tag ${{ env.REPO }}:master-web \
-              --build-arg master_type=master-web
+          podman build . --tag ${{ env.REPO }}:master-web \
+            --build-arg master_type=master-web
       - name: Push images to local registry
         run: |
           for img in master master-web; do
