@@ -1,36 +1,32 @@
 ---
-name: bbm conf check
+name: bbm-check-conf
 
 on:
   push:
     paths:
       - ".github/workflows/bbm_check_conf.yml"
+      - ".github/workflows/deploy.yml"
       - "autogen/**"
       - "builtbot.tac"
       - "common_factories.py"
       - "constants.py"
+      - "docker-compose/**"
       - "locks.py"
-      - "master-docker-nonstandard/master.cfg"
-      - "master-galera/master.cfg"
-      - "master-nonlatent/master.cfg"
-      - "master-protected-branches/master.cfg"
-      - "master-web/master.cfg"
+      - "master-**"
       - "master.cfg"
       - "utils.py"
       - "validate_master_cfg.sh"
   pull_request:
     paths:
       - ".github/workflows/bbm_check_conf.yml"
+      - ".github/workflows/deploy.yml"
       - "autogen/**"
       - "builtbot.tac"
       - "common_factories.py"
       - "constants.py"
+      - "docker-compose/**"
       - "locks.py"
-      - "master-docker-nonstandard/master.cfg"
-      - "master-galera/master.cfg"
-      - "master-nonlatent/master.cfg"
-      - "master-protected-branches/master.cfg"
-      - "master-web/master.cfg"
+      - "master-**"
       - "master.cfg"
       - "utils.py"
       - "validate_master_cfg.sh"
