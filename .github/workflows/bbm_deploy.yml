@@ -1,52 +1,68 @@
 ---
-name: deploy
+name: bbm-deploy
 
 on:
-  workflow_run:
-    workflows: ["bbm-check-conf", "pre-commit"]
-    types: [completed]
+  push:
+    paths:
+      - ".github/workflows/bbm_deploy.yml"
+      - "autogen/**"
+      - "builtbot.tac"
+      - "common_factories.py"
+      - "constants.py"
+      - "docker-compose/**"
+      - "locks.py"
+      - "master-**"
+      - "master.cfg"
+      - "utils.py"
+      - "validate_master_cfg.sh"
+  pull_request:
+    paths:
+      - ".github/workflows/bbm_deploy.yml"
+      - "autogen/**"
+      - "builtbot.tac"
+      - "common_factories.py"
+      - "constants.py"
+      - "docker-compose/**"
+      - "locks.py"
+      - "master-**"
+      - "master.cfg"
+      - "utils.py"
+      - "validate_master_cfg.sh"
 
 jobs:
-  build:
+  check:
     runs-on: ubuntu-latest
-    name: deploy
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check master.cfg files
+        run: ./validate_master_cfg.sh
 
+  deploy:
+    runs-on: ubuntu-latest
+    needs: check
+    if: >
+      github.ref == 'refs/heads/dev' &&
+      github.repository == 'MariaDB/buildbot'
     steps:
       - uses: actions/checkout@v2
       - name: prepare
-        if: >
-          github.ref == 'refs/heads/dev' &&
-          github.repository == 'MariaDB/buildbot'
         run: |
           install -m 600 -D /dev/null ~/.ssh/id_ed25519
           install -m 600 -D /dev/null ~/.ssh/known_hosts
           echo "${{ secrets.SSH_PRIVATE_KEY }}" >~/.ssh/id_ed25519
           echo "${{ secrets.SSH_KNOWN_HOSTS }}" >~/.ssh/known_hosts
       - name: shutdown stack
-        if: >
-          github.ref == 'refs/heads/dev' &&
-          github.repository == 'MariaDB/buildbot'
         run: |
           ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} "if [[ -f /srv/dev/docker-compose/docker-compose.yaml ]]; then docker-compose -f /srv/dev/docker-compose/docker-compose.yaml down; fi"
       - name: deploy
-        if: >
-          github.ref == 'refs/heads/dev' &&
-          github.repository == 'MariaDB/buildbot'
         run: |
           rsync -a --progress --delete --exclude-from=rsync.exclude -e "ssh -p ${{ secrets.SERVER_PORT }}" ./ ${{ secrets.USER }}@${{ secrets.SERVER_IP }}:/srv/dev/
           ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} "cd /srv/dev/docker-compose/ && ./generate-config.py --env=dev"
           ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} "cd /srv/dev/ && ./define_masters.py"
           ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} "cd /srv/dev/docker-compose/ && ln -sf .. buildbot"
       - name: start stack
-        if: >
-          github.ref == 'refs/heads/dev' &&
-          github.repository == 'MariaDB/buildbot'
         run: |
           ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} "cd /srv/dev/docker-compose && docker-compose pull && docker-compose --env-file .env.dev up -d"
       - name: clean
-        if: >
-          always() &&
-          github.ref == 'refs/heads/dev' &&
-          github.repository == 'MariaDB/buildbot'
         run: |
           rm ~/.ssh/id_ed25519
