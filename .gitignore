@@ -9,3 +9,4 @@ workers
 autogen
 master-config.yaml
 .venv
+.vendor
