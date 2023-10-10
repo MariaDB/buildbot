@@ -3,6 +3,7 @@ buildbot-worker
 docker==4.3.1
 flask
 libvirt-python
+#libmariadb-dev not available on Alpine Linux so far
 #mysqlclient
 python-dotenv
 pyzabbix
