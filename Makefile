@@ -33,6 +33,9 @@ install-pip-packages: ## Install python3 requirements
 
 install-vlad-bb-fork: ## Install vlad bb fork
 	$(info --> Install vlad's bb fork)
+	@echo -e "\n--> Make sure to install following packages:"
+	@echo -e "- libmariadb-dev"
+	@echo -e "- libvirt-dev\n"
 	if [[ ! -d $(VENDOR_DIR) ]]; then \
 		git clone --branch grid https://github.com/vladbogo/buildbot $(VENDOR_DIR); \
 	  cd $(VENDOR_DIR)/master && python setup.py bdist_wheel; \
