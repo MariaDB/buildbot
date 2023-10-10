@@ -1,0 +1,10 @@
+buildbot-prometheus
+buildbot-worker
+docker==4.3.1
+flask
+libvirt-python
+#mysqlclient
+python-dotenv
+pyzabbix
+sqlalchemy==1.3.23
+treq
