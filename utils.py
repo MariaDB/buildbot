@@ -216,8 +216,8 @@ echo '<!DOCTYPE html>
 <html>
 <body>' >> /buildbot/mysql_logs.html
 
-echo '<a href="https://ci.mariadb.org/%(prop:tarbuildnum)s/logs/%(prop:buildername)s/">mysqld* log dir</a><br>' >> /buildbot/mysql_logs.html
-echo '<a href="https://ci.mariadb.org/%(prop:tarbuildnum)s/logs/%(prop:buildername)s/var.tar.gz">var.tar.gz</a><br>' >> /buildbot/mysql_logs.html
+echo '<a href=" """ + os.getenv('ARTIFACTS_URL', default='https://ci.mariadb.org') + """/%(prop:tarbuildnum)s/logs/%(prop:buildername)s/">mysqld* log dir</a><br>' >> /buildbot/mysql_logs.html
+echo '<a href=" """ + os.getenv('ARTIFACTS_URL', default='https://ci.mariadb.org') + """/%(prop:tarbuildnum)s/logs/%(prop:buildername)s/var.tar.gz">var.tar.gz</a><br>' >> /buildbot/mysql_logs.html
 
 echo '</body>
 </html>' >> /buildbot/mysql_logs.html"""
