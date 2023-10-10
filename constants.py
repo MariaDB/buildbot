@@ -157,6 +157,11 @@ supportedPlatforms["11.0"] = supportedPlatforms["10.11"].copy()
 supportedPlatforms["11.1"] = supportedPlatforms["11.0"].copy()
 supportedPlatforms["11.2"] = supportedPlatforms["11.1"].copy()
 supportedPlatforms["11.3"] = supportedPlatforms["11.2"].copy()
+supportedPlatforms["11.4"] = supportedPlatforms["11.3"].copy()
+supportedPlatforms["11.5"] = supportedPlatforms["11.4"].copy()
+supportedPlatforms["11.6"] = supportedPlatforms["11.5"].copy()
+supportedPlatforms["11.7"] = supportedPlatforms["11.6"].copy()
+supportedPlatforms["11.8"] = supportedPlatforms["11.7"].copy()
 
 # Define environment variables for MTR step
 MTR_ENV = {
