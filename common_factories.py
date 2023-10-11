@@ -1,3 +1,6 @@
+import os
+from utils import *
+from constants import *
 from buildbot.plugins import *
 from buildbot.process.properties import Property, Properties
 from buildbot.steps.package.rpm.rpmlint import RpmLint
@@ -6,9 +9,6 @@ from buildbot.steps.mtrlogobserver import MTR, MtrLogObserver
 from buildbot.steps.source.github import GitHub
 from buildbot.process.remotecommand import RemoteCommand
 from twisted.internet import defer
-
-from utils import *
-from constants import *
 
 def getQuickBuildFactory(mtrDbPool):
     f_quick_build = util.BuildFactory()
@@ -90,7 +90,21 @@ def getRpmAutobakeFactory(mtrDbPool):
     f_rpm_autobake.addStep(steps.ShellCommand(name="Environment details", command=['bash', '-c', 'date -u && uname -a && ulimit -a']))
     f_rpm_autobake.addStep(steps.SetProperty(property="dockerfile", value=util.Interpolate("%(kw:url)s", url=dockerfile), description="dockerfile"))
     f_rpm_autobake.workdir=f_rpm_autobake.workdir + "/padding_for_CPACK_RPM_BUILD_SOURCE_DIRS_PREFIX/"
-    f_rpm_autobake.addStep(steps.ShellCommand(name='fetch packages for MariaDB-compat', command=["sh", "-c", util.Interpolate('wget --no-check-certificate -cO ../MariaDB-shared-5.3.%(kw:arch)s.rpm "https://ci.mariadb.org/helper_files/mariadb-shared-5.3-%(kw:arch)s.rpm" && wget -cO ../MariaDB-shared-10.1.%(kw:arch)s.rpm "https://ci.mariadb.org/helper_files/mariadb-shared-10.1-kvm-rpm-%(kw:rpm_type)s-%(kw:arch)s.rpm"', arch=getArch, rpm_type=util.Property('rpm_type'))], doStepIf=hasCompat))
+    f_rpm_autobake.addStep(
+        steps.ShellCommand(
+            name="fetch packages for MariaDB-compat",
+            command=[
+                "sh",
+                "-c",
+                util.Interpolate("""
+                    wget --no-check-certificate -cO ../MariaDB-shared-5.3.%(kw:arch)s.rpm " """ + os.getenv('ARTIFACTS_URL', default='https://ci.mariadb.org') + """/helper_files/mariadb-shared-5.3-%(kw:arch)s.r  pm" && wget -cO ../MariaDB-shared-10.1.%(kw:arch)s.rpm " """ + os.getenv('ARTIFACTS_URL', default='https://ci.mariadb.org') + """/helper_files/mariadb-shared-10.1-kvm-rpm-%(kw:rpm_type)s-%(kw:arch)s.rpm"',
+                    arch=getArch,
+                    rpm_type=util.Property("rpm_type"),
+                """),
+            ],
+            doStepIf=hasCompat,
+          )
+    )
     f_rpm_autobake.addStep(downloadSourceTarball())
     f_rpm_autobake.addStep(steps.ShellCommand(command=util.Interpolate("tar -xvzf /mnt/packages/%(prop:tarbuildnum)s_%(prop:mariadb_version)s.tar.gz --strip-components=1")))
     f_rpm_autobake.addStep(steps.ShellCommand(command="ls .."))
@@ -122,15 +136,13 @@ def getRpmAutobakeFactory(mtrDbPool):
             cat << EOF > MariaDB.repo
 [MariaDB-%(prop:branch)s]
 name=MariaDB %(prop:branch)s repo (build %(prop:tarbuildnum)s)
-baseurl=https://ci.mariadb.org/%(prop:tarbuildnum)s/%(prop:buildername)s/rpms
+baseurl=""" + os.getenv('ARTIFACTS_URL', default='https://ci.mariadb.org') + """/%(prop:tarbuildnum)s/%(prop:buildername)s/rpms
 gpgcheck=0
 EOF
             if [ "%(prop:rpm_type)s" = rhel8 ] || [ "%(prop:rpm_type)s" = centosstream8 ]; then
                 echo "module_hotfixes = 1" >> MariaDB.repo
             fi
         """)]))
-    #f_rpm_autobake.addStep(steps.MultipleFileUpload(workersrcs=util.Property('packages'),
-    #    masterdest=util.Interpolate('/srv/buildbot/packages/' + '%(prop:tarbuildnum)s' + '/' + '%(prop:buildername)s'), mode=0o755, url=util.Interpolate('https://ci.mariadb.org/' + "%(prop:tarbuildnum)s" + "/" + '%(prop:buildername)s' + "/"), doStepIf=lambda step: hasFiles(step) and savePackage(step)))
     f_rpm_autobake.addStep(steps.ShellCommand(
         name='save_packages',
         timeout=7200,
@@ -143,7 +155,8 @@ EOF
             ),
         doStepIf=lambda step: hasFiles(step) and savePackage(step),
         descriptionDone=util.Interpolate("""
-Repository available with: curl https://ci.mariadb.org/%(prop:tarbuildnum)s/%(prop:buildername)s/MariaDB.repo -o /etc/yum.repos.d/MariaDB.repo""")
+Repository available with: curl """ + os.getenv('ARTIFACTS_URL', default='https://ci.mariadb.org') + """/%(prop:tarbuildnum)s/%(prop:buildername)s/MariaDB.repo -o /etc/yum.repos.d/MariaDB.repo
+        """)
     ))
     f_rpm_autobake.addStep(steps.Trigger(name='install', schedulerNames=['s_install'], waitForFinish=False, updateSourceStamp=False,
         set_properties={"tarbuildnum" : Property("tarbuildnum"), "mariadb_version" : Property("mariadb_version"), "master_branch" : Property("master_branch"), "parentbuildername": Property("buildername")}, doStepIf=lambda step: hasInstall(step) and savePackage(step) and hasFiles(step)))
