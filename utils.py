@@ -242,8 +242,7 @@ fi
 # Function to move the MTR logs to a known location so that they can be saved
 def moveMTRLogs():
     return """
-echo Logs available at https://ci.mariadb.org/%(prop:tarbuildnum)s/logs/%(prop:buildername)s/
-
+echo Logs available at """ + os.getenv('ARTIFACTS_URL', default='https://ci.mariadb.org') + """/%(prop:tarbuildnum)s/logs/%(prop:buildername)s/
 mkdir -p /buildbot/logs
 
 filename="mysql-test/var/log/mysqld.1.err"
