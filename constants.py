@@ -89,6 +89,7 @@ supportedPlatforms["10.4"] = [
         'amd64-ubuntu-2204-debug-ps',
         'amd64-ubuntu-2204-valgrind',
         'amd64-ubuntu-2204-clang14-asan',
+        'amd64-ubuntu-2204-icc',
         'amd64-windows',
         'amd64-windows-packages',
         'ppc64le-centos-stream8',
