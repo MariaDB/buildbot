@@ -91,9 +91,9 @@ def getLocks(props):
         locks = locks + [apexis_bbw2_lock.access('counting')]
     if 'ns-x64-bbw1-docker' in worker_name:
         locks = locks + [bg_bbw1_lock.access('counting')]
-    if 'ns-x64--bbw2-docker' in worker_name:
+    if 'ns-x64-bbw2-docker' in worker_name:
         locks = locks + [bg_bbw2_lock.access('counting')]
-    if 'ns-x64--bbw3-docker' in worker_name:
+    if 'ns-x64-bbw3-docker' in worker_name:
         locks = locks + [bg_bbw3_lock.access('counting')]
     if 'ns-x64-bbw4-docker' in worker_name:
         locks = locks + [bg_bbw4_lock.access('counting')]
