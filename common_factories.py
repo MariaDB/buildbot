@@ -92,18 +92,20 @@ def getRpmAutobakeFactory(mtrDbPool):
     f_rpm_autobake.workdir=f_rpm_autobake.workdir + "/padding_for_CPACK_RPM_BUILD_SOURCE_DIRS_PREFIX/"
     f_rpm_autobake.addStep(
         steps.ShellCommand(
-            name="fetch packages for MariaDB-compat",
-            command=[
-                "sh",
-                "-c",
-                util.Interpolate("""
-                    wget --no-check-certificate -cO ../MariaDB-shared-5.3.%(kw:arch)s.rpm " """ + os.getenv('ARTIFACTS_URL', default='https://ci.mariadb.org') + """/helper_files/mariadb-shared-5.3-%(kw:arch)s.r  pm" && wget -cO ../MariaDB-shared-10.1.%(kw:arch)s.rpm " """ + os.getenv('ARTIFACTS_URL', default='https://ci.mariadb.org') + """/helper_files/mariadb-shared-10.1-kvm-rpm-%(kw:rpm_type)s-%(kw:arch)s.rpm"',
-                    arch=getArch,
-                    rpm_type=util.Property("rpm_type"),
-                """),
-            ],
+            name="Fetch packages for MariaDB-compat",
+            command=util.Interpolate(
+                "wget --no-check-certificate -cO ../MariaDB-shared-5.3.%(kw:arch)s.rpm "
+                + os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org")
+                + "/helper_files/mariadb-shared-5.3-%(kw:arch)s.rpm"
+                + "&&"
+                + "wget --no-check-certificate -cO ../MariaDB-shared-10.1.%(kw:arch)s.rpm "
+                + os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org")
+                + "/helper_files/mariadb-shared-10.1-kvm-rpm-%(kw:rpm_type)s-%(kw:arch)s.rpm",
+                arch=getArch,
+                rpm_type=util.Property("rpm_type"),
+            ),
             doStepIf=hasCompat,
-          )
+        )
     )
     f_rpm_autobake.addStep(downloadSourceTarball())
     f_rpm_autobake.addStep(steps.ShellCommand(command=util.Interpolate("tar -xvzf /mnt/packages/%(prop:tarbuildnum)s_%(prop:mariadb_version)s.tar.gz --strip-components=1")))
