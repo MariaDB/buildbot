@@ -38,13 +38,14 @@ def getScript(scriptname):
 """])
 
 # BUILD HELPERS
+MASTER_PACKAGES = os.getenv('MASTER_PACKAGES_DIR', default='/mnt/autofs/master_packages')
 
 # Helper function that creates a worker instance.
 def createWorker(worker_name_prefix, worker_id, worker_type, dockerfile, jobs=5,
                  save_packages=False, shm_size='15G', worker_name_suffix='',
                  volumes=['/srv/buildbot/ccache:/mnt/ccache',
                           '/srv/buildbot/packages:/mnt/packages',
-                          '/mnt/autofs/master_packages/:/packages']):
+                          MASTER_PACKAGES+'/:/packages']):
     worker_name = worker_name_prefix + str(worker_id) + '-docker'
     name = worker_name + worker_type
 
