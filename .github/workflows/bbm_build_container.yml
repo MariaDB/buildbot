@@ -1,7 +1,6 @@
 ---
 name: bbm build container
 
-
 on:
   push:
     paths:
