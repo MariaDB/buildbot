@@ -51,6 +51,7 @@ RUN apt-get update \
       pyzabbix \
       sqlalchemy==1.3.23 \
       treq \
+      twisted==22.10.0 \
     && if [ "$master_type" = "master-web" ]; then \
       pip install --no-cache-dir pyjade; \
     fi \
