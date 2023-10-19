@@ -93,21 +93,21 @@ def createWorker(worker_name_prefix, worker_id, worker_type, dockerfile, jobs=5,
                         properties={ 'jobs':jobs, 'save_packages':save_packages })
     return ((base_name, name + worker_name_suffix), worker_instance)
 
-def downloadSourceTarball():
+def downloadSourceTarball(output_dir="/mnt/packages/"):
     return ShellCommand(
              name="fetch_tarball",
              description="fetching source tarball",
              descriptionDone="fetching source tarball...done",
              haltOnFailure=True,
              command=["bash", "-xc", util.Interpolate("""
-    d=/mnt/packages/
+    d=""" + output_dir + """
     f="%(prop:tarbuildnum)s_%(prop:mariadb_version)s.tar.gz"
     find $d -type f -mtime +2 -delete -ls
 
     # Do not use flock for AIX
     os=$(uname -s)
     use_flock=""
-    if [[ $os != "AIX" ]]; then
+    if [[ $os != "AIX" && $os != "Darwin" ]]; then
       use_flock="flock \"$d$f\" "
     fi
     cmd="$use_flock wget -cO \"$d$f\" \"https://ci.mariadb.org/%(prop:tarbuildnum)s/%(prop:mariadb_version)s.tar.gz\""
