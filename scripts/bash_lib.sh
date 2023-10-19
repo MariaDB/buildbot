@@ -181,16 +181,6 @@ deb_setup_mariadb_mirror() {
     exit 1
   }
   branch=$1
-  if [[ $branch == "$development_branch" ]]; then
-    #TOFIX - temp hack
-    prev_released=$((${branch/1[0-9]./} - 1))
-    if ((prev_released < 0)); then
-      branch="10.11"
-    else
-      branch="10.$prev_released"
-    fi
-    bb_log_info "using previous $branch released version for development branch $1"
-  fi
   bb_log_info "setup MariaDB repository for $branch branch"
   command -v wget >/dev/null || {
     bb_log_err "wget command not found"
@@ -209,8 +199,12 @@ deb_setup_mariadb_mirror() {
       exit 1
     }
   else
-    bb_log_err "deb_setup_mariadb_mirror: $branch packages for $dist_name $version_name does not exist on https://deb.mariadb.org/"
-    exit 1
+    # the correct way of handling this would be to not even start the check
+    # since we know it will always fail. But apparently, it's not going to
+    # happen soon in BB. Once done though, replace the warning with an error
+    # and use a non-zero exit code.
+    bb_log_warn "deb_setup_mariadb_mirror: $branch packages for $dist_name $version_name does not exist on https://deb.mariadb.org/"
+    exit 0
   fi
   set +u
 }
@@ -246,14 +240,18 @@ upgrade_test_type() {
       prev_major_version=$major_version
       ;;
     "major")
-      #TOFIX - temp hack
-      minor_version=${major_version/1[0-9]./}
-      if ((minor_version == 0)); then
-        prev_minor_version=11
+      major=${major_version%.*}
+      minor=${major_version##*.}
+      if ((minor == 0)); then
+        if ((major == 11)); then
+          prev_major_version="10.11"
+        else
+          bb_log_err "Unknown previous branch for $branch_tmp, please update this script"
+          exit 1
+        fi
       else
-        prev_minor_version=$((minor_version - 1))
+        prev_major_version="$major.$((minor - 1))"
       fi
-      prev_major_version="10.$prev_minor_version"
       ;;
     *)
       bb_log_err "test type not provided"

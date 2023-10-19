@@ -201,8 +201,9 @@ fi
 sudo rm /etc/apt/preferences.d/release
 
 # We also need official mirror for dependencies not available in BB artifacts
-# (Galera)
-deb_setup_mariadb_mirror "$master_branch"
+# (Galera) //TEMP seems to not be necessary anymore (galera packages build in
+# artifacts?)
+# deb_setup_mariadb_mirror "$master_branch"
 deb_setup_bb_artifacts_mirror
 apt_get_update
 
