@@ -183,8 +183,13 @@ deb_setup_mariadb_mirror() {
   branch_tmp=$1
   major=${branch_tmp%.*}
   minor=${branch_tmp##*.}
-  if [[ $branch_tmp == "11.0" ]]; then
-    prev_release="10.11"
+  if [[ $minor == "0" ]]; then
+    if [[ $major == "11" ]]; then
+      prev_release="10.11"
+    else
+      bb_log_err "Unknown previous branch for $branch_tmp, please update this script"
+      exit 1
+    fi
   else
     prev_release="$major.$((minor - 1))"
   fi
