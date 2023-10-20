@@ -1,6 +1,3 @@
-import os
-from utils import *
-from constants import *
 from buildbot.plugins import *
 from buildbot.process.properties import Property, Properties
 from buildbot.steps.package.rpm.rpmlint import RpmLint
@@ -9,6 +6,9 @@ from buildbot.steps.mtrlogobserver import MTR, MtrLogObserver
 from buildbot.steps.source.github import GitHub
 from buildbot.process.remotecommand import RemoteCommand
 from twisted.internet import defer
+
+from utils import *
+from constants import *
 
 
 def getQuickBuildFactory(mtrDbPool):
@@ -221,20 +221,12 @@ def getQuickBuildFactory(mtrDbPool):
             timeout=7200,
             haltOnFailure=True,
             command=util.Interpolate(
-                "mkdir -p "
-                + "/packages/"
-                + "%(prop:tarbuildnum)s"
-                + "/"
-                + "%(prop:buildername)s"
-                + " && sha256sum %(prop:mariadb_binary)s >> sha256sums.txt  && cp "
-                + "%(prop:mariadb_binary)s sha256sums.txt"
-                + " /packages/"
-                + "%(prop:tarbuildnum)s"
-                + "/"
-                + "%(prop:buildername)s"
-                + "/"
-                + " && sync /packages/"
-                + "%(prop:tarbuildnum)s"
+                """
+        mkdir -p /packages/%(prop:tarbuildnum)s/%(prop:buildername)s \
+        && sha256sum %(prop:mariadb_binary)s >> sha256sums.txt \
+        && cp %(prop:mariadb_binary)s sha256sums.txt /packages/%(prop:tarbuildnum)s/%(prop:buildername)s/ \
+        && sync /packages/%(prop:tarbuildnum)s
+        """
             ),
             doStepIf=savePackage,
         )
@@ -285,18 +277,17 @@ def getRpmAutobakeFactory(mtrDbPool):
     )
     f_rpm_autobake.addStep(
         steps.ShellCommand(
-            name="Fetch packages for MariaDB-compat",
-            command=util.Interpolate(
-                "wget --no-check-certificate -cO ../MariaDB-shared-5.3.%(kw:arch)s.rpm "
-                + os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org")
-                + "/helper_files/mariadb-shared-5.3-%(kw:arch)s.rpm"
-                + "&&"
-                + "wget --no-check-certificate -cO ../MariaDB-shared-10.1.%(kw:arch)s.rpm "
-                + os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org")
-                + "/helper_files/mariadb-shared-10.1-kvm-rpm-%(kw:rpm_type)s-%(kw:arch)s.rpm",
-                arch=getArch,
-                rpm_type=util.Property("rpm_type"),
-            ),
+            name="fetch packages for MariaDB-compat",
+            command=[
+                "sh",
+                "-c",
+                util.Interpolate(
+                    'wget --no-check-certificate -cO ../MariaDB-shared-5.3.%(kw:arch)s.rpm "%(kw:url)s/helper_files/mariadb-shared-5.3-%(kw:arch)s.rpm" && wget -cO ../MariaDB-shared-10.1.%(kw:arch)s.rpm "%(kw:url)s/helper_files/mariadb-shared-10.1-kvm-rpm-%(kw:rpm_type)s-%(kw:arch)s.rpm"',
+                    arch=getArch,
+                    url=os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org"),
+                    rpm_type=util.Property("rpm_type"),
+                ),
+            ],
             doStepIf=hasCompat,
         )
     )
@@ -381,15 +372,14 @@ def getRpmAutobakeFactory(mtrDbPool):
             cat << EOF > MariaDB.repo
 [MariaDB-%(prop:branch)s]
 name=MariaDB %(prop:branch)s repo (build %(prop:tarbuildnum)s)
-baseurl="""
-                    + os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org")
-                    + """/%(prop:tarbuildnum)s/%(prop:buildername)s/rpms
+baseurl=%(kw:url)s/%(prop:tarbuildnum)s/%(prop:buildername)s/rpms
 gpgcheck=0
 EOF
             if [ "%(prop:rpm_type)s" = rhel8 ] || [ "%(prop:rpm_type)s" = centosstream8 ]; then
                 echo "module_hotfixes = 1" >> MariaDB.repo
             fi
-        """
+        """,
+                    url=os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org"),
                 ),
             ]
         )
@@ -400,27 +390,18 @@ EOF
             timeout=7200,
             haltOnFailure=True,
             command=util.Interpolate(
-                "mkdir -p "
-                + "/packages/"
-                + "%(prop:tarbuildnum)s"
-                + "/"
-                + "%(prop:buildername)s"
-                + " && cp -r MariaDB.repo rpms srpms /packages/"
-                + "%(prop:tarbuildnum)s"
-                + "/"
-                + "%(prop:buildername)s"
-                + "/"
-                + " && ln -sf %(prop:tarbuildnum)s/%(prop:buildername)s/MariaDB.repo %(prop:branch)s-latest-%(prop:buildername)s.repo "
-                + " && sync /packages/"
-                + "%(prop:tarbuildnum)s"
+                """"
+                mkdir -p /packages/%(prop:tarbuildnum)s/%(prop:buildername)s &&
+                cp -r MariaDB.repo rpms srpms /packages/%(prop:tarbuildnum)s/%(prop:buildername)s/ &&
+                ln -sf %(prop:tarbuildnum)s/%(prop:buildername)s/MariaDB.repo %(prop:branch)s-latest-%(prop:buildername)s.repo &&
+                sync /packages/%(prop:tarbuildnum)s
+"""
             ),
             doStepIf=lambda step: hasFiles(step) and savePackage(step),
             descriptionDone=util.Interpolate(
                 """
-Repository available with: curl """
-                + os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org")
-                + """/%(prop:tarbuildnum)s/%(prop:buildername)s/MariaDB.repo -o /etc/yum.repos.d/MariaDB.repo
-        """
+Repository available with: curl %(kw:url)s/%(prop:tarbuildnum)s/%(prop:buildername)s/MariaDB.repo -o /etc/yum.repos.d/MariaDB.repo""",
+                url=os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org"),
             ),
         )
     )
