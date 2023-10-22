@@ -22,6 +22,7 @@ class FetchTestData(MTR):
         typ = 'nm'
         limit = 50
         overlimit = 1000
+        test_re = r'^(?:.+/)?mysql-test/(?:suite/)?(.+?)/(?:[rt]/)?([^/]+)\.(?:test|result|rdiff)$'
 
         if master_branch:
             query = """
@@ -29,9 +30,12 @@ class FetchTestData(MTR):
             """
             tests = yield self.runQueryWithRetry(query % (master_branch, overlimit, limit))
             tests = list(t[0] for t in tests)
+
+            tests += (m.expand(r'\1.\2') for m in (re.search(test_re, f) for f in self.build.allFiles()) if m)
+
             if tests:
                 test_args = ' '.join(tests)
-                self.setProperty('failed_tests', test_args)
+                self.setProperty('tests_to_run', test_args)
 
         return results.SUCCESS
 
@@ -259,9 +263,9 @@ def getLastNFailedBuildFactory(mtrDbPool):
     @util.renderer
     def getTests(props):
         mtr_additional_args = props.getProperty('mtr_additional_args', '--suite=main')
-        failed_tests = props.getProperty('failed_tests', None)
-        if failed_tests:
-            mtr_additional_args = mtr_additional_args.replace('--suite=main', failed_tests)
+        tests_to_run = props.getProperty('tests_to_run', None)
+        if tests_to_run:
+            mtr_additional_args = mtr_additional_args.replace('--suite=main', tests_to_run)
 
         return mtr_additional_args
 
