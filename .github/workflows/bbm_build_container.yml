@@ -22,7 +22,7 @@ jobs:
           - 5000:5000
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Check Dockerfile with hadolint
         run: |
           docker run -i -v $(pwd):/mnt -w /mnt ghcr.io/hadolint/hadolint:latest hadolint /mnt/Dockerfile

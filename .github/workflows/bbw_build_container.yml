@@ -102,7 +102,7 @@ jobs:
       WORKDIR: ci_build_images
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Set up env vars
         run: |
           set -vx

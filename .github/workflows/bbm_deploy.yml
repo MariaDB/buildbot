@@ -33,7 +33,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Check master.cfg files
         run: ./validate_master_cfg.sh
 
@@ -44,7 +44,7 @@ jobs:
       github.ref == 'refs/heads/dev' &&
       github.repository == 'MariaDB/buildbot'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: prepare
         run: |
           install -m 600 -D /dev/null ~/.ssh/id_ed25519

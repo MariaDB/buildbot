@@ -9,7 +9,7 @@ jobs:
   pre-commit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       #//TEMP we need to check only modified files WRT main
       - name: run pre-commit (all)
         run: |
