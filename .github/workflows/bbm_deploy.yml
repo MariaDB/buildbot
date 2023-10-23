@@ -56,6 +56,8 @@ jobs:
           ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} "if [[ -f /srv/dev/docker-compose/docker-compose.yaml ]]; then docker-compose -f /srv/dev/docker-compose/docker-compose.yaml down; fi"
       - name: deploy
         run: |
+          # temporary fix of jade templating
+          sed -i 's#https://ci.mariadb.org#https://ci.dev.mariadb.org#g' master-web/templates/home.jade
           rsync -a --progress --delete --exclude-from=rsync.exclude -e "ssh -p ${{ secrets.SERVER_PORT }}" ./ ${{ secrets.USER }}@${{ secrets.SERVER_IP }}:/srv/dev/
           ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} "cd /srv/dev/docker-compose/ && ./generate-config.py --env=dev"
           ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} "cd /srv/dev/ && ./define_masters.py"
