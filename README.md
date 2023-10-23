@@ -1,8 +1,10 @@
 # buildbot.mariadb.org
 
-[![bbw container build](https://github.com/MariaDB/buildbot/actions/workflows/bb_containers.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/bb_containers.yml)
-[![bbm conf check](https://github.com/MariaDB/buildbot/actions/workflows/bbm_check_conf.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/bbm_check_conf.yml)
-[![bbm build container](https://github.com/MariaDB/buildbot/actions/workflows/bbm_build_container.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/bbm_build_container.yml)
+[![bbw-build-container](https://github.com/MariaDB/buildbot/actions/workflows/bbw_build_container.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/bbw_build_container.yml)
+[![bbw-build-container-rhel](https://github.com/MariaDB/buildbot/actions/workflows/bbw_build_container_rhel.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/bbw_build_container_rhel.yml)
+[![bbm-build-container](https://github.com/MariaDB/buildbot/actions/workflows/bbm_build_container.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/bbm_build_container.yml)
+[![bbm-deploy](https://github.com/MariaDB/buildbot/actions/workflows/bbm_deploy.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/bbm_deploy.yml)
+[![eco container build](https://github.com/MariaDB/buildbot/actions/workflows/eco_containers.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/eco_containers.yml)
 
 ## pre-commit
 

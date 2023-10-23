@@ -1,14 +1,14 @@
 ---
-name: bbw container build (rhel)
+name: bbw-build-container-rhel
 
 on:
   push:
     paths:
-      - .github/workflows/bb_containers_rhel.yml
+      - .github/workflows/bbw_build_container_rhel.yml
       - "ci_build_images/**"
   pull_request:
     paths:
-      - .github/workflows/bb_containers_rhel.yml
+      - .github/workflows/bbw_build_container_rhel.yml
       - "ci_build_images/**"
 
 jobs:
