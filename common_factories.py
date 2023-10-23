@@ -152,7 +152,7 @@ EOF
         command=util.Interpolate(
             'mkdir -p ' + '/packages/' + '%(prop:tarbuildnum)s' + '/' + '%(prop:buildername)s'+
             ' && cp -r MariaDB.repo rpms srpms /packages/' + '%(prop:tarbuildnum)s' + '/' + '%(prop:buildername)s' + '/' +
-            ' && ln -sf %(prop:tarbuildnum)s/%(prop:buildername)s/MariaDB.repo %(prop:branch)s-latest-%(prop:buildername)s.repo ' +
+            ' && ln -sf %(prop:tarbuildnum)s/%(prop:buildername)s/MariaDB.repo /packages/%(prop:branch)s-latest-%(prop:buildername)s.repo ' +
             ' && sync /packages/' + '%(prop:tarbuildnum)s'
             ),
         doStepIf=lambda step: hasFiles(step) and savePackage(step),
