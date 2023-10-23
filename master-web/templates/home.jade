@@ -103,10 +103,10 @@
                   | PyMySQL
             li
               | Packages built by buildbot can be downloaded from 
-              if baseurl == "https://buildbot.mariadb.org"
-                  a(href="https://ci.mariadb.org") here.
-                else
-                  a(href="https://ci.dev.mariadb.org") here.
+              if baseurl == "https://buildbot.mariadb.org/"
+                a(href="https://ci.mariadb.org") here.
+              else
+                a(href="https://ci.dev.mariadb.org") here.
             li
               a(href="{{baseurl}}cr") Cross-reference
               |  allows to search for test failures in previous test runs.
