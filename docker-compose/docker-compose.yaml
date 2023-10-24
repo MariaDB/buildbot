@@ -37,6 +37,8 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d/:/etc/nginx/conf.d/:ro
       - /srv/buildbot/packages:/srv/buildbot/packages:ro
+      - /srv/buildbot/galera_packages:/srv/buildbot/galera_packages:ro
+      - /srv/buildbot/helper_files:/srv/buildbot/helper_files:ro
     ports:
       - "127.0.0.1:8080:80"
     networks:
@@ -48,9 +50,11 @@ services:
     container_name: master-web
     environment:
       - BUILDMASTER_URL
-      - TITLE
       - BUILDMASTER_WG_IP
+      - ARTIFACTS_URL
       - TITLE_URL
+      - TITLE
+      - MASTER_PACKAGES_DIR
       - MQ_ROUTER_URL
       - PORT=8010
     volumes:
@@ -73,9 +77,11 @@ services:
     container_name: autogen_aarch64-master-0
     environment:
       - BUILDMASTER_URL
-      - TITLE
       - BUILDMASTER_WG_IP
+      - ARTIFACTS_URL
       - TITLE_URL
+      - TITLE
+      - MASTER_PACKAGES_DIR
       - MQ_ROUTER_URL
       - PORT=9996
     volumes:
@@ -100,9 +106,11 @@ services:
     container_name: autogen_amd64-master-0
     environment:
       - BUILDMASTER_URL
-      - TITLE
       - BUILDMASTER_WG_IP
+      - ARTIFACTS_URL
       - TITLE_URL
+      - TITLE
+      - MASTER_PACKAGES_DIR
       - MQ_ROUTER_URL
       - PORT=9997
     volumes:
@@ -127,9 +135,11 @@ services:
     container_name: autogen_amd64-master-1
     environment:
       - BUILDMASTER_URL
-      - TITLE
       - BUILDMASTER_WG_IP
+      - ARTIFACTS_URL
       - TITLE_URL
+      - TITLE
+      - MASTER_PACKAGES_DIR
       - MQ_ROUTER_URL
       - PORT=9998
     volumes:
@@ -154,9 +164,11 @@ services:
     container_name: autogen_ppc64le-master-0
     environment:
       - BUILDMASTER_URL
-      - TITLE
       - BUILDMASTER_WG_IP
+      - ARTIFACTS_URL
       - TITLE_URL
+      - TITLE
+      - MASTER_PACKAGES_DIR
       - MQ_ROUTER_URL
       - PORT=9999
     volumes:
@@ -181,9 +193,11 @@ services:
     container_name: autogen_s390x-master-0
     environment:
       - BUILDMASTER_URL
-      - TITLE
       - BUILDMASTER_WG_IP
+      - ARTIFACTS_URL
       - TITLE_URL
+      - TITLE
+      - MASTER_PACKAGES_DIR
       - MQ_ROUTER_URL
       - PORT=10000
     volumes:
@@ -208,9 +222,11 @@ services:
     container_name: autogen_x86-master-0
     environment:
       - BUILDMASTER_URL
-      - TITLE
       - BUILDMASTER_WG_IP
+      - ARTIFACTS_URL
       - TITLE_URL
+      - TITLE
+      - MASTER_PACKAGES_DIR
       - MQ_ROUTER_URL
       - PORT=10001
     volumes:
@@ -235,9 +251,11 @@ services:
     container_name: master-docker-nonstandard
     environment:
       - BUILDMASTER_URL
-      - TITLE
       - BUILDMASTER_WG_IP
+      - ARTIFACTS_URL
       - TITLE_URL
+      - TITLE
+      - MASTER_PACKAGES_DIR
       - MQ_ROUTER_URL
       - PORT=10002
     volumes:
@@ -262,9 +280,11 @@ services:
     container_name: master-galera
     environment:
       - BUILDMASTER_URL
-      - TITLE
       - BUILDMASTER_WG_IP
+      - ARTIFACTS_URL
       - TITLE_URL
+      - TITLE
+      - MASTER_PACKAGES_DIR
       - MQ_ROUTER_URL
       - PORT=10003
     volumes:
@@ -289,9 +309,11 @@ services:
     container_name: master-protected-branches
     environment:
       - BUILDMASTER_URL
-      - TITLE
       - BUILDMASTER_WG_IP
+      - ARTIFACTS_URL
       - TITLE_URL
+      - TITLE
+      - MASTER_PACKAGES_DIR
       - MQ_ROUTER_URL
       - PORT=10004
     volumes:
