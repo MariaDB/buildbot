@@ -61,6 +61,7 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d/:/etc/nginx/conf.d/:ro
       - /srv/buildbot/packages:/srv/buildbot/packages:ro
+      - /srv/buildbot/galera_packages:/srv/buildbot/galera_packages:ro
       - /srv/buildbot/helper_files:/srv/buildbot/helper_files:ro
     ports:
       - "127.0.0.1:8080:80"
