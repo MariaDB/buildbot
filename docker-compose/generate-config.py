@@ -104,6 +104,7 @@ DOCKER_COMPOSE_TEMPLATE = """
       net_back:
     ports:
       - "{buildmaster_wg_ip}:{port}:{port}"
+      - "{buildmaster_pub_ip}:{port}:{port}"
     depends_on:
       - mariadb
       - crossbar
@@ -192,6 +193,7 @@ def main(args):
                 master_directory=master_directory,
                 port=port,
                 buildmaster_wg_ip=env_vars["BUILDMASTER_WG_IP"],
+                buildmaster_pub_ip=env_vars["BUILDMASTER_PUB_IP"],
             )
             port += 1
 
