@@ -27,7 +27,7 @@ RUN . /etc/os-release; \
     apt-get update \
     && apt-get -y upgrade \
     && apt-get -y install --no-install-recommends curl ca-certificates devscripts equivs lsb-release \
-    && if [ "${VERSION_CODENAME}" = lunar ]; then apt-get -y install --no-install-recommends g++-10; fi \
+    && if [ "${VERSION_ID}" = "20.04" ]; then apt-get -y install --no-install-recommends g++-10; fi \
     && if [ "$(arch)" = "x86_64" ]; then ARCH="amd64"; else ARCH=$(arch); fi \
     && curl -s "https://ci.dev.mariadb.org/galera/mariadb-4.x-latest-gal-${ARCH}-${ID}-$(echo "$VERSION_ID" | sed 's/\.//').sources" >/etc/apt/sources.list.d/galera-4.sources \
     && if [ "${VERSION_CODENAME}" = lunar ] && [ "$ARCH" = aarch64 ]; then rm /etc/apt/sources.list.d/galera-4.sources; fi \
