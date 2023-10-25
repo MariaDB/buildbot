@@ -16,8 +16,7 @@ MASTER_DIRECTORIES = [
     "autogen/x86-master-0",
     "master-docker-nonstandard",
     "master-galera",
-    # TODO this one needs an older version of buildbot
-    #    "master-nonlatent",
+    "master-nonlatent",
     # TODO Enable this once it's more clear what needs to be done
     #    "master-libvirt",
     "master-protected-branches",
