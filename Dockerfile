@@ -42,7 +42,7 @@ RUN apt-get update \
     && pip install --no-cache-dir pip -U \
     && pip install --no-cache-dir \
       buildbot-prometheus \
-      buildbot-worker \
+      buildbot-worker==3.0.1 \
       docker==4.3.1 \
       flask \
       libvirt-python \
