@@ -273,31 +273,25 @@ def savePackage(step, savedBranches=savedPackageBranches):
 
 
 # Return a HTML file that contains links to MTR logs
-def getHTMLLogString():
-    return (
-        """
+def getHTMLLogString(base_path="/buildbot"):
+    return f"""
 echo '<!DOCTYPE html>
 <html>
-<body>' >> /buildbot/mysql_logs.html
+<body>' >> {base_path}/mysql_logs.html
 
-echo '<a href=" """
-        + os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org")
-        + """/%(prop:tarbuildnum)s/logs/%(prop:buildername)s/">mysqld* log dir</a><br>' >> /buildbot/mysql_logs.html
-echo '<a href=" """
-        + os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org")
-        + """/%(prop:tarbuildnum)s/logs/%(prop:buildername)s/var.tar.gz">var.tar.gz</a><br>' >> /buildbot/mysql_logs.html
+echo '<a href=" {os.getenv('ARTIFACTS_URL', default='https://ci.mariadb.org')}/%(prop:tarbuildnum)s/logs/%(prop:buildername)s/">mysqld* log dir</a><br>' >> {base_path}/mysql_logs.html
+echo '<a href=" {os.getenv('ARTIFACTS_URL', default='https://ci.mariadb.org')}/%(prop:tarbuildnum)s/logs/%(prop:buildername)s/var.tar.gz">var.tar.gz</a><br>' >> {base_path}/mysql_logs.html
 
 echo '</body>
-</html>' >> /buildbot/mysql_logs.html"""
-    )
+</html>' >> {base_path}/mysql_logs.html"""
 
 
 def hasFailed(step):
     return step.build.results == FAILURE
 
 
-def createVar():
-    return """
+def createVar(base_path="/buildbot"):
+    return f"""
 if [ -d mysql-test/var ]; then
     extra=
     if compgen -G  ./mysql-test/var/*/log/*/mysqld.*/data/core* > /dev/null ||
@@ -305,24 +299,20 @@ if [ -d mysql-test/var ]; then
       if [ -f sql/mysqld ]; then extra="$extra sql/mysqld"; fi
       if [ -f sql/mariadbd ]; then extra="$extra sql/mariadbd"; fi
     fi
-    tar zcf var.tar.gz mysql-test/var/*/log/*.err mysql-test/var/log ${extra}
-    mv var.tar.gz /buildbot/logs/
-fi
-"""
+    tar zcf var.tar.gz mysql-test/var/*/log/*.err mysql-test/var/log ${{extra}}
+    mv var.tar.gz {base_path}/logs/
+fi"""
 
 
 # Function to move the MTR logs to a known location so that they can be saved
-def moveMTRLogs():
-    return (
-        """
-echo Logs available at """
-        + os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org")
-        + """/%(prop:tarbuildnum)s/logs/%(prop:buildername)s/
-mkdir -p /buildbot/logs
+def moveMTRLogs(base_path="/buildbot"):
+    return f"""
+echo Logs available at {os.getenv('ARTIFACTS_URL', default='https://ci.mariadb.org')}/%(prop:tarbuildnum)s/logs/%(prop:buildername)s/
+mkdir -p {base_path}/logs
 
 filename="mysql-test/var/log/mysqld.1.err"
 if [ -f $filename ]; then
-   cp $filename /buildbot/logs/mysqld.1.err
+   cp $filename {base_path}/logs/mysqld.1.err
 fi
 
 mtr=1
@@ -335,7 +325,7 @@ do
     logname="mysqld.$mysqld.err.$mtr"
     filename="mysql-test/var/$mtr/log/mysqld.$mysqld.err"
     if [ -f $filename ]; then
-       cp $filename /buildbot/logs/$logname
+       cp $filename {base_path}/logs/$logname
     else
        break
     fi
@@ -348,9 +338,7 @@ do
   then
     break
   fi
-done
-"""
-    )
+done"""
 
 
 @util.renderer
