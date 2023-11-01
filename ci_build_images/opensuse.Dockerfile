@@ -18,6 +18,7 @@ RUN zypper update -y && \
     check-devel \
     cmake \
     cracklib-devel \
+    createrepo_c \
     curl \
     git \
     glibc-locale \
