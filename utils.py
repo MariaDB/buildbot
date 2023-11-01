@@ -16,59 +16,80 @@ from pyzabbix import ZabbixAPI
 
 from constants import *
 
-private_config = { "private": {} }
-exec(open("/srv/buildbot/master/master-private.cfg").read(), private_config, { })
+private_config = {"private": {}}
+exec(open("/srv/buildbot/master/master-private.cfg").read(), private_config, {})
+
 
 def envFromProperties(envlist):
     d = dict()
     for e in envlist:
-        d[e] = util.Interpolate(f'%(prop:{e})s')
-    d['tarbuildnum'] = util.Interpolate("%(prop:tarbuildnum)s")
-    d['development_branch']= DEVELOPMENT_BRANCH
+        d[e] = util.Interpolate(f"%(prop:{e})s")
+    d["tarbuildnum"] = util.Interpolate("%(prop:tarbuildnum)s")
+    d["development_branch"] = DEVELOPMENT_BRANCH
     return d
+
 
 def getScript(scriptname):
     return steps.ShellCommand(
-      name=f"fetch_{scriptname}",
-      command=["bash", "-xc", f"""
+        name=f"fetch_{scriptname}",
+        command=[
+            "bash",
+            "-xc",
+            f"""
   for script in bash_lib.sh {scriptname}; do
     [[ ! -f $script ]] && wget "https://raw.githubusercontent.com/MariaDB/buildbot/main/scripts/$script"
   done
   chmod a+x {scriptname}
-"""])
+""",
+        ],
+    )
+
 
 # BUILD HELPERS
-MASTER_PACKAGES = os.getenv('MASTER_PACKAGES_DIR', default='/mnt/autofs/master_packages')
+MASTER_PACKAGES = os.getenv(
+    "MASTER_PACKAGES_DIR", default="/mnt/autofs/master_packages"
+)
+
 
 # Helper function that creates a worker instance.
-def createWorker(worker_name_prefix, worker_id, worker_type, dockerfile, jobs=5,
-                 save_packages=False, shm_size='15G', worker_name_suffix='',
-                 volumes=['/srv/buildbot/ccache:/mnt/ccache',
-                          '/srv/buildbot/packages:/mnt/packages',
-                          MASTER_PACKAGES+'/:/packages']):
-    worker_name = worker_name_prefix + str(worker_id) + '-docker'
+def createWorker(
+    worker_name_prefix,
+    worker_id,
+    worker_type,
+    dockerfile,
+    jobs=5,
+    save_packages=False,
+    shm_size="15G",
+    worker_name_suffix="",
+    volumes=[
+        "/srv/buildbot/ccache:/mnt/ccache",
+        "/srv/buildbot/packages:/mnt/packages",
+        MASTER_PACKAGES + "/:/packages",
+    ],
+):
+    worker_name = worker_name_prefix + str(worker_id) + "-docker"
     name = worker_name + worker_type
 
     i = worker_id
     tls = None
 
-    if worker_name_prefix.startswith('hz'):
-        b_name = 'x64-bbw'
-    elif worker_name_prefix.startswith('intel'):
-        b_name = 'x64-bbw'
-    elif worker_name_prefix.startswith('ppc64le'):
-        b_name = 'ppc64le-bbw'
-    elif worker_name_prefix.startswith('amd'):
-        b_name = 'x64-bbw'
+    if worker_name_prefix.startswith("hz"):
+        b_name = "x64-bbw"
+    elif worker_name_prefix.startswith("intel"):
+        b_name = "x64-bbw"
+    elif worker_name_prefix.startswith("ppc64le"):
+        b_name = "ppc64le-bbw"
+    elif worker_name_prefix.startswith("amd"):
+        b_name = "x64-bbw"
     else:
         b_name = worker_name_prefix
-    base_name = b_name + '-docker' + worker_type
+    base_name = b_name + "-docker" + worker_type
 
     # Set master FQDN - default to wireguard interface
-    fqdn =  os.getenv('BUILDMASTER_WG_IP', default='100.64.100.1')
-    if re.match('aarch64-bbw[1-4]', worker_name):
-        fqdn = 'buildbot.mariadb.org'
-    if 'vladbogo' in dockerfile or 'quay' in dockerfile:
+    fqdn = os.getenv("BUILDMASTER_WG_IP", default="100.64.100.1")
+    if re.match("aarch64-bbw[1-4]", worker_name):
+        fqdn = "buildbot.mariadb.org"
+    if "vladbogo" in dockerfile or "quay" in dockerfile:
         dockerfile_str = None
         image_str = dockerfile
         need_pull = True
@@ -76,33 +97,55 @@ def createWorker(worker_name_prefix, worker_id, worker_type, dockerfile, jobs=5,
         dockerfile_str = open("dockerfiles/" + dockerfile).read()
         image_str = None
         need_pull = False
-    if 'rhel' in worker_type and dockerfile_str is not None and not 'download' in dockerfile:
-        dockerfile_str = dockerfile_str % (private_config["private"]["rhel_sub"]["user"], config["private"]["rhel_sub"]["password"])
-    worker_instance = worker.DockerLatentWorker(name + worker_name_suffix, None,
-                        docker_host=private_config["private"]["docker_workers"][worker_name],
-                        image=image_str,
-                        dockerfile=dockerfile_str,
-                        tls=tls,
-                        autopull=True,
-                        alwaysPull=need_pull,
-                        followStartupLogs=False,
-                        masterFQDN=fqdn,
-                        build_wait_timeout=0,
-                        missing_timeout=600,
-                        max_builds=1,
-                        hostconfig={'shm_size':shm_size, 'ulimits': [docker.types.Ulimit(name='memlock', soft=51200000, hard=51200000)]},
-                        volumes=volumes,
-                        properties={ 'jobs':jobs, 'save_packages':save_packages })
+    if (
+        "rhel" in worker_type
+        and dockerfile_str is not None
+        and not "download" in dockerfile
+    ):
+        dockerfile_str = dockerfile_str % (
+            private_config["private"]["rhel_sub"]["user"],
+            config["private"]["rhel_sub"]["password"],
+        )
+    worker_instance = worker.DockerLatentWorker(
+        name + worker_name_suffix,
+        None,
+        docker_host=private_config["private"]["docker_workers"][worker_name],
+        image=image_str,
+        dockerfile=dockerfile_str,
+        tls=tls,
+        autopull=True,
+        alwaysPull=need_pull,
+        followStartupLogs=False,
+        masterFQDN=fqdn,
+        build_wait_timeout=0,
+        missing_timeout=600,
+        max_builds=1,
+        hostconfig={
+            "shm_size": shm_size,
+            "ulimits": [
+                docker.types.Ulimit(name="memlock", soft=51200000, hard=51200000)
+            ],
+        },
+        volumes=volumes,
+        properties={"jobs": jobs, "save_packages": save_packages},
+    )
     return ((base_name, name + worker_name_suffix), worker_instance)
+
 
 def downloadSourceTarball(output_dir="/mnt/packages/"):
     return ShellCommand(
-             name="fetch_tarball",
-             description="fetching source tarball",
-             descriptionDone="fetching source tarball...done",
-             haltOnFailure=True,
-             command=["bash", "-xc", util.Interpolate("""
-    d=""" + output_dir + """
+        name="fetch_tarball",
+        description="fetching source tarball",
+        descriptionDone="fetching source tarball...done",
+        haltOnFailure=True,
+        command=[
+            "bash",
+            "-xc",
+            util.Interpolate(
+                """
+    d="""
+                + output_dir
+                + """
     f="%(prop:tarbuildnum)s_%(prop:mariadb_version)s.tar.gz"
     find $d -type f -mtime +2 -delete -ls
 
@@ -112,7 +155,9 @@ def downloadSourceTarball(output_dir="/mnt/packages/"):
     if [[ $os != "AIX" && $os != "Darwin" ]]; then
       use_flock="flock \"$d$f\" "
     fi
-    cmd="$use_flock wget -cO \"$d$f\" \"""" + os.getenv('ARTIFACTS_URL', default='https://ci.mariadb.org') + """/%(prop:tarbuildnum)s/%(prop:mariadb_version)s.tar.gz\""
+    cmd="$use_flock wget -cO \"$d$f\" \""""
+                + os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org")
+                + """/%(prop:tarbuildnum)s/%(prop:mariadb_version)s.tar.gz\""
 
     res=1
     for i in {1..10}; do
@@ -126,14 +171,23 @@ def downloadSourceTarball(output_dir="/mnt/packages/"):
     if ((res != 0)); then
       exit $res
     fi
-""")])
+"""
+            ),
+        ],
+    )
+
 
 # git branch filter using fnmatch
 import fnmatch
+
+
 def staging_branch_fn(branch):
-    return fnmatch.fnmatch(branch, 'prot-st-*')
+    return fnmatch.fnmatch(branch, "prot-st-*")
+
+
 def fnmatch_any(s, list_of_patterns):
     return any(fnmatch.fnmatch(s, p) for p in list_of_patterns)
+
 
 # Priority filter based on saved package branches
 def nextBuild(bldr, requests):
@@ -145,26 +199,28 @@ def nextBuild(bldr, requests):
             return r
     return requests[0]
 
+
 @defer.inlineCallbacks
 def shell(command, worker, builder):
     args = {
-        'command': command,
-        'logEnviron': False,
-        'workdir': "/srv/buildbot/worker",
-        'want_stdout': False,
-        'want_stderr': False,
+        "command": command,
+        "logEnviron": False,
+        "workdir": "/srv/buildbot/worker",
+        "want_stdout": False,
+        "want_stderr": False,
     }
-    cmd = RemoteCommand('shell', args, stdioLogName=None)
+    cmd = RemoteCommand("shell", args, stdioLogName=None)
     cmd.worker = worker
     yield cmd.run(FakeStep(), worker.conn, builder.name)
     return cmd.rc
 
+
 def canStartBuild(builder, wfb, request):
-    worker=wfb.worker
+    worker = wfb.worker
     if not "s390x" in worker.name:
         return True
 
-    worker_prefix = "-".join((worker.name).split('-')[0:2])
+    worker_prefix = "-".join((worker.name).split("-")[0:2])
     worker_name = private_config["private"]["worker_name_mapping"][worker_prefix]
     load = getMetric(worker_name, "BB_accept_new_build")
 
@@ -178,53 +234,67 @@ def canStartBuild(builder, wfb, request):
     worker.resetQuarantine()
     return True
 
+
 @util.renderer
 def mtrJobsMultiplier(props):
-    jobs = props.getProperty('jobs', default=20)
+    jobs = props.getProperty("jobs", default=20)
     return jobs * 2
+
 
 # ls2string gets the output of ls and returns a space delimited string with the files and directories
 def ls2string(rc, stdout, stderr):
     lsFilenames = []
 
-    for l in stdout.strip().split('\n'):
+    for l in stdout.strip().split("\n"):
         if l != "":
             lsFilenames.append(l.strip())
 
-    return { 'packages' : " ".join(lsFilenames) }
+    return {"packages": " ".join(lsFilenames)}
+
 
 # ls2list gets the output of ls and returns a list with the files and directories
 def ls2list(rc, stdout, stderr):
     lsFilenames = []
 
-    for l in stdout.strip().split('\n'):
+    for l in stdout.strip().split("\n"):
         if l != "":
             lsFilenames.append(l.strip())
 
-    return { 'packages' : lsFilenames }
+    return {"packages": lsFilenames}
+
 
 # Save packages for current branch?
 def savePackage(step, savedBranches=savedPackageBranches):
     builderName = str(step.getProperty("buildername"))
 
-    return step.getProperty("save_packages") and \
-           fnmatch_any(step.getProperty("branch"), savedBranches)
+    return step.getProperty("save_packages") and fnmatch_any(
+        step.getProperty("branch"), savedBranches
+    )
+
 
 # Return a HTML file that contains links to MTR logs
 def getHTMLLogString():
-    return """
+    return (
+        """
 echo '<!DOCTYPE html>
 <html>
 <body>' >> /buildbot/mysql_logs.html
 
-echo '<a href=" """ + os.getenv('ARTIFACTS_URL', default='https://ci.mariadb.org') + """/%(prop:tarbuildnum)s/logs/%(prop:buildername)s/">mysqld* log dir</a><br>' >> /buildbot/mysql_logs.html
-echo '<a href=" """ + os.getenv('ARTIFACTS_URL', default='https://ci.mariadb.org') + """/%(prop:tarbuildnum)s/logs/%(prop:buildername)s/var.tar.gz">var.tar.gz</a><br>' >> /buildbot/mysql_logs.html
+echo '<a href=" """
+        + os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org")
+        + """/%(prop:tarbuildnum)s/logs/%(prop:buildername)s/">mysqld* log dir</a><br>' >> /buildbot/mysql_logs.html
+echo '<a href=" """
+        + os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org")
+        + """/%(prop:tarbuildnum)s/logs/%(prop:buildername)s/var.tar.gz">var.tar.gz</a><br>' >> /buildbot/mysql_logs.html
 
 echo '</body>
 </html>' >> /buildbot/mysql_logs.html"""
+    )
+
 
 def hasFailed(step):
     return step.build.results == FAILURE
+
 
 def createVar():
     return """
@@ -240,10 +310,14 @@ if [ -d mysql-test/var ]; then
 fi
 """
 
+
 # Function to move the MTR logs to a known location so that they can be saved
 def moveMTRLogs():
-    return """
-echo Logs available at """ + os.getenv('ARTIFACTS_URL', default='https://ci.mariadb.org') + """/%(prop:tarbuildnum)s/logs/%(prop:buildername)s/
+    return (
+        """
+echo Logs available at """
+        + os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org")
+        + """/%(prop:tarbuildnum)s/logs/%(prop:buildername)s/
 mkdir -p /buildbot/logs
 
 filename="mysql-test/var/log/mysqld.1.err"
@@ -276,18 +350,26 @@ do
   fi
 done
 """
+    )
+
 
 @util.renderer
 def dockerfile(props):
-    worker = props.getProperty('workername')
-    return "https://github.com/MariaDB/buildbot/tree/main/dockerfiles/" + "-".join(worker.split('-')[-2:]) + '.dockerfile'
+    worker = props.getProperty("workername")
+    return (
+        "https://github.com/MariaDB/buildbot/tree/main/dockerfiles/"
+        + "-".join(worker.split("-")[-2:])
+        + ".dockerfile"
+    )
+
 
 # checks if the list of files is empty
 def hasFiles(step):
-  if len(step.getProperty("packages")) < 1:
-    return False
-  else:
-    return True
+    if len(step.getProperty("packages")) < 1:
+        return False
+    else:
+        return True
+
 
 def hasInstall(props):
     builderName = str(props.getProperty("buildername"))
@@ -297,6 +379,7 @@ def hasInstall(props):
             return True
     return False
 
+
 def hasUpgrade(props):
     builderName = str(props.getProperty("buildername"))
 
@@ -304,6 +387,7 @@ def hasUpgrade(props):
         if builderName in b:
             return True
     return False
+
 
 def hasEco(props):
     builderName = str(props.getProperty("buildername"))
@@ -313,25 +397,29 @@ def hasEco(props):
             return True
     return False
 
+
 def hasCompat(step):
     builderName = str(step.getProperty("buildername"))
 
     # For s390x there are no compat files
-    if 's390x' in builderName:
+    if "s390x" in builderName:
         return False
-    if 'rhel' in builderName or 'centos' in builderName:
-        return step.getProperty('rpm_type')[-1] in ['7', '8']
-    if 'fedora' in builderName:
-        return step.getProperty('rpm_type')[-1] in ['35', '36']
+    if "rhel" in builderName or "centos" in builderName:
+        return step.getProperty("rpm_type")[-1] in ["7", "8"]
+    if "fedora" in builderName:
+        return step.getProperty("rpm_type")[-1] in ["35", "36"]
     return True
+
 
 @util.renderer
 def getDockerLibraryNames(props):
     return builders_dockerlibrary[0]
 
+
 @util.renderer
 def getWordpressNames(props):
     return builders_wordpress[0]
+
 
 def hasDockerLibrary(step):
     # Can only build with a saved package
@@ -342,7 +430,7 @@ def hasDockerLibrary(step):
     builderName = str(step.getProperty("buildername"))
 
     # from https://github.com/MariaDB/mariadb-docker/blob/next/update.sh#L7-L15
-    if fnmatch.fnmatch(branch, '10.[4-6]'):
+    if fnmatch.fnmatch(branch, "10.[4-6]"):
         dockerbase = "ubuntu-2004-deb-autobake"
     else:
         dockerbase = "ubuntu-2204-deb-autobake"
@@ -350,33 +438,38 @@ def hasDockerLibrary(step):
     # We only build on the above autobakes for all architectures
     return builderName.endswith(dockerbase)
 
+
 def filterBranch(step):
-  if '10.5' in step.getProperty("branch"):
+    if "10.5" in step.getProperty("branch"):
         return False
-  if '10.6' in step.getProperty("branch"):
+    if "10.6" in step.getProperty("branch"):
         return False
-  return True
+    return True
+
 
 # check if branch is a staging branch
 def isStagingBranch(step):
-  if staging_branch_fn(step.getProperty("branch")):
-    return True
-  else:
-    return False
+    if staging_branch_fn(step.getProperty("branch")):
+        return True
+    else:
+        return False
+
 
 # returns true if build is succeeding
 def ifStagingSucceeding(step):
-  if isStagingBranch(step):
-    step.setProperty("build_results", step.build.results)
-    return step.build.results in ('SUCCESS', 'WARNINGS')
-  else:
-    return False
+    if isStagingBranch(step):
+        step.setProperty("build_results", step.build.results)
+        return step.build.results in ("SUCCESS", "WARNINGS")
+    else:
+        return False
+
 
 # set step's waitForFinish to True if staging branch
 def waitIfStaging(step):
-  if isStagingBranch(step):
-    step.waitForFinish = True
-  return True
+    if isStagingBranch(step):
+        step.waitForFinish = True
+    return True
+
 
 def hasAutobake(props):
     builderName = props.getProperty("buildername")
@@ -384,6 +477,7 @@ def hasAutobake(props):
         if builderName in b:
             return True
     return False
+
 
 def hasGalera(props):
     builderName = str(props.getProperty("buildername"))
@@ -393,6 +487,7 @@ def hasGalera(props):
             return True
     return False
 
+
 def hasBigtest(props):
     builderName = str(props.getProperty("buildername"))
 
@@ -401,31 +496,35 @@ def hasBigtest(props):
             return True
     return False
 
+
 @util.renderer
 def getArch(props):
-    buildername = props.getProperty('buildername')
-    return buildername.split('-')[0]
+    buildername = props.getProperty("buildername")
+    return buildername.split("-")[0]
+
 
 ####### SCHEDULER HELPER FUNCTIONS
 @util.renderer
 def getBranchBuilderNames(props):
     mBranch = props.getProperty("master_branch")
 
-    builders = list(filter(
-        lambda x: x not in github_status_builders,
-        supportedPlatforms[mBranch]))
+    builders = list(
+        filter(lambda x: x not in github_status_builders, supportedPlatforms[mBranch])
+    )
 
     return builders
+
 
 @util.renderer
 def getProtectedBuilderNames(props):
     mBranch = props.getProperty("master_branch")
 
-    builders = list(filter(
-        lambda x: x in supportedPlatforms[mBranch],
-        github_status_builders))
+    builders = list(
+        filter(lambda x: x in supportedPlatforms[mBranch], github_status_builders)
+    )
 
     return builders
+
 
 @util.renderer
 def getAutobakeBuilderNames(props):
@@ -434,6 +533,7 @@ def getAutobakeBuilderNames(props):
         if builderName in b:
             return [b]
     return []
+
 
 @util.renderer
 def getBigtestBuilderNames(props):
@@ -444,6 +544,7 @@ def getBigtestBuilderNames(props):
             return [b]
     return []
 
+
 @util.renderer
 def getInstallBuilderNames(props):
     builderName = str(props.getProperty("parentbuildername"))
@@ -452,6 +553,7 @@ def getInstallBuilderNames(props):
         if builderName in b:
             return [b]
     return []
+
 
 @util.renderer
 def getUpgradeBuilderNames(props):
@@ -463,6 +565,7 @@ def getUpgradeBuilderNames(props):
             builds.append(b)
     return builds
 
+
 @util.renderer
 def getEcoBuilderNames(props):
     builderName = str(props.getProperty("parentbuildername"))
@@ -472,6 +575,7 @@ def getEcoBuilderNames(props):
         if builderName in b:
             builds.append(b)
     return builds
+
 
 ##### Builder priority
 # Prioritize builders. At this point, only the Windows builders need a higher priority
@@ -486,6 +590,7 @@ def prioritizeBuilders(buildmaster, builders):
     builders.sort(key=lambda b: builderPriorities.get(b.name, 2))
     return builders
 
+
 ##### Zabbix helper
 def getMetric(hostname, metric):
     # set API
@@ -499,8 +604,8 @@ def getMetric(hostname, metric):
 
     host_id = None
     for h in zapi.host.get(output="extend"):
-        if h['host'] == hostname:
-            host_id = h['hostid']
+        if h["host"] == hostname:
+            host_id = h["hostid"]
             break
 
     assert host_id is not None
@@ -510,8 +615,8 @@ def getMetric(hostname, metric):
     assert len(hostitems) == 1
     hostitem = hostitems[0]
 
-    last_value = hostitem['lastvalue']
-    last_time = datetime.fromtimestamp(int(hostitem['lastclock']))
+    last_value = hostitem["lastvalue"]
+    last_time = datetime.fromtimestamp(int(hostitem["lastclock"]))
 
     elapsed_from_last = (datetime.now() - last_time).total_seconds()
 
