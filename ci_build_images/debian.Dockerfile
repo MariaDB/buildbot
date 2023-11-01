@@ -80,7 +80,7 @@ RUN . /etc/os-release; \
       apt-get -y install --no-install-recommends flex; \
     fi \
     && if [ "${VERSION_CODENAME}" = jammy ]; then \
-      apt-get -y install --no-install-recommends clang-14; \
+      apt-get -y install --no-install-recommends clang-14 llvm; \
     fi \
     && apt-get clean
 
