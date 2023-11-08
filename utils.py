@@ -30,6 +30,7 @@ def envFromProperties(envlist):
 
 
 def getScript(scriptname):
+    branch=os.getenv("BRANCH", default="main")
     return steps.ShellCommand(
         name=f"fetch_{scriptname}",
         command=[
@@ -37,10 +38,10 @@ def getScript(scriptname):
             "-xc",
             f"""
   for script in bash_lib.sh {scriptname}; do
-    [[ ! -f $script ]] && wget "https://raw.githubusercontent.com/MariaDB/buildbot/main/scripts/$script"
+    [[ ! -f $script ]] && wget "https://raw.githubusercontent.com/MariaDB/buildbot/{branch}/scripts/$script"
   done
   chmod a+x {scriptname}
-""",
+            """,
         ],
     )
 

@@ -1,12 +1,13 @@
 *.log*
 *.pid
 .envrc
+.vendor
+.venv
 __pycache__
+autogen
+master-config.yaml
+master-libvirt/id_ed25519
 master-private.cfg
 prof*
 venv
 workers
-autogen
-master-config.yaml
-.venv
-.vendor
