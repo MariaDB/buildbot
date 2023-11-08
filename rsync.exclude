@@ -6,4 +6,5 @@ autogen
 ci_build_images
 docker-compose/logs
 docker-compose/mariadb
+master-libvirt/id_ed25519
 master-private.cfg
