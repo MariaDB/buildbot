@@ -8,6 +8,8 @@ config = {"private": {}}
 exec(open("../master-private.cfg").read(), config, {})
 
 MASTER_DIRECTORIES = [
+    "master-nonlatent",
+    "master-libvirt",
     "autogen/aarch64-master-0",
     "autogen/amd64-master-0",
     "autogen/amd64-master-1",
@@ -16,9 +18,6 @@ MASTER_DIRECTORIES = [
     "autogen/x86-master-0",
     "master-docker-nonstandard",
     "master-galera",
-    "master-nonlatent",
-    # TODO Enable this once it's more clear what needs to be done
-    #    "master-libvirt",
     "master-protected-branches",
 ]
 
