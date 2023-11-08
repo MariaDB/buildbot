@@ -32,6 +32,7 @@ echo "Crossbar started"
 if [[ $1 == "master-libvirt" ]]; then
   mkdir /root/.ssh
   cp id_ed25519 /root/.ssh
+  cp known_hosts /root/.ssh
 fi
 
 # loop for debug
