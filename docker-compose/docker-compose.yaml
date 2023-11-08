@@ -49,13 +49,15 @@ services:
     restart: unless-stopped
     container_name: master-web
     environment:
-      - BUILDMASTER_URL
-      - BUILDMASTER_WG_IP
-      - ARTIFACTS_URL
-      - TITLE_URL
+      - ENVIRON
+      - GALERA_PACKAGES_DIR
       - TITLE
+      - TITLE_URL
       - MASTER_PACKAGES_DIR
+      - BUILDMASTER_WG_IP
       - MQ_ROUTER_URL
+      - ARTIFACTS_URL
+      - BUILDMASTER_URL
       - PORT=8010
     volumes:
       - ./logs:/var/log/buildbot
@@ -71,19 +73,83 @@ services:
       - mariadb
       - crossbar
 
+  master-nonlatent:
+    image: quay.io/mariadb-foundation/bb-master:master
+    restart: unless-stopped
+    container_name: master-nonlatent
+    environment:
+      - ENVIRON
+      - GALERA_PACKAGES_DIR
+      - TITLE
+      - TITLE_URL
+      - MASTER_PACKAGES_DIR
+      - BUILDMASTER_WG_IP
+      - MQ_ROUTER_URL
+      - ARTIFACTS_URL
+      - BUILDMASTER_URL
+      - PORT=9996
+    volumes:
+      - ./logs:/var/log/buildbot
+      - ./buildbot/:/srv/buildbot/master
+    entrypoint:
+      - /bin/bash
+      - -c
+      - "/srv/buildbot/master/docker-compose/start.sh master-nonlatent"
+    networks:
+      net_front:
+      net_back:
+    ports:
+      - "100.64.101.1:9996:9996"
+    depends_on:
+      - mariadb
+      - crossbar
+
+  master-libvirt:
+    image: quay.io/mariadb-foundation/bb-master:master
+    restart: unless-stopped
+    container_name: master-libvirt
+    environment:
+      - ENVIRON
+      - GALERA_PACKAGES_DIR
+      - TITLE
+      - TITLE_URL
+      - MASTER_PACKAGES_DIR
+      - BUILDMASTER_WG_IP
+      - MQ_ROUTER_URL
+      - ARTIFACTS_URL
+      - BUILDMASTER_URL
+      - PORT=9997
+    volumes:
+      - ./logs:/var/log/buildbot
+      - ./buildbot/:/srv/buildbot/master
+    entrypoint:
+      - /bin/bash
+      - -c
+      - "/srv/buildbot/master/docker-compose/start.sh master-libvirt"
+    networks:
+      net_front:
+      net_back:
+    ports:
+      - "100.64.101.1:9997:9997"
+    depends_on:
+      - mariadb
+      - crossbar
+
   autogen_aarch64-master-0:
     image: quay.io/mariadb-foundation/bb-master:master
     restart: unless-stopped
     container_name: autogen_aarch64-master-0
     environment:
-      - BUILDMASTER_URL
-      - BUILDMASTER_WG_IP
-      - ARTIFACTS_URL
-      - TITLE_URL
+      - ENVIRON
+      - GALERA_PACKAGES_DIR
       - TITLE
+      - TITLE_URL
       - MASTER_PACKAGES_DIR
+      - BUILDMASTER_WG_IP
       - MQ_ROUTER_URL
-      - PORT=9996
+      - ARTIFACTS_URL
+      - BUILDMASTER_URL
+      - PORT=9998
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -95,7 +161,7 @@ services:
       net_front:
       net_back:
     ports:
-      - "100.64.101.1:9996:9996"
+      - "100.64.101.1:9998:9998"
     depends_on:
       - mariadb
       - crossbar
@@ -105,14 +171,16 @@ services:
     restart: unless-stopped
     container_name: autogen_amd64-master-0
     environment:
-      - BUILDMASTER_URL
-      - BUILDMASTER_WG_IP
-      - ARTIFACTS_URL
-      - TITLE_URL
+      - ENVIRON
+      - GALERA_PACKAGES_DIR
       - TITLE
+      - TITLE_URL
       - MASTER_PACKAGES_DIR
+      - BUILDMASTER_WG_IP
       - MQ_ROUTER_URL
-      - PORT=9997
+      - ARTIFACTS_URL
+      - BUILDMASTER_URL
+      - PORT=9999
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -124,7 +192,7 @@ services:
       net_front:
       net_back:
     ports:
-      - "100.64.101.1:9997:9997"
+      - "100.64.101.1:9999:9999"
     depends_on:
       - mariadb
       - crossbar
@@ -134,14 +202,16 @@ services:
     restart: unless-stopped
     container_name: autogen_amd64-master-1
     environment:
-      - BUILDMASTER_URL
-      - BUILDMASTER_WG_IP
-      - ARTIFACTS_URL
-      - TITLE_URL
+      - ENVIRON
+      - GALERA_PACKAGES_DIR
       - TITLE
+      - TITLE_URL
       - MASTER_PACKAGES_DIR
+      - BUILDMASTER_WG_IP
       - MQ_ROUTER_URL
-      - PORT=9998
+      - ARTIFACTS_URL
+      - BUILDMASTER_URL
+      - PORT=10000
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -153,7 +223,7 @@ services:
       net_front:
       net_back:
     ports:
-      - "100.64.101.1:9998:9998"
+      - "100.64.101.1:10000:10000"
     depends_on:
       - mariadb
       - crossbar
@@ -163,14 +233,16 @@ services:
     restart: unless-stopped
     container_name: autogen_ppc64le-master-0
     environment:
-      - BUILDMASTER_URL
-      - BUILDMASTER_WG_IP
-      - ARTIFACTS_URL
-      - TITLE_URL
+      - ENVIRON
+      - GALERA_PACKAGES_DIR
       - TITLE
+      - TITLE_URL
       - MASTER_PACKAGES_DIR
+      - BUILDMASTER_WG_IP
       - MQ_ROUTER_URL
-      - PORT=9999
+      - ARTIFACTS_URL
+      - BUILDMASTER_URL
+      - PORT=10001
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -182,7 +254,7 @@ services:
       net_front:
       net_back:
     ports:
-      - "100.64.101.1:9999:9999"
+      - "100.64.101.1:10001:10001"
     depends_on:
       - mariadb
       - crossbar
@@ -192,14 +264,16 @@ services:
     restart: unless-stopped
     container_name: autogen_s390x-master-0
     environment:
-      - BUILDMASTER_URL
-      - BUILDMASTER_WG_IP
-      - ARTIFACTS_URL
-      - TITLE_URL
+      - ENVIRON
+      - GALERA_PACKAGES_DIR
       - TITLE
+      - TITLE_URL
       - MASTER_PACKAGES_DIR
+      - BUILDMASTER_WG_IP
       - MQ_ROUTER_URL
-      - PORT=10000
+      - ARTIFACTS_URL
+      - BUILDMASTER_URL
+      - PORT=10002
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -211,7 +285,7 @@ services:
       net_front:
       net_back:
     ports:
-      - "100.64.101.1:10000:10000"
+      - "100.64.101.1:10002:10002"
     depends_on:
       - mariadb
       - crossbar
@@ -221,14 +295,16 @@ services:
     restart: unless-stopped
     container_name: autogen_x86-master-0
     environment:
-      - BUILDMASTER_URL
-      - BUILDMASTER_WG_IP
-      - ARTIFACTS_URL
-      - TITLE_URL
+      - ENVIRON
+      - GALERA_PACKAGES_DIR
       - TITLE
+      - TITLE_URL
       - MASTER_PACKAGES_DIR
+      - BUILDMASTER_WG_IP
       - MQ_ROUTER_URL
-      - PORT=10001
+      - ARTIFACTS_URL
+      - BUILDMASTER_URL
+      - PORT=10003
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -240,7 +316,7 @@ services:
       net_front:
       net_back:
     ports:
-      - "100.64.101.1:10001:10001"
+      - "100.64.101.1:10003:10003"
     depends_on:
       - mariadb
       - crossbar
@@ -250,14 +326,16 @@ services:
     restart: unless-stopped
     container_name: master-docker-nonstandard
     environment:
-      - BUILDMASTER_URL
-      - BUILDMASTER_WG_IP
-      - ARTIFACTS_URL
-      - TITLE_URL
+      - ENVIRON
+      - GALERA_PACKAGES_DIR
       - TITLE
+      - TITLE_URL
       - MASTER_PACKAGES_DIR
+      - BUILDMASTER_WG_IP
       - MQ_ROUTER_URL
-      - PORT=10002
+      - ARTIFACTS_URL
+      - BUILDMASTER_URL
+      - PORT=10004
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -269,7 +347,7 @@ services:
       net_front:
       net_back:
     ports:
-      - "100.64.101.1:10002:10002"
+      - "100.64.101.1:10004:10004"
     depends_on:
       - mariadb
       - crossbar
@@ -279,14 +357,16 @@ services:
     restart: unless-stopped
     container_name: master-galera
     environment:
-      - BUILDMASTER_URL
-      - BUILDMASTER_WG_IP
-      - ARTIFACTS_URL
-      - TITLE_URL
+      - ENVIRON
+      - GALERA_PACKAGES_DIR
       - TITLE
+      - TITLE_URL
       - MASTER_PACKAGES_DIR
+      - BUILDMASTER_WG_IP
       - MQ_ROUTER_URL
-      - PORT=10003
+      - ARTIFACTS_URL
+      - BUILDMASTER_URL
+      - PORT=10005
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -298,7 +378,7 @@ services:
       net_front:
       net_back:
     ports:
-      - "100.64.101.1:10003:10003"
+      - "100.64.101.1:10005:10005"
     depends_on:
       - mariadb
       - crossbar
@@ -308,14 +388,16 @@ services:
     restart: unless-stopped
     container_name: master-protected-branches
     environment:
-      - BUILDMASTER_URL
-      - BUILDMASTER_WG_IP
-      - ARTIFACTS_URL
-      - TITLE_URL
+      - ENVIRON
+      - GALERA_PACKAGES_DIR
       - TITLE
+      - TITLE_URL
       - MASTER_PACKAGES_DIR
+      - BUILDMASTER_WG_IP
       - MQ_ROUTER_URL
-      - PORT=10004
+      - ARTIFACTS_URL
+      - BUILDMASTER_URL
+      - PORT=10006
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -327,7 +409,7 @@ services:
       net_front:
       net_back:
     ports:
-      - "100.64.101.1:10004:10004"
+      - "100.64.101.1:10006:10006"
     depends_on:
       - mariadb
       - crossbar

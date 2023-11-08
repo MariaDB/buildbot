@@ -28,6 +28,12 @@ while ! nc -z crossbar 8080; do
 done
 echo "Crossbar started"
 
+# ssh-key to connect to workers
+if [[ $1 == "master-libvirt" ]]; then
+  mkdir /root/.ssh
+  cp id_ed25519 /root/.ssh
+fi
+
 # loop for debug
 # while true; do date && sleep 30; done
 
