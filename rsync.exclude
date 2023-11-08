@@ -7,4 +7,5 @@ ci_build_images
 docker-compose/logs
 docker-compose/mariadb
 master-libvirt/id_ed25519
+master-libvirt/known_hosts
 master-private.cfg
