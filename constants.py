@@ -42,7 +42,6 @@ builders_dockerlibrary = ["amd64-rhel8-dockerlibrary"]
 builders_eco = [
     "amd64-debian-10-eco-mysqljs",
     "amd64-debian-10-eco-pymysql",
-    "amd64-ubuntu-2004-eco-dbdeployer",
     "amd64-ubuntu-2004-eco-php",
 ]
 builders_wordpress = ["amd64-rhel8-wordpress"]
