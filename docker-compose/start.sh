@@ -30,9 +30,11 @@ echo "Crossbar started"
 
 # ssh-key to connect to workers
 if [[ $1 == "master-libvirt" ]]; then
-  mkdir /root/.ssh
-  cp id_ed25519 /root/.ssh
-  cp known_hosts /root/.ssh
+  [[ -d /root/.ssh ]] || {
+    mkdir /root/.ssh
+    cp id_ed25519 /root/.ssh
+    cp known_hosts /root/.ssh
+  }
 fi
 
 # loop for debug
