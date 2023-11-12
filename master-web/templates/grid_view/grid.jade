@@ -38,9 +38,19 @@
                 a(href="#grid?branch=11.3") 11.3
                 | ,
                 a(href="#grid?branch=11.4") 11.4
-            label Results
-            select.form-control(ng-model="C.result", ng-change="C.changeResult(C.result)", ng-options="r.code as r.text for r in C.results")
-                option(value="") (all)
+            label Results:
+                select.form-control(ng-model="C.result", ng-change="C.changeResult(C.result)", ng-options="r.code as r.text for r in C.results")
+                    option(value="") (all)
+            br
+            br
+            label Filter:
+                span(ng-show="C.all_tags.length > 0" ng-repeat="tag in C.all_tags")
+                    span.builder-tag.label.clickable.label-default(ng-click="C.toggleTag(tag)" ng-class="C.isTagToggled(tag) ? 'label-success': 'label-default'")
+                        | {{ tag }}
+                    | &nbsp;
+                span.label.clickable.label-danger(ng-click="C.resetTags()") x
+            br
+            br
     table.table.table-condensed.table-striped.table-hover(ng-show="C.dataReady()")
         thead
             tr
