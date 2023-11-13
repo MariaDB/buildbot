@@ -222,7 +222,7 @@ deb_setup_bb_artifacts_mirror() {
   # stop if any variable is undefined
   set -u
   bb_log_info "setup buildbot artifact repository"
-  sudo sh -c "echo 'deb [trusted=yes] https://ci.mariadb.org/$tarbuildnum/$parentbuildername/debs ./' >/etc/apt/sources.list.d/bb-artifacts.list"
+  sudo sh -c "echo 'deb [trusted=yes] $artifactsURL/$tarbuildnum/$parentbuildername/debs ./' >/etc/apt/sources.list.d/bb-artifacts.list"
   set +u
 }
 
