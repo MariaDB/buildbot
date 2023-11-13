@@ -53,17 +53,26 @@ manual_run_switch() {
         command -v $cmd >/dev/null ||
           err "$cmd command not found"
       done
+      if echo "$1" | grep -q "buildbot.dev.mariadb.org"; then
+        BB_URL="buildbot.dev.mariadb.org"
+        ARTIFACTS_URL="ci.dev.mariadb.org"
+        BRANCH=dev
+      else
+        BB_URL="buildbot.mariadb.org"
+        ARTIFACTS_URL="ci.mariadb.org"
+        BRANCH=main
+      fi
       # get buildid
       buildid=$(wget -qO- "${1/\#/api/v2}" | jq -r '.builds[] | .buildid')
       # get build properties
-      wget -q "https://buildbot.mariadb.org/api/v2/builds/$buildid/properties" -O properties.json ||
+      wget -q "https://$BB_URL/api/v2/builds/$buildid/properties" -O properties.json ||
         err "unable to get build properties from $1"
       # //TEMP do better with jq filtering
       for var in $(jq -r '.properties[]' properties.json | grep -v warnings-count | grep ": \[" | cut -d \" -f2); do
         export "$var"="$(jq -r ".properties[] | .${var}[0]" properties.json)"
       done
       # we need some global env vars (not provided as properties)
-      wget -q "https://raw.githubusercontent.com/MariaDB/buildbot/main/constants.py" -O constants.py ||
+      wget -q "https://raw.githubusercontent.com/MariaDB/buildbot/$BRANCH/constants.py" -O constants.py ||
         err "unable to get global env vars"
       dev_branch=$(grep DEVELOPMENT_BRANCH constants.py | cut -d \" -f2)
       export development_branch="$dev_branch"
@@ -71,7 +80,7 @@ manual_run_switch() {
     # for RPM we have to download artifacts from ci.mariadb.org
     if command -v rpm >/dev/null; then
       mkdir rpms
-      wget -r -np -nH --cut-dirs=3 -A "*.rpm" "https://ci.mariadb.org/$tarbuildnum/$parentbuildername/rpms" -P rpms
+      wget -r -np -nH --cut-dirs=3 -A "*.rpm" "https://$ARTIFACTS_URL/$tarbuildnum/$parentbuildername/rpms" -P rpms
     fi
   fi
 }
