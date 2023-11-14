@@ -34,7 +34,7 @@ deb_setup_mariadb_mirror "$master_branch"
 # setup repository for BB artifacts
 deb_setup_bb_artifacts_mirror
 
-wget -O - "https://ci.mariadb.org/${tarbuildnum}/${parentbuildername}/debs/Packages.gz" | gunzip >Packages
+wget -O - "${artifactsURL}/${tarbuildnum}/${parentbuildername}/debs/Packages.gz" | gunzip >Packages
 
 set -x
 
