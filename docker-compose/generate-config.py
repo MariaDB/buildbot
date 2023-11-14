@@ -29,6 +29,7 @@ services:
     image: mariadb:10.6
     restart: unless-stopped
     container_name: mariadb
+    hostname: mariadb
     environment:
       - MARIADB_ROOT_PASSWORD=password
       - MARIADB_DATABASE=buildbot
@@ -48,6 +49,7 @@ services:
     image: crossbario/crossbar
     restart: unless-stopped
     container_name: crossbar
+    hostname: crossbar
     networks:
       net_back:
 
@@ -55,6 +57,7 @@ services:
     image: nginx:latest
     restart: unless-stopped
     container_name: nginx
+    hostname: nginx
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d/:/etc/nginx/conf.d/:ro
@@ -70,6 +73,7 @@ services:
     image: quay.io/mariadb-foundation/bb-master:master-web
     restart: unless-stopped
     container_name: master-web
+    hostname: master-web
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -90,6 +94,7 @@ DOCKER_COMPOSE_TEMPLATE = """
     image: quay.io/mariadb-foundation/bb-master:master
     restart: unless-stopped
     container_name: {master_name}
+    hostname: {master_name}
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
