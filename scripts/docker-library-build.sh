@@ -17,6 +17,13 @@ else
   popd
 fi
 
+podman version
+buildah version
+
+# https://github.com/containers/podman/issues/20697
+# clean up stale stuff hopefully
+podman system migrate
+
 tarbuildnum=${1}
 mariadb_version=${2}
 mariadb_version=${mariadb_version#*-}
