@@ -5,8 +5,8 @@ set -xeuv
 build_deps() {
   # MDEV-32815 - awaiting for 10.1.1+ bump.
   # manually remove install directory when changeing version
-  # v=9.1.0,9.0.0 - fails to build
-  v=8.1.1
+  # v=9.1.0,9.0.0,8.1.1 - fails to build
+  v=8.0.1
   wget https://github.com/fmtlib/fmt/archive/refs/tags/${v}.tar.gz -O - | tar -zxf -
   rm -rf build-fmt
   mkdir -p build-fmt
