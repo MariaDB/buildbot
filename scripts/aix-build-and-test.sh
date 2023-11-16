@@ -4,7 +4,7 @@ set -xeuv
 
 build_deps() {
   # MDEV-32815 - awaiting for 10.1.1+ bump.
-  # manually remove build and install directory when changeing version
+  # manually remove install directory when changeing version
   v=9.1.0
   wget https://github.com/fmtlib/fmt/archive/refs/tags/${v}.tar.gz -O - | tar -zxf -
   mkdir -p build-fmt
@@ -16,6 +16,7 @@ build_deps() {
   cmake --build .
   cmake --install .
   cd ..
+  rm -rf build-fmt
 }
 
 build() {
