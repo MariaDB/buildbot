@@ -5,8 +5,10 @@ set -xeuv
 build_deps() {
   # MDEV-32815 - awaiting for 10.1.1+ bump.
   # manually remove install directory when changeing version
-  v=9.1.0
+  # v=9.1.0 - fails to build
+  v=9.0.0
   wget https://github.com/fmtlib/fmt/archive/refs/tags/${v}.tar.gz -O - | tar -zxf -
+  rm -rf build-fmt
   mkdir -p build-fmt
   cd build-fmt
   cmake -DCMAKE_CXX_COMPILER=g++-11 -DCMAKE_COMPILER_IS_GNUCXX=0 \
