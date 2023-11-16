@@ -79,6 +79,11 @@ rpl.rpl_xa_empty_transaction : NDEV-30222
 rpl.rpl_row_img_sequence_noblob : NDEV-30222
 main.mysql_client_test : mysqltest: At line 27: exec of '/home/buildbot/aix/build/build/tests/mysql_client_test - possibly LIBPATH related
 EOF
+  case "${1:-mariadb-10.5.10}" in
+	  mariadb-10.[56].*)
+		  echo "innodb.log_buffer_size : Marko request" >> ../unstable-tests
+		  ;;
+  esac
   # for saving logs
   ln -s build/mysql-test .
   mysql-test/mysql-test-run.pl --verbose-restart --force --retry=3 --max-save-core=1 --max-save-datadir=10 \
@@ -104,7 +109,7 @@ case $1 in
     build "$@"
     ;;
   test)
-    mariadbtest
+    mariadbtest "$@"
     ;;
   clean)
     clean mariadb* build* mysql-test /mnt/packages/* /buildbot/logs/*
