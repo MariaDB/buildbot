@@ -103,9 +103,10 @@ export LIBPATH=/opt/freeware/lib/gcc/powerpc-ibm-aix7.1.0.0/11/pthread/:/opt/fre
 
 jobs=${4:-12}
 
-case $1 in
+stage=$1
+shift
+case $stage in
   build)
-    shift
     build "$@"
     ;;
   test)
