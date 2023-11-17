@@ -64,7 +64,7 @@
                     a(ui-sref="builder({builder: b.builderid})", style="white-space:nowrap")
                         | {{ b.name }}
                 td(ng-repeat="ch in changes track by ch.changeid")
-                    a(ng-repeat="build in b.builds[ch.changeid] | orderBy: 'buildid'", ui-sref="build({builder: b.builderid, build: build.number})")
+                    a(ng-repeat="build in b.builds[ch.changeid] | orderBy: '-buildid' | limitTo: 1", ui-sref="build({builder: b.builderid, build: build.number})")
                         span.badge-status(ng-class="results2class(build, 'pulse')")
                             | {{ build.state_string }}
                             ul(ng-if="build.failed_tests.length > 0")
