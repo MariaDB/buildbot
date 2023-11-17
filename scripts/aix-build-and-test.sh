@@ -115,7 +115,11 @@ case $stage in
     build "$@"
     ;;
   test)
-    mariadbtest "$@"
+    if [ "$#" -ge 1 ]; then
+      mariadbtest "$@"
+    else
+      mariadbtest
+    fi
     ;;
   clean)
     clean mariadb* build* mysql-test /mnt/packages/* /buildbot/logs/*
