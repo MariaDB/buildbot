@@ -30,8 +30,8 @@ RUN . /etc/os-release; \
     && if [ "${VERSION_ID}" = "20.04" ]; then apt-get -y install --no-install-recommends g++-10; fi \
     && if [ "$(arch)" = "x86_64" ]; then ARCH="amd64"; else ARCH=$(arch); fi \
     && curl -s "https://ci.mariadb.org/galera/mariadb-4.x-latest-gal-${ARCH}-${ID}-$(echo "$VERSION_ID" | sed 's/\.//').sources" >/etc/apt/sources.list.d/galera-4.sources \
-    && if [ "${VERSION_CODENAME}" = lunar ] && [ "$ARCH" = aarch64 ]; then rm /etc/apt/sources.list.d/galera-4.sources; fi \
-    && if [ "${VERSION_CODENAME}" = trixie ] || [ "${VERSION_CODENAME}" = mantic ] || [ "$(getconf LONG_BIT)" = 32 ]; then rm /etc/apt/sources.list.d/galera-4.sources; fi \
+    # VERSION_ID=13 once released \
+    && if [ "${VERSION_CODENAME}" = trixie ] || [ "$(getconf LONG_BIT)" = 32 ]; then rm /etc/apt/sources.list.d/galera-4.sources; fi \
     && apt-get update \
     && curl -skO https://raw.githubusercontent.com/MariaDB/server/44e4b93316be8df130c6d87880da3500d83dbe10/debian/control \
     && mkdir debian \
