@@ -30,7 +30,7 @@ def envFromProperties(envlist):
 
 
 def getScript(scriptname):
-    branch=os.getenv("BRANCH", default="main")
+    branch = os.getenv("BRANCH", default="main")
     return steps.ShellCommand(
         name=f"fetch_{scriptname}",
         command=[
@@ -153,7 +153,7 @@ def downloadSourceTarball(output_dir="/mnt/packages/"):
     # Do not use flock for AIX
     os=$(uname -s)
     use_flock=""
-    if [[ $os != "AIX" && $os != "Darwin" ]]; then
+    if [[ $os != "AIX" && $os != "Darwin" && $os != "FreeBSD" ]]; then
       use_flock="flock \"$d$f\" "
     fi
     cmd="$use_flock wget -cO \"$d$f\" \""""
