@@ -43,6 +43,7 @@ private["master-variables"] = {
 private["worker_pass"]= {
     "hz-bbw2-ubuntu1804":"1234",
     "hz-bbw2-libvirt-debian-10":"1234",
+    "hz-freebsd-bbw1":"1234",
     "bm-bbw1-ubuntu1804":"1234",
     "shinnok-bbw1-macos":"1234",
     "aix-worker":"1234",
