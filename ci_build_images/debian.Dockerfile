@@ -68,6 +68,7 @@ RUN . /etc/os-release; \
     python3-buildbot-worker \
     python3-dev \
     python3-setuptools \
+    reprepro \
     rsync \
     scons \
     socat \
