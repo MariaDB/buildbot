@@ -11,6 +11,10 @@ set -e
 # shellcheck disable=SC1091
 . ./bash_lib.sh
 
+# load OS variables
+# shellcheck disable=SC1091
+. /etc/os-release
+
 # function to be able to run the script manually (see bash_lib.sh)
 manual_run_switch "$1"
 
@@ -34,7 +38,7 @@ deb_setup_mariadb_mirror "$master_branch"
 # setup repository for BB artifacts
 deb_setup_bb_artifacts_mirror
 
-wget -O - "${artifactsURL}/${tarbuildnum}/${parentbuildername}/debs/Packages.gz" | gunzip >Packages
+wget -O - "${artifactsURL}/${tarbuildnum}/${parentbuildername}/dists/${VERSION_CODENAME}/main/binary-${arch}/Packages.gz" | gunzip >Packages
 
 set -x
 
