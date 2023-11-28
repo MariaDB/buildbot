@@ -1,3 +1,11 @@
+import os
+import re
+import sys
+import fnmatch
+from datetime import timedelta, datetime
+from pyzabbix import ZabbixAPI
+import docker
+from twisted.internet import defer
 from buildbot.plugins import *
 from buildbot.process.properties import Property, Properties
 from buildbot.process.results import FAILURE
@@ -5,15 +13,6 @@ from buildbot.steps.shell import ShellCommand, Compile, Test, SetPropertyFromCom
 from buildbot.steps.mtrlogobserver import MTR, MtrLogObserver
 from buildbot.steps.source.github import GitHub
 from buildbot.process.remotecommand import RemoteCommand
-from twisted.internet import defer
-import os
-import re
-import sys
-import docker
-from datetime import timedelta, datetime
-
-from pyzabbix import ZabbixAPI
-
 from constants import *
 
 private_config = {"private": {}}
@@ -35,7 +34,7 @@ def getScript(scriptname):
         name=f"fetch_{scriptname}",
         command=[
             "bash",
-            "-xc",
+            "-exc",
             f"""
   for script in bash_lib.sh {scriptname}; do
     [[ ! -f $script ]] && wget "https://raw.githubusercontent.com/MariaDB/buildbot/{branch}/scripts/$script"
@@ -178,8 +177,96 @@ def downloadSourceTarball(output_dir="/mnt/packages/"):
     )
 
 
-# git branch filter using fnmatch
-import fnmatch
+def createDebRepo():
+    return ShellCommand(
+        name="Create deb repository",
+        haltOnFailure=True,
+        command=[
+            "bash",
+            "-exc",
+            util.Interpolate(
+                """
+    case $(arch) in
+      "x86_64")
+        arch="amd64"
+      ;;
+      "x86")
+        arch="i386"
+      ;;
+      "aarch64")
+        arch="arm64"
+      ;;
+      "ppc64le")
+        arch="ppc64el"
+      ;;
+      "s390x")
+        arch="s390x"
+      ;;
+    esac
+    . /etc/os-release
+    mkdir -p ../conf/
+    cat << EOF > ../conf/distributions
+Origin: MariaDB
+Label: MariaDB
+Codename: $VERSION_CODENAME
+Architectures: $arch source
+Components: main
+Description: MariaDB Repository
+EOF
+    cat ../conf/distributions
+    reprepro -b .. --ignore=wrongsourceversion include $VERSION_CODENAME ../*.changes
+"""
+            ),
+        ],
+        doStepIf=lambda step: hasFiles(step) and savePackage(step),
+    )
+
+
+def uploadDebArtifacts():
+    return ShellCommand(
+        name="Upload artifacts",
+        timeout=7200,
+        haltOnFailure=True,
+        command=[
+            "bash",
+            "-exc",
+            util.Interpolate(
+                """
+    artifacts_url="""
+                + os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org")
+                + """
+    . /etc/os-release
+    if [[ $ID == "debian" ]]; then
+      COMPONENTS="main"
+    else
+      COMPONENTS="main main/debug"
+    fi
+    mkdir -p /packages/%(prop:tarbuildnum)s/%(prop:buildername)s
+    cd .. && cp -r conf db dists pool /packages/%(prop:tarbuildnum)s/%(prop:buildername)s/
+    cat << EOF > /packages/%(prop:tarbuildnum)s/%(prop:buildername)s/mariadb.sources
+X-Repolib-Name: MariaDB
+Types: deb
+URIs: $artifacts_url/%(prop:tarbuildnum)s/%(prop:buildername)s/
+Suites: $VERSION_CODENAME
+Components: $COMPONENTS
+Trusted: yes
+EOF
+    cat /packages/%(prop:tarbuildnum)s/%(prop:buildername)s/mariadb.sources
+    ln -sf %(prop:tarbuildnum)s/%(prop:buildername)s/mariadb.sources \
+        /packages/%(prop:branch)s-latest-%(prop:buildername)s.sources
+    sync /packages/%(prop:tarbuildnum)s
+    """
+            ),
+        ],
+        doStepIf=lambda step: hasFiles(step) and savePackage(step),
+        descriptionDone=util.Interpolate(
+            """
+            Use """
+            + os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org")
+            + """/%(prop:tarbuildnum)s/%(prop:buildername)s/mariadb.sources for testing.
+            """
+        ),
+    )
 
 
 def staging_branch_fn(branch):
@@ -356,8 +443,7 @@ def dockerfile(props):
 def hasFiles(step):
     if len(step.getProperty("packages")) < 1:
         return False
-    else:
-        return True
+    return True
 
 
 def hasInstall(props):
