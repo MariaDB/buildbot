@@ -626,7 +626,10 @@ def getInstallBuilderNames(props):
 
     for b in builders_install:
         if builderName in b:
-            return [b]
+            builders = [b]
+            if "rhel" in builderName:
+                builders.append(b.replace("rhel", "almalinux"))
+            return builders
     return []
 
 
@@ -637,6 +640,8 @@ def getUpgradeBuilderNames(props):
     builds = []
     for b in builders_upgrade:
         if builderName in b:
+            if "rhel" in builderName:
+                builds.append(b.replace("rhel", "almalinux"))
             builds.append(b)
     return builds
 
