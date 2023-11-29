@@ -17,14 +17,6 @@ manual_run_switch "$1"
 upgrade_type_mode
 upgrade_test_type "$test_type"
 
-if [[ $arch == "ppc64le" ]]; then
-  arch=ppc64el
-elif [[ $arch == "x86" ]]; then
-  arch=i386
-elif [[ $arch == "aarch64" ]]; then
-  arch=arm64
-fi
-
 bb_print_env
 
 # This test can be performed in four modes:
@@ -313,7 +305,7 @@ store_mariadb_server_info new
 #     set -o pipefail
 #     if [[ $test_mode == "all" ]]; then
 #       set -o pipefail
-#       if wget -q --timeout=20 --no-check-certificate "https://raw.githubusercontent.com/MariaDB/mariadb.org-tools/master/buildbot/baselines/ldd.${major_version}.${version_name}.${arch}" -O /tmp/ldd.baseline; then
+#       if wget -q --timeout=20 --no-check-certificate "https://raw.githubusercontent.com/MariaDB/mariadb.org-tools/master/buildbot/baselines/ldd.${major_version}.${version_name}.$(deb_arch)" -O /tmp/ldd.baseline; then
 #         ldd_baseline=/tmp/ldd.baseline
 #       else
 #         ldd_baseline=/buildbot/ldd.old

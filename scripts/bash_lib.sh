@@ -229,6 +229,30 @@ deb_setup_bb_artifacts_mirror() {
   set +u
 }
 
+deb_arch() {
+  case $(arch) in
+    "x86_64")
+      echo "amd64"
+      ;;
+    "x86")
+      echo "i386"
+      ;;
+    "aarch64")
+      echo "arm64"
+      ;;
+    "ppc64le")
+      echo "ppc64el"
+      ;;
+    "s390x")
+      echo "s390x"
+      ;;
+    *)
+      echo "unknown arch"
+      exit 1
+      ;;
+  esac
+}
+
 upgrade_type_mode() {
   case "$branch" in
     *galera*)
