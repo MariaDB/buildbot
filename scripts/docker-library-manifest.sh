@@ -113,6 +113,7 @@ buildah run --add-history "$container" sh -c \
 debugmanifest=mariadb-debug-${container_tag}-$commit
 
 buildmanifest "$debugmanifest" "$container" --rm
+trap - EXIT
 
 buildah rmi "$origbuildimage"
 
