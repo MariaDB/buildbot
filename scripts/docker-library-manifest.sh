@@ -115,7 +115,7 @@ debugmanifest=mariadb-debug-${container_tag}-$commit
 buildmanifest "$debugmanifest" "$container" --rm
 trap - EXIT
 
-buildah rmi "$origbuildimage"
+buildah rmi "$origbuildimage" || echo 'ok, its not there'
 
 if [[ $master_branch =~ 10.[234] ]]; then
   expected=3
