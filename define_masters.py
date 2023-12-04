@@ -14,6 +14,8 @@ with open("os_info.yaml", mode="r", encoding="utf-8") as file:
 platforms = {}
 
 for os_name in os_info:
+    if "install_only" in os_info[os_name] and os_info[os_name]["install_only"]:
+        continue
     for arch in os_info[os_name]["arch"]:
         builder_name = arch + "-" + os_name
         if arch not in platforms:

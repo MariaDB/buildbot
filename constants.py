@@ -119,6 +119,7 @@ supportedPlatforms["10.5"] = [
     "amd64-fedora-37",
     "amd64-fedora-38",
     "amd64-fedora-39",
+    "amd64-freebsd-14",
     "amd64-rhel-9",
     "ppc64le-centos-stream9",
     "ppc64le-debian-11",
@@ -191,12 +192,13 @@ builders_autobake = []
 all_platforms = set()
 for os_i in os_info:
     for arch in os_info[os_i]["arch"]:
-        all_platforms.add(arch)
         builder_name_autobake = (
             arch + "-" + os_i + "-" + os_info[os_i]["type"] + "-autobake"
         )
-        builders_autobake.append(builder_name_autobake)
-        # Currently there are no VMs for x86 and s390x and OpenSUSE and SLES
+        if not ("install_only" in os_info[os_i] and os_info[os_i]["install_only"]):
+            all_platforms.add(arch)
+            builders_autobake.append(builder_name_autobake)
+            # Currently there are no VMs for x86 and s390x and OpenSUSE and SLES
         addInstall = True
         if "has_install" in os_info[os_i]:
             addInstall = os_info[os_i]["has_install"]

@@ -222,8 +222,35 @@ deb_setup_bb_artifacts_mirror() {
   # stop if any variable is undefined
   set -u
   bb_log_info "setup buildbot artifact repository"
-  sudo sh -c "echo 'deb [trusted=yes] $artifactsURL/$tarbuildnum/$parentbuildername/debs ./' >/etc/apt/sources.list.d/bb-artifacts.list"
+  sudo wget "$artifactsURL/$tarbuildnum/$parentbuildername/mariadb.sources" -O /etc/apt/sources.list.d/mariadb.sources || {
+    bb_log_err "unable to download $artifactsURL/$tarbuildnum/$parentbuildername/mariadb.sources"
+    exit 1
+  }
   set +u
+}
+
+deb_arch() {
+  case $(arch) in
+    "x86_64")
+      echo "amd64"
+      ;;
+    "x86")
+      echo "i386"
+      ;;
+    "aarch64")
+      echo "arm64"
+      ;;
+    "ppc64le")
+      echo "ppc64el"
+      ;;
+    "s390x")
+      echo "s390x"
+      ;;
+    *)
+      echo "unknown arch"
+      exit 1
+      ;;
+  esac
 }
 
 upgrade_type_mode() {
