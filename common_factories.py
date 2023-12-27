@@ -35,7 +35,7 @@ class FetchTestData(MTR):
 
             if tests:
                 test_args = ' '.join(tests)
-                self.setProperty('tests_to_run', test_args)
+                self.setProperty('tests_to_run', '--skip-not-found ' + test_args)
 
         return results.SUCCESS
 
