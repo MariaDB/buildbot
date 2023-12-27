@@ -265,7 +265,7 @@ def getLastNFailedBuildsFactory(mtrDbPool):
         mtr_additional_args = props.getProperty('mtr_additional_args', '--suite=main')
         tests_to_run = props.getProperty('tests_to_run', None)
         if tests_to_run:
-            mtr_additional_args = mtr_additional_args.replace('--suite=main', tests_to_run)
+            mtr_additional_args = mtr_additional_args.replace('--suite=main', '--skip-not-found ' + tests_to_run)
 
         return mtr_additional_args
 
