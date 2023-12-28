@@ -41,10 +41,17 @@ class FetchTestData(MTR):
         test_re = r'^(?:.+/)?mysql-test/(?:suite/)?(.+?)/(?:[rt]/)?([^/]+)\.(?:test|result|rdiff)$'
 
         if master_branch:
-            query = """
-            select concat(test_name,',',test_variant) from (select id, test_name,test_variant from test_failure,test_run where branch='%s' and test_run_id=id order by test_run_id desc limit %d) x group by test_name,test_variant order by max(id) desc limit %d
+            query = f"""
+                select concat(test_name, ',', test_variant)
+                from
+                  (select id, test_name, test_variant
+                   from test_failure join test_run on (test_run_id=id)
+                   where branch='{master_branch}'
+                   order by test_run_id desc limit {overlimit}) x
+                group by test_name, test_variant
+                order by max(id) desc limit {limit}
             """
-            tests = yield self.runQueryWithRetry(query % (master_branch, overlimit, limit))
+            tests = yield self.runQueryWithRetry(query)
             tests = list(t[0] for t in tests)
 
             tests += (m.expand(r'\1.\2') for m in (re.search(test_re, f) for f in self.build.allFiles()) if m)
