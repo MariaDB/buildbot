@@ -11,6 +11,22 @@ from twisted.internet import defer
 from utils import *
 from constants import *
 
+# TODO for FetchTestData/getLastNFailedBuildsFactory
+#
+# * do something about skips (makes little sense to run N failed tests if
+#   they're all skipped)
+# * typ values made consistent over all builders so that they could be used for
+#   filtering
+# * it uses only normal protocol, should be changed to take
+#   ps/embedded/view/etc as an argument.
+# * the way SELECT works it looks for 50 unique test names within last 1000
+#   failures. Better to make buildbot to autotune the second limit. The smaller
+#   it is, the faster will the query run (but it's <1s already)
+# * uses N=50 now, this could be increased to catch more failures or decreased
+#   to run faster
+# * more branch protection builders should use it
+# * how to do it for install/upgrade tests?
+#
 class FetchTestData(MTR):
     def __init__(self, mtrDbPool, **kwargs):
         self.mtrDbPool = mtrDbPool
