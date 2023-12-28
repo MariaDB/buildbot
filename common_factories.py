@@ -259,7 +259,7 @@ def getQuickBuildFactory(mtrDbPool):
                         "mtr_additional_args", default=""
                     ))
 
-def getLastNFailedBuildFactory(mtrDbPool):
+def getLastNFailedBuildsFactory(mtrDbPool):
     @util.renderer
     def getTests(props):
         mtr_additional_args = props.getProperty('mtr_additional_args', '--suite=main')
