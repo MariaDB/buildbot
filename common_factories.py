@@ -15,42 +15,49 @@ from constants import *
 #
 # * do something about skips (makes little sense to run N failed tests if
 #   they're all skipped)
-# * it uses only normal protocol, should be changed to take
-#   ps/embedded/view/etc as an argument.
-# * the way SELECT works it looks for 50 unique test names within last 1000
-#   failures. Better to make buildbot to autotune the second limit. The smaller
-#   it is, the faster will the query run (but it's <1s already)
+# * the way SELECT works it looks for {limit} unique test names within last
+#   {limit*scale} failures. Better to make buildbot to autotune the scale.
+#   The smaller it is, the faster will the query run (but it's <1s already)
 # * uses N=50 now, this could be increased to catch more failures or decreased
 #   to run faster
 # * more branch protection builders should use it
 # * how to do it for install/upgrade tests?
 #
 class FetchTestData(MTR):
-    def __init__(self, mtrDbPool, **kwargs):
+    def __init__(self, mtrDbPool, test_type, **kwargs):
         self.mtrDbPool = mtrDbPool
+        self.test_type = test_type
         super().__init__(dbpool=mtrDbPool, **kwargs)
 
     @defer.inlineCallbacks
-    def run(self):
-        master_branch = self.getProperty('master_branch')
-        typ = 'nm'
-        limit = 50
-        overlimit = 1000
-        test_re = r'^(?:.+/)?mysql-test/(?:suite/)?(.+?)/(?:[rt]/)?([^/]+)\.(?:test|result|rdiff)$'
+    def get_tests_for_type(self, branch, typ, limit):
+        scale = 20
+        query = f"""
+            select concat(test_name, ',', test_variant)
+            from
+              (select id, test_name, test_variant
+               from test_failure join test_run on (test_run_id=id)
+               where branch='{branch}' and typ='{typ}'
+               order by test_run_id desc limit {limit*scale}) x
+            group by test_name, test_variant
+            order by max(id) desc limit {limit}
+        """
+        tests = yield self.runQueryWithRetry(query)
+        return list(t[0] for t in tests)
 
-        if master_branch:
-            query = f"""
-                select concat(test_name, ',', test_variant)
-                from
-                  (select id, test_name, test_variant
-                   from test_failure join test_run on (test_run_id=id)
-                   where branch='{master_branch}'
-                   order by test_run_id desc limit {overlimit}) x
-                group by test_name, test_variant
-                order by max(id) desc limit {limit}
-            """
-            tests = yield self.runQueryWithRetry(query)
-            tests = list(t[0] for t in tests)
+    @defer.inlineCallbacks
+    def run(self):
+        test_re = r'^(?:.+/)?mysql-test/(?:suite/)?(.+?)/(?:[rt]/)?([^/]+)\.(?:test|result|rdiff)$'
+        branch = self.getProperty('master_branch')
+        limit = 50
+
+        if branch:
+            tests = yield self.get_tests_for_type(branch, self.test_type, limit)
+            if (len(tests) < limit):
+                # if there're not enough failures for the given test_type
+                # bump it up with the failures for the default type.
+                # "mtr" is what buildbot uses when test_type wasn't set
+                tests += yield self.get_tests_for_type(branch, 'mtr', limit-len(tests))
 
             tests += (m.expand(r'\1.\2') for m in (re.search(test_re, f) for f in self.build.allFiles()) if m)
 
@@ -302,7 +309,7 @@ def getLastNFailedBuildsFactory(mtrDbPool):
         return mtr_additional_args
 
     f = getBuildFactoryPreTest()
-    f.addStep(FetchTestData(name="Get last N failed tests", mtrDbPool=mtrDbPool))
+    f.addStep(FetchTestData(name="Get last N failed tests", mtrDbPool=mtrDbPool, test_type='nm'))
     addTests(f, 'nm', mtrDbPool, getTests)
     return addPostTests(f)
 
