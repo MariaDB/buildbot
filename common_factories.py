@@ -15,8 +15,6 @@ from constants import *
 #
 # * do something about skips (makes little sense to run N failed tests if
 #   they're all skipped)
-# * typ values made consistent over all builders so that they could be used for
-#   filtering
 # * it uses only normal protocol, should be changed to take
 #   ps/embedded/view/etc as an argument.
 # * the way SELECT works it looks for 50 unique test names within last 1000
@@ -217,17 +215,18 @@ def getBuildFactoryPreTest():
     )
     return f_quick_build
 
-def addTests(f_quick_build, mtrDbPool, mtrArgs):
+def addTests(f_quick_build, test_type, mtrDbPool, mtrArgs):
     f_quick_build.addStep(
         steps.MTR(
             logfiles={"mysqld*": "/buildbot/mysql_logs.html"},
+            test_type=test_type,
             command=[
                 "sh",
                 "-c",
                 util.Interpolate(
-                    """
+                    f"""
             cd mysql-test &&
-            exec perl mysql-test-run.pl --verbose-restart --force --retry=3 --max-save-core=1 --max-save-datadir=10 --max-test-fail=20 --mem --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s
+            exec perl mysql-test-run.pl {test_type_to_mtr_arg[test_type]} --verbose-restart --force --retry=3 --max-save-core=1 --max-save-datadir=10 --max-test-fail=20 --mem --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s
             """, mtr_additional_args=mtrArgs,
             jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN)'),
         )],
@@ -247,6 +246,7 @@ def addGaleraTests(f_quick_build, mtrDbPool):
         description="testing galera",
         descriptionDone="test galera",
         logfiles={"mysqld*": "/buildbot/mysql_logs.html"},
+        test_type='nm',
         command=["sh", "-c", util.Interpolate("""
            cd mysql-test &&
            if [ -f "$WSREP_PROVIDER" ]; then exec perl mysql-test-run.pl --verbose-restart --force --retry=3 --max-save-core=1 --max-save-datadir=10 --max-test-fail=20 --mem --big-test --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s --suite=wsrep,galera,galera_3nodes,galera_3nodes_sr; fi
@@ -285,9 +285,9 @@ def addGaleraTests(f_quick_build, mtrDbPool):
     )
     return f_quick_build
 
-def getQuickBuildFactory(mtrDbPool):
+def getQuickBuildFactory(test_type, mtrDbPool):
     f = getBuildFactoryPreTest()
-    addTests(f, mtrDbPool, util.Property( "mtr_additional_args", default=""))
+    addTests(f, test_type, mtrDbPool, util.Property( "mtr_additional_args", default=""))
     addGaleraTests(f, mtrDbPool)
     return addPostTests(f)
 
@@ -303,7 +303,7 @@ def getLastNFailedBuildsFactory(mtrDbPool):
 
     f = getBuildFactoryPreTest()
     f.addStep(FetchTestData(name="Get last N failed tests", mtrDbPool=mtrDbPool))
-    addTests(f, mtrDbPool, getTests)
+    addTests(f, 'nm', mtrDbPool, getTests)
     return addPostTests(f)
 
 def getRpmAutobakeFactory(mtrDbPool):

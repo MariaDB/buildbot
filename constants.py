@@ -177,6 +177,31 @@ MTR_ENV = {
     "MTR_PRINT_CORE": "detailed",
 }
 
+# Define the mapping from MTR test types to mtr command line options
+#
+# * type names should be valid as file names
+# * to avoid ambiguity, options in every line are sorted alphabetically,
+#   that is emb-ps, not ps-emb
+# * no test types for full, galera, xtra and big, because they don't matter
+#   when a test is run by name as in `./mtr testname`
+# * debug/asan/msan/ubsan tests need a type, because it's not enough to
+#   run `./mtr testname`, they need a special build
+test_type_to_mtr_arg = {
+        "nm"            : "",
+        "ps"            : "--ps-protocol",
+        "emb"           : "--embedded",
+        "emb-ps"        : "--embedded --ps-protocol",
+        "view"          : "--view-protocol",
+        "asan"          : "",
+        "msan"          : "",
+        "ubsan"         : "",
+        "valgrind"      : "",
+        "debug"         : "",
+        "debug-ps"      : "--ps-protocol",
+        "debug-emb"     : "--embedded",
+        "debug-emb-ps"  : "--embedded --ps-protocol",
+}
+
 # =============================================================================
 # ============================ AUTO-GENERATED BELOW ===========================
 # The following code is auto-generated based on the content of os_info.yaml.
