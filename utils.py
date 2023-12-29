@@ -378,7 +378,7 @@ def hasFailed(step):
     return step.build.results == FAILURE
 
 
-def createVar(base_path="/buildbot"):
+def createVar(base_path="/buildbot", output_dir=""):
     return f"""
 if [ -d mysql-test/var ]; then
     extra=
@@ -388,19 +388,19 @@ if [ -d mysql-test/var ]; then
       if [ -f sql/mariadbd ]; then extra="$extra sql/mariadbd"; fi
     fi
     tar zcf var.tar.gz mysql-test/var/*/log/*.err mysql-test/var/log ${{extra}}
-    mv var.tar.gz {base_path}/logs/
+    mv var.tar.gz {base_path}/logs/{output_dir}/
 fi"""
 
 
 # Function to move the MTR logs to a known location so that they can be saved
-def moveMTRLogs(base_path="/buildbot"):
+def moveMTRLogs(base_path="/buildbot", output_dir=""):
     return f"""
 echo Logs available at {os.getenv('ARTIFACTS_URL', default='https://ci.mariadb.org')}/%(prop:tarbuildnum)s/logs/%(prop:buildername)s/
-mkdir -p {base_path}/logs
+mkdir -p {base_path}/logs/{output_dir}
 
 filename="mysql-test/var/log/mysqld.1.err"
 if [ -f $filename ]; then
-   cp $filename {base_path}/logs/mysqld.1.err
+   cp $filename {base_path}/logs/{output_dir}/mysqld.1.err
 fi
 
 mtr=1
@@ -413,7 +413,7 @@ do
     logname="mysqld.$mysqld.err.$mtr"
     filename="mysql-test/var/$mtr/log/mysqld.$mysqld.err"
     if [ -f $filename ]; then
-       cp $filename {base_path}/logs/$logname
+       cp $filename {base_path}/logs/{output_dir}/$logname
     else
        break
     fi

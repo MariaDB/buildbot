@@ -237,8 +237,8 @@ def addTests(f_quick_build, test_type, mtrDbPool, mtrArgs):
         autoCreateTables=True,
         env=MTR_ENV,
     ))
-    f_quick_build.addStep(steps.ShellCommand(name="move mariadb log files", alwaysRun=True, command=['bash', '-c', util.Interpolate(moveMTRLogs(), jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN'))]))
-    f_quick_build.addStep(steps.ShellCommand(name="create var archive", alwaysRun=True, command=['bash', '-c', util.Interpolate(createVar())], doStepIf=hasFailed))
+    f_quick_build.addStep(steps.ShellCommand(name="move mariadb log files", alwaysRun=True, command=['bash', '-c', util.Interpolate(moveMTRLogs(output_dir=test_type), jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN'))]))
+    f_quick_build.addStep(steps.ShellCommand(name="create var archive", alwaysRun=True, command=['bash', '-c', util.Interpolate(createVar(output_dir=test_type))], doStepIf=hasFailed))
     return f_quick_build
 
 def addGaleraTests(f_quick_build, mtrDbPool):
