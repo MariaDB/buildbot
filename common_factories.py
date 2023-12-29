@@ -21,6 +21,7 @@ from constants import *
 # * uses N=50 now, this could be increased to catch more failures or decreased
 #   to run faster
 # * more branch protection builders should use it
+# * run for debug and sanitizers
 # * how to do it for install/upgrade tests?
 #
 class FetchTestData(MTR):
@@ -225,6 +226,7 @@ def getBuildFactoryPreTest():
 def addTests(f_quick_build, test_type, mtrDbPool, mtrArgs):
     f_quick_build.addStep(
         steps.MTR(
+            name=f"{test_type} test",
             logfiles={"mysqld*": "/buildbot/mysql_logs.html"},
             test_type=test_type,
             command=[
@@ -244,8 +246,8 @@ def addTests(f_quick_build, test_type, mtrDbPool, mtrArgs):
         autoCreateTables=True,
         env=MTR_ENV,
     ))
-    f_quick_build.addStep(steps.ShellCommand(name="move mariadb log files", alwaysRun=True, command=['bash', '-c', util.Interpolate(moveMTRLogs(output_dir=test_type), jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN'))]))
-    f_quick_build.addStep(steps.ShellCommand(name="create var archive", alwaysRun=True, command=['bash', '-c', util.Interpolate(createVar(output_dir=test_type))], doStepIf=hasFailed))
+    f_quick_build.addStep(steps.ShellCommand(name=f"move {test_type} mariadb log files", alwaysRun=True, command=['bash', '-c', util.Interpolate(moveMTRLogs(output_dir=test_type), jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN'))]))
+    f_quick_build.addStep(steps.ShellCommand(name=f"create {test_type} var archive", alwaysRun=True, command=['bash', '-c', util.Interpolate(createVar(output_dir=test_type))], doStepIf=hasFailed))
     return f_quick_build
 
 def addGaleraTests(f_quick_build, mtrDbPool):
@@ -309,8 +311,11 @@ def getLastNFailedBuildsFactory(mtrDbPool):
         return mtr_additional_args
 
     f = getBuildFactoryPreTest()
-    f.addStep(FetchTestData(name="Get last N failed tests", mtrDbPool=mtrDbPool, test_type='nm'))
-    addTests(f, 'nm', mtrDbPool, getTests)
+
+    for typ in ("nm", "ps"): # TODO "view"
+        f.addStep(FetchTestData(name=f"Get last N failed {typ} tests", mtrDbPool=mtrDbPool, test_type=typ))
+        addTests(f, typ, mtrDbPool, getTests)
+
     return addPostTests(f)
 
 def getRpmAutobakeFactory(mtrDbPool):
