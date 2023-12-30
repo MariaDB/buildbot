@@ -21,7 +21,7 @@ from constants import *
 # * uses N=50 now, this could be increased to catch more failures or decreased
 #   to run faster
 # * more branch protection builders should use it
-# * run for debug and sanitizers
+# * run for view protocol and sanitizers
 # * how to do it for install/upgrade tests?
 #
 class FetchTestData(MTR):
@@ -163,7 +163,7 @@ def addPostTests(f_quick_build):
     )
     return f_quick_build
 
-def getBuildFactoryPreTest(additional_args=""):
+def getBuildFactoryPreTest(build_type="RelWithDebInfo", additional_args=""):
     f_quick_build = util.BuildFactory()
     f_quick_build.addStep(
         steps.ShellCommand(
@@ -208,7 +208,7 @@ def getBuildFactoryPreTest(additional_args=""):
                 util.Interpolate(
                     "cmake . -DCMAKE_BUILD_TYPE=%(kw:build_type)s -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER=%(kw:c_compiler)s -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER=%(kw:cxx_compiler)s -DPLUGIN_TOKUDB=NO -DPLUGIN_MROONGA=NO -DPLUGIN_SPIDER=YES -DPLUGIN_OQGRAPH=NO -DPLUGIN_PERFSCHEMA=%(kw:perf_schema)s -DPLUGIN_SPHINX=NO %(kw:additional_args)s && make %(kw:verbose_build)s -j%(kw:jobs)s %(kw:create_package)s",
                     perf_schema=util.Property("perf_schema", default="YES"),
-                    build_type=util.Property("build_type", default="RelWithDebInfo"),
+                    build_type=util.Property("build_type", default=f"{build_type}"),
                     jobs=util.Property("jobs", default="$(getconf _NPROCESSORS_ONLN)"),
                     c_compiler=util.Property("c_compiler", default="gcc"),
                     cxx_compiler=util.Property("cxx_compiler", default="g++"),
@@ -300,7 +300,7 @@ def getQuickBuildFactory(test_type, mtrDbPool):
     addGaleraTests(f, mtrDbPool)
     return addPostTests(f)
 
-def getLastNFailedBuildsFactory(mtrDbPool):
+def getLastNFailedBuildsFactory(test_type, mtrDbPool):
     @util.renderer
     def getTests(props):
         mtr_additional_args = props.getProperty('mtr_additional_args', '--suite=main')
@@ -310,9 +310,20 @@ def getLastNFailedBuildsFactory(mtrDbPool):
 
         return mtr_additional_args
 
-    f = getBuildFactoryPreTest("-DWITH_EMBEDDED_SERVER=ON")
+    config={
+            "nm": {
+                "args" : ("RelWithDebInfo", "-DWITH_EMBEDDED_SERVER=ON"),
+                "steps": ("nm", "ps", "emb", "emb-ps") # TODO "view"
+            },
+            "debug": {
+                "args" : ("Debug", "-DWITH_EMBEDDED_SERVER=ON"),
+                "steps": ("debug", "debug-ps", "debug-emb", "debug-emb-ps") # TODO "view"
+            }
+    }
 
-    for typ in ("nm", "ps", "emb", "emb-ps"): # TODO "view"
+    f = getBuildFactoryPreTest(*config[test_type]['args'])
+
+    for typ in config[test_type]['steps']:
         f.addStep(FetchTestData(name=f"Get last N failed {typ} tests", mtrDbPool=mtrDbPool, test_type=typ))
         addTests(f, typ, mtrDbPool, getTests)
 
