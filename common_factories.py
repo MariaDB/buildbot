@@ -163,7 +163,7 @@ def addPostTests(f_quick_build):
     )
     return f_quick_build
 
-def getBuildFactoryPreTest():
+def getBuildFactoryPreTest(additional_args=""):
     f_quick_build = util.BuildFactory()
     f_quick_build.addStep(
         steps.ShellCommand(
@@ -212,7 +212,7 @@ def getBuildFactoryPreTest():
                     jobs=util.Property("jobs", default="$(getconf _NPROCESSORS_ONLN)"),
                     c_compiler=util.Property("c_compiler", default="gcc"),
                     cxx_compiler=util.Property("cxx_compiler", default="g++"),
-                    additional_args=util.Property("additional_args", default=""),
+                    additional_args=util.Property("additional_args", default=f"{additional_args}"),
                     create_package=util.Property("create_package", default="package"),
                     verbose_build=util.Property("verbose_build", default=""),
                 ),
@@ -310,9 +310,9 @@ def getLastNFailedBuildsFactory(mtrDbPool):
 
         return mtr_additional_args
 
-    f = getBuildFactoryPreTest()
+    f = getBuildFactoryPreTest("-DWITH_EMBEDDED_SERVER=ON")
 
-    for typ in ("nm", "ps"): # TODO "view"
+    for typ in ("nm", "ps", "emb", "emb-ps"): # TODO "view"
         f.addStep(FetchTestData(name=f"Get last N failed {typ} tests", mtrDbPool=mtrDbPool, test_type=typ))
         addTests(f, typ, mtrDbPool, getTests)
 
