@@ -367,8 +367,7 @@ echo '<!DOCTYPE html>
 <html>
 <body>' >> {base_path}/mysql_logs.html
 
-echo '<a href=" {os.getenv('ARTIFACTS_URL', default='https://ci.mariadb.org')}/%(prop:tarbuildnum)s/logs/%(prop:buildername)s/">mysqld* log dir</a><br>' >> {base_path}/mysql_logs.html
-echo '<a href=" {os.getenv('ARTIFACTS_URL', default='https://ci.mariadb.org')}/%(prop:tarbuildnum)s/logs/%(prop:buildername)s/var.tar.gz">var.tar.gz</a><br>' >> {base_path}/mysql_logs.html
+echo '<a href=" {os.getenv('ARTIFACTS_URL', default='https://ci.mariadb.org')}/%(prop:tarbuildnum)s/logs/%(prop:buildername)s/">logs (mysqld* + var.tar.gz)</a><br>' >> {base_path}/mysql_logs.html
 
 echo '</body>
 </html>' >> {base_path}/mysql_logs.html"""
