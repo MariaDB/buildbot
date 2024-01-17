@@ -10,7 +10,7 @@ cat debian.Dockerfile common.Dockerfile >Dockerfile
 docker build . -t mariadb.org/buildbot/debian:sid --build-arg mariadb_branch=10.7 --build-arg base_image=debian:sid
 # ubuntu
 cat debian.Dockerfile common.Dockerfile >Dockerfile
-docker build . -t mariadb.org/buildbot/ubuntu:21.04 --build-arg mariadb_branch=10.7 --build-arg base_image=ubuntu:22.04
+docker build . -t mariadb.org/buildbot/ubuntu:22.04 --build-arg mariadb_branch=10.7 --build-arg base_image=ubuntu:22.04
 # fedora
 cat fedora.Dockerfile common.Dockerfile >Dockerfile
 docker build . -t mariadb.org/buildbot/fedora:34 --build-arg base_image=fedora:37
