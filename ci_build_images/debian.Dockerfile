@@ -68,7 +68,6 @@ RUN . /etc/os-release; \
     python3-buildbot-worker \
     python3-dev \
     python3-setuptools \
-    reprepro \
     rsync \
     scons \
     socat \
@@ -77,12 +76,34 @@ RUN . /etc/os-release; \
     && if [ "$(getconf LONG_BIT)" = 64 ]; then \
       apt-get -y install --no-install-recommends galera-4; \
     fi \
-    && if [ "${VERSION_CODENAME}" != bionic ]; then \
+    && if [ "${VERSION_ID}" != 18.04 ]; then \
       apt-get -y install --no-install-recommends flex; \
     fi \
-    && if [ "${VERSION_CODENAME}" = jammy ]; then \
+    && if [ "${VERSION_ID}" = 22.04 ]; then \
       apt-get -y install --no-install-recommends clang-14 libpcre3-dev llvm; \
     fi \
+    # see: https://jira.mariadb.org/browse/MDBF-637 \
+    && if [ "${VERSION_ID}" = 22.04 ] && [ "$(arch)" != s390x ]; then \
+         case "$(arch)" in "x86_64") \
+          deb_arch="amd64"; \
+          ;; \
+          "x86") \
+          deb_arch="i386" \
+          ;; \
+          "aarch64") \
+          deb_arch="arm64" \
+          ;; \
+          "ppc64le") \
+          deb_arch="ppc64el" \
+          ;; \
+        esac; \
+        reprepro_version="5.4.3-1"; \
+        curl -skO "http://ftp.debian.org/debian/pool/main/r/reprepro/reprepro_${reprepro_version}_${deb_arch}.deb"; \
+        apt-get install -y --no-install-recommends "./reprepro_${reprepro_version}_${deb_arch}.deb"; \
+        rm -f "./reprepro_${reprepro_version}_${deb_arch}.deb"; \
+      else \
+        apt-get install -y --no-install-recommends reprepro; \
+      fi \
     && apt-get clean
 
 ENV WSREP_PROVIDER=/usr/lib/galera/libgalera_smm.so
