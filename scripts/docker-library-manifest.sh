@@ -179,8 +179,11 @@ if (($(buildah manifest inspect "$devmanifest" | jq '.manifests | length') >= ex
   buildah images
   # lost and forgotten (or just didn't make enough manifest items - build failure on an arch)
   lastweek=$(date +%s --date='1 week ago')
+  # clear buildah images
+  buildah images --json | jq '.[] | .id as $id | select(.created <= $lastweek ) | $id' | xargs podman rmi --force
+
   # old ubuntu and base images that got updated so are Dangling
-  podman images --format=json | jq ".[] | .Id as \$id |  select(.Created <= $lastweek ) | any( .Names[]? ; startswith(\"mariadb\")) | \$id" | xargs --no-run-if-empty podman rmi || echo "continuing cleanup anyway"
+  podman images --format=json | jq ".[] | .Id as \$id |  select(.Created <= $lastweek ) | any( .Names[]? ; startswith(\"mariadb\")) | \$id" | xargs --no-run-if-empty podman rmi --force || echo "continuing cleanup anyway"
   # clean buildah containers
   buildah containers --format "{{.ContainerID}}" | xargs --no-run-if-empty buildah rm || echo "had trouble cleaning containers"
   # clean images
