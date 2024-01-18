@@ -44,6 +44,10 @@ services:
     # - ./db:/docker-entrypoint-initdb.d:ro
       - ./mariadb:/var/lib/mysql:rw
     # command: --tmpdir=/var/lib/mysql/tmp
+    logging:
+      driver: journald
+      options:
+        tag: "bb-mariadb"
 
   crossbar:
     image: crossbario/crossbar
@@ -52,6 +56,10 @@ services:
     hostname: crossbar
     networks:
       net_back:
+    logging:
+      driver: journald
+      options:
+        tag: "bb-crossbar"
 
   nginx:
     image: nginx:latest
@@ -68,6 +76,10 @@ services:
       - "127.0.0.1:8080:80"
     networks:
       net_front:
+    logging:
+      driver: journald
+      options:
+        tag: "bb-nginx"
 
   master-web:
     image: quay.io/mariadb-foundation/bb-master:master-web
