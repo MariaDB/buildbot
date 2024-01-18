@@ -42,6 +42,10 @@ fi
 container_tag=${container_tag,,*}
 
 case "${buildername#*ubuntu-}" in
+  2404-deb-autobake)
+    pkgver=ubu2404
+    bbnet=noble
+    ;;
   2204-deb-autobake)
     pkgver=ubu2204
     bbnet=jammy
