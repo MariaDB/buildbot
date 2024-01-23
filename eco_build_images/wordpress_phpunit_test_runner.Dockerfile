@@ -1,4 +1,4 @@
-FROM php:8.2-cli
+FROM php:8.3-cli
 
 # https://github.com/WordPress/phpunit-test-runner/blob/master/README.md#0-requirements
 
@@ -24,7 +24,7 @@ ENV NVM_DIR="/root/.nvm"
 
 # Match nodejs version https://nodejs.org/en/download/releases to supported npm range
 # https://github.com/WordPress/wordpress-develop/blob/trunk/package.json
-RUN bash -c "set -o pipefail ; curl -o - https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash; . \"$NVM_DIR/nvm.sh\" && nvm install 16.20.2"
+RUN bash -c "set -o pipefail ; curl -o - https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash; . \"$NVM_DIR/nvm.sh\" && nvm install 20.11.0"
 
 COPY wordpress_phpunit_test_runner.env /phpunit-test-runner/.env
 COPY wordpress_phpunit_test_runner.entrypoint /entrypoint.sh
