@@ -213,6 +213,9 @@ Architectures: $arch source
 Components: main
 Description: MariaDB Repository
 EOF
+    #//TEMP save debs until reprepro is working (or aptly)
+    mkdir ../debs
+    find .. -maxdepth 1 -type f | xargs cp -t ../debs
     cat ../conf/distributions
     reprepro -b .. --ignore=wrongsourceversion include $VERSION_CODENAME ../*.changes
 """
@@ -242,8 +245,7 @@ def uploadDebArtifacts():
       COMPONENTS="main main/debug"
     fi
     mkdir -p /packages/%(prop:tarbuildnum)s/%(prop:buildername)s
-    cp -r debs/ sha256sums.txt /packages/%(prop:tarbuildnum)s/%(prop:buildername)s/
-    cd .. && cp -r conf db dists pool /packages/%(prop:tarbuildnum)s/%(prop:buildername)s/
+    cd .. && cp -r debs conf db dists pool /packages/%(prop:tarbuildnum)s/%(prop:buildername)s/
     cat << EOF > /packages/%(prop:tarbuildnum)s/%(prop:buildername)s/mariadb.sources
 X-Repolib-Name: MariaDB
 Types: deb
