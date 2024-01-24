@@ -61,7 +61,7 @@ def select_test_failures(filters, include_failures=True):
   available_filters = ["branch", "revision", "platform", "dt", "bbnum", "typ", "info", "test_name", "test_variant", "info_text", "failure_text"]
 
   # New implementation
-  limit = 5
+  limit = 50
   if 'limit' in filters and filters['limit'] != '':
     limit = int(filters['limit'])
 

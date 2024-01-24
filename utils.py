@@ -213,6 +213,9 @@ Architectures: $arch source
 Components: main
 Description: MariaDB Repository
 EOF
+    #//TEMP save debs until reprepro is working (or aptly)
+    mkdir ../debs
+    find .. -maxdepth 1 -type f | xargs cp -t ../debs
     cat ../conf/distributions
     reprepro -b .. --ignore=wrongsourceversion include $VERSION_CODENAME ../*.changes
 """
@@ -242,7 +245,7 @@ def uploadDebArtifacts():
       COMPONENTS="main main/debug"
     fi
     mkdir -p /packages/%(prop:tarbuildnum)s/%(prop:buildername)s
-    cd .. && cp -r conf db dists pool /packages/%(prop:tarbuildnum)s/%(prop:buildername)s/
+    cd .. && cp -r debs conf db dists pool /packages/%(prop:tarbuildnum)s/%(prop:buildername)s/
     cat << EOF > /packages/%(prop:tarbuildnum)s/%(prop:buildername)s/mariadb.sources
 X-Repolib-Name: MariaDB
 Types: deb
@@ -367,8 +370,7 @@ echo '<!DOCTYPE html>
 <html>
 <body>' >> {base_path}/mysql_logs.html
 
-echo '<a href=" {os.getenv('ARTIFACTS_URL', default='https://ci.mariadb.org')}/%(prop:tarbuildnum)s/logs/%(prop:buildername)s/">mysqld* log dir</a><br>' >> {base_path}/mysql_logs.html
-echo '<a href=" {os.getenv('ARTIFACTS_URL', default='https://ci.mariadb.org')}/%(prop:tarbuildnum)s/logs/%(prop:buildername)s/var.tar.gz">var.tar.gz</a><br>' >> {base_path}/mysql_logs.html
+echo '<a href=" {os.getenv('ARTIFACTS_URL', default='https://ci.mariadb.org')}/%(prop:tarbuildnum)s/logs/%(prop:buildername)s/">logs (mysqld* + var.tar.gz)</a><br>' >> {base_path}/mysql_logs.html
 
 echo '</body>
 </html>' >> {base_path}/mysql_logs.html"""

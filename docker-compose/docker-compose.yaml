@@ -7,6 +7,7 @@ services:
     image: mariadb:10.6
     restart: unless-stopped
     container_name: mariadb
+    hostname: mariadb
     environment:
       - MARIADB_ROOT_PASSWORD=password
       - MARIADB_DATABASE=buildbot
@@ -21,18 +22,28 @@ services:
     # - ./db:/docker-entrypoint-initdb.d:ro
       - ./mariadb:/var/lib/mysql:rw
     # command: --tmpdir=/var/lib/mysql/tmp
+    logging:
+      driver: journald
+      options:
+        tag: "bb-mariadb"
 
   crossbar:
     image: crossbario/crossbar
     restart: unless-stopped
     container_name: crossbar
+    hostname: crossbar
     networks:
       net_back:
+    logging:
+      driver: journald
+      options:
+        tag: "bb-crossbar"
 
   nginx:
     image: nginx:latest
     restart: unless-stopped
     container_name: nginx
+    hostname: nginx
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d/:/etc/nginx/conf.d/:ro
@@ -43,22 +54,29 @@ services:
       - "127.0.0.1:8080:80"
     networks:
       net_front:
+    logging:
+      driver: journald
+      options:
+        tag: "bb-nginx"
 
   master-web:
     image: quay.io/mariadb-foundation/bb-master:master-web
     restart: unless-stopped
     container_name: master-web
     environment:
-      - ENVIRON
       - GALERA_PACKAGES_DIR
+      - ENVIRON
       - TITLE
-      - TITLE_URL
-      - MASTER_PACKAGES_DIR
-      - BUILDMASTER_WG_IP
-      - MQ_ROUTER_URL
+      - BRANCH
       - ARTIFACTS_URL
+      - TITLE_URL
+      - BUILDMASTER_WG_IP
+      - NGINX_ARTIFACTS_VHOST
+      - MASTER_PACKAGES_DIR
+      - MQ_ROUTER_URL
       - BUILDMASTER_URL
       - PORT=8010
+    hostname: master-web
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -78,16 +96,19 @@ services:
     restart: unless-stopped
     container_name: master-nonlatent
     environment:
-      - ENVIRON
       - GALERA_PACKAGES_DIR
+      - ENVIRON
       - TITLE
-      - TITLE_URL
-      - MASTER_PACKAGES_DIR
-      - BUILDMASTER_WG_IP
-      - MQ_ROUTER_URL
+      - BRANCH
       - ARTIFACTS_URL
+      - TITLE_URL
+      - BUILDMASTER_WG_IP
+      - NGINX_ARTIFACTS_VHOST
+      - MASTER_PACKAGES_DIR
+      - MQ_ROUTER_URL
       - BUILDMASTER_URL
       - PORT=9996
+    hostname: master-nonlatent
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -109,16 +130,19 @@ services:
     restart: unless-stopped
     container_name: master-libvirt
     environment:
-      - ENVIRON
       - GALERA_PACKAGES_DIR
+      - ENVIRON
       - TITLE
-      - TITLE_URL
-      - MASTER_PACKAGES_DIR
-      - BUILDMASTER_WG_IP
-      - MQ_ROUTER_URL
+      - BRANCH
       - ARTIFACTS_URL
+      - TITLE_URL
+      - BUILDMASTER_WG_IP
+      - NGINX_ARTIFACTS_VHOST
+      - MASTER_PACKAGES_DIR
+      - MQ_ROUTER_URL
       - BUILDMASTER_URL
       - PORT=9997
+    hostname: master-libvirt
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -140,16 +164,19 @@ services:
     restart: unless-stopped
     container_name: autogen_aarch64-master-0
     environment:
-      - ENVIRON
       - GALERA_PACKAGES_DIR
+      - ENVIRON
       - TITLE
-      - TITLE_URL
-      - MASTER_PACKAGES_DIR
-      - BUILDMASTER_WG_IP
-      - MQ_ROUTER_URL
+      - BRANCH
       - ARTIFACTS_URL
+      - TITLE_URL
+      - BUILDMASTER_WG_IP
+      - NGINX_ARTIFACTS_VHOST
+      - MASTER_PACKAGES_DIR
+      - MQ_ROUTER_URL
       - BUILDMASTER_URL
       - PORT=9998
+    hostname: autogen_aarch64-master-0
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -171,16 +198,19 @@ services:
     restart: unless-stopped
     container_name: autogen_amd64-master-0
     environment:
-      - ENVIRON
       - GALERA_PACKAGES_DIR
+      - ENVIRON
       - TITLE
-      - TITLE_URL
-      - MASTER_PACKAGES_DIR
-      - BUILDMASTER_WG_IP
-      - MQ_ROUTER_URL
+      - BRANCH
       - ARTIFACTS_URL
+      - TITLE_URL
+      - BUILDMASTER_WG_IP
+      - NGINX_ARTIFACTS_VHOST
+      - MASTER_PACKAGES_DIR
+      - MQ_ROUTER_URL
       - BUILDMASTER_URL
       - PORT=9999
+    hostname: autogen_amd64-master-0
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -202,16 +232,19 @@ services:
     restart: unless-stopped
     container_name: autogen_amd64-master-1
     environment:
-      - ENVIRON
       - GALERA_PACKAGES_DIR
+      - ENVIRON
       - TITLE
-      - TITLE_URL
-      - MASTER_PACKAGES_DIR
-      - BUILDMASTER_WG_IP
-      - MQ_ROUTER_URL
+      - BRANCH
       - ARTIFACTS_URL
+      - TITLE_URL
+      - BUILDMASTER_WG_IP
+      - NGINX_ARTIFACTS_VHOST
+      - MASTER_PACKAGES_DIR
+      - MQ_ROUTER_URL
       - BUILDMASTER_URL
       - PORT=10000
+    hostname: autogen_amd64-master-1
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -233,16 +266,19 @@ services:
     restart: unless-stopped
     container_name: autogen_ppc64le-master-0
     environment:
-      - ENVIRON
       - GALERA_PACKAGES_DIR
+      - ENVIRON
       - TITLE
-      - TITLE_URL
-      - MASTER_PACKAGES_DIR
-      - BUILDMASTER_WG_IP
-      - MQ_ROUTER_URL
+      - BRANCH
       - ARTIFACTS_URL
+      - TITLE_URL
+      - BUILDMASTER_WG_IP
+      - NGINX_ARTIFACTS_VHOST
+      - MASTER_PACKAGES_DIR
+      - MQ_ROUTER_URL
       - BUILDMASTER_URL
       - PORT=10001
+    hostname: autogen_ppc64le-master-0
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -264,16 +300,19 @@ services:
     restart: unless-stopped
     container_name: autogen_s390x-master-0
     environment:
-      - ENVIRON
       - GALERA_PACKAGES_DIR
+      - ENVIRON
       - TITLE
-      - TITLE_URL
-      - MASTER_PACKAGES_DIR
-      - BUILDMASTER_WG_IP
-      - MQ_ROUTER_URL
+      - BRANCH
       - ARTIFACTS_URL
+      - TITLE_URL
+      - BUILDMASTER_WG_IP
+      - NGINX_ARTIFACTS_VHOST
+      - MASTER_PACKAGES_DIR
+      - MQ_ROUTER_URL
       - BUILDMASTER_URL
       - PORT=10002
+    hostname: autogen_s390x-master-0
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -295,16 +334,19 @@ services:
     restart: unless-stopped
     container_name: autogen_x86-master-0
     environment:
-      - ENVIRON
       - GALERA_PACKAGES_DIR
+      - ENVIRON
       - TITLE
-      - TITLE_URL
-      - MASTER_PACKAGES_DIR
-      - BUILDMASTER_WG_IP
-      - MQ_ROUTER_URL
+      - BRANCH
       - ARTIFACTS_URL
+      - TITLE_URL
+      - BUILDMASTER_WG_IP
+      - NGINX_ARTIFACTS_VHOST
+      - MASTER_PACKAGES_DIR
+      - MQ_ROUTER_URL
       - BUILDMASTER_URL
       - PORT=10003
+    hostname: autogen_x86-master-0
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -326,16 +368,19 @@ services:
     restart: unless-stopped
     container_name: master-docker-nonstandard
     environment:
-      - ENVIRON
       - GALERA_PACKAGES_DIR
+      - ENVIRON
       - TITLE
-      - TITLE_URL
-      - MASTER_PACKAGES_DIR
-      - BUILDMASTER_WG_IP
-      - MQ_ROUTER_URL
+      - BRANCH
       - ARTIFACTS_URL
+      - TITLE_URL
+      - BUILDMASTER_WG_IP
+      - NGINX_ARTIFACTS_VHOST
+      - MASTER_PACKAGES_DIR
+      - MQ_ROUTER_URL
       - BUILDMASTER_URL
       - PORT=10004
+    hostname: master-docker-nonstandard
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -357,16 +402,19 @@ services:
     restart: unless-stopped
     container_name: master-galera
     environment:
-      - ENVIRON
       - GALERA_PACKAGES_DIR
+      - ENVIRON
       - TITLE
-      - TITLE_URL
-      - MASTER_PACKAGES_DIR
-      - BUILDMASTER_WG_IP
-      - MQ_ROUTER_URL
+      - BRANCH
       - ARTIFACTS_URL
+      - TITLE_URL
+      - BUILDMASTER_WG_IP
+      - NGINX_ARTIFACTS_VHOST
+      - MASTER_PACKAGES_DIR
+      - MQ_ROUTER_URL
       - BUILDMASTER_URL
       - PORT=10005
+    hostname: master-galera
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -388,16 +436,19 @@ services:
     restart: unless-stopped
     container_name: master-protected-branches
     environment:
-      - ENVIRON
       - GALERA_PACKAGES_DIR
+      - ENVIRON
       - TITLE
-      - TITLE_URL
-      - MASTER_PACKAGES_DIR
-      - BUILDMASTER_WG_IP
-      - MQ_ROUTER_URL
+      - BRANCH
       - ARTIFACTS_URL
+      - TITLE_URL
+      - BUILDMASTER_WG_IP
+      - NGINX_ARTIFACTS_VHOST
+      - MASTER_PACKAGES_DIR
+      - MQ_ROUTER_URL
       - BUILDMASTER_URL
       - PORT=10006
+    hostname: master-protected-branches
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
