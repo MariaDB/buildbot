@@ -217,7 +217,9 @@ EOF
     mkdir ../debs
     find .. -maxdepth 1 -type f | xargs cp -t ../debs
     cat ../conf/distributions
+    set +e
     reprepro -b .. --ignore=wrongsourceversion include $VERSION_CODENAME ../*.changes
+    set -e
 """
             ),
         ],
