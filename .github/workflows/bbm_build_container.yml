@@ -29,6 +29,11 @@ jobs:
       - name: Set up env vars
         run: |
           echo "REPO=bb-master" >>$GITHUB_ENV
+          if echo "$GITHUB_REF" | grep -q '^upstream/dev';then
+            echo "TAG=-dev" >>$GITHUB_ENV
+          else
+            echo "TAG=" >>$GITHUB_ENV
+          fi
       - name: Build master image
         run: |
           podman build . --tag ${{ env.REPO }}:master
@@ -80,7 +85,7 @@ jobs:
           for image in master master-web; do
             skopeo copy --all --src-tls-verify=0 \
             docker://localhost:5000/${{ env.REPO }}:${image} \
-            docker://ghcr.io/mariadb/buildbot:${image}
+            docker://ghcr.io/mariadb/buildbot:${image}${{ env.TAG }}
           done
       - name: Login to quay.io
         if: ${{ env.DEPLOY_IMAGES == 'true' }}
@@ -98,5 +103,5 @@ jobs:
           for image in master master-web; do
             skopeo copy --all --src-tls-verify=0 \
             docker://localhost:5000/${{ env.REPO }}:${image} \
-            docker://quay.io/mariadb-foundation/${{ env.REPO }}:${image}
+            docker://quay.io/mariadb-foundation/${{ env.REPO }}:${image}${{ env.TAG }}
           done
