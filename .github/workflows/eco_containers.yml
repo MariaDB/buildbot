@@ -46,6 +46,7 @@ jobs:
           context: ${{ env.WORKDIR }}
           archs: ${{ matrix.archs }}
           oci: true
+          extra-args: --ulimit nofile=16384:16384
       - name: Check for registry credentials
         if: >
           github.ref == 'refs/heads/main' &&
