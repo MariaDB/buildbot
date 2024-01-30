@@ -32,7 +32,7 @@ COPY wordpress_phpunit_test_runner.entrypoint /entrypoint.sh
 WORKDIR /phpunit-test-runner
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
-RUN bash -c 'source /root/.bashrc && source .env && php prepare.php'
+RUN bash -c 'source /root/.bashrc && source .env && ulimit -a && php prepare.php'
 
 ENTRYPOINT ["/entrypoint.sh"]
 
