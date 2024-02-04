@@ -44,6 +44,7 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     libxml2-devel \
     lz4-devel \
     perl-autodie \
+    perl-Net-SSLeay \
     pcre2-devel \
     python3-pip \
     rpmlint \

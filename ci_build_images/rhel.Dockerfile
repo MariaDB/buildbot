@@ -75,6 +75,7 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     pam-devel \
     pcre2-devel \
     perl-autodie \
+    perl-Net-SSLeay \
     pkgconfig \
     policycoreutils \
     python3 \

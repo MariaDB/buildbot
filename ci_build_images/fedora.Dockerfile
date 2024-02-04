@@ -39,6 +39,7 @@ RUN dnf -y upgrade \
     lzo \
     lzo-devel \
     perl-autodie \
+    perl-Net-SSLeay \
     python-unversioned-command \
     python3-devel \
     readline-devel \
