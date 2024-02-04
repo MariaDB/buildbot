@@ -38,6 +38,7 @@ RUN yum -y --enablerepo=extras install epel-release \
     lz4-devel \
     pcre2-devel \
     perl-autodie \
+    perl-Net-SSLeay \
     python3 \
     python3-pip \
     rpmlint \
