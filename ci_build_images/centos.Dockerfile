@@ -50,6 +50,7 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     libxml2-devel \
     libzstd-devel \
     perl-autodie \
+    perl-Net-SSLeay \
     python3-devel \
     python3-scons \
     readline-devel \

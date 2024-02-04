@@ -63,6 +63,8 @@ RUN . /etc/os-release; \
     libbz2-dev \
     libdbi-perl \
     libffi-dev \
+    libio-socket-ssl-perl \
+    libnet-ssleay-perl \
     libssl-dev \
     lsof \
     python3-buildbot-worker \
