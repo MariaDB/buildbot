@@ -88,6 +88,7 @@ private["docker_workers"]= {
     "s390x-bbw2-docker":"tcp://IP_address:port",
     "s390x-bbw3-docker":"tcp://IP_address:port",
     "aws-bbw1-docker":"tcp://IP_address:port",
+    "release-prep-docker":"tcp://IP_address:port",
 }
 
 private["worker_name_mapping"] = {
