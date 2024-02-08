@@ -40,7 +40,7 @@ deb_setup_bb_artifacts_mirror
 
 # Once repo are created with aptly, adapt below:
 # wget -O - "${artifactsURL}/${tarbuildnum}/${parentbuildername}/dists/${VERSION_CODENAME}/main/binary-$(deb_arch)/Packages.gz" | gunzip >Packages
-wget -O - "${artifactsURL}/${tarbuildnum}/${parentbuildername}/debs/Packages"
+wget "${artifactsURL}/${tarbuildnum}/${parentbuildername}/debs/Packages"
 
 set -x
 
