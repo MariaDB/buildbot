@@ -220,7 +220,7 @@ def uploadDebArtifacts():
     fi
     mkdir -p /packages/%(prop:tarbuildnum)s/%(prop:buildername)s
     cp -r ../debs /packages/%(prop:tarbuildnum)s/%(prop:buildername)s/
-    cat << EOF > /packages/%(prop:tarbuildnum)s/%(prop:buildername)s/mariadb.list
+    cat << EOF > /packages/%(prop:tarbuildnum)s/%(prop:buildername)s/mariadb.sources
 X-Repolib-Name: MariaDB
 Types: deb
 URIs: $artifacts_url/%(prop:tarbuildnum)s/%(prop:buildername)s/debs
