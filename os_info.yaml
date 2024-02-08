@@ -159,3 +159,4 @@ ubuntu-2404:
     - aarch64
     - ppc64le
     - s390x
+  type: deb
