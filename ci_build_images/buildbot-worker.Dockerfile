@@ -1,13 +1,6 @@
 
-# common.Dockerfile
-# those steps are common to all images
-
-# install qpress (MDEV-29043)
-COPY qpress/* /tmp/qpress/
-WORKDIR /tmp/qpress
-RUN make -j"$(nproc)" \
-    && cp qpress /usr/local/bin/ \
-    && rm -rf /tmp/qpress
+# buildbot-worker.Dockerfile those steps are common to all images to configure
+# buildbot-worker
 
 # Configure buildbot user
 RUN if getent passwd 1000; then \

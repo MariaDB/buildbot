@@ -1,14 +1,14 @@
 ---
-name: bbw-build-container
+name: bbw-build-container-release
 
 on:
   push:
     paths:
-      - .github/workflows/bbw_build_container.yml
+      - .github/workflows/bbw_build_container_release.yml
       - "ci_build_images/**"
   pull_request:
     paths:
-      - .github/workflows/bbw_build_container.yml
+      - .github/workflows/bbw_build_container_release.yml
       - "ci_build_images/**"
 
 jobs:
@@ -24,81 +24,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - dockerfile: debian.Dockerfile
-            image: debian:10
-            branch: 10.11
-            platforms: linux/amd64, linux/arm64/v8
-          - dockerfile: debian.Dockerfile
-            image: debian:11
-            branch: 10.11
-            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
-          - dockerfile: debian.Dockerfile
-            image: debian:12
-            tag: debian12
-            branch: 10.11
-            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
-          - dockerfile: debian.Dockerfile aocc.Dockerfile
-            image: debian:11
-            tag: debian11-aocc
-            branch: 10.11
-            platforms: linux/amd64
-          - dockerfile: debian.Dockerfile msan.Dockerfile
-            image: debian:11
-            branch: 10.11
-            tag: debian11-msan
-            platforms: linux/amd64
-          - dockerfile: debian.Dockerfile
-            image: debian:sid
-            branch: 10.11
-            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
-          - dockerfile: debian.Dockerfile
-            image: debian:sid
-            tag: debiansid-386
-            branch: 10.11
-            platforms: linux/386
-          - dockerfile: debian.Dockerfile
-            image: ubuntu:20.04
-            branch: 10.11
-            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
-          - dockerfile: debian.Dockerfile
-            image: ubuntu:22.04
-            branch: 10.11
-            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
-          - dockerfile: debian.Dockerfile
-            image: ubuntu:23.04
-            branch: 10.11
-            platforms: linux/amd64, linux/arm64/v8
-          - dockerfile: debian.Dockerfile
-            image: ubuntu:23.10
-            branch: 10.11
-            platforms: linux/amd64, linux/arm64/v8
-          - dockerfile: debian.Dockerfile
-            image: ubuntu:24.04
-            branch: 10.11
-            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
-          - dockerfile: fedora.Dockerfile
-            image: fedora:38
-            platforms: linux/amd64, linux/arm64/v8
-          - dockerfile: fedora.Dockerfile
-            image: fedora:39
-            platforms: linux/amd64, linux/arm64/v8
-          - dockerfile: centos7.Dockerfile pip.Dockerfile
-            image: centos:7
-            platforms: linux/amd64
-          - dockerfile: centos.Dockerfile
-            image: quay.io/centos/centos:stream8
-            tag: centosstream8
-            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
-          - dockerfile: centos.Dockerfile pip.Dockerfile
-            image: quay.io/centos/centos:stream9
-            tag: centosstream9
-            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
-            # //TEMP Error: Unable to find a match: ccache python3-scons (on
-            # s390x)
-            # platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
-          - dockerfile: opensuse.Dockerfile pip.Dockerfile
-            image: opensuse/leap:15.3
-            tag: opensuse15
+          - dockerfile: debian-release.Dockerfile
+            image: debian:12-slim
+            tag: debian12-release
             platforms: linux/amd64
     env:
       BUILD_RHEL: false
@@ -124,13 +52,8 @@ jobs:
       - name: Generate Dockerfile and necessary files
         run: |
           cd ${{ env.WORKDIR }}
-          cat ${{ matrix.dockerfile }} qpress.Dockerfile buildbot-worker.Dockerfile >$GITHUB_WORKSPACE/Dockerfile
+          cat ${{ matrix.dockerfile }} buildbot-worker.Dockerfile >$GITHUB_WORKSPACE/Dockerfile
           cp -r qpress $GITHUB_WORKSPACE
-      - name: No wsrep on 32 bit platforms
-        if: >
-          (contains(matrix.platforms, 'linux/386'))
-        run: |
-          sed -i -e '/WSREP_PROVIDER/d' $GITHUB_WORKSPACE/Dockerfile
       - name: Check Dockerfile with hadolint
         run: |
           docker run -i -v $(pwd):/mnt -w /mnt ghcr.io/hadolint/hadolint:latest hadolint /mnt/Dockerfile
@@ -179,7 +102,6 @@ jobs:
             docker pull -q --platform "$platform" "$image"
             docker run -i "$image" buildbot-worker --version
             docker run -i "$image" dumb-init twistd --pidfile= -y /home/buildbot/buildbot.tac
-            docker run -u root -i "$image" bash -c "touch /tmp/foo && qpress -r /tmp /root/qpress.qp"
           done
       - name: Check for registry credentials
         run: |
