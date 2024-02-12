@@ -38,21 +38,23 @@ deb_setup_mariadb_mirror "$master_branch"
 # setup repository for BB artifacts
 deb_setup_bb_artifacts_mirror
 
-wget -O - "${artifactsURL}/${tarbuildnum}/${parentbuildername}/dists/${VERSION_CODENAME}/main/binary-$(deb_arch)/Packages.gz" | gunzip >Packages
+# Once repo are created with aptly, adapt below:
+# wget -O - "${artifactsURL}/${tarbuildnum}/${parentbuildername}/dists/${VERSION_CODENAME}/main/binary-$(deb_arch)/Packages.gz" | gunzip >Packages
+wget "${artifactsURL}/${tarbuildnum}/${parentbuildername}/debs/Packages"
 
 set -x
 
 # Due to MDEV-14622 and its effect on Spider installation,
 # Spider has to be installed separately after the server
-package_list=$(grep -B 1 'Source: mariadb' Packages | grep 'Package:' | grep -vE 'galera|spider|columnstore' | awk '{print $2}' | xargs)
+package_list=$(grep "^Package:" Packages | grep -vE 'galera|spider|columnstore' | awk '{print $2}' | xargs)
 if grep -qi spider Packages; then
-  spider_package_list=$(grep -B 1 'Source: mariadb' Packages | grep 'Package:' | grep 'spider' | awk '{print $2}' | xargs)
+  spider_package_list=$(grep "^Package:" Packages | grep 'spider' | awk '{print $2}' | xargs)
 fi
 if grep -qi columnstore Packages; then
   if [[ $arch != "amd64" ]] && [[ $arch != "arm64" ]]; then
     bb_log_warn "Due to MCOL-4123, Columnstore won't be installed on $arch"
   else
-    columnstore_package_list=$(grep -B 1 'Source: mariadb' Packages | grep 'Package:' | grep 'columnstore' | awk '{print $2}' | xargs)
+    columnstore_package_list=$(grep "^Package:" Packages | grep 'columnstore' | awk '{print $2}' | xargs)
   fi
 fi
 

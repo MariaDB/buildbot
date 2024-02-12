@@ -186,40 +186,12 @@ def createDebRepo():
             "-exc",
             util.Interpolate(
                 """
-    case $(arch) in
-      "x86_64")
-        arch="amd64"
-      ;;
-      "x86")
-        arch="i386"
-      ;;
-      "aarch64")
-        arch="arm64"
-      ;;
-      "ppc64le")
-        arch="ppc64el"
-      ;;
-      "s390x")
-        arch="s390x"
-      ;;
-    esac
-    . /etc/os-release
-    mkdir -p ../conf/
-    cat << EOF > ../conf/distributions
-Origin: MariaDB
-Label: MariaDB
-Codename: $VERSION_CODENAME
-Architectures: $arch source
-Components: main
-Description: MariaDB Repository
-EOF
-    #//TEMP save debs until reprepro is working (or aptly)
     mkdir ../debs
     find .. -maxdepth 1 -type f | xargs cp -t ../debs
-    cat ../conf/distributions
-    set +e
-    reprepro -b .. --ignore=wrongsourceversion include $VERSION_CODENAME ../*.changes
-    set -e
+    cd ../debs
+    apt-ftparchive packages . >Packages
+    apt-ftparchive sources . >Sources
+    apt-ftparchive release . >Release
 """
             ),
         ],
@@ -247,16 +219,12 @@ def uploadDebArtifacts():
       COMPONENTS="main main/debug"
     fi
     mkdir -p /packages/%(prop:tarbuildnum)s/%(prop:buildername)s
-    cd ..
-    for dir in debs conf db dists pool; do
-      [[ -d $dir ]] && cp -r $dir /packages/%(prop:tarbuildnum)s/%(prop:buildername)s/
-    done
+    cp -r ../debs /packages/%(prop:tarbuildnum)s/%(prop:buildername)s/
     cat << EOF > /packages/%(prop:tarbuildnum)s/%(prop:buildername)s/mariadb.sources
 X-Repolib-Name: MariaDB
 Types: deb
-URIs: $artifacts_url/%(prop:tarbuildnum)s/%(prop:buildername)s/
-Suites: $VERSION_CODENAME
-Components: $COMPONENTS
+URIs: $artifacts_url/%(prop:tarbuildnum)s/%(prop:buildername)s/debs
+Suites: ./
 Trusted: yes
 EOF
     cat /packages/%(prop:tarbuildnum)s/%(prop:buildername)s/mariadb.sources

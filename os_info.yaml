@@ -152,3 +152,11 @@ ubuntu-2310:
     - aarch64
   type: deb
   has_install: False
+ubuntu-2404:
+  version_name: noble
+  arch:
+    - amd64
+    - aarch64
+    - ppc64le
+    - s390x
+  type: deb
