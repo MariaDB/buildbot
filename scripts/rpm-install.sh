@@ -11,6 +11,9 @@ set -e
 # shellcheck disable=SC1091
 . ./bash_lib.sh
 
+# yum/dnf switch
+pkg_cmd=$(rpm_pkg)
+
 # function to be able to run the script manually (see bash_lib.sh)
 manual_run_switch "$1"
 
@@ -36,32 +39,36 @@ bb_print_env
 
 set -x
 
-yum_makecache
+rpm_pkg_makecache
 
-sudo yum search mysql | { grep "^mysql" || true; }
-sudo yum search maria | { grep "^maria" || true; }
-sudo yum search percona | { grep percona || true; }
+sudo "$pkg_cmd" search mysql | { grep "^mysql" || true; }
+sudo "$pkg_cmd" search maria | { grep "^maria" || true; }
+sudo "$pkg_cmd" search percona | { grep percona || true; }
 
 # setup repository for galera dependency
-if wget -q --spider https://rpm.mariadb.org/"$master_branch/$arch"; then
-  galbranch=$master_branch
-else
-  # as long as the galera major version maps this is ok
-  galbranch=10.8
-  if ! wget -q --spider https://rpm.mariadb.org/"$galbranch/$arch"; then
-    bb_log_err "https://rpm.mariadb.org/$galbranch/$arch does not exist"
-    bb_log_err "unable to setup repository for galera"
-    exit 1
-  fi
-fi
-sudo sh -c "echo '[galera]
-name=galera
-baseurl=https://rpm.mariadb.org/$galbranch/$arch
-gpgkey=https://rpm.mariadb.org/RPM-GPG-KEY-MariaDB_v2
-gpgcheck=1' >/etc/yum.repos.d/galera.repo"
+rpm_setup_bb_galera_artifacts_mirror
 
-sudo cat /etc/yum.repos.d/galera.repo
-sudo yum -y --nogpgcheck install rpms/*.rpm
+# setup artifact repository
+rpm_setup_bb_artifacts_mirror
+
+rpm_pkg_makecache
+
+if [[ -f /etc/yum.repos.d/MariaDB.repo ]]; then
+  repo_name_tmp=$(head -n1 /etc/yum.repos.d/MariaDB.repo)
+  # remove brackets
+  repo_name=${repo_name_tmp/\[/}
+  repo_name=${repo_name/\]/}
+else
+  bb_log_err "/etc/yum.repos.d/MariaDB.repo is missing"
+fi
+
+# Install all produced packages. Note that the upgrade test comes with various
+# mode (server/all/deps/columnstore), we might want to add those modes in the
+# future.
+repoquery --disablerepo=* --enablerepo="${repo_name}" -a |
+  cut -d ":" -f1 | sort -u | sed 's/-0//' |
+  xargs sudo "$pkg_cmd" -y install
+
 sh -c 'g=/usr/lib*/galera*/libgalera_smm.so; echo -e "[galera]\nwsrep_provider=$g"' | sudo tee /etc/my.cnf.d/galera.cnf
 case "$systemdCapability" in
   yes)

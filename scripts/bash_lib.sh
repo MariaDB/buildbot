@@ -77,11 +77,6 @@ manual_run_switch() {
       dev_branch=$(grep DEVELOPMENT_BRANCH constants.py | cut -d \" -f2)
       export development_branch="$dev_branch"
     fi
-    # for RPM we have to download artifacts from ci.mariadb.org
-    if command -v rpm >/dev/null; then
-      mkdir rpms
-      wget -r -np -nH --cut-dirs=3 -A "*.rpm" "https://$ARTIFACTS_URL/$tarbuildnum/$parentbuildername/rpms" -P rpms
-    fi
   fi
 }
 
@@ -140,17 +135,26 @@ apt_get_update() {
   fi
 }
 
-yum_makecache() {
+rpm_pkg() {
+  if command -v dnf >/dev/null; then
+    echo dnf
+  elif command -v yum >/dev/null; then
+    echo yum
+  fi
+}
+
+rpm_pkg_makecache() {
+  pkg_cmd=$(rpm_pkg)
   # Try several times, to avoid sporadic "The requested URL returned error: 404"
   made_cache=0
   for i in {1..5}; do
-    sudo rm -rf /var/cache/yum/*
-    sudo yum clean all
+    sudo rm -rf "/var/cache/$pkg_cmd/*"
+    sudo "$pkg_cmd" clean all
     source /etc/os-release
     if [[ $ID == "rhel" ]]; then
       sudo subscription-manager refresh
     fi
-    if sudo yum makecache; then
+    if sudo "$pkg_cmd" makecache; then
       made_cache=1
       break
     else
@@ -218,12 +222,72 @@ deb_setup_mariadb_mirror() {
   set +u
 }
 
+rpm_setup_mariadb_mirror() {
+  # stop if any further variable is undefined
+  set -u
+  [[ -n $1 ]] || {
+    bb_log_err "missing the branch variable"
+    exit 1
+  }
+  branch=$1
+  bb_log_info "setup MariaDB repository for $branch branch"
+  command -v wget >/dev/null || {
+    bb_log_err "wget command not found"
+    exit 1
+  }
+  # 10.2 is EOL and only on archive.mariadb.org
+  if [[ $branch == "10.2" ]]; then
+    mirror="https://archive.mariadb.org/mariadb-10.2/yum"
+  else
+    mirror="https://rpm.mariadb.org/$branch"
+  fi
+  if wget -q --spider "$mirror/$dist_name/$version_name"; then
+    cat <<EOF >/etc/yum.repos.d/mariadb.repo
+[mariadb]
+name=MariaDB
+baseurl=$mirror/$branch/$dist_name/$releasever/$basearch
+gpgkey=https://rpm.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
+  else
+    # the correct way of handling this would be to not even start the check
+    # since we know it will always fail. But apparently, it's not going to
+    # happen soon in BB. Once done though, replace the warning with an error
+    # and use a non-zero exit code.
+    bb_log_warn "rpm_setup_mariadb_mirror: $branch packages for $dist_name $version_name does not exist on https://rpm.mariadb.org/"
+    exit 0
+  fi
+  set +u
+}
+
 deb_setup_bb_artifacts_mirror() {
   # stop if any variable is undefined
   set -u
   bb_log_info "setup buildbot artifact repository"
   sudo wget "$artifactsURL/$tarbuildnum/$parentbuildername/mariadb.sources" -O /etc/apt/sources.list.d/mariadb.sources || {
     bb_log_err "unable to download $artifactsURL/$tarbuildnum/$parentbuildername/mariadb.sources"
+    exit 1
+  }
+  set +u
+}
+
+rpm_setup_bb_artifacts_mirror() {
+  # stop if any variable is undefined
+  set -u
+  bb_log_info "setup buildbot artifact repository"
+  sudo wget "$artifactsURL/$tarbuildnum/$parentbuildername/MariaDB.repo" -O /etc/yum.repos.d/MariaDB.repo || {
+    bb_log_err "unable to download $artifactsURL/$tarbuildnum/$parentbuildername/MariaDB.repo"
+    exit 1
+  }
+  set +u
+}
+
+rpm_setup_bb_galera_artifacts_mirror() {
+  # stop if any variable is undefined
+  set -u
+  bb_log_info "setup buildbot galera artifact repository"
+  sudo wget "$artifactsURL/galera/mariadb-4.x-latest-gal-${parentbuildername/-rpm-autobake/}.repo" -O /etc/yum.repos.d/galera.repo || {
+    bb_log_err "unable to download $artifactsURL/galera/mariadb-4.x-latest-gal-${parentbuildername/-rpm-autobake/}.repo"
     exit 1
   }
   set +u

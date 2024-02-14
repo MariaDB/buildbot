@@ -38,20 +38,7 @@ set -x
 
 yum_makecache
 
-# Check whether a previous version exists
-if [[ $prev_major_version == "10.2" ]]; then
-  mirror="https://archive.mariadb.org/mariadb-10.2/yum"
-else
-  mirror="https://yum.mariadb.org/$prev_major_version"
-fi
-if ! wget "$mirror/$arch/repodata" -O repodata.list; then
-  # the correct way of handling this would be to not even start the check
-  # since we know it will always fail. But apparently, it's not going to
-  # happen soon in BB. Once done though, replace the warning with an error
-  # and use a non-zero exit code.
-  bb_log_warn "could not find the 'repodata' folder for a previous version in MariaDB repo"
-  exit 0
-fi
+rpm_setup_mariadb_mirror
 
 # Define the list of packages to install/upgrade
 case $test_mode in
