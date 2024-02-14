@@ -36,6 +36,9 @@ done
 # supposed to be done directly from artifacts, but maybe it is for dependencies?
 # deb_setup_mariadb_mirror "$master_branch"
 
+# setup galera repository (we need to test mariadb with latest produced galera version)A
+deb_setup_bb_galera_artifacts_mirror
+
 # setup repository for BB artifacts
 deb_setup_bb_artifacts_mirror
 
