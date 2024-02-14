@@ -311,6 +311,17 @@ rpm_setup_bb_galera_artifacts_mirror() {
   set +u
 }
 
+deb_setup_bb_galera_artifacts_mirror() {
+  # stop if any variable is undefined
+  set -u
+  bb_log_info "setup buildbot galera artifact repository"
+  sudo wget "$artifactsURL/galera/mariadb-4.x-latest-gal-${parentbuildername/-deb-autobake/}.sources" -O /etc/apt/sources.list.d/galera.sources || {
+    bb_log_err "unable to download $artifactsURL/galera/mariadb-4.x-latest-gal-${parentbuildername/-deb-autobake/}.sources"
+    exit 1
+  }
+  set +u
+}
+
 deb_arch() {
   case $(arch) in
     "x86_64")
