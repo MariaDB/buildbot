@@ -23,9 +23,6 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
       v=9; \
       # no buildbot-worker any more \
       extra="fmt-devel python3-pip"; \
-      if [ "$(arch)" == "x86_64" ] || [ "$(arch)" == "ppc64le" ]; then \
-         extra="$extra libpmem-devel"; \
-      fi \
       ;; \
     ubi8) \
       v=8; \
