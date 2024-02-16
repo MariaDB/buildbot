@@ -23,17 +23,11 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
       v=9; \
       # no buildbot-worker any more \
       extra="fmt-devel python3-pip"; \
-      if [ "$(arch)" == "x86_64" ] || [ "$(arch)" == "ppc64le" ]; then \
-         extra="$extra libpmem-devel"; \
-      fi \
       ;; \
     ubi8) \
       v=8; \
       # fmt-devel # >= 7.0 needed, epel8 has 6.2.1-1.el8 \
       extra="buildbot-worker"; \
-      if [ "$(arch)" == "x86_64" ]; then \
-         extra="$extra libpmem-devel"; \
-      fi \
       ;; \
     esac \
     && subscription-manager repos --enable "codeready-builder-for-rhel-${v}-$(uname -m)-rpms" \
