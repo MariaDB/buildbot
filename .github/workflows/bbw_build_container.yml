@@ -46,6 +46,13 @@ jobs:
             image: debian:11
             branch: 10.11
             tag: debian11-msan
+            clang_version: 15
+            platforms: linux/amd64
+          - dockerfile: debian.Dockerfile msan.Dockerfile
+            image: debian:11
+            branch: 10.11
+            tag: debian11-msan-clang-16
+            clang_version: 16
             platforms: linux/amd64
           - dockerfile: debian.Dockerfile
             image: debian:sid
@@ -156,6 +163,7 @@ jobs:
               --manifest ${{ env.REPO }}:${{ env.IMG }} \
               -f $GITHUB_WORKSPACE/Dockerfile \
               --build-arg base_image=${{ matrix.image }} \
+              --build-arg CLANG_VERSION=${{ matrix.clang_version }} \
               --build-arg mariadb_branch=${{ matrix.branch }}
           done
           podman images
