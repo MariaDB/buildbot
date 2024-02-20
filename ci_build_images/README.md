@@ -14,6 +14,12 @@ docker build . -t mariadb.org/buildbot/ubuntu:22.04 --build-arg MARIADB_BRANCH=1
 # fedora
 cat fedora.Dockerfile common.Dockerfile >Dockerfile
 docker build . -t mariadb.org/buildbot/fedora:39 --build-arg BASE_IMAGE=fedora:39
+# almalinux9
+cat centos.Dockerfile pip.Dockerfile common.Dockerfile >Dockerfile
+docker build . -t mariadb.org/buildbot/almalinux:9 --build-arg BASE_IMAGE=almalinux:9
+# rockylinux9
+cat centos.Dockerfile pip.Dockerfile common.Dockerfile >Dockerfile
+docker build . -t mariadb.org/buildbot/rockylinux:9 --build-arg BASE_IMAGE=rockylinux:9
 # rhel9
 cat rhel.Dockerfile qpress.Dockerfile buildbot-worker.Dockerfile >Dockerfile
 echo "12345_KEYNAME" >rhel_keyname
