@@ -5,6 +5,7 @@ set -xeuvo pipefail
 cd /code
 [ -d mysql ] || git clone https://github.com/mysqljs/mysql
 cd mysql
+chmod -R go-w .
 git clean -dfx
 git pull --tags
 if [ $# -gt 0 ]
@@ -15,7 +16,7 @@ then
   fi
   cd ../"$1"
   # this is right for tags, not for branches yet
-  git checkout $1
+  git checkout "$1"
 fi
 git checkout -- .
 
