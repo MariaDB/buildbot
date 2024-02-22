@@ -95,7 +95,7 @@ build() {
   buildah bud --tag "${image}" \
     --layers \
     --arch "$@" \
-    --build-arg REPOSITORY="[trusted=yes] https://ci.mariadb.org/$tarbuildnum/${buildername} $bbnet main main/debug\n$galera_repo" \
+    --build-arg REPOSITORY="[trusted=yes] https://ci.mariadb.org/$tarbuildnum/${buildername}/debs ./\n$galera_repo" \
     --build-arg MARIADB_VERSION="1:$mariadb_version+maria~$pkgver" \
     "${annotations[@]}" \
     "mariadb-docker/$master_branch"
