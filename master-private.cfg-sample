@@ -48,6 +48,7 @@ private["worker_pass"]= {
     "shinnok-bbw1-macos":"1234",
     "aix-worker":"1234",
     "bbw1-mac": "1234",
+    "bbw2-mac": "1234",
     "bbw1-windows":"1234",
     "bbw2-windows":"1234",
     "bb-rhel8-docker":"1234",
