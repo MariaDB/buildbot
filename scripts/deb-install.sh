@@ -32,8 +32,9 @@ for cmd in wget gunzip; do
   command -v $cmd >/dev/null || { bb_log_err "$cmd command not found" && exit 1; }
 done
 
-# setup repository
-deb_setup_mariadb_mirror "$master_branch"
+# setup repository //TEMP this should not be needed since installation is
+# supposed to be done directly from artifacts, but maybe it is for dependencies?
+# deb_setup_mariadb_mirror "$master_branch"
 
 # setup repository for BB artifacts
 deb_setup_bb_artifacts_mirror
