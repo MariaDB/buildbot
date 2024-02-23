@@ -81,6 +81,8 @@ def createWorker(
         b_name = "ppc64le-bbw"
     elif worker_name_prefix.startswith("amd"):
         b_name = "x64-bbw"
+    elif worker_name_prefix.startswith("apexis"):
+        b_name = "x64-bbw"
     else:
         b_name = worker_name_prefix
     base_name = b_name + "-docker" + worker_type
