@@ -27,16 +27,6 @@ done
 
 bb_print_env
 
-# # //TEMP this should be done in the VM preparation
-# case "$master_branch" in
-#   *mdev10416*)
-#     sudo cat /etc/sysconfig/selinux | grep SELINUX || true
-#     sudo sh -c \"PATH=$PATH:/usr/sbin getenforce || true\"
-#     sudo sh -c \"PATH=$PATH:/usr/sbin setenforce Enforcing || true\"
-#     sudo sh -c \"PATH=$PATH:/usr/sbin getenforce || true\"
-#     ;;
-# esac
-
 set -x
 
 rpm_pkg_makecache
