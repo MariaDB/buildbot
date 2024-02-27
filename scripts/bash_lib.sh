@@ -169,6 +169,21 @@ rpm_pkg_makecache() {
   fi
 }
 
+rpm_repoquery() {
+  if [[ -f /etc/yum.repos.d/MariaDB.repo ]]; then
+    repo_name_tmp=$(grep -v "\#" /etc/yum.repos.d/MariaDB.repo | head -n1)
+    # remove brackets
+    repo_name=${repo_name_tmp/\[/}
+    repo_name=${repo_name/\]/}
+  else
+    bb_log_err "/etc/yum.repos.d/MariaDB.repo is missing"
+  fi
+
+  # return full package list from repository
+  repoquery --disablerepo=* --enablerepo="${repo_name}" -a |
+    cut -d ":" -f1 | sort -u | sed 's/-0//'
+}
+
 wait_for_mariadb_upgrade() {
   res=1
   for i in {1..20}; do
@@ -241,11 +256,13 @@ rpm_setup_mariadb_mirror() {
   else
     mirror="https://rpm.mariadb.org/$branch"
   fi
-  if wget -q --spider "$mirror/$dist_name/$version_name"; then
-    cat <<EOF >/etc/yum.repos.d/mariadb.repo
+  if wget -q --spider "$mirror/$arch"; then
+    cat <<EOF | sudo tee /etc/yum.repos.d/MariaDB.repo
 [mariadb]
 name=MariaDB
-baseurl=$mirror/$branch/$dist_name/$releasever/$basearch
+baseurl=$mirror/$arch
+# //TEMP following is probably not needed for all OS
+module_hotfixes = 1
 gpgkey=https://rpm.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
