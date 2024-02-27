@@ -43,21 +43,11 @@ rpm_setup_bb_artifacts_mirror
 
 rpm_pkg_makecache
 
-if [[ -f /etc/yum.repos.d/MariaDB.repo ]]; then
-  repo_name_tmp=$(head -n1 /etc/yum.repos.d/MariaDB.repo)
-  # remove brackets
-  repo_name=${repo_name_tmp/\[/}
-  repo_name=${repo_name/\]/}
-else
-  bb_log_err "/etc/yum.repos.d/MariaDB.repo is missing"
-fi
+# install all packages
+pkg_list=$(rpm_repoquery) ||
+  bb_log_err "Unable to retrieve package list from repository"
 
-# Install all produced packages. Note that the upgrade test comes with various
-# mode (server/all/deps/columnstore), we might want to add those modes in the
-# future.
-repoquery --disablerepo=* --enablerepo="${repo_name}" -a |
-  cut -d ":" -f1 | sort -u | sed 's/-0//' |
-  xargs sudo "$pkg_cmd" -y install
+sudo "$pkg_cmd" -y install "$pkg_list"
 
 sh -c 'g=/usr/lib*/galera*/libgalera_smm.so; echo -e "[galera]\nwsrep_provider=$g"' | sudo tee /etc/my.cnf.d/galera.cnf
 case "$systemdCapability" in
