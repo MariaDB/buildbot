@@ -3,9 +3,9 @@
 # Provides a base RHEL-8/9 image with latest buildbot worker installed
 # and MariaDB build dependencies
 
-ARG base_image
-FROM registry.access.redhat.com/$base_image
-ARG base_image
+ARG BASE_IMAGE
+FROM registry.access.redhat.com/$BASE_IMAGE
+ARG BASE_IMAGE
 LABEL maintainer="MariaDB Buildbot maintainers"
 
 # Install updates and required packages
@@ -18,7 +18,7 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     && subscription-manager register \
          --org="$(cat /run/secrets/rhel_orgid)" \
          --activationkey="$(cat /run/secrets/rhel_keyname)" \
-    && case $base_image in \
+    && case $BASE_IMAGE in \
     ubi9) \
       v=9; \
       # no buildbot-worker any more \

@@ -162,9 +162,9 @@ jobs:
               --platform $arch \
               --manifest ${{ env.REPO }}:${{ env.IMG }} \
               -f $GITHUB_WORKSPACE/Dockerfile \
-              --build-arg base_image=${{ matrix.image }} \
+              --build-arg BASE_IMAGE=${{ matrix.image }} \
               --build-arg CLANG_VERSION=${{ matrix.clang_version }} \
-              --build-arg mariadb_branch=${{ matrix.branch }}
+              --build-arg MARIADB_BRANCH=${{ matrix.branch }}
           done
           podman images
       - name: Push images to local registry
