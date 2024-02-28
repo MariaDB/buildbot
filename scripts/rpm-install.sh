@@ -66,23 +66,15 @@ case "$systemdCapability" in
     ;;
 esac
 
-if [ "${master_branch}" != "10.3" ]; then
-  bb_log_info "uninstallation of Cracklib plugin may fail if it wasn't installed, it's quite all right"
-  if sudo mysql -e "uninstall soname 'cracklib_password_check.so'"; then
-    # shellcheck disable=SC2034
-    reinstall_cracklib_plugin="YES"
-  fi
-  sudo mysql -e "set password=''"
-fi
-mysql -uroot -e 'drop database if exists test; create database test; use test; create table t(a int primary key) engine=innodb; insert into t values (1); select * from t; drop table t;'
+sudo mariadb -e 'drop database if exists test; create database test; use test; create table t(a int primary key) engine=innodb; insert into t values (1); select * from t; drop table t;'
 if find rpms/*.rpm | grep -qi columnstore; then
-  mysql --verbose -uroot -e "create database cs; use cs; create table cs.t_columnstore (a int, b char(8)); insert into cs.t_columnstore select seq, concat('val',seq) from seq_1_to_10; select * from cs.t_columnstore"
+  sudo mariadb --verbose -e "create database cs; use cs; create table cs.t_columnstore (a int, b char(8)); insert into cs.t_columnstore select seq, concat('val',seq) from seq_1_to_10; select * from cs.t_columnstore"
   sudo systemctl restart mariadb
-  mysql --verbose -uroot -e "select * from cs.t_columnstore; update cs.t_columnstore set b = 'updated'"
+  sudo mariadb --verbose -e "select * from cs.t_columnstore; update cs.t_columnstore set b = 'updated'"
   sudo systemctl restart mariadb-columnstore
-  mysql --verbose -uroot -e "update cs.t_columnstore set a = a + 10; select * from cs.t_columnstore"
+  sudo mariadb --verbose -e "update cs.t_columnstore set a = a + 10; select * from cs.t_columnstore"
 fi
-mysql -uroot -e 'show global status like "wsrep%%"'
+sudo mariadb -e 'show global status like "wsrep%%"'
 bb_log_info "test for MDEV-18563, MDEV-18526"
 set +e
 control_mariadb_server stop
@@ -90,13 +82,13 @@ control_mariadb_server stop
 sleep 1
 sudo pkill -9 mysqld
 for p in /bin /sbin /usr/bin /usr/sbin /usr/local/bin /usr/local/sbin; do
-  if test -x $p/mysql_install_db; then
-    sudo $p/mysql_install_db --no-defaults --user=mysql --plugin-maturity=unknown
+  if test -x $p/mariadb-install-db; then
+    sudo $p/mariadb-install-db --no-defaults --user=mysql --plugin-maturity=unknown
   else
-    bb_log_warn "$p/mysql_install_db does not exist"
+    bb_log_warn "$p/mariadb-install-db does not exist"
   fi
 done
-sudo mysql_install_db --no-defaults --user=mysql --plugin-maturity=unknown
+sudo mariadb-install-db --no-defaults --user=mysql --plugin-maturity=unknown
 set +e
 
 bb_log_ok "all done"
