@@ -59,6 +59,7 @@ manual_run_switch() {
         BRANCH=dev
       else
         BB_URL="buildbot.mariadb.org"
+        # shellcheck disable=SC2034
         ARTIFACTS_URL="ci.mariadb.org"
         BRANCH=main
       fi
