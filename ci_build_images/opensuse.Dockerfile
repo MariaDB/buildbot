@@ -4,8 +4,8 @@
 # Provides a base OpenSUSE image with latest buildbot worker installed
 # and MariaDB build dependencies
 
-ARG base_image
-FROM "$base_image"
+ARG BASE_IMAGE
+FROM "$BASE_IMAGE"
 LABEL maintainer="MariaDB Buildbot maintainers"
 
 # Install updates and required packages
