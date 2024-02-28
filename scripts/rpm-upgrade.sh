@@ -11,10 +11,6 @@ set -e
 # shellcheck disable=SC1091
 . ./bash_lib.sh
 
-# yum/dnf switch
-# //TEMP implement zipper (SLES)
-pkg_cmd=$(rpm_pkg)
-
 # function to be able to run the script manually (see bash_lib.sh)
 manual_run_switch "$1"
 
@@ -44,6 +40,7 @@ rpm_pkg_makecache
 
 rpm_setup_mariadb_mirror "$prev_major_version"
 
+# Define the list of packages to install/upgrade
 case $test_mode in
   all)
     # retrieve full package list from repo
@@ -269,14 +266,15 @@ if [[ $test_type == "major" ]]; then
 fi
 
 # Make sure that the new server is running
-if sudo mysql -e "select @@version" | grep "$old_version"; then
+if sudo mariadb -e "select @@version" | grep "$old_version"; then
   bb_log_err "the server was not upgraded or was not restarted after upgrade"
   exit 1
 fi
 
-# Run mysql_upgrade for non-GA branches (minor upgrades in GA branches shouldn't need it)
+# Run mariadb-upgrade for non-GA branches (minor upgrades in GA branches
+# shouldn't need it)
 if [[ $major_version == "$development_branch" ]] || [[ $test_type == "major" ]]; then
-  sudo mysql_upgrade
+  sudo mariadb-upgrade
 fi
 set +e
 

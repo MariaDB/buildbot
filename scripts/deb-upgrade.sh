@@ -226,11 +226,11 @@ wait_for_mariadb_upgrade
 
 # run mysql_upgrade for non GA branches
 if [[ $major_version == "$development_branch" ]]; then
-  sudo mysql_upgrade
+  sudo mariadb-upgrade
 fi
 
 # Make sure that the new server is running
-if sudo mysql -e "select @@version" | grep "$(cat /tmp/version.old)"; then
+if sudo mariadb -e "select @@version" | grep "$(cat /tmp/version.old)"; then
   bb_log_err "the server was not upgraded or was not restarted after upgrade"
   exit 1
 fi
