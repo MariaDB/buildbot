@@ -106,8 +106,8 @@ jobs:
               --platform $arch \
               --manifest ${{ env.REPO }}:${{ env.IMG }} \
               -f $GITHUB_WORKSPACE/Dockerfile \
-              --build-arg base_image=${{ matrix.image }} \
-              --build-arg mariadb_branch=${{ matrix.branch }}
+              --build-arg BASE_IMAGE=${{ matrix.image }} \
+              --build-arg MARIADB_BRANCH=${{ matrix.branch }}
           done
           rm -f rhel_orgid rhel_keyname
           podman images

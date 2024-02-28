@@ -3,9 +3,9 @@
 # Provides a base Debian/Ubuntu image with latest buildbot worker installed
 # and MariaDB build dependencies
 
-ARG base_image
-FROM "$base_image"
-ARG mariadb_branch=11.1
+ARG BASE_IMAGE
+FROM "$BASE_IMAGE"
+ARG MARIADB_BRANCH=11.1
 LABEL maintainer="MariaDB Buildbot maintainers"
 ENV CARGO_NET_GIT_FETCH_WITH_CLI=true
 
@@ -38,7 +38,7 @@ RUN . /etc/os-release; \
     && mkdir debian \
     && mv control debian/control \
     && touch debian/rules VERSION debian/not-installed \
-    && curl -skO https://raw.githubusercontent.com/MariaDB/server/$mariadb_branch/debian/autobake-deb.sh \
+    && curl -skO https://raw.githubusercontent.com/MariaDB/server/$MARIADB_BRANCH/debian/autobake-deb.sh \
     && chmod a+x autobake-deb.sh \
     && AUTOBAKE_PREP_CONTROL_RULES_ONLY=1 ./autobake-deb.sh \
     && mk-build-deps -r -i debian/control \

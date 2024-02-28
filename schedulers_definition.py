@@ -38,4 +38,6 @@ def getSchedulers():
 
     l.append(schedulers.Triggerable(name="s_wordpress", builderNames=getWordpressNames))
 
+    l.append(schedulers.Triggerable(name="s_release_prep", builderNames=["release-prep"]))
+
     return l

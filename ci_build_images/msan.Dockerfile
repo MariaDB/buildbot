@@ -1,10 +1,11 @@
-
 # msan.Dockerfile
 # this is to create images with MSAN for BB workers
+ARG CLANG_VERSION=15
+
 WORKDIR /tmp/msan
 
-ENV CC=clang-15
-ENV CXX=clang++-15
+ENV CC=clang-${CLANG_VERSION}
+ENV CXX=clang++-${CLANG_VERSION}
 ENV GDB_PATH=/msan-libs/bin/gdb
 ENV MSAN_LIBDIR=/msan-libs
 ENV MSAN_SYMBOLIZER_PATH=/msan-libs/bin/llvm-symbolizer-msan
@@ -13,29 +14,29 @@ ENV PATH=$MSAN_LIBDIR/bin:$PATH
 
 RUN mkdir $MSAN_LIBDIR \
     && mkdir $MSAN_LIBDIR/bin \
-    && printf '#!/bin/sh\nunset LD_LIBRARY_PATH\nexec llvm-symbolizer-15 "$@"' > $MSAN_SYMBOLIZER_PATH \
+    && printf "#!/bin/sh\nunset LD_LIBRARY_PATH\nexec llvm-symbolizer-%s \"\$@\"" "${CLANG_VERSION}" > $MSAN_SYMBOLIZER_PATH \
     && printf '#!/bin/sh\nunset LD_LIBRARY_PATH\nexec /usr/bin/gdb "$@"' > $GDB_PATH \
     && curl -sL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor -o /usr/share/keyrings/llvm-snapshot.gpg \
     && echo "deb [signed-by=/usr/share/keyrings/llvm-snapshot.gpg] \
-    http://apt.llvm.org/bullseye/ llvm-toolchain-bullseye-15 main" > /etc/apt/sources.list.d/llvm-toolchain.list \
+    http://apt.llvm.org/bullseye/ llvm-toolchain-bullseye-${CLANG_VERSION} main" > /etc/apt/sources.list.d/llvm-toolchain.list \
     && echo "deb-src [signed-by=/usr/share/keyrings/llvm-snapshot.gpg] \
-    http://apt.llvm.org/bullseye/ llvm-toolchain-bullseye-15 main" >> /etc/apt/sources.list.d/llvm-toolchain.list \
+    http://apt.llvm.org/bullseye/ llvm-toolchain-bullseye-${CLANG_VERSION} main" >> /etc/apt/sources.list.d/llvm-toolchain.list \
     && apt-get update \
     && apt-get -y install --no-install-recommends \
-       clang-15 \
-       libclang-rt-15-dev \
-       libc++abi-15-dev \
-       libc++-15-dev \
-       llvm-15 \
-    && apt-get source libc++-15-dev \
-    && mv llvm-toolchain-15-15*/* . \
+       clang-${CLANG_VERSION} \
+       libclang-rt-${CLANG_VERSION}-dev \
+       libc++abi-${CLANG_VERSION}-dev \
+       libc++-${CLANG_VERSION}-dev \
+       llvm-${CLANG_VERSION} \
+    && apt-get source libc++-${CLANG_VERSION}-dev \
+    && mv llvm-toolchain-${CLANG_VERSION}-${CLANG_VERSION}*/* . \
     && mkdir build \
     && cmake \
         -S runtimes \
         -B build \
         -DCMAKE_BUILD_TYPE=Release \
-        -DCMAKE_C_COMPILER=clang-15 \
-        -DCMAKE_CXX_COMPILER=clang++-15 \
+        -DCMAKE_C_COMPILER=clang-${CLANG_VERSION} \
+        -DCMAKE_CXX_COMPILER=clang++-${CLANG_VERSION} \
         -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi" \
         -DLLVM_USE_SANITIZER=MemoryWithOrigins \
     && make -C build -j "$(nproc)" \
