@@ -44,37 +44,14 @@ rpm_pkg_makecache
 
 rpm_setup_mariadb_mirror "$prev_major_version"
 
-# retrieve full package list from repo
-pkg_list=$(rpm_repoquery) ||
-  bb_log_err "Unable to retrieve package list from repository"
-
 case $test_mode in
-  all | deps | columnstore)
-    if [[ $test_mode == "all" ]]; then
-      if echo "$pkg_list" | grep -qi columnstore; then
-        bb_log_warn "due to MCOL-4120 and other issues, Columnstore upgrade will be tested separately"
-      fi
-      package_list=$(echo "$pkg_list" | grep MariaDB |
-        grep -viE 'galera|columnstore' | sed -e 's/<name>//' |
-        sed -e 's/<\/name>//' | sort -u | xargs)
-    elif [[ $test_mode == "deps" ]]; then
-      package_list=$(echo "$pkg_list" |
-        grep -iE 'MariaDB-server|MariaDB-test|MariaDB-client|MariaDB-common|MariaDB-compat' |
-        sed -e 's/<name>//' | sed -e 's/<\/name>//' | sort -u | xargs)
-    elif [[ $test_mode == "columnstore" ]]; then
-      if ! echo "$pkg_list" | grep -q columnstore; then
-        bb_log_warn "columnstore was not found in the released packages, the test will not be run"
-        exit
-      fi
-      package_list="MariaDB-server MariaDB-columnstore-engine"
-    fi
-
-    if [[ $arch == ppc* ]]; then
-      package_list=$(echo "$pkg_list" | xargs -n1 | sed -e 's/MariaDB-compat//gi' | xargs)
-    fi
+  all)
+    # retrieve full package list from repo
+    pkg_list=$(rpm_repoquery) ||
+      bb_log_err "Unable to retrieve package list from repository"
     ;;
   server)
-    package_list="MariaDB-server MariaDB-client"
+    pkg_list="MariaDB-server MariaDB-client"
     ;;
   *)
     bb_log_err "unknown test mode: $test_mode"
@@ -82,7 +59,41 @@ case $test_mode in
     ;;
 esac
 
-bb_log_info "Package_list: $package_list"
+# case $test_mode in
+#   all | deps | columnstore)
+#     if [[ $test_mode == "all" ]]; then
+#       if echo "$pkg_list" | grep -qi columnstore; then
+#         bb_log_warn "due to MCOL-4120 and other issues, Columnstore upgrade will be tested separately"
+#       fi
+#       package_list=$(echo "$pkg_list" | grep MariaDB |
+#         grep -viE 'galera|columnstore' | sed -e 's/<name>//' |
+#         sed -e 's/<\/name>//' | sort -u | xargs)
+#     elif [[ $test_mode == "deps" ]]; then
+#       package_list=$(echo "$pkg_list" |
+#         grep -iE 'MariaDB-server|MariaDB-test|MariaDB-client|MariaDB-common|MariaDB-compat' |
+#         sed -e 's/<name>//' | sed -e 's/<\/name>//' | sort -u | xargs)
+#     elif [[ $test_mode == "columnstore" ]]; then
+#       if ! echo "$pkg_list" | grep -q columnstore; then
+#         bb_log_warn "columnstore was not found in the released packages, the test will not be run"
+#         exit
+#       fi
+#       package_list="MariaDB-server MariaDB-columnstore-engine"
+#     fi
+
+#     if [[ $arch == ppc* ]]; then
+#       package_list=$(echo "$pkg_list" | xargs -n1 | sed -e 's/MariaDB-compat//gi' | xargs)
+#     fi
+#     ;;
+#   server)
+#     package_list="MariaDB-server MariaDB-client"
+#     ;;
+#   *)
+#     bb_log_err "unknown test mode: $test_mode"
+#     exit 1
+#     ;;
+# esac
+
+bb_log_info "Package_list: $pkg_list"
 
 # # //TEMP this needs to be implemented once we have SLES VM in new BB
 # # Prepare yum/zypper configuration for installation of the last release
@@ -141,7 +152,7 @@ bb_log_info "Package_list: $package_list"
 sudo "$pkg_cmd" clean all
 
 # Install previous release
-echo "$package_list" | xargs sudo "$pkg_cmd" -y install ||
+echo "$pkg_list" | xargs sudo "$pkg_cmd" -y install ||
   bb_log_err "installation of a previous release failed, see the output above"
 #fi
 
@@ -232,7 +243,7 @@ fi
 # gpgcheck=1' > $repo_location/galera.repo"
 # fi
 rpm_setup_bb_artifacts_mirror
-echo "$package_list" | xargs sudo "$pkg_cmd" -y upgrade
+echo "$pkg_list" | xargs sudo "$pkg_cmd" -y upgrade
 # set +e
 
 # Check that no old packages have left after upgrade
