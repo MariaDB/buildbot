@@ -251,22 +251,11 @@ rpm_setup_mariadb_mirror() {
     bb_log_err "wget command not found"
     exit 1
   }
-  # 10.2 is EOL and only on archive.mariadb.org
-  if [[ $branch == "10.2" ]]; then
-    mirror="https://archive.mariadb.org/mariadb-10.2/yum"
-  else
-    mirror="https://rpm.mariadb.org/$branch"
-  fi
-  if wget -q --spider "$mirror/$arch"; then
-    cat <<EOF | sudo tee /etc/yum.repos.d/MariaDB.repo
-[mariadb]
-name=MariaDB
-baseurl=$mirror/$arch
-# //TEMP following is probably not needed for all OS
-module_hotfixes = 1
-gpgkey=https://rpm.mariadb.org/RPM-GPG-KEY-MariaDB
-gpgcheck=1
-EOF
+  #//TEMP it's probably better to install the last stable release here...?
+  if wget -q --spider "https://rpm.mariadb.org/$branch/$arch"; then
+    baseurl="https://rpm.mariadb.org/$branch/$arch"
+  elif wget -q --spider "https://archive.mariadb.org/mariadb-$branch/$arch"; then
+    baseurl="https://archive.mariadb.org/mariadb-$branch/$arch"
   else
     # the correct way of handling this would be to not even start the check
     # since we know it will always fail. But apparently, it's not going to
@@ -275,6 +264,15 @@ EOF
     bb_log_warn "rpm_setup_mariadb_mirror: $branch packages for $dist_name $version_name does not exist on https://rpm.mariadb.org/"
     exit 0
   fi
+  cat <<EOF | sudo tee /etc/yum.repos.d/MariaDB.repo
+[mariadb]
+name=MariaDB
+baseurl=$baseurl
+# //TEMP following is probably not needed for all OS
+module_hotfixes = 1
+gpgkey=https://rpm.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
   set +u
 }
 
