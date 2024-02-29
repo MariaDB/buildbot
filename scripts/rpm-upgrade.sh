@@ -48,13 +48,13 @@ case $test_mode in
   all)
     # retrieve full package list from repo
     pkg_list=$(rpm_repoquery) ||
-      bb_log_err "Unable to retrieve package list from repository"
+      bb_log_err "unable to retrieve package list from repository"
     ;;
   server)
     pkg_list="MariaDB-server MariaDB-client"
     ;;
   *)
-    bb_log_err "unknown test mode: $test_mode"
+    bb_log_err "unknown test mode ($test_mode)"
     exit 1
     ;;
 esac
