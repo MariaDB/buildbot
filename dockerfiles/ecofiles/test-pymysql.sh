@@ -16,7 +16,7 @@ then
   fi
   cd ../"$1"
   # this is right for tags, not for branches yet
-  git checkout $1
+  git checkout "$1"
 
   /usr/local/mariadb/bin/mysql --comments -u root <<EOF
   SELECT c INTO @install_unix FROM (SELECT 'INSTALL SONAME "auth_socket"' AS c FROM DUAL WHERE NOT EXISTS (select 1 from information_schema.plugins where
@@ -48,7 +48,7 @@ EOF
 
   if [ -f tests/test_mariadb_auth.py ]
   then
-    $(/usr/local/mariadb/bin/mysql -u root  --skip-column-names  -Be "SELECT IF(LEFT(VERSION(),4)!='10.2', 'pytest -v tests/test_mariadb_auth.py',':')")
+    pytest -v tests/test_mariadb_auth.py pymysql
   fi
 
 else
@@ -61,6 +61,6 @@ else
   export USER=buildbot
 
   # test_auth is MySQL sha256password tests
-  pytest -v -k 'not test_auth'
+  pytest -v -k 'not test_auth' pymysql
 
 fi
