@@ -113,13 +113,27 @@ echo "BUILD: $opt"
 builddir="/build/${branch}-${opt}"
 mkdir -p "$builddir"
 cd "$builddir"
+
+configure()
+{
+  "$codedir"/configure --enable-debug \
+                 "${buildopts[$opt]}" "$@" \
+                 --with-mysql-sock=/tmp/mysql.sock || cat config.log
+}
+
 if [ "$codedir"/configure -nt config.log ]
 then
-  "$codedir"/configure --enable-debug \
-                 ${buildopts[$opt]} $@ \
-                 --with-mysql-sock=/tmp/mysql.sock || cat config.log
+  configure "$@"
 fi
-make -j $(nproc)
+make -j "$(nproc)"
+# Looking for error make: *** No rule to make target '/code/master/Zend/zend_rc_debug.h', needed by 'ext/opcache/ZendAccelerator.lo'.  Stop.
+# This can occur during some dependency changes not fully undertood by make. Clear it out and do a full rebuild.
+if (( $? == 2 )); then
+  echo clear and retry
+  rm -rf -- *
+  configure "$@"
+  make -j "$(nproc)"
+fi
 
 echo
 echo Testing...
