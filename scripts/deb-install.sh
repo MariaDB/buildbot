@@ -99,17 +99,8 @@ if [[ -n $spider_package_list ]]; then
   sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 apt-get install -y $spider_package_list"
 fi
 
-# Unix socket (after 10.3)
-if [ "${master_branch}" != 10.3 ]; then
-  sudo mysql -e "set password=password('rootpass')"
-else
-  # Even without unix_socket, on some of VMs the password might be not
-  # pre-created as expected. This command should normally fail.
-  sudo mysql -uroot -e "set password = password('rootpass')" >/dev/null 2>&1
-fi
-
-mysql --verbose -uroot -prootpass -e "create database test; use test; create table t(a int primary key) engine=innodb; insert into t values (1); select * from t; drop table t; drop database test; create user galera identified by 'gal3ra123'; grant all on *.* to galera;"
-mysql -uroot -prootpass -e "select @@version"
+sudo mysql --verbose -e "create database test; use test; create table t(a int primary key) engine=innodb; insert into t values (1); select * from t; drop table t; drop database test; create user galera identified by 'gal3ra123'; grant all on *.* to galera;"
+sudo mysql -e "select @@version"
 bb_log_info "test for MDEV-18563, MDEV-18526"
 set +e
 

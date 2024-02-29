@@ -269,14 +269,14 @@ if [[ $test_type == "major" ]]; then
 fi
 
 # Make sure that the new server is running
-if mysql -uroot -prootpass -e "select @@version" | grep "$old_version"; then
+if sudo mysql -e "select @@version" | grep "$old_version"; then
   bb_log_err "the server was not upgraded or was not restarted after upgrade"
   exit 1
 fi
 
 # Run mysql_upgrade for non-GA branches (minor upgrades in GA branches shouldn't need it)
 if [[ $major_version == "$development_branch" ]] || [[ $test_type == "major" ]]; then
-  sudo -u mysql mysql_upgrade -uroot -prootpass
+  sudo mysql_upgrade
 fi
 set +e
 

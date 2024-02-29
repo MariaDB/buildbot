@@ -377,27 +377,19 @@ upgrade_test_type() {
 }
 
 check_mariadb_server_and_create_structures() {
-  if [ "$prev_major_version" != 10.3 ]; then
-    # 10.4+ uses unix_socket by default
-    sudo mysql -e "set password=password('rootpass')"
-  else
-    # Even without unix_socket, on some of VMs the password might be not pre-created as expected. This command should normally fail.
-    mysql -uroot -e "set password = password('rootpass')" >>/dev/null 2>&1
-  fi
-
   # All the commands below should succeed
   set -e
-  mysql -uroot -prootpass -e "CREATE DATABASE db"
-  mysql -uroot -prootpass -e "CREATE TABLE db.t_innodb(a1 SERIAL, c1 CHAR(8)) ENGINE=InnoDB; INSERT INTO db.t_innodb VALUES (1,'foo'),(2,'bar')"
-  mysql -uroot -prootpass -e "CREATE TABLE db.t_myisam(a2 SERIAL, c2 CHAR(8)) ENGINE=MyISAM; INSERT INTO db.t_myisam VALUES (1,'foo'),(2,'bar')"
-  mysql -uroot -prootpass -e "CREATE TABLE db.t_aria(a3 SERIAL, c3 CHAR(8)) ENGINE=Aria; INSERT INTO db.t_aria VALUES (1,'foo'),(2,'bar')"
-  mysql -uroot -prootpass -e "CREATE TABLE db.t_memory(a4 SERIAL, c4 CHAR(8)) ENGINE=MEMORY; INSERT INTO db.t_memory VALUES (1,'foo'),(2,'bar')"
-  mysql -uroot -prootpass -e "CREATE ALGORITHM=MERGE VIEW db.v_merge AS SELECT * FROM db.t_innodb, db.t_myisam, db.t_aria"
-  mysql -uroot -prootpass -e "CREATE ALGORITHM=TEMPTABLE VIEW db.v_temptable AS SELECT * FROM db.t_innodb, db.t_myisam, db.t_aria"
-  mysql -uroot -prootpass -e "CREATE PROCEDURE db.p() SELECT * FROM db.v_merge"
-  mysql -uroot -prootpass -e "CREATE FUNCTION db.f() RETURNS INT DETERMINISTIC RETURN 1"
+  sudo mysql -e "CREATE DATABASE db"
+  sudo mysql -e "CREATE TABLE db.t_innodb(a1 SERIAL, c1 CHAR(8)) ENGINE=InnoDB; INSERT INTO db.t_innodb VALUES (1,'foo'),(2,'bar')"
+  sudo mysql -e "CREATE TABLE db.t_myisam(a2 SERIAL, c2 CHAR(8)) ENGINE=MyISAM; INSERT INTO db.t_myisam VALUES (1,'foo'),(2,'bar')"
+  sudo mysql -e "CREATE TABLE db.t_aria(a3 SERIAL, c3 CHAR(8)) ENGINE=Aria; INSERT INTO db.t_aria VALUES (1,'foo'),(2,'bar')"
+  sudo mysql -e "CREATE TABLE db.t_memory(a4 SERIAL, c4 CHAR(8)) ENGINE=MEMORY; INSERT INTO db.t_memory VALUES (1,'foo'),(2,'bar')"
+  sudo mysql -e "CREATE ALGORITHM=MERGE VIEW db.v_merge AS SELECT * FROM db.t_innodb, db.t_myisam, db.t_aria"
+  sudo mysql -e "CREATE ALGORITHM=TEMPTABLE VIEW db.v_temptable AS SELECT * FROM db.t_innodb, db.t_myisam, db.t_aria"
+  sudo mysql -e "CREATE PROCEDURE db.p() SELECT * FROM db.v_merge"
+  sudo mysql -e "CREATE FUNCTION db.f() RETURNS INT DETERMINISTIC RETURN 1"
   if [[ $test_mode == "columnstore" ]]; then
-    if ! mysql -uroot -prootpass -e "CREATE TABLE db.t_columnstore(a INT, c VARCHAR(8)) ENGINE=ColumnStore; SHOW CREATE TABLE db.t_columnstore; INSERT INTO db.t_columnstore VALUES (1,'foo'),(2,'bar')"; then
+    if ! mysql -e "CREATE TABLE db.t_columnstore(a INT, c VARCHAR(8)) ENGINE=ColumnStore; SHOW CREATE TABLE db.t_columnstore; INSERT INTO db.t_columnstore VALUES (1,'foo'),(2,'bar')"; then
       get_columnstore_logs
       exit 1
     fi
@@ -407,24 +399,24 @@ check_mariadb_server_and_create_structures() {
 
 check_mariadb_server_and_verify_structures() {
   # Print "have_xx" capabilitites for the new server
-  mysql -uroot -prootpass -e "select 'Stat' t, variable_name name, variable_value val from information_schema.global_status where variable_name like '%have%' union select 'Vars' t, variable_name name, variable_value val from information_schema.global_variables where variable_name like '%have%' order by t, name"
+  mysql -e "select 'Stat' t, variable_name name, variable_value val from information_schema.global_status where variable_name like '%have%' union select 'Vars' t, variable_name name, variable_value val from information_schema.global_variables where variable_name like '%have%' order by t, name"
   # All the commands below should succeed
   set -e
-  mysql -uroot -prootpass -e "select @@version, @@version_comment"
-  mysql -uroot -prootpass -e "SHOW TABLES IN db"
-  mysql -uroot -prootpass -e "SELECT * FROM db.t_innodb; INSERT INTO db.t_innodb VALUES (3,'foo'),(4,'bar')"
-  mysql -uroot -prootpass -e "SELECT * FROM db.t_myisam; INSERT INTO db.t_myisam VALUES (3,'foo'),(4,'bar')"
-  mysql -uroot -prootpass -e "SELECT * FROM db.t_aria; INSERT INTO db.t_aria VALUES (3,'foo'),(4,'bar')"
+  sudo mysql -e "select @@version, @@version_comment"
+  sudo mysql -e "SHOW TABLES IN db"
+  sudo mysql -e "SELECT * FROM db.t_innodb; INSERT INTO db.t_innodb VALUES (3,'foo'),(4,'bar')"
+  sudo mysql -e "SELECT * FROM db.t_myisam; INSERT INTO db.t_myisam VALUES (3,'foo'),(4,'bar')"
+  sudo mysql -e "SELECT * FROM db.t_aria; INSERT INTO db.t_aria VALUES (3,'foo'),(4,'bar')"
   bb_log_info "If the next INSERT fails with a duplicate key error,"
   bb_log_info "it is likely because the server was not upgraded or restarted after upgrade"
-  mysql -uroot -prootpass -e "SELECT * FROM db.t_memory; INSERT INTO db.t_memory VALUES (1,'foo'),(2,'bar')"
-  mysql -uroot -prootpass -e "SELECT COUNT(*) FROM db.v_merge"
-  mysql -uroot -prootpass -e "SELECT COUNT(*) FROM db.v_temptable"
-  mysql -uroot -prootpass -e "CALL db.p()"
-  mysql -uroot -prootpass -e "SELECT db.f()"
+  sudo mysql -e "SELECT * FROM db.t_memory; INSERT INTO db.t_memory VALUES (1,'foo'),(2,'bar')"
+  sudo mysql -e "SELECT COUNT(*) FROM db.v_merge"
+  sudo mysql -e "SELECT COUNT(*) FROM db.v_temptable"
+  sudo mysql -e "CALL db.p()"
+  sudo mysql -e "SELECT db.f()"
 
   if [[ $test_mode == "columnstore" ]]; then
-    if ! mysql -uroot -prootpass -e "SELECT * FROM db.t_columnstore; INSERT INTO db.t_columnstore VALUES (3,'foo'),(4,'bar')"; then
+    if ! mysql -e "SELECT * FROM db.t_columnstore; INSERT INTO db.t_columnstore VALUES (3,'foo'),(4,'bar')"; then
       get_columnstore_logs
       exit 1
     fi
@@ -445,9 +437,9 @@ control_mariadb_server() {
 }
 
 store_mariadb_server_info() {
-  mysql -uroot -prootpass --skip-column-names -e "select @@version" | awk -F'-' '{ print $1 }' >"/tmp/version.$1"
-  mysql -uroot -prootpass --skip-column-names -e "select engine, support, transactions, savepoints from information_schema.engines" | sort >"/tmp/engines.$1"
-  mysql -uroot -prootpass --skip-column-names -e "select plugin_name, plugin_status, plugin_type, plugin_library, plugin_license from information_schema.all_plugins" | sort >"/tmp/plugins.$1"
+  sudo mysql --skip-column-names -e "select @@version" | awk -F'-' '{ print $1 }' >"/tmp/version.$1"
+  sudo mysql --skip-column-names -e "select engine, support, transactions, savepoints from information_schema.engines" | sort >"/tmp/engines.$1"
+  sudo mysql --skip-column-names -e "select plugin_name, plugin_status, plugin_type, plugin_library, plugin_license from information_schema.all_plugins" | sort >"/tmp/plugins.$1"
 }
 
 check_upgraded_versions() {
