@@ -249,7 +249,7 @@ if [[ $test_type == "major" ]]; then
 fi
 
 rpm_setup_bb_artifacts_mirror
-echo "$pkg_list" | xargs sudo "$pkg_cmd" -y upgrade
+echo "$pkg_list" | xargs sudo "$pkg_cmd" -y install
 # set +e
 
 # Check that no old packages have left after upgrade
