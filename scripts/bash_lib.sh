@@ -181,7 +181,7 @@ rpm_repoquery() {
   fi
 
   # return full package list from repository
-  repoquery --disablerepo=* --enablerepo="${repo_name}" -a |
+  repoquery --disablerepo=* --enablerepo="${repo_name}" -a -q |
     cut -d ":" -f1 | sort -u | sed 's/-0//'
 }
 
