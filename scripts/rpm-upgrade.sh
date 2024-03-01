@@ -248,6 +248,7 @@ if [[ $test_type == "major" ]]; then
   rpm -qa | grep -iE 'maria|mysql' || true
 fi
 
+rpm_setup_bb_galera_artifacts_mirror
 rpm_setup_bb_artifacts_mirror
 echo "$pkg_list" | xargs sudo "$pkg_cmd" -y install
 # set +e
