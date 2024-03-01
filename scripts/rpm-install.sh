@@ -81,14 +81,10 @@ control_mariadb_server stop
 
 sleep 1
 sudo pkill -9 mysqld
-for p in /bin /sbin /usr/bin /usr/sbin /usr/local/bin /usr/local/sbin; do
-  if test -x $p/mariadb-install-db; then
-    sudo $p/mariadb-install-db --no-defaults --user=mysql --plugin-maturity=unknown
-  else
-    bb_log_warn "$p/mariadb-install-db does not exist"
-  fi
-done
+command -v mariadb-install-db >/dev/null || {
+  bb_log_err "mariadb-install-db command not found"
+  exit 1
+}
 sudo mariadb-install-db --no-defaults --user=mysql --plugin-maturity=unknown
-set +e
 
 bb_log_ok "all done"
