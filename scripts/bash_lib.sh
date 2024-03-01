@@ -252,10 +252,12 @@ rpm_setup_mariadb_mirror() {
     exit 1
   }
   #//TEMP it's probably better to install the last stable release here...?
-  if wget -q --spider "https://rpm.mariadb.org/$branch/$arch"; then
-    baseurl="https://rpm.mariadb.org/$branch/$arch"
-  elif wget -q --spider "https://archive.mariadb.org/mariadb-$branch/$arch"; then
-    baseurl="https://archive.mariadb.org/mariadb-$branch/yum/$arch"
+  mirror_url="https://rpm.mariadb.org/$branch/$arch"
+  archive_url="https://archive.mariadb.org/mariadb-$branch/yum/$arch"
+  if wget -q --spider "$mirror_url"; then
+    baseurl="$mirror_url"
+  elif wget -q --spider "$archive_url"; then
+    baseurl="$archive_url"
   else
     # the correct way of handling this would be to not even start the check
     # since we know it will always fail. But apparently, it's not going to
