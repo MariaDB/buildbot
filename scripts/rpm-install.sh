@@ -79,12 +79,13 @@ bb_log_info "test for MDEV-18563, MDEV-18526"
 set +e
 control_mariadb_server stop
 
-sleep 1
-sudo pkill -9 mysqld
-command -v mariadb-install-db >/dev/null || {
-  bb_log_err "mariadb-install-db command not found"
-  exit 1
-}
-sudo mariadb-install-db --no-defaults --user=mysql --plugin-maturity=unknown
+# //TEMP what's the purpose of this?
+# sleep 1
+# sudo pkill -9 mysqld
+# command -v mariadb-install-db >/dev/null || {
+#   bb_log_err "mariadb-install-db command not found"
+#   exit 1
+# }
+# sudo mariadb-install-db --no-defaults --user=mysql --plugin-maturity=unknown
 
 bb_log_ok "all done"
