@@ -255,7 +255,7 @@ rpm_setup_mariadb_mirror() {
   if wget -q --spider "https://rpm.mariadb.org/$branch/$arch"; then
     baseurl="https://rpm.mariadb.org/$branch/$arch"
   elif wget -q --spider "https://archive.mariadb.org/mariadb-$branch/$arch"; then
-    baseurl="https://archive.mariadb.org/mariadb-$branch/$arch"
+    baseurl="https://archive.mariadb.org/mariadb-$branch/yum/$arch"
   else
     # the correct way of handling this would be to not even start the check
     # since we know it will always fail. But apparently, it's not going to
