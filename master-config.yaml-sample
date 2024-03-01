@@ -5,7 +5,6 @@ builders:
 - aarch64-debian-11
 - aarch64-debian-12
 - aarch64-debian-sid
-- aarch64-fedora-37
 - aarch64-fedora-38
 - aarch64-rhel-8
 - aarch64-rhel-9
