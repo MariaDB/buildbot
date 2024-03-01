@@ -62,12 +62,6 @@ debian-sid:
     - ppc64le
     - x86
   type: deb
-fedora-37:
-  version_name: 37
-  arch:
-    - amd64
-    - aarch64
-  type: rpm
 fedora-38:
   version_name: 38
   arch:
