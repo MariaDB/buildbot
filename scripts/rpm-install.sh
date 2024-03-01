@@ -47,7 +47,7 @@ rpm_pkg_makecache
 pkg_list=$(rpm_repoquery) ||
   bb_log_err "Unable to retrieve package list from repository"
 
-sudo "$pkg_cmd" -y install "$pkg_list"
+echo "$pkg_list" | xargs sudo "$pkg_cmd" -y install
 
 sh -c 'g=/usr/lib*/galera*/libgalera_smm.so; echo -e "[galera]\nwsrep_provider=$g"' | sudo tee /etc/my.cnf.d/galera.cnf
 case "$systemdCapability" in
