@@ -239,6 +239,15 @@ fi
 # gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 # gpgcheck=1' > $repo_location/galera.repo"
 # fi
+
+# //TEMP upgrade does not work without this but why? Can't we fix it?
+if [[ $test_type == "major" ]]; then
+  bb_log_info "remove old packages for major upgrade"
+  packages_to_remove=$(rpm -qa | grep 'MariaDB-' | awk -F'-' '{print $1"-"$2}')
+  echo "$packages_to_remove" | xargs sudo "$pkg_cmd" -y remove
+  rpm -qa | grep -iE 'maria|mysql' || true
+fi
+
 rpm_setup_bb_artifacts_mirror
 echo "$pkg_list" | xargs sudo "$pkg_cmd" -y upgrade
 # set +e
