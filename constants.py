@@ -136,9 +136,14 @@ supportedPlatforms["10.5"] += supportedPlatforms["10.4"]
 
 supportedPlatforms["10.6"] = [
     "aarch64-ubuntu-2204",
+    "amd64-almalinux-8",
+    "amd64-almalinux-9",
+    "amd64-rockylinux-8",
+    "amd64-rockylinux-9",
     "amd64-ubuntu-2204",
     "ppc64le-ubuntu-2204",
     "s390x-ubuntu-2204",
+    "x86-debian-12",
 ]
 supportedPlatforms["10.6"] += supportedPlatforms["10.5"]
 
