@@ -215,13 +215,15 @@ deb_setup_mariadb_mirror() {
     bb_log_err "wget command not found"
     exit 1
   }
-  # 10.2 is EOL and only on archive.mariadb.org
-  if [[ $branch == "10.2" ]]; then
-    mirror="https://archive.mariadb.org/mariadb-10.2/repo"
-  else
-    mirror="https://deb.mariadb.org/$branch"
+  #//TEMP it's probably better to install the last stable release here...?
+  mirror_url="https://deb.mariadb.org/$branch/$dist_name/dists/$version_name"
+  archive_url="https://archive.mariadb.org/mariadb-$branch/$dist_name/dists/$version_name"
+  if wget -q --spider "$mirror_url"; then
+    baseurl="$mirror_url"
+  elif wget -q --spider "$archive_url"; then
+    baseurl="$archive_url"
   fi
-  if wget -q --spider "$mirror/$dist_name/dists/$version_name"; then
+  if wget -q --spider "$baseurl"; then
     sudo sh -c "echo 'deb $mirror/$dist_name $version_name main' >/etc/apt/sources.list.d/mariadb.list"
     sudo wget https://mariadb.org/mariadb_release_signing_key.asc -O /etc/apt/trusted.gpg.d/mariadb_release_signing_key.asc || {
       bb_log_err "mariadb repository key installation failed"
@@ -232,7 +234,7 @@ deb_setup_mariadb_mirror() {
     # since we know it will always fail. But apparently, it's not going to
     # happen soon in BB. Once done though, replace the warning with an error
     # and use a non-zero exit code.
-    bb_log_warn "deb_setup_mariadb_mirror: $branch packages for $dist_name $version_name does not exist on https://deb.mariadb.org/"
+    bb_log_warn "deb_setup_mariadb_mirror: $branch packages for $dist_name $version_name does not exist on $baseurl"
     exit 0
   fi
   set +u
