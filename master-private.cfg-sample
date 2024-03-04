@@ -78,6 +78,7 @@ private["docker_workers"]= {
     "aarch64-bbw7-docker":"tcp://IP_address:port",
     "apexis-bbw1-docker":"tcp://IP_address:port",
     "apexis-bbw2-docker":"tcp://IP_address:port",
+    "apexis-bbw3-docker":"tcp://IP_address:port",
     "ns-x64-bbw1-docker":"tcp://IP_address:port", # bg-bbw1
     "ns-x64-bbw2-docker":"tcp://IP_address:port", # bg-bbw2
     "ns-x64-bbw3-docker":"tcp://IP_address:port", # bg-bbw3
