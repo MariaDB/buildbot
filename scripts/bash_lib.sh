@@ -216,19 +216,12 @@ deb_setup_mariadb_mirror() {
     exit 1
   }
   #//TEMP it's probably better to install the last stable release here...?
-  mirror_url="https://deb.mariadb.org/$branch/$dist_name/dists/$version_name"
-  archive_url="https://archive.mariadb.org/mariadb-$branch/$dist_name/dists/$version_name"
-  if wget -q --spider "$mirror_url"; then
+  mirror_url="https://deb.mariadb.org/$branch"
+  archive_url="https://archive.mariadb.org/mariadb-$branch"
+  if wget -q --spider "$mirror_url/$dist_name/dists/$version_name"; then
     baseurl="$mirror_url"
-  elif wget -q --spider "$archive_url"; then
+  elif wget -q --spider "$archive_url/$dist_name/dists/$version_name"; then
     baseurl="$archive_url"
-  fi
-  if wget -q --spider "$baseurl"; then
-    sudo sh -c "echo 'deb $mirror/$dist_name $version_name main' >/etc/apt/sources.list.d/mariadb.list"
-    sudo wget https://mariadb.org/mariadb_release_signing_key.asc -O /etc/apt/trusted.gpg.d/mariadb_release_signing_key.asc || {
-      bb_log_err "mariadb repository key installation failed"
-      exit 1
-    }
   else
     # the correct way of handling this would be to not even start the check
     # since we know it will always fail. But apparently, it's not going to
@@ -237,6 +230,11 @@ deb_setup_mariadb_mirror() {
     bb_log_warn "deb_setup_mariadb_mirror: $branch packages for $dist_name $version_name does not exist on $baseurl"
     exit 0
   fi
+  sudo sh -c "echo 'deb $baseurl/$dist_name $version_name main' >/etc/apt/sources.list.d/mariadb.list"
+  sudo wget https://mariadb.org/mariadb_release_signing_key.asc -O /etc/apt/trusted.gpg.d/mariadb_release_signing_key.asc || {
+    bb_log_err "mariadb repository key installation failed"
+    exit 1
+  }
   set +u
 }
 
