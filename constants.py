@@ -23,6 +23,7 @@ branches_main = [
 
 # Defines what builders report status to GitHub
 github_status_builders = [
+    "aarch64-macos",
     "amd64-centos-7",
     "amd64-centos-7-rpm-autobake",
     "amd64-debian-10",
