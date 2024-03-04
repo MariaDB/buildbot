@@ -217,7 +217,7 @@ deb_setup_mariadb_mirror() {
   }
   #//TEMP it's probably better to install the last stable release here...?
   mirror_url="https://deb.mariadb.org/$branch"
-  archive_url="https://archive.mariadb.org/mariadb-$branch"
+  archive_url="https://archive.mariadb.org/mariadb-$branch/repo"
   if wget -q --spider "$mirror_url/$dist_name/dists/$version_name"; then
     baseurl="$mirror_url"
   elif wget -q --spider "$archive_url/$dist_name/dists/$version_name"; then
@@ -227,7 +227,7 @@ deb_setup_mariadb_mirror() {
     # since we know it will always fail. But apparently, it's not going to
     # happen soon in BB. Once done though, replace the warning with an error
     # and use a non-zero exit code.
-    bb_log_warn "deb_setup_mariadb_mirror: $branch packages for $dist_name $version_name does not exist on $baseurl"
+    bb_log_warn "deb_setup_mariadb_mirror: $branch packages for $dist_name $version_name does not exist on deb|archive.mariadb.org"
     exit 0
   fi
   sudo sh -c "echo 'deb $baseurl/$dist_name $version_name main' >/etc/apt/sources.list.d/mariadb.list"
