@@ -51,7 +51,6 @@ builders_wordpress = ["amd64-rhel8-wordpress"]
 builders_galera_mtr = [
     "aarch64-debian-12",
     "amd64-fedora-39",
-    "amd64-ubuntu-2304",
     "s390x-ubuntu-2004",
     "s390x-ubuntu-2204",
     "ppc64le-ubuntu-2004",
@@ -158,11 +157,9 @@ supportedPlatforms["10.10"] += supportedPlatforms["10.9"]
 supportedPlatforms["10.11"] = [
     "aarch64-debian-12",
     "aarch64-debian-sid",
-    "aarch64-ubuntu-2304",
     "aarch64-ubuntu-2310",
     "amd64-debian-12",
     "amd64-debian-sid",
-    "amd64-ubuntu-2304",
     "amd64-ubuntu-2310",
     "ppc64le-debian-sid",
     "x86-debian-sid",

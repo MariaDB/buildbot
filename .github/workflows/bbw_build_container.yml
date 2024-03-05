@@ -83,10 +83,6 @@ jobs:
             branch: 10.11
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
           - dockerfile: debian.Dockerfile
-            image: ubuntu:23.04
-            branch: 10.11
-            platforms: linux/amd64, linux/arm64/v8
-          - dockerfile: debian.Dockerfile
             image: ubuntu:23.10
             branch: 10.11
             platforms: linux/amd64, linux/arm64/v8
