@@ -4,7 +4,7 @@
 set -xeuvo pipefail
 
 declare -A buildopts=(
-	[mysqlnd]='--enable-mysqlnd --with-mysqli=mysqlnd --with-pdo-mysql=mysqlnd'
+	[mysqlnd]='--with-mysqli=mysqlnd --with-pdo-mysql=mysqlnd'
 	[mariadbclient]='--with-mysqli --with-pdo-mysql=/usr/local/mariadb'
 )
 
@@ -116,8 +116,10 @@ cd "$builddir"
 
 configure()
 {
+  # word splitting needed on buildopts
+  # shellcheck disable=SC2086
   "$codedir"/configure --enable-debug \
-                 "${buildopts[$opt]}" "$@" \
+                 ${buildopts[$opt]} "$@" \
                  --with-mysql-sock=/tmp/mysql.sock || cat config.log
 }
 
