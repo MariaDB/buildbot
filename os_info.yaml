@@ -140,13 +140,6 @@ ubuntu-2204:
     - ppc64le
     - s390x
   type: deb
-ubuntu-2304:
-  version_name: lunar
-  arch:
-    - amd64
-    - aarch64
-  type: deb
-  has_install: False
 ubuntu-2310:
   version_name: mantic
   arch:
