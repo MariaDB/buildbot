@@ -250,7 +250,13 @@ fi
 
 rpm_setup_bb_galera_artifacts_mirror
 rpm_setup_bb_artifacts_mirror
-echo "$pkg_list" | xargs sudo "$pkg_cmd" -y install
+if [[ $test_type == "major" ]]; then
+  # major upgrade (remove then install)
+  echo "$pkg_list" | xargs sudo "$pkg_cmd" -y install
+else
+  # minor upgrade (upgrade works)
+  echo "$pkg_list" | xargs sudo "$pkg_cmd" -y upgrade
+fi
 # set +e
 
 # Check that no old packages have left after upgrade
