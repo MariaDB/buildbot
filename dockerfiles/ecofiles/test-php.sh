@@ -4,7 +4,7 @@
 set -xeuvo pipefail
 
 declare -A buildopts=(
-	[mysqlnd]='--with-mysqli=mysqlnd --with-pdo-mysql=mysqlnd'
+	[mysqlnd]='--enable-mysqlnd --with-mysqli=mysqlnd --with-pdo-mysql=mysqlnd'
 	[mariadbclient]='--with-mysqli --with-pdo-mysql=/usr/local/mariadb'
 )
 
