@@ -53,6 +53,7 @@ RUN . /etc/os-release; \
     default-jdk\
     dumb-init \
     gawk \
+    gdb \
     git \
     gnutls-dev \
     iproute2 \
