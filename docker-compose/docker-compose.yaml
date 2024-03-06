@@ -397,6 +397,40 @@ services:
       - mariadb
       - crossbar
 
+  master-docker-nonstandard-2:
+    image: quay.io/mariadb-foundation/bb-master:master
+    restart: unless-stopped
+    container_name: master-docker-nonstandard-2
+    environment:
+      - GALERA_PACKAGES_DIR
+      - ENVIRON
+      - TITLE
+      - BRANCH
+      - ARTIFACTS_URL
+      - TITLE_URL
+      - BUILDMASTER_WG_IP
+      - NGINX_ARTIFACTS_VHOST
+      - MASTER_PACKAGES_DIR
+      - MQ_ROUTER_URL
+      - BUILDMASTER_URL
+      - PORT=10004
+    hostname: master-docker-nonstandard-2
+    volumes:
+      - ./logs:/var/log/buildbot
+      - ./buildbot/:/srv/buildbot/master
+    entrypoint:
+      - /bin/bash
+      - -c
+      - "/srv/buildbot/master/docker-compose/start.sh master-docker-nonstandard-2"
+    networks:
+      net_front:
+      net_back:
+    ports:
+      - "100.64.101.1:10007:10007"
+    depends_on:
+      - mariadb
+      - crossbar
+
   master-galera:
     image: quay.io/mariadb-foundation/bb-master:master
     restart: unless-stopped

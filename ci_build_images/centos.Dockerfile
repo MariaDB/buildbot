@@ -11,9 +11,9 @@ LABEL maintainer="MariaDB Buildbot maintainers"
 # hadolint ignore=SC2086
 RUN dnf -y install 'dnf-command(config-manager)' \
     && source /etc/os-release \
-    && case "$VERSION" in \
-        "9") \
-          # centosstream9 \
+    && case "$PLATFORM_ID" in \
+        "platform:el9") \
+          # centosstream9/almalinux9/rockylinux9 \
           dnf -y install epel-release; \
           dnf config-manager --set-enabled crb; \
           extra="python3-pip"; \

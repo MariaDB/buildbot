@@ -19,6 +19,7 @@ MASTER_DIRECTORIES = [
     "master-docker-nonstandard",
     "master-galera",
     "master-protected-branches",
+    "master-docker-nonstandard-2",
 ]
 
 START_TEMPLATE = """

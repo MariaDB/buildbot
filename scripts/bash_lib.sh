@@ -59,6 +59,7 @@ manual_run_switch() {
         BRANCH=dev
       else
         BB_URL="buildbot.mariadb.org"
+        # shellcheck disable=SC2034
         ARTIFACTS_URL="ci.mariadb.org"
         BRANCH=main
       fi
@@ -76,11 +77,6 @@ manual_run_switch() {
         err "unable to get global env vars"
       dev_branch=$(grep DEVELOPMENT_BRANCH constants.py | cut -d \" -f2)
       export development_branch="$dev_branch"
-    fi
-    # for RPM we have to download artifacts from ci.mariadb.org
-    if command -v rpm >/dev/null; then
-      mkdir rpms
-      wget -r -np -nH --cut-dirs=3 -A "*.rpm" "https://$ARTIFACTS_URL/$tarbuildnum/$parentbuildername/rpms" -P rpms
     fi
   fi
 }
@@ -140,17 +136,26 @@ apt_get_update() {
   fi
 }
 
-yum_makecache() {
+rpm_pkg() {
+  if command -v dnf >/dev/null; then
+    echo dnf
+  elif command -v yum >/dev/null; then
+    echo yum
+  fi
+}
+
+rpm_pkg_makecache() {
+  pkg_cmd=$(rpm_pkg)
   # Try several times, to avoid sporadic "The requested URL returned error: 404"
   made_cache=0
   for i in {1..5}; do
-    sudo rm -rf /var/cache/yum/*
-    sudo yum clean all
+    sudo rm -rf "/var/cache/$pkg_cmd/*"
+    sudo "$pkg_cmd" clean all
     source /etc/os-release
     if [[ $ID == "rhel" ]]; then
       sudo subscription-manager refresh
     fi
-    if sudo yum makecache; then
+    if sudo "$pkg_cmd" makecache; then
       made_cache=1
       break
     else
@@ -163,6 +168,21 @@ yum_makecache() {
     bb_log_err "failed to make cache"
     exit 1
   fi
+}
+
+rpm_repoquery() {
+  if [[ -f /etc/yum.repos.d/MariaDB.repo ]]; then
+    repo_name_tmp=$(grep -v "\#" /etc/yum.repos.d/MariaDB.repo | head -n1)
+    # remove brackets
+    repo_name=${repo_name_tmp/\[/}
+    repo_name=${repo_name/\]/}
+  else
+    bb_log_err "/etc/yum.repos.d/MariaDB.repo is missing"
+  fi
+
+  # return full package list from repository
+  repoquery --disablerepo=* --enablerepo="${repo_name}" -a -q |
+    cut -d ":" -f1 | sort -u | sed 's/-0//'
 }
 
 wait_for_mariadb_upgrade() {
@@ -195,26 +215,66 @@ deb_setup_mariadb_mirror() {
     bb_log_err "wget command not found"
     exit 1
   }
-  # 10.2 is EOL and only on archive.mariadb.org
-  if [[ $branch == "10.2" ]]; then
-    mirror="https://archive.mariadb.org/mariadb-10.2/repo"
-  else
-    mirror="https://deb.mariadb.org/$branch"
-  fi
-  if wget -q --spider "$mirror/$dist_name/dists/$version_name"; then
-    sudo sh -c "echo 'deb $mirror/$dist_name $version_name main' >/etc/apt/sources.list.d/mariadb.list"
-    sudo wget https://mariadb.org/mariadb_release_signing_key.asc -O /etc/apt/trusted.gpg.d/mariadb_release_signing_key.asc || {
-      bb_log_err "mariadb repository key installation failed"
-      exit 1
-    }
+  #//TEMP it's probably better to install the last stable release here...?
+  mirror_url="https://deb.mariadb.org/$branch"
+  archive_url="https://archive.mariadb.org/mariadb-$branch/repo"
+  if wget -q --spider "$mirror_url/$dist_name/dists/$version_name"; then
+    baseurl="$mirror_url"
+  elif wget -q --spider "$archive_url/$dist_name/dists/$version_name"; then
+    baseurl="$archive_url"
   else
     # the correct way of handling this would be to not even start the check
     # since we know it will always fail. But apparently, it's not going to
     # happen soon in BB. Once done though, replace the warning with an error
     # and use a non-zero exit code.
-    bb_log_warn "deb_setup_mariadb_mirror: $branch packages for $dist_name $version_name does not exist on https://deb.mariadb.org/"
+    bb_log_warn "deb_setup_mariadb_mirror: $branch packages for $dist_name $version_name does not exist on deb|archive.mariadb.org"
     exit 0
   fi
+  sudo sh -c "echo 'deb $baseurl/$dist_name $version_name main' >/etc/apt/sources.list.d/mariadb.list"
+  sudo wget https://mariadb.org/mariadb_release_signing_key.asc -O /etc/apt/trusted.gpg.d/mariadb_release_signing_key.asc || {
+    bb_log_err "mariadb repository key installation failed"
+    exit 1
+  }
+  set +u
+}
+
+rpm_setup_mariadb_mirror() {
+  # stop if any further variable is undefined
+  set -u
+  [[ -n $1 ]] || {
+    bb_log_err "missing the branch variable"
+    exit 1
+  }
+  branch=$1
+  bb_log_info "setup MariaDB repository for $branch branch"
+  command -v wget >/dev/null || {
+    bb_log_err "wget command not found"
+    exit 1
+  }
+  #//TEMP it's probably better to install the last stable release here...?
+  mirror_url="https://rpm.mariadb.org/$branch/$arch"
+  archive_url="https://archive.mariadb.org/mariadb-$branch/yum/$arch"
+  if wget -q --spider "$mirror_url"; then
+    baseurl="$mirror_url"
+  elif wget -q --spider "$archive_url"; then
+    baseurl="$archive_url"
+  else
+    # the correct way of handling this would be to not even start the check
+    # since we know it will always fail. But apparently, it's not going to
+    # happen soon in BB. Once done though, replace the warning with an error
+    # and use a non-zero exit code.
+    bb_log_warn "rpm_setup_mariadb_mirror: $branch packages for $dist_name $version_name does not exist on https://rpm.mariadb.org/"
+    exit 0
+  fi
+  cat <<EOF | sudo tee /etc/yum.repos.d/MariaDB.repo
+[mariadb]
+name=MariaDB
+baseurl=$baseurl
+# //TEMP following is probably not needed for all OS
+module_hotfixes = 1
+gpgkey=https://rpm.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
   set +u
 }
 
@@ -224,6 +284,39 @@ deb_setup_bb_artifacts_mirror() {
   bb_log_info "setup buildbot artifact repository"
   sudo wget "$artifactsURL/$tarbuildnum/$parentbuildername/mariadb.sources" -O /etc/apt/sources.list.d/mariadb.sources || {
     bb_log_err "unable to download $artifactsURL/$tarbuildnum/$parentbuildername/mariadb.sources"
+    exit 1
+  }
+  set +u
+}
+
+rpm_setup_bb_artifacts_mirror() {
+  # stop if any variable is undefined
+  set -u
+  bb_log_info "setup buildbot artifact repository"
+  sudo wget "$artifactsURL/$tarbuildnum/$parentbuildername/MariaDB.repo" -O /etc/yum.repos.d/MariaDB.repo || {
+    bb_log_err "unable to download $artifactsURL/$tarbuildnum/$parentbuildername/MariaDB.repo"
+    exit 1
+  }
+  set +u
+}
+
+rpm_setup_bb_galera_artifacts_mirror() {
+  # stop if any variable is undefined
+  set -u
+  bb_log_info "setup buildbot galera artifact repository"
+  sudo wget "$artifactsURL/galera/mariadb-4.x-latest-gal-${parentbuildername/-rpm-autobake/}.repo" -O /etc/yum.repos.d/galera.repo || {
+    bb_log_err "unable to download $artifactsURL/galera/mariadb-4.x-latest-gal-${parentbuildername/-rpm-autobake/}.repo"
+    exit 1
+  }
+  set +u
+}
+
+deb_setup_bb_galera_artifacts_mirror() {
+  # stop if any variable is undefined
+  set -u
+  bb_log_info "setup buildbot galera artifact repository"
+  sudo wget "$artifactsURL/galera/mariadb-4.x-latest-gal-${parentbuildername/-deb-autobake/}.sources" -O /etc/apt/sources.list.d/galera.sources || {
+    bb_log_err "unable to download $artifactsURL/galera/mariadb-4.x-latest-gal-${parentbuildername/-deb-autobake/}.sources"
     exit 1
   }
   set +u
@@ -297,27 +390,19 @@ upgrade_test_type() {
 }
 
 check_mariadb_server_and_create_structures() {
-  if [ "$prev_major_version" != 10.3 ]; then
-    # 10.4+ uses unix_socket by default
-    sudo mysql -e "set password=password('rootpass')"
-  else
-    # Even without unix_socket, on some of VMs the password might be not pre-created as expected. This command should normally fail.
-    mysql -uroot -e "set password = password('rootpass')" >>/dev/null 2>&1
-  fi
-
   # All the commands below should succeed
   set -e
-  mysql -uroot -prootpass -e "CREATE DATABASE db"
-  mysql -uroot -prootpass -e "CREATE TABLE db.t_innodb(a1 SERIAL, c1 CHAR(8)) ENGINE=InnoDB; INSERT INTO db.t_innodb VALUES (1,'foo'),(2,'bar')"
-  mysql -uroot -prootpass -e "CREATE TABLE db.t_myisam(a2 SERIAL, c2 CHAR(8)) ENGINE=MyISAM; INSERT INTO db.t_myisam VALUES (1,'foo'),(2,'bar')"
-  mysql -uroot -prootpass -e "CREATE TABLE db.t_aria(a3 SERIAL, c3 CHAR(8)) ENGINE=Aria; INSERT INTO db.t_aria VALUES (1,'foo'),(2,'bar')"
-  mysql -uroot -prootpass -e "CREATE TABLE db.t_memory(a4 SERIAL, c4 CHAR(8)) ENGINE=MEMORY; INSERT INTO db.t_memory VALUES (1,'foo'),(2,'bar')"
-  mysql -uroot -prootpass -e "CREATE ALGORITHM=MERGE VIEW db.v_merge AS SELECT * FROM db.t_innodb, db.t_myisam, db.t_aria"
-  mysql -uroot -prootpass -e "CREATE ALGORITHM=TEMPTABLE VIEW db.v_temptable AS SELECT * FROM db.t_innodb, db.t_myisam, db.t_aria"
-  mysql -uroot -prootpass -e "CREATE PROCEDURE db.p() SELECT * FROM db.v_merge"
-  mysql -uroot -prootpass -e "CREATE FUNCTION db.f() RETURNS INT DETERMINISTIC RETURN 1"
+  sudo mariadb -e "CREATE DATABASE db"
+  sudo mariadb -e "CREATE TABLE db.t_innodb(a1 SERIAL, c1 CHAR(8)) ENGINE=InnoDB; INSERT INTO db.t_innodb VALUES (1,'foo'),(2,'bar')"
+  sudo mariadb -e "CREATE TABLE db.t_myisam(a2 SERIAL, c2 CHAR(8)) ENGINE=MyISAM; INSERT INTO db.t_myisam VALUES (1,'foo'),(2,'bar')"
+  sudo mariadb -e "CREATE TABLE db.t_aria(a3 SERIAL, c3 CHAR(8)) ENGINE=Aria; INSERT INTO db.t_aria VALUES (1,'foo'),(2,'bar')"
+  sudo mariadb -e "CREATE TABLE db.t_memory(a4 SERIAL, c4 CHAR(8)) ENGINE=MEMORY; INSERT INTO db.t_memory VALUES (1,'foo'),(2,'bar')"
+  sudo mariadb -e "CREATE ALGORITHM=MERGE VIEW db.v_merge AS SELECT * FROM db.t_innodb, db.t_myisam, db.t_aria"
+  sudo mariadb -e "CREATE ALGORITHM=TEMPTABLE VIEW db.v_temptable AS SELECT * FROM db.t_innodb, db.t_myisam, db.t_aria"
+  sudo mariadb -e "CREATE PROCEDURE db.p() SELECT * FROM db.v_merge"
+  sudo mariadb -e "CREATE FUNCTION db.f() RETURNS INT DETERMINISTIC RETURN 1"
   if [[ $test_mode == "columnstore" ]]; then
-    if ! mysql -uroot -prootpass -e "CREATE TABLE db.t_columnstore(a INT, c VARCHAR(8)) ENGINE=ColumnStore; SHOW CREATE TABLE db.t_columnstore; INSERT INTO db.t_columnstore VALUES (1,'foo'),(2,'bar')"; then
+    if ! mysql -e "CREATE TABLE db.t_columnstore(a INT, c VARCHAR(8)) ENGINE=ColumnStore; SHOW CREATE TABLE db.t_columnstore; INSERT INTO db.t_columnstore VALUES (1,'foo'),(2,'bar')"; then
       get_columnstore_logs
       exit 1
     fi
@@ -327,24 +412,24 @@ check_mariadb_server_and_create_structures() {
 
 check_mariadb_server_and_verify_structures() {
   # Print "have_xx" capabilitites for the new server
-  mysql -uroot -prootpass -e "select 'Stat' t, variable_name name, variable_value val from information_schema.global_status where variable_name like '%have%' union select 'Vars' t, variable_name name, variable_value val from information_schema.global_variables where variable_name like '%have%' order by t, name"
+  sudo mariadb -e "select 'Stat' t, variable_name name, variable_value val from information_schema.global_status where variable_name like '%have%' union select 'Vars' t, variable_name name, variable_value val from information_schema.global_variables where variable_name like '%have%' order by t, name"
   # All the commands below should succeed
   set -e
-  mysql -uroot -prootpass -e "select @@version, @@version_comment"
-  mysql -uroot -prootpass -e "SHOW TABLES IN db"
-  mysql -uroot -prootpass -e "SELECT * FROM db.t_innodb; INSERT INTO db.t_innodb VALUES (3,'foo'),(4,'bar')"
-  mysql -uroot -prootpass -e "SELECT * FROM db.t_myisam; INSERT INTO db.t_myisam VALUES (3,'foo'),(4,'bar')"
-  mysql -uroot -prootpass -e "SELECT * FROM db.t_aria; INSERT INTO db.t_aria VALUES (3,'foo'),(4,'bar')"
+  sudo mariadb -e "select @@version, @@version_comment"
+  sudo mariadb -e "SHOW TABLES IN db"
+  sudo mariadb -e "SELECT * FROM db.t_innodb; INSERT INTO db.t_innodb VALUES (3,'foo'),(4,'bar')"
+  sudo mariadb -e "SELECT * FROM db.t_myisam; INSERT INTO db.t_myisam VALUES (3,'foo'),(4,'bar')"
+  sudo mariadb -e "SELECT * FROM db.t_aria; INSERT INTO db.t_aria VALUES (3,'foo'),(4,'bar')"
   bb_log_info "If the next INSERT fails with a duplicate key error,"
   bb_log_info "it is likely because the server was not upgraded or restarted after upgrade"
-  mysql -uroot -prootpass -e "SELECT * FROM db.t_memory; INSERT INTO db.t_memory VALUES (1,'foo'),(2,'bar')"
-  mysql -uroot -prootpass -e "SELECT COUNT(*) FROM db.v_merge"
-  mysql -uroot -prootpass -e "SELECT COUNT(*) FROM db.v_temptable"
-  mysql -uroot -prootpass -e "CALL db.p()"
-  mysql -uroot -prootpass -e "SELECT db.f()"
+  sudo mariadb -e "SELECT * FROM db.t_memory; INSERT INTO db.t_memory VALUES (1,'foo'),(2,'bar')"
+  sudo mariadb -e "SELECT COUNT(*) FROM db.v_merge"
+  sudo mariadb -e "SELECT COUNT(*) FROM db.v_temptable"
+  sudo mariadb -e "CALL db.p()"
+  sudo mariadb -e "SELECT db.f()"
 
   if [[ $test_mode == "columnstore" ]]; then
-    if ! mysql -uroot -prootpass -e "SELECT * FROM db.t_columnstore; INSERT INTO db.t_columnstore VALUES (3,'foo'),(4,'bar')"; then
+    if ! sudo mariadb -e "SELECT * FROM db.t_columnstore; INSERT INTO db.t_columnstore VALUES (3,'foo'),(4,'bar')"; then
       get_columnstore_logs
       exit 1
     fi
@@ -365,9 +450,9 @@ control_mariadb_server() {
 }
 
 store_mariadb_server_info() {
-  mysql -uroot -prootpass --skip-column-names -e "select @@version" | awk -F'-' '{ print $1 }' >"/tmp/version.$1"
-  mysql -uroot -prootpass --skip-column-names -e "select engine, support, transactions, savepoints from information_schema.engines" | sort >"/tmp/engines.$1"
-  mysql -uroot -prootpass --skip-column-names -e "select plugin_name, plugin_status, plugin_type, plugin_library, plugin_license from information_schema.all_plugins" | sort >"/tmp/plugins.$1"
+  sudo mariadb --skip-column-names -e "select @@version" | awk -F'-' '{ print $1 }' >"/tmp/version.$1"
+  sudo mariadb --skip-column-names -e "select engine, support, transactions, savepoints from information_schema.engines" | sort >"/tmp/engines.$1"
+  sudo mariadb --skip-column-names -e "select plugin_name, plugin_status, plugin_type, plugin_library, plugin_license from information_schema.all_plugins" | sort >"/tmp/plugins.$1"
 }
 
 check_upgraded_versions() {

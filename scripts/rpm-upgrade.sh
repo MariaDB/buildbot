@@ -36,129 +36,122 @@ bb_log_info "Current test mode: $test_mode"
 
 set -x
 
-yum_makecache
+rpm_pkg_makecache
 
-# Check whether a previous version exists
-if [[ $prev_major_version == "10.2" ]]; then
-  mirror="https://archive.mariadb.org/mariadb-10.2/yum"
-else
-  mirror="https://yum.mariadb.org/$prev_major_version"
-fi
-if ! wget "$mirror/$arch/repodata" -O repodata.list; then
-  # the correct way of handling this would be to not even start the check
-  # since we know it will always fail. But apparently, it's not going to
-  # happen soon in BB. Once done though, replace the warning with an error
-  # and use a non-zero exit code.
-  bb_log_warn "could not find the 'repodata' folder for a previous version in MariaDB repo"
-  exit 0
-fi
+rpm_setup_mariadb_mirror "$prev_major_version"
 
 # Define the list of packages to install/upgrade
 case $test_mode in
-  all | deps | columnstore)
-    primary_xml=$(grep 'primary.xml.gz' repodata.list | sed -e 's/.*href="\(.*-primary.xml\)\.gz\".*/\\1/')
-    if ! wget "$mirror/$arch/repodata/$primary_xml.gz"; then
-      bb_log_err "Couldn't download primary.xml.gz from the repository"
-      exit 1
-    fi
-    gunzip "$primary_xml.gz"
-    if [[ $test_mode == "all" ]]; then
-      if grep -qi columnstore "$primary_xml"; then
-        bb_log_warn "due to MCOL-4120 and other issues, Columnstore upgrade will be tested separately"
-      fi
-      package_list=$(grep -A 1 '<package type="rpm"' "$primary_xml" | grep MariaDB | grep -viE 'galera|columnstore' | sed -e 's/<name>//' | sed -e 's/<\/name>//' | sort | uniq | xargs)
-    elif [[ $test_mode == "deps" ]]; then
-      package_list=$(grep -A 1 '<package type="rpm"' "$primary_xml" | grep -iE 'MariaDB-server|MariaDB-test|MariaDB-client|MariaDB-common|MariaDB-compat' | sed -e 's/<name>//' | sed -e 's/<\/name>//' | sort | uniq | xargs)
-    elif [[ $test_mode == "columnstore" ]]; then
-      if ! grep -q columnstore "$primary_xml"; then
-        bb_log_warn "columnstore was not found in the released packages, the test will not be run"
-        exit
-      fi
-      package_list="MariaDB-server MariaDB-columnstore-engine"
-    fi
-
-    if [[ $arch == ppc* ]]; then
-      package_list=$(echo "$package_list" | xargs -n1 | sed -e 's/MariaDB-compat//gi' | xargs)
-    fi
+  all)
+    # retrieve full package list from repo
+    pkg_list=$(rpm_repoquery) ||
+      bb_log_err "unable to retrieve package list from repository"
     ;;
   server)
-    package_list="MariaDB-server MariaDB-client"
+    pkg_list="MariaDB-server MariaDB-client"
     ;;
   *)
-    bb_log_err "unknown test mode: $test_mode"
+    bb_log_err "unknown test mode ($test_mode)"
     exit 1
     ;;
 esac
 
-bb_log_info "Package_list: $package_list"
+# case $test_mode in
+#   all | deps | columnstore)
+#     if [[ $test_mode == "all" ]]; then
+#       if echo "$pkg_list" | grep -qi columnstore; then
+#         bb_log_warn "due to MCOL-4120 and other issues, Columnstore upgrade will be tested separately"
+#       fi
+#       package_list=$(echo "$pkg_list" | grep MariaDB |
+#         grep -viE 'galera|columnstore' | sed -e 's/<name>//' |
+#         sed -e 's/<\/name>//' | sort -u | xargs)
+#     elif [[ $test_mode == "deps" ]]; then
+#       package_list=$(echo "$pkg_list" |
+#         grep -iE 'MariaDB-server|MariaDB-test|MariaDB-client|MariaDB-common|MariaDB-compat' |
+#         sed -e 's/<name>//' | sed -e 's/<\/name>//' | sort -u | xargs)
+#     elif [[ $test_mode == "columnstore" ]]; then
+#       if ! echo "$pkg_list" | grep -q columnstore; then
+#         bb_log_warn "columnstore was not found in the released packages, the test will not be run"
+#         exit
+#       fi
+#       package_list="MariaDB-server MariaDB-columnstore-engine"
+#     fi
 
-# Prepare yum/zypper configuration for installation of the last release
-if which zypper; then
-  repo_location=/etc/zypp/repos.d
-  install_command="zypper --no-gpg-checks install --from mariadb -y"
-  cleanup_command="zypper clean --all"
-  remove_command="zypper remove -y"
-  # Since there is no reasonable "upgrade" command in zypper which would
-  # pick up RPM files needed to upgrade existing packages, we have to use "install".
-  # However, if we run "install *.rpm", it will install all packages, regardless
-  # the test mode, and we will get a lot of differences in contents after upgrade
-  # (more plugins, etc.). So, instead for each package that we are going to install,
-  # we'll also find an RPM file which provides it, and will use its name in
-  # in the "upgrade" (second install) command
-  if [[ $test_mode == "all" ]]; then
-    rm -f rpms/*columnstore*.rpm
-    rpms_for_upgrade="rpms/*.rpm"
-  else
-    rpms_for_upgrade=""
-    for p in $package_list; do
-      for f in rpms/*.rpm; do
-        if rpm -qp "$f" --provides | grep -i "^$p ="; then
-          rpms_for_upgrade="$rpms_for_upgrade $f"
-          break
-        fi
-      done
-    done
-  fi
-  upgrade_command="zypper --no-gpg-checks install -y $rpms_for_upgrade"
+#     if [[ $arch == ppc* ]]; then
+#       package_list=$(echo "$pkg_list" | xargs -n1 | sed -e 's/MariaDB-compat//gi' | xargs)
+#     fi
+#     ;;
+#   server)
+#     package_list="MariaDB-server MariaDB-client"
+#     ;;
+#   *)
+#     bb_log_err "unknown test mode: $test_mode"
+#     exit 1
+#     ;;
+# esac
+
+bb_log_info "Package_list: $pkg_list"
+
+# # //TEMP this needs to be implemented once we have SLES VM in new BB
+# # Prepare yum/zypper configuration for installation of the last release
+# if which zypper; then
+#   repo_location=/etc/zypp/repos.d
+#   install_command="zypper --no-gpg-checks install --from mariadb -y"
+#   cleanup_command="zypper clean --all"
+#   remove_command="zypper remove -y"
+#   # Since there is no reasonable "upgrade" command in zypper which would
+#   # pick up RPM files needed to upgrade existing packages, we have to use "install".
+#   # However, if we run "install *.rpm", it will install all packages, regardless
+#   # the test mode, and we will get a lot of differences in contents after upgrade
+#   # (more plugins, etc.). So, instead for each package that we are going to install,
+#   # we'll also find an RPM file which provides it, and will use its name in
+#   # in the "upgrade" (second install) command
+#   if [[ $test_mode == "all" ]]; then
+#     rm -f rpms/*columnstore*.rpm
+#     rpms_for_upgrade="rpms/*.rpm"
+#   else
+#     rpms_for_upgrade=""
+#     for p in $package_list; do
+#       for f in rpms/*.rpm; do
+#         if rpm -qp "$f" --provides | grep -i "^$p ="; then
+#           rpms_for_upgrade="$rpms_for_upgrade $f"
+#           break
+#         fi
+#       done
+#     done
+#   fi
+#   upgrade_command="zypper --no-gpg-checks install -y $rpms_for_upgrade"
 
 # As of now (February 2018), RPM packages do not support major upgrade.
 # To imitate it, we will remove previous packages and install new ones.
-elif which yum; then
-  repo_location=/etc/yum.repos.d
-  install_command="yum -y --nogpgcheck install"
-  cleanup_command="yum clean all"
-  upgrade_command="yum -y --nogpgcheck upgrade rpms/*.rpm"
-  if [[ $test_type == "major" ]]; then
-    upgrade_command="yum -y --nogpgcheck install rpms/*.rpm"
-  fi
-  if yum autoremove 2>&1 | grep -q 'need to be root'; then
-    remove_command="yum -y autoremove"
-  else
-    remove_command="yum -y remove"
-  fi
-else
-  bb_log_err "could not find package manager"
-  exit 1
-fi
-
-sudo sh -c "echo '[mariadb]
-name=MariaDB
-baseurl=$mirror/$arch
-gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB_v2
-gpgcheck=1
-module_hotfixes=1' >$repo_location/MariaDB.repo"
+# //TEMP is this still true??
+#else
+#
+# repo_location=/etc/yum.repos.d
+# install_command="sudo $pkg_cmd -y --nogpgcheck install"
+# cleanup_command="sudo $pkg_cmd clean all"
+# upgrade_command="sudo $pkg_cmd -y --nogpgcheck upgrade"
+# if [[ $test_type == "major" ]]; then
+#   upgrade_command="sudo $pkg_cmd -y --nogpgcheck install"
+# fi
+# # //TEMP not sure about the reason of this
+# # if $pkg_cmd autoremove 2>&1 | grep -q 'need to be root'; then
+# #   remove_command="sudo $pkg_cmd -y autoremove"
+# # else
+# #   remove_command="sudo $pkg_cmd -y remove"
+# # fi
+# remove_command="sudo $pkg_cmd -y autoremove"
 
 # Workaround for TODO-1479 (errors upon reading from SUSE repos):
 # sudo rm -rf
 # /etc/zypp/repos.d/SUSE_Linux_Enterprise_Server_12_SP3_x86_64:SLES12-SP3-Updates.repo
 # /etc/zypp/repos.d/SUSE_Linux_Enterprise_Server_12_SP3_x86_64:SLES12-SP3-Pool.repo
-sudo sh -c "$cleanup_command"
+sudo "$pkg_cmd" clean all
 
 # Install previous release
-if ! sudo sh -c "$install_command $package_list"; then
+echo "$pkg_list" | xargs sudo "$pkg_cmd" -y install ||
   bb_log_err "installation of a previous release failed, see the output above"
-  exit 1
-fi
+#fi
 
 # Start the server, check that it is working and create some structures
 case $(expr "$prev_major_version" '<' "10.1")"$systemdCapability" in
@@ -218,20 +211,21 @@ fi
 # done >/home/buildbot/ldd.old
 # set -x
 
-# Prepare yum/zypper configuration for installation of the new packages
-set -e
-if [[ $test_type == "major" ]]; then
-  bb_log_info "remove old packages for major upgrade"
-  packages_to_remove=$(rpm -qa | grep 'MariaDB-' | awk -F'-' '{print $1"-"$2}' | xargs)
-  sudo sh -c "$remove_command $packages_to_remove"
-  rpm -qa | grep -iE 'maria|mysql' || true
-fi
-if [[ $test_mode == "deps" ]]; then
-  sudo mv $repo_location/MariaDB.repo /tmp
-  sudo rm -rf $repo_location/*
-  sudo mv /tmp/MariaDB.repo $repo_location/
-  sudo sh -c "$cleanup_command"
-fi
+# # Prepare yum/zypper configuration for installation of the new packages
+# # //TEMP again not sure this is needed
+# set -e
+# if [[ $test_type == "major" ]]; then
+#   bb_log_info "remove old packages for major upgrade"
+#   packages_to_remove=$(rpm -qa | grep 'MariaDB-' | awk -F'-' '{print $1"-"$2}' | xargs)
+#   sudo sh -c "$remove_command $packages_to_remove"
+#   rpm -qa | grep -iE 'maria|mysql' || true
+# fi
+# if [[ $test_mode == "deps" ]]; then
+#   sudo mv "$repo_location/MariaDB.repo" /tmp
+#   sudo rm -rf "$repo_location/*"
+#   sudo mv /tmp/MariaDB.repo "$repo_location/"
+#   sudo sh -c "$cleanup_command"
+# fi
 
 # Install the new packages:
 # Between 10.3 and 10.4(.2), required galera version changed from galera(-3) to galera-4.
@@ -245,8 +239,25 @@ fi
 # gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 # gpgcheck=1' > $repo_location/galera.repo"
 # fi
-sudo sh -c "$upgrade_command"
-set +e
+
+# //TEMP upgrade does not work without this but why? Can't we fix it?
+if [[ $test_type == "major" ]]; then
+  bb_log_info "remove old packages for major upgrade"
+  packages_to_remove=$(rpm -qa | grep 'MariaDB-' | awk -F'-' '{print $1"-"$2}')
+  echo "$packages_to_remove" | xargs sudo "$pkg_cmd" -y remove
+  rpm -qa | grep -iE 'maria|mysql' || true
+fi
+
+rpm_setup_bb_galera_artifacts_mirror
+rpm_setup_bb_artifacts_mirror
+if [[ $test_type == "major" ]]; then
+  # major upgrade (remove then install)
+  echo "$pkg_list" | xargs sudo "$pkg_cmd" -y install
+else
+  # minor upgrade (upgrade works)
+  echo "$pkg_list" | xargs sudo "$pkg_cmd" -y upgrade
+fi
+# set +e
 
 # Check that no old packages have left after upgrade
 # The check is only performed for all-package-upgrade, because
@@ -271,14 +282,15 @@ if [[ $test_type == "major" ]]; then
 fi
 
 # Make sure that the new server is running
-if mysql -uroot -prootpass -e "select @@version" | grep "$old_version"; then
+if sudo mariadb -e "select @@version" | grep "$old_version"; then
   bb_log_err "the server was not upgraded or was not restarted after upgrade"
   exit 1
 fi
 
-# Run mysql_upgrade for non-GA branches (minor upgrades in GA branches shouldn't need it)
+# Run mariadb-upgrade for non-GA branches (minor upgrades in GA branches
+# shouldn't need it)
 if [[ $major_version == "$development_branch" ]] || [[ $test_type == "major" ]]; then
-  sudo -u mysql mysql_upgrade -uroot -prootpass
+  sudo mariadb-upgrade
 fi
 set +e
 

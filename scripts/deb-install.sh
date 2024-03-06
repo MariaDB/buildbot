@@ -36,6 +36,9 @@ done
 # supposed to be done directly from artifacts, but maybe it is for dependencies?
 # deb_setup_mariadb_mirror "$master_branch"
 
+# setup galera repository (we need to test mariadb with latest produced galera version)A
+deb_setup_bb_galera_artifacts_mirror
+
 # setup repository for BB artifacts
 deb_setup_bb_artifacts_mirror
 
@@ -99,17 +102,8 @@ if [[ -n $spider_package_list ]]; then
   sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 apt-get install -y $spider_package_list"
 fi
 
-# Unix socket (after 10.3)
-if [ "${master_branch}" != 10.3 ]; then
-  sudo mysql -e "set password=password('rootpass')"
-else
-  # Even without unix_socket, on some of VMs the password might be not
-  # pre-created as expected. This command should normally fail.
-  sudo mysql -uroot -e "set password = password('rootpass')" >/dev/null 2>&1
-fi
-
-mysql --verbose -uroot -prootpass -e "create database test; use test; create table t(a int primary key) engine=innodb; insert into t values (1); select * from t; drop table t; drop database test; create user galera identified by 'gal3ra123'; grant all on *.* to galera;"
-mysql -uroot -prootpass -e "select @@version"
+sudo mariadb --verbose -e "create database test; use test; create table t(a int primary key) engine=innodb; insert into t values (1); select * from t; drop table t; drop database test; create user galera identified by 'gal3ra123'; grant all on *.* to galera;"
+sudo mariadb -e "select @@version"
 bb_log_info "test for MDEV-18563, MDEV-18526"
 set +e
 
@@ -118,13 +112,13 @@ control_mariadb_server stop
 sleep 1
 sudo pkill -9 mysqld
 for p in /bin /sbin /usr/bin /usr/sbin /usr/local/bin /usr/local/sbin; do
-  if test -x $p/mysql_install_db; then
-    sudo $p/mysql_install_db --no-defaults --user=mysql --plugin-maturity=unknown
+  if test -x $p/mariadb-install-db; then
+    sudo $p/mariadb-install-db --no-defaults --user=mysql --plugin-maturity=unknown
   else
-    bb_log_info "$p/mysql_install_db does not exist"
+    bb_log_info "$p/mariadb-install-db does not exist"
   fi
 done
-sudo mysql_install_db --no-defaults --user=mysql --plugin-maturity=unknown
+sudo mariadb-install-db --no-defaults --user=mysql --plugin-maturity=unknown
 set +e
 ## Install mariadb-test for further use
 # sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 apt-get install -y mariadb-test"

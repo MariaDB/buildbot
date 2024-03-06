@@ -5,14 +5,12 @@ almalinux-8:
     - amd64
     - aarch64
   type: rpm
-  install_only: True
 almalinux-9:
   version_name: 9
   arch:
     - amd64
     - aarch64
   type: rpm
-  install_only: True
 centos-7:
   version_name: 7
   arch:
@@ -53,6 +51,7 @@ debian-12:
     - amd64
     - aarch64
     - ppc64le
+    - x86
   type: deb
 debian-sid:
   version_name: sid
@@ -62,12 +61,6 @@ debian-sid:
     - ppc64le
     - x86
   type: deb
-fedora-37:
-  version_name: 37
-  arch:
-    - amd64
-    - aarch64
-  type: rpm
 fedora-38:
   version_name: 38
   arch:
@@ -108,7 +101,16 @@ rhel-9:
     - ppc64le
     - s390x
   type: rpm
-  has_install: False
+rockylinux-8:
+  version_name: 8
+  arch:
+    - amd64
+  type: rpm
+rockylinux-9:
+  version_name: 9
+  arch:
+    - amd64
+  type: rpm
 sles-12:
   version_name: 12
   arch:
