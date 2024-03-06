@@ -6,13 +6,13 @@ Command line example to manually build containers:
 
 ```console
 # debian
-cat debian.Dockerfile common.Dockerfile >Dockerfile
-docker build . -t mariadb.org/buildbot/debian:sid --build-arg MARIADB_BRANCH=10.7 --build-arg BASE_IMAGE=debian:sid
+cat debian.Dockerfile buildbot-worker.Dockerfile >Dockerfile
+docker build . -t mariadb.org/buildbot/debian:sid --build-arg MARIADB_BRANCH=11.1 --build-arg BASE_IMAGE=debian:sid
 # ubuntu
-cat debian.Dockerfile common.Dockerfile >Dockerfile
-docker build . -t mariadb.org/buildbot/ubuntu:22.04 --build-arg MARIADB_BRANCH=10.7 --build-arg BASE_IMAGE=ubuntu:22.04
+cat debian.Dockerfile buildbot-worker.Dockerfile >Dockerfile
+docker build . -t mariadb.org/buildbot/ubuntu:22.04 --build-arg MARIADB_BRANCH=11.1 --build-arg BASE_IMAGE=ubuntu:22.04
 # fedora
-cat fedora.Dockerfile common.Dockerfile >Dockerfile
+cat fedora.Dockerfile buildbot-worker.Dockerfile >Dockerfile
 docker build . -t mariadb.org/buildbot/fedora:39 --build-arg BASE_IMAGE=fedora:39
 # almalinux9
 cat centos.Dockerfile pip.Dockerfile common.Dockerfile >Dockerfile
