@@ -145,12 +145,12 @@ def select_test_failures(filters, include_failures=True):
     ],
     'test_name': [
       {
-        'pattern': '^[a-zA-Z0-9_.-]*$',
+        'pattern': '^[/a-zA-Z0-9_.-]*$',
         'filter': [('test_name__exact', 'AND')],
         'replace': False
       },
       {
-        'pattern': '^\*\.[a-zA-Z0-9_.-]*$',
+        'pattern': '^\*\.[/a-zA-Z0-9_.-]*$',
         'filter': [('test_name__icontains', 'AND')],
         'replace': True
       }
