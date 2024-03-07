@@ -50,7 +50,8 @@ RUN useradd -ms /bin/bash buildbot && \
 
 # pam tests
 RUN for t in auth account; do echo "$t required pam_unix.so audit"; done >> /etc/pam.d/mysql
-RUN useradd -m pamtest --password pamtest
+# password: pamtest, but needed to be passed in crypt format otherwise silently ignored
+RUN useradd -m pamtest --password '$6$HGAoutbdknZeXJOb$1sQ5xzaCC0KUmc10FeVUFZSS1LbhoI/1hEEhaqe7zLLINGfnq7tz1lqjbXenIiNwe5m9TKGs4Lx68tQ/lrO9A1'
 
 # Hope to eventualy move away from needing sudo rights
 RUN usermod -a -G sudo buildbot
