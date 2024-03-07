@@ -52,6 +52,7 @@ private["worker_pass"]= {
     "bbw1-windows":"1234",
     "bbw2-windows":"1234",
     "bb-rhel8-docker":"1234",
+    "monty-bbw1-worker": "1234",
     "s390x-rhel8":"1234",
     "libvirt": "1234",
 }
