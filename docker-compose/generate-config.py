@@ -20,6 +20,7 @@ MASTER_DIRECTORIES = [
     "master-galera",
     "master-protected-branches",
     "master-docker-nonstandard-2",
+    "master-bintars",
 ]
 
 START_TEMPLATE = """
