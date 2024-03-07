@@ -174,6 +174,8 @@ case "${branch}" in
 	master)
 		mysqlifailtests+=( mysqli_reap_async_query_error mysqli_execute_query.phpt ) # https://github.com/php/php-src/pull/10029
 		mysqlifailtests+=( mysqli_connect ) # Using Password - like b6b4a628a5009024f9
+		mysqlifailtests+=( gh8978 ) # 11.4 Warning: mysqli_real_connect(): This stream does not support SSL/crypto in
+		                            # <11.4 - requires TLS setup on server maybe to get right result
 		#mysqlifailtests+=( mysqli_change_user ) # will below 3 - fail on 7.1, not mdb-10.2. TODO
 		#mysqlifailtests+=( mysqli_change_user_old ) # TODO
 		#mysqlifailtests+=( mysqli_change_user_oo ) # TODO
