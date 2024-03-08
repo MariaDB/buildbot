@@ -102,6 +102,7 @@ supportedPlatforms["10.4"] = [
     "ppc64le-ubuntu-2004",
     "ppc64le-ubuntu-2004-debug",
     "ppc64le-ubuntu-2004-without-server",
+    "x86-debian-12-fulltest",
 ]
 
 supportedPlatforms["10.5"] = [
@@ -113,6 +114,7 @@ supportedPlatforms["10.5"] = [
     "amd64-centos-stream9",
     "amd64-debian-11",
     "amd64-debian-11-msan",
+    "amd64-debian-11-msan-clang-16",
     "amd64-debian-12-asan-ubsan",
     "amd64-debian-12-rocksdb",
     "amd64-fedora-38",
