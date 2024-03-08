@@ -413,7 +413,7 @@ services:
       - MASTER_PACKAGES_DIR
       - MQ_ROUTER_URL
       - BUILDMASTER_URL
-      - PORT=10004
+      - PORT=10007
     hostname: master-docker-nonstandard-2
     volumes:
       - ./logs:/var/log/buildbot
