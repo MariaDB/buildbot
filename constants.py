@@ -85,6 +85,8 @@ supportedPlatforms["10.4"] = [
     "amd64-debian-10-debug-embedded",
     "amd64-debian-10-last-N-failed",
     "amd64-debian-11-debug-ps-embedded",
+    "amd64-kvm-ubuntu-1210-bintar",
+    "amd64-kvm-ubuntu-1604-bintar",
     "amd64-opensuse-15",
     "amd64-rhel-7",
     "amd64-rhel-8",
