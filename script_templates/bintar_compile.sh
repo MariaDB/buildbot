@@ -4,7 +4,6 @@
 # The script CANNOT BE EXECUTED DIRECTLY, it is a template for the buildbot to use.
 
 set -o errexit
-set -o nounset
 set -o pipefail
 set -o posix
 
