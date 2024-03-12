@@ -23,5 +23,5 @@ find mkbin/plugin/ -name "provider*.so"
 num_providers_built=$(find mkbin/plugin/ -name "provider*.so" | wc -l)
 
 if ((num_providers_built != num_providers_expected)); then
-  err "ERROR: Found $num_providers_built provider libraries, expected $num_providers_expected"
+  err "found $num_providers_built provider libraries, expected $num_providers_expected"
 fi
