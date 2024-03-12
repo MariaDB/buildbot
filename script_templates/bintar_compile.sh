@@ -56,9 +56,6 @@ case $branch in
     EV=$branch
     EV=-DEXTRA_VERSION=-${EV#preview-*.*-}
     ;;
-  *)
-    err "branch is missing"
-    ;;
 esac
 export JAVA_HOME=/usr/lib/jvm/java
 cmake -DBUILD_CONFIG=mysql_release -DWITH_READLINE=1 "$EV $extra $cmake" ..
