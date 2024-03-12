@@ -85,8 +85,6 @@ supportedPlatforms["10.4"] = [
     "amd64-debian-10-debug-embedded",
     "amd64-debian-10-last-N-failed",
     "amd64-debian-11-debug-ps-embedded",
-    "amd64-kvm-ubuntu-1210-bintar",
-    "amd64-kvm-ubuntu-1604-bintar",
     "amd64-opensuse-15",
     "amd64-rhel-7",
     "amd64-rhel-8",
@@ -107,7 +105,14 @@ supportedPlatforms["10.4"] = [
     "x86-debian-12-fulltest",
 ]
 
-supportedPlatforms["10.5"] = [
+supportedPlatforms["10.5"] = supportedPlatforms["10.4"].copy()
+
+# Add only 10.4 supported platforms
+supportedPlatforms["10.4"] += [
+    "amd64-kvm-ubuntu-1210-bintar",
+]
+
+supportedPlatforms["10.5"] += [
     "aarch64-centos-stream9",
     "aarch64-debian-11",
     "aarch64-fedora-38",
@@ -134,9 +139,15 @@ supportedPlatforms["10.5"] = [
     "s390x-sles-15",
     "s390x-ubuntu-2004",
 ]
-supportedPlatforms["10.5"] += supportedPlatforms["10.4"]
 
-supportedPlatforms["10.6"] = [
+supportedPlatforms["10.6"] = supportedPlatforms["10.5"].copy()
+
+# Add only 10.5 supported platforms
+supportedPlatforms["10.5"] += [
+    "amd64-kvm-ubuntu-1604-bintar",
+]
+
+supportedPlatforms["10.6"] += [
     "aarch64-ubuntu-2204",
     "amd64-almalinux-8",
     "amd64-almalinux-9",
@@ -147,7 +158,6 @@ supportedPlatforms["10.6"] = [
     "s390x-ubuntu-2204",
     "x86-debian-12",
 ]
-supportedPlatforms["10.6"] += supportedPlatforms["10.5"]
 
 supportedPlatforms["10.9"] = supportedPlatforms["10.6"].copy()
 
