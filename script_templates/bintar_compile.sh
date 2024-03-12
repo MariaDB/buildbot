@@ -1,8 +1,17 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # This is a template file for a shell script that is used to compile a binary tarball.
 # The script CANNOT BE EXECUTED DIRECTLY, it is a template for the buildbot to use.
-set -ex
+
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o posix
+
+err() {
+  echo >&2 "ERROR: $*"
+  exit 1
+}
 
 #distdirname="%(prop:distdirname)s"
 branch="%(prop:branch)s"
@@ -30,22 +39,29 @@ extra=""
 #      done
 #  fi
 #fi
-cd buildbot/build
+cd buildbot/build || err "cd buildbot/build"
 mkdir mkbin
 cd mkbin
 echo "$PATH"
 echo "$SHELL"
-if [ -d "$HOME"/local/lib ] ; then
+
+if [[ -d "$HOME"/local/lib ]]; then
   export CMAKE_LIBRARY_PATH="$HOME/local/lib"
 fi
-if [ -d "$HOME"/local/share/pkgconfig ] ; then
+if [[ -d "$HOME"/local/share/pkgconfig ]]; then
   export PKG_CONFIG_PATH="$HOME/local/share/pkgconfig"
 fi
 case $branch in
-  preview-*) EV=$branch; EV=-DEXTRA_VERSION=-${EV#preview-*.*-} ;;
+  preview-*)
+    EV=$branch
+    EV=-DEXTRA_VERSION=-${EV#preview-*.*-}
+    ;;
+  *)
+    err "branch is missing"
+    ;;
 esac
 export JAVA_HOME=/usr/lib/jvm/java
-cmake -DBUILD_CONFIG=mysql_release -DWITH_READLINE=1 $EV "$extra" $cmake ..
-make -j4 package VERBOSE=1
-basename mariadb-*.tar.gz .tar.gz > ../../bindistname.txt
+cmake -DBUILD_CONFIG=mysql_release -DWITH_READLINE=1 "$EV $extra $cmake" ..
+make -j"$(nproc)" package VERBOSE=1
+basename mariadb-*.tar.gz .tar.gz >../../bindistname.txt
 mv "$(cat ../../bindistname.txt).tar.gz" ../
