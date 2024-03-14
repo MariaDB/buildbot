@@ -109,7 +109,10 @@ supportedPlatforms["10.5"] = supportedPlatforms["10.4"].copy()
 
 # Add only 10.4 supported platforms
 supportedPlatforms["10.4"] += [
+    "amd64-kvm-centos-6-bintar",
     "amd64-kvm-ubuntu-1210-bintar",
+    "x86-kvm-centos-6-bintar",
+    "x86-kvm-ubuntu-1210-bintar",
 ]
 
 supportedPlatforms["10.5"] += [
@@ -144,7 +147,10 @@ supportedPlatforms["10.6"] = supportedPlatforms["10.5"].copy()
 
 # Add only 10.5 supported platforms
 supportedPlatforms["10.5"] += [
+    "amd64-kvm-centos-6-bintar",
     "amd64-kvm-ubuntu-1604-bintar",
+    "x86-kvm-centos-6-bintar",
+    "x86-kvm-ubuntu-1604-bintar",
 ]
 
 supportedPlatforms["10.6"] += [
