@@ -7,8 +7,6 @@ branches_main = [
     "10.4",
     "10.5",
     "10.6",
-    "10.8",
-    "10.10",
     "10.11",
     "11.0",
     "11.1",
@@ -23,6 +21,7 @@ branches_main = [
 
 # Defines what builders report status to GitHub
 github_status_builders = [
+    "aarch64-macos",
     "amd64-centos-7",
     "amd64-centos-7-rpm-autobake",
     "amd64-debian-10",
@@ -50,7 +49,6 @@ builders_wordpress = ["amd64-rhel8-wordpress"]
 builders_galera_mtr = [
     "aarch64-debian-12",
     "amd64-fedora-39",
-    "amd64-ubuntu-2304",
     "s390x-ubuntu-2004",
     "s390x-ubuntu-2204",
     "ppc64le-ubuntu-2004",
@@ -104,9 +102,20 @@ supportedPlatforms["10.4"] = [
     "ppc64le-ubuntu-2004",
     "ppc64le-ubuntu-2004-debug",
     "ppc64le-ubuntu-2004-without-server",
+    "x86-debian-12-fulltest",
 ]
 
-supportedPlatforms["10.5"] = [
+supportedPlatforms["10.5"] = supportedPlatforms["10.4"].copy()
+
+# Add only 10.4 supported platforms
+supportedPlatforms["10.4"] += [
+    "amd64-kvm-centos-6-bintar",
+    "amd64-kvm-ubuntu-1210-bintar",
+    "x86-kvm-centos-6-bintar",
+    "x86-kvm-ubuntu-1210-bintar",
+]
+
+supportedPlatforms["10.5"] += [
     "aarch64-centos-stream9",
     "aarch64-debian-11",
     "aarch64-fedora-38",
@@ -115,6 +124,7 @@ supportedPlatforms["10.5"] = [
     "amd64-centos-stream9",
     "amd64-debian-11",
     "amd64-debian-11-msan",
+    "amd64-debian-11-msan-clang-16",
     "amd64-debian-12-asan-ubsan",
     "amd64-debian-12-rocksdb",
     "amd64-fedora-38",
@@ -132,9 +142,18 @@ supportedPlatforms["10.5"] = [
     "s390x-sles-15",
     "s390x-ubuntu-2004",
 ]
-supportedPlatforms["10.5"] += supportedPlatforms["10.4"]
 
-supportedPlatforms["10.6"] = [
+supportedPlatforms["10.6"] = supportedPlatforms["10.5"].copy()
+
+# Add only 10.5 supported platforms
+supportedPlatforms["10.5"] += [
+    "amd64-kvm-centos-6-bintar",
+    "amd64-kvm-ubuntu-1604-bintar",
+    "x86-kvm-centos-6-bintar",
+    "x86-kvm-ubuntu-1604-bintar",
+]
+
+supportedPlatforms["10.6"] += [
     "aarch64-ubuntu-2204",
     "amd64-almalinux-8",
     "amd64-almalinux-9",
@@ -145,7 +164,6 @@ supportedPlatforms["10.6"] = [
     "s390x-ubuntu-2204",
     "x86-debian-12",
 ]
-supportedPlatforms["10.6"] += supportedPlatforms["10.5"]
 
 supportedPlatforms["10.9"] = supportedPlatforms["10.6"].copy()
 
@@ -157,11 +175,9 @@ supportedPlatforms["10.10"] += supportedPlatforms["10.9"]
 supportedPlatforms["10.11"] = [
     "aarch64-debian-12",
     "aarch64-debian-sid",
-    "aarch64-ubuntu-2304",
     "aarch64-ubuntu-2310",
     "amd64-debian-12",
     "amd64-debian-sid",
-    "amd64-ubuntu-2304",
     "amd64-ubuntu-2310",
     "ppc64le-debian-sid",
     "x86-debian-sid",

@@ -10,7 +10,6 @@ builders:
 - aarch64-rhel-9
 - aarch64-ubuntu-2004
 - aarch64-ubuntu-2204
-- aarch64-ubuntu-2304
 log_name: master-docker-aarch64-0.log
 port: 9998
 workers:

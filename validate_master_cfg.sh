@@ -29,7 +29,7 @@ $RUNC run -i -v "$(pwd):/srv/buildbot/master" -w /srv/buildbot/master quay.io/ma
 echo -e "done\n"
 # not checking libvirt config file (//TEMP we need to find a solution
 # to not check ssh connection)
-for dir in master-docker-nonstandard master-docker-nonstandard-2 master-galera master-nonlatent master-web master-protected-branches autogen/*; do
+for dir in master-bintars master-docker-nonstandard master-docker-nonstandard-2 master-galera master-nonlatent master-web master-protected-branches autogen/*; do
   echo "Checking $dir/master.cfg"
   $RUNC run -i -v "$(pwd):/srv/buildbot/master" -w /srv/buildbot/master quay.io/mariadb-foundation/bb-master:master bash -c "cd $dir && buildbot checkconfig master.cfg"
   echo -e "done\n"

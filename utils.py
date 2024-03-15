@@ -681,3 +681,8 @@ def getMetric(hostname, metric):
     assert elapsed_from_last < 80
 
     return last_value
+
+
+def read_template(template_name):
+    with open(f"/srv/buildbot/master/script_templates/{template_name}.sh", "r") as f:
+        return f.read()

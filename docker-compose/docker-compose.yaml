@@ -413,7 +413,7 @@ services:
       - MASTER_PACKAGES_DIR
       - MQ_ROUTER_URL
       - BUILDMASTER_URL
-      - PORT=10004
+      - PORT=10007
     hostname: master-docker-nonstandard-2
     volumes:
       - ./logs:/var/log/buildbot
@@ -495,6 +495,39 @@ services:
       net_back:
     ports:
       - "100.64.101.1:10006:10006"
+    depends_on:
+      - mariadb
+      - crossbar
+  master-bintars:
+    image: quay.io/mariadb-foundation/bb-master:master
+    restart: unless-stopped
+    container_name: master-bintars
+    environment:
+      - GALERA_PACKAGES_DIR
+      - ENVIRON
+      - TITLE
+      - BRANCH
+      - ARTIFACTS_URL
+      - TITLE_URL
+      - BUILDMASTER_WG_IP
+      - NGINX_ARTIFACTS_VHOST
+      - MASTER_PACKAGES_DIR
+      - MQ_ROUTER_URL
+      - BUILDMASTER_URL
+      - PORT=10004
+    hostname: master-bintars
+    volumes:
+      - ./logs:/var/log/buildbot
+      - ./buildbot/:/srv/buildbot/master
+    entrypoint:
+      - /bin/bash
+      - -c
+      - "/srv/buildbot/master/docker-compose/start.sh master-bintars"
+    networks:
+      net_front:
+      net_back:
+    ports:
+      - "100.64.101.1:10008:10008"
     depends_on:
       - mariadb
       - crossbar
