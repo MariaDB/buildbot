@@ -85,7 +85,8 @@ annotate() {
 # Annotations - https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys
 build() {
   image=mariadb-${tarbuildnum}-${builderarch}
-  local galera_repo="deb [trusted=yes] https://buildbot.mariadb.net/archive/builds/mariadb-4.x/latest/kvm-deb-${bbnet}-${builderarch}-gal/debs/ ./"
+  local galera_repo
+  galera_repo="deb [trusted=yes] $(curl "$artifacts_url"/galera/mariadb-4.x-latest-gal-"${buildername%-deb-autobake}".sources | sed '/URIs: /!d ; s///;q') ./"
   # s390x on focal broken - test failure  gcache_tests -> gcache::RbStore - https://buildbot.mariadb.org/#/builders/gal-s390x-ubuntu-2004
   if [ "$1" = s390x ]; then
     galera_repo=""
