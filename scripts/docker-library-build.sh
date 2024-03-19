@@ -31,6 +31,7 @@ buildername=${3:-amd64-ubuntu-2004-deb-autobake}
 master_branch=${mariadb_version%\.*}
 commit=${4:-0}
 branch=${5:-${master_branch}}
+artifacts_url=${ARTIFACTS_URL:-https://ci.mariadb.org}
 
 # keep in sync with docker-cleanup script
 if [[ $branch =~ ^preview ]]; then
@@ -88,7 +89,7 @@ build() {
   buildah bud --tag "${image}" \
     --layers \
     --arch "$@" \
-    --build-arg REPOSITORY="[trusted=yes] https://ci.mariadb.org/$tarbuildnum/${buildername}/debs ./\n$galera_repo" \
+    --build-arg REPOSITORY="[trusted=yes] $artifacts_url/$tarbuildnum/${buildername}/debs ./\n$galera_repo" \
     --build-arg MARIADB_VERSION="1:$mariadb_version+maria~$pkgver" \
     "${annotations[@]}" \
     "mariadb-docker/$master_branch"
