@@ -160,20 +160,32 @@ if (($(buildah manifest inspect "$devmanifest" | jq '.manifests | length') >= ex
   specialtags['earliest-lts']=$(jq '.major_releases | map(select(.release_status == "Stable" and .release_support_type == "Long Term Support" and (( (.release_eol_date // "2031-01-01") + "T00:00:00Z") | fromdate) > now ))[-1].release_id' < "$t")
   for tag in "${!specialtags[@]}"; do
     if [ \""$container_tag"\" == "${specialtags[$tag]}" ]; then
-      buildah manifest push --all "$devmanifest" "docker://quay.io/mariadb-foundation/mariadb-devel:$tag"
+      if [ "$ENVIRON" = "PROD" ]; then
+        buildah manifest push --all "$devmanifest" "docker://quay.io/mariadb-foundation/mariadb-devel:$tag"
+      else
+        echo "not pushing quay.io/mariadb-foundation/mariadb-devel:$tag as not a PROD environment"
+      fi
     fi
   done
   rm "$t"
 
   buildah manifest inspect "$devmanifest" | tee "${t}"
   trap 'manifest_image_cleanup "$t"' EXIT
-  buildah manifest push --all --rm "$devmanifest" "docker://quay.io/mariadb-foundation/mariadb-devel:${container_tag}"
+  if [ "$ENVIRON" = "PROD" ]; then
+    buildah manifest push --all --rm "$devmanifest" "docker://quay.io/mariadb-foundation/mariadb-devel:${container_tag}"
+  else
+    buildah manifest rm "$devmanifest"
+  fi
   manifest_image_cleanup "$t"
 
   t=$(mktemp)
   buildah manifest inspect "$debugmanifest" | tee "${t}"
   trap 'manifest_image_cleanup "$t"' EXIT
-  buildah manifest push --all --rm "$debugmanifest" "docker://quay.io/mariadb-foundation/mariadb-debug:${container_tag}"
+  if [ "$ENVIRON" = "PROD" ]; then
+    buildah manifest push --all --rm "$debugmanifest" "docker://quay.io/mariadb-foundation/mariadb-debug:${container_tag}"
+  else
+    buildah manifest rm "$debugmanifest"
+  fi
   manifest_image_cleanup "$t"
 
   buildah images
