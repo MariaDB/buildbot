@@ -8,6 +8,7 @@ cd mysql
 id
 ls -la
 chmod -R go-w .
+chown -R root: .
 git clean -dfx
 git pull --tags
 if [ $# -gt 0 ]
