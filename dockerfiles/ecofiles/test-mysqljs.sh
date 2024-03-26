@@ -36,7 +36,8 @@ rm -f test/unit/connection/test-connection-ssl-reject.js \
 	 test/unit/connection/test-connection-ssl-max-version-accept.js \
 	 test/unit/connection/test-connection-ssl-max-version-reject.js \
 	 test/unit/connection/test-connection-ssl-min-version-accept.js \
-	 test/unit/connection/test-connection-ssl-min-version-reject.js
+	 test/unit/connection/test-connection-ssl-min-version-reject.js \
+	 test/integration/connection/test-server-timeout-disconnect.js
 
 #npm install -g npm@8.5.5
 npm install
