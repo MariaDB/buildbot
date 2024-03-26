@@ -9,6 +9,7 @@ buildername=${3:-amd64-ubuntu-2004-deb-autobake}
 master_branch=${mariadb_version%\.*}
 commit=${4:-0}
 branch=${5:-${master_branch}}
+prod_environment=${6:-True}
 
 # keep in sync with docker-cleanup script
 if [[ $branch = *pkgtest* ]]; then
@@ -160,7 +161,7 @@ if (($(buildah manifest inspect "$devmanifest" | jq '.manifests | length') >= ex
   specialtags['earliest-lts']=$(jq '.major_releases | map(select(.release_status == "Stable" and .release_support_type == "Long Term Support" and (( (.release_eol_date // "2031-01-01") + "T00:00:00Z") | fromdate) > now ))[-1].release_id' < "$t")
   for tag in "${!specialtags[@]}"; do
     if [ \""$container_tag"\" == "${specialtags[$tag]}" ]; then
-      if [ "$ENVIRON" = "PROD" ]; then
+      if [ "$prod_environment" = "True" ]; then
         buildah manifest push --all "$devmanifest" "docker://quay.io/mariadb-foundation/mariadb-devel:$tag"
       else
         echo "not pushing quay.io/mariadb-foundation/mariadb-devel:$tag as not a PROD environment"
@@ -171,7 +172,7 @@ if (($(buildah manifest inspect "$devmanifest" | jq '.manifests | length') >= ex
 
   buildah manifest inspect "$devmanifest" | tee "${t}"
   trap 'manifest_image_cleanup "$t"' EXIT
-  if [ "$ENVIRON" = "PROD" ]; then
+  if [ "$prod_environment" = "True" ]; then
     buildah manifest push --all --rm "$devmanifest" "docker://quay.io/mariadb-foundation/mariadb-devel:${container_tag}"
   else
     buildah manifest rm "$devmanifest"
