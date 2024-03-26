@@ -18,6 +18,8 @@ then
     git worktree add ../"$1" "$1"
   fi
   cd ../"$1"
+  chmod -R go-w .
+  chown -R root: .
   # this is right for tags, not for branches yet
   git checkout "$1"
 fi
