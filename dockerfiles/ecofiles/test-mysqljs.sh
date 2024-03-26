@@ -5,6 +5,7 @@ set -xeuvo pipefail
 cd /code
 [ -d mysql ] || git clone https://github.com/mysqljs/mysql
 cd mysql
+ls -la
 chmod -R go-w .
 git clean -dfx
 git pull --tags
