@@ -118,8 +118,6 @@ supportedPlatforms["10.4"] += [
 supportedPlatforms["10.5"] += [
     "aarch64-centos-stream9",
     "aarch64-debian-11",
-    "aarch64-fedora-38",
-    "aarch64-fedora-39",
     "aarch64-rhel-9",
     "amd64-centos-stream9",
     "amd64-debian-11",
@@ -127,9 +125,6 @@ supportedPlatforms["10.5"] += [
     "amd64-debian-11-msan-clang-16",
     "amd64-debian-12-asan-ubsan",
     "amd64-debian-12-rocksdb",
-    "amd64-fedora-38",
-    "amd64-fedora-38-last-N-failed",
-    "amd64-fedora-39",
     "amd64-freebsd-14",
     "amd64-rhel-9",
     "ppc64be-aix-71",
@@ -154,9 +149,14 @@ supportedPlatforms["10.5"] += [
 ]
 
 supportedPlatforms["10.6"] += [
+    "aarch64-fedora-38",
+    "aarch64-fedora-39",
     "aarch64-ubuntu-2204",
     "amd64-almalinux-8",
     "amd64-almalinux-9",
+    "amd64-fedora-38",
+    "amd64-fedora-38-last-N-failed",
+    "amd64-fedora-39",
     "amd64-rockylinux-8",
     "amd64-rockylinux-9",
     "amd64-ubuntu-2204",
