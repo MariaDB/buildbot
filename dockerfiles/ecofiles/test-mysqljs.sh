@@ -36,10 +36,7 @@ rm -f test/unit/connection/test-connection-ssl-reject.js \
 	 test/unit/connection/test-connection-ssl-max-version-accept.js \
 	 test/unit/connection/test-connection-ssl-max-version-reject.js \
 	 test/unit/connection/test-connection-ssl-min-version-accept.js \
-	 test/unit/connection/test-connection-ssl-min-version-reject.js \
-	 test/integration/connection/test-server-timeout-disconnect.js \
-	 test/integration/connection/test-statistics.js \
-	 test/integration/connection/test-load-data-infile-disable.js
+	 test/unit/connection/test-connection-ssl-min-version-reject.js
 
 #npm install -g npm@8.5.5
 npm install
@@ -54,15 +51,14 @@ cd ..
 
 VERSION=$(/usr/local/mariadb/bin/mysql -u root --column-names=0 -B -e "SELECT VERSION()")
 
-case "${VERSION}" in
-10\.[5-9]\.*)
+if [[ ! $VERSION =~ 10\.4\.* ]]; then
 # awaiting fix https://github.com/mysqljs/mysql/pull/2442
 	sed -i -e '/flush_tables/d' test/integration/connection/test-statistics.js
 # From https://github.com/mysqljs/mysql/pull/2442/files#diff-5979044946698d18a2cdc979898085cdddf5f9911974e8e7a4476efd25c07d82R35
 # ER_LOAD_INFILE_CAPABILITY_DISABLED
 	sed -i -e "s/err.code, 'ER_NOT_ALLOWED_COMMAND'/err.errno, 4166/" test/integration/connection/test-load-data-infile-disable.js
 	sed -i -e 's/PROTOCOL_CONNECTION_LOST/ECONNRESET/g' test/integration/connection/test-server-timeout-disconnect.js
-esac
+fi
 
 cd ./test
 # Run integration test - we are more interested in this!
