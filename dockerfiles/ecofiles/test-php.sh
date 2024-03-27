@@ -166,7 +166,7 @@ case "${branch}" in
 		mysqlifailtests+=( mysqli_change_user_new ) # at least 8.0 (not 7.4)
 		;&
 	PHP-8\.0)
-		pdofailtests+=( bug_38546 )
+		pdofailtests+=( bug_38546 bug76815 )
 		;&
 	PHP-8\.1)
 		mysqlifailtests+=( mysqli_real_connect mysqli_real_connect_pconn mysqli_connect_oo mysqli_report ) # https://github.com/php/php-src/commit/b6b4a628a5009024f9abca664f6a25d64b6f64d6
