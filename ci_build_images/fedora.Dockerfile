@@ -26,6 +26,7 @@ RUN dnf -y upgrade \
     fmt-devel \
     galera \
     gawk \
+    gdb \
     iproute \
     java-1.8.0-openjdk-devel \
     java-1.8.0-openjdk \
