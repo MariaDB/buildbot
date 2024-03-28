@@ -414,7 +414,6 @@ services:
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
-      - /var/run/docker.sock:/var/run/docker.sock
     entrypoint:
       - /bin/bash
       - -c
@@ -526,7 +525,6 @@ services:
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
-      - /var/run/docker.sock:/var/run/docker.sock
     entrypoint:
       - /bin/bash
       - -c
