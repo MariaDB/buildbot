@@ -110,8 +110,7 @@ DOCKER_COMPOSE_TEMPLATE = """
     container_name: {master_name}
     hostname: {master_name}
     volumes:
-      - ./logs:/var/log/buildbot
-      - ./buildbot/:/srv/buildbot/master
+      {volumes}
     entrypoint:
       - /bin/bash
       - -c
@@ -202,10 +201,17 @@ def main(args):
         port = starting_port
         for master_directory in MASTER_DIRECTORIES:
             master_name = master_directory.replace("/", "_")
+            if "nonstandard" in master_name:
+                volumes = "- ./logs:/var/log/buildbot\n\
+      - ./buildbot/:/srv/buildbot/master\n\
+      - /var/run/docker.sock:/var/run/docker.sock"
+            else:
+                volumes = "- ./logs:/var/log/buildbot\n      - ./buildbot/:/srv/buildbot/master"
 
             # Generate Docker Compose piece
             docker_compose_piece = docker_compose_template.format(
                 master_name=master_name,
+                volumes=volumes,
                 master_directory=master_directory,
                 port=port,
                 buildmaster_wg_ip=env_vars["BUILDMASTER_WG_IP"],
