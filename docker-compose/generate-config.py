@@ -153,7 +153,7 @@ networks:
 # Function to construct environment section for Docker Compose
 def construct_env_section(env_vars):
     env_section = "    environment:\n"
-    for key, value in env_vars.items():
+    for key, value in sorted(env_vars.items()):
         if key != "PORT":
             env_section += f"      - {key}\n"
         else:
