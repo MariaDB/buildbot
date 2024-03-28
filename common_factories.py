@@ -68,8 +68,8 @@ class FetchTestData(MTR):
 
         return results.SUCCESS
 
-def addPostTests(f_quick_build):
-    f_quick_build.addStep(
+def addPostTests(build):
+    build.addStep(
         steps.DirectoryUpload(
             name="save log files",
             compress="bz2",
@@ -85,7 +85,7 @@ def addPostTests(f_quick_build):
     )
 
     ## trigger packages
-    f_quick_build.addStep(
+    build.addStep(
         steps.Trigger(
             schedulerNames=["s_packages"],
             waitForFinish=False,
@@ -101,7 +101,7 @@ def addPostTests(f_quick_build):
         )
     )
     ## trigger bigtest
-    f_quick_build.addStep(
+    build.addStep(
         steps.Trigger(
             schedulerNames=["s_bigtest"],
             waitForFinish=False,
@@ -116,14 +116,14 @@ def addPostTests(f_quick_build):
         )
     )
     # create package and upload to master
-    f_quick_build.addStep(
+    build.addStep(
         steps.SetPropertyFromCommand(
             command="basename mariadb-*-linux-*.tar.gz",
             property="mariadb_binary",
             doStepIf=savePackage,
         )
     )
-    f_quick_build.addStep(
+    build.addStep(
         steps.ShellCommand(
             name="save_packages",
             timeout=7200,
@@ -139,7 +139,7 @@ def addPostTests(f_quick_build):
             doStepIf=savePackage,
         )
     )
-    f_quick_build.addStep(
+    build.addStep(
         steps.Trigger(
             name="eco",
             schedulerNames=["s_eco"],
@@ -156,12 +156,12 @@ def addPostTests(f_quick_build):
             doStepIf=lambda step: savePackage(step) and hasEco(step),
         )
     )
-    f_quick_build.addStep(
+    build.addStep(
         steps.ShellCommand(
             name="cleanup", command="rm -r * .* 2> /dev/null || true", alwaysRun=True
         )
     )
-    return f_quick_build
+    return build
 
 def getBuildFactoryPreTest(build_type="RelWithDebInfo", additional_args=""):
     f_quick_build = util.BuildFactory()
@@ -223,8 +223,8 @@ def getBuildFactoryPreTest(build_type="RelWithDebInfo", additional_args=""):
     )
     return f_quick_build
 
-def addTests(f_quick_build, test_type, mtrDbPool, mtrArgs):
-    f_quick_build.addStep(
+def addTests(build, test_type, mtrDbPool, mtrArgs):
+    build.addStep(
         steps.MTR(
             name=f"{test_type} test",
             logfiles={"mysqld*": "/buildbot/mysql_logs.html"},
@@ -246,12 +246,12 @@ def addTests(f_quick_build, test_type, mtrDbPool, mtrArgs):
         autoCreateTables=True,
         env=MTR_ENV,
     ))
-    f_quick_build.addStep(steps.ShellCommand(name=f"move {test_type} mariadb log files", alwaysRun=True, command=['bash', '-c', util.Interpolate(moveMTRLogs(output_dir=test_type), jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN'))]))
-    f_quick_build.addStep(steps.ShellCommand(name=f"create {test_type} var archive", alwaysRun=True, command=['bash', '-c', util.Interpolate(createVar(output_dir=test_type))], doStepIf=hasFailed))
-    return f_quick_build
+    build.addStep(steps.ShellCommand(name=f"move {test_type} mariadb log files", alwaysRun=True, command=['bash', '-c', util.Interpolate(moveMTRLogs(output_dir=test_type), jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN'))]))
+    build.addStep(steps.ShellCommand(name=f"create {test_type} var archive", alwaysRun=True, command=['bash', '-c', util.Interpolate(createVar(output_dir=test_type))], doStepIf=hasFailed))
+    return build
 
-def addGaleraTests(f_quick_build, mtrDbPool):
-    f_quick_build.addStep(steps.MTR(
+def addGaleraTests(build, mtrDbPool):
+    build.addStep(steps.MTR(
         description="testing galera",
         descriptionDone="test galera",
         logfiles={"mysqld*": "/buildbot/mysql_logs.html"},
@@ -275,7 +275,7 @@ def addGaleraTests(f_quick_build, mtrDbPool):
             doStepIf=hasGalera,
         )
     )
-    f_quick_build.addStep(
+    build.addStep(
         steps.ShellCommand(
             name="move mariadb galera log files",
             alwaysRun=True,
@@ -292,7 +292,7 @@ def addGaleraTests(f_quick_build, mtrDbPool):
             doStepIf=hasGalera,
         )
     )
-    return f_quick_build
+    return build
 
 def getQuickBuildFactory(test_type, mtrDbPool):
     f = getBuildFactoryPreTest()
