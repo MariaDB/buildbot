@@ -549,6 +549,14 @@ def hasBigtest(props):
     return False
 
 
+def hasRpmLint(step):
+    builderName = str(step.getProperty("buildername"))
+    # The step fails on s390x SLES 12 due to permissions issues
+    if "s390x-sles-12" in builderName:
+        return False
+    return True
+
+
 @util.renderer
 def getArch(props):
     buildername = props.getProperty("buildername")
