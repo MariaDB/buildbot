@@ -445,7 +445,7 @@ def getRpmAutobakeFactory(mtrDbPool):
             description="cmake",
         )
     )
-    f_rpm_autobake.addStep(steps.RpmLint())
+    f_rpm_autobake.addStep(steps.RpmLint(doStepIf=hasRpmLint))
     f_rpm_autobake.addStep(
         steps.Compile(
             command=[
