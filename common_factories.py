@@ -11,6 +11,7 @@ from twisted.internet import defer
 from utils import *
 from constants import *
 
+
 # TODO for FetchTestData/getLastNFailedBuildsFactory
 #
 # * do something about skips (makes little sense to run N failed tests if
@@ -48,25 +49,32 @@ class FetchTestData(MTR):
 
     @defer.inlineCallbacks
     def run(self):
-        test_re = r'^(?:.+/)?mysql-test/(?:suite/)?(.+?)/(?:[rt]/)?([^/]+)\.(?:test|result|rdiff)$'
-        branch = self.getProperty('master_branch')
+        test_re = r"^(?:.+/)?mysql-test/(?:suite/)?(.+?)/(?:[rt]/)?([^/]+)\.(?:test|result|rdiff)$"
+        branch = self.getProperty("master_branch")
         limit = 50
 
         if branch:
             tests = yield self.get_tests_for_type(branch, self.test_type, limit)
-            if (len(tests) < limit):
+            if len(tests) < limit:
                 # if there're not enough failures for the given test_type
                 # bump it up with the failures for the default type.
                 # "mtr" is what buildbot uses when test_type wasn't set
-                tests += yield self.get_tests_for_type(branch, 'mtr', limit-len(tests))
+                tests += yield self.get_tests_for_type(
+                    branch, "mtr", limit - len(tests)
+                )
 
-            tests += (m.expand(r'\1.\2') for m in (re.search(test_re, f) for f in self.build.allFiles()) if m)
+            tests += (
+                m.expand(r"\1.\2")
+                for m in (re.search(test_re, f) for f in self.build.allFiles())
+                if m
+            )
 
             if tests:
-                test_args = ' '.join(tests)
-                self.setProperty('tests_to_run', test_args)
+                test_args = " ".join(tests)
+                self.setProperty("tests_to_run", test_args)
 
         return results.SUCCESS
+
 
 def addPostTests(f_quick_build):
     f_quick_build.addStep(
@@ -163,6 +171,7 @@ def addPostTests(f_quick_build):
     )
     return f_quick_build
 
+
 def getBuildFactoryPreTest(build_type="RelWithDebInfo", additional_args=""):
     f_quick_build = util.BuildFactory()
     f_quick_build.addStep(
@@ -212,7 +221,9 @@ def getBuildFactoryPreTest(build_type="RelWithDebInfo", additional_args=""):
                     jobs=util.Property("jobs", default="$(getconf _NPROCESSORS_ONLN)"),
                     c_compiler=util.Property("c_compiler", default="gcc"),
                     cxx_compiler=util.Property("cxx_compiler", default="g++"),
-                    additional_args=util.Property("additional_args", default=f"{additional_args}"),
+                    additional_args=util.Property(
+                        "additional_args", default=f"{additional_args}"
+                    ),
                     create_package=util.Property("create_package", default="package"),
                     verbose_build=util.Property("verbose_build", default=""),
                 ),
@@ -222,6 +233,7 @@ def getBuildFactoryPreTest(build_type="RelWithDebInfo", additional_args=""):
         )
     )
     return f_quick_build
+
 
 def addTests(f_quick_build, test_type, mtrDbPool, mtrArgs):
     f_quick_build.addStep(
@@ -236,27 +248,56 @@ def addTests(f_quick_build, test_type, mtrDbPool, mtrArgs):
                     f"""
             cd mysql-test &&
             exec perl mysql-test-run.pl {test_type_to_mtr_arg[test_type]} --verbose-restart --force --retry=3 --max-save-core=1 --max-save-datadir=10 --max-test-fail=20 --mem --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s
-            """, mtr_additional_args=mtrArgs,
-            jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN)'),
-        )],
-        timeout=950,
-        haltOnFailure="true",
-        parallel=mtrJobsMultiplier,
-        dbpool=mtrDbPool,
-        autoCreateTables=True,
-        env=MTR_ENV,
-    ))
-    f_quick_build.addStep(steps.ShellCommand(name=f"move {test_type} mariadb log files", alwaysRun=True, command=['bash', '-c', util.Interpolate(moveMTRLogs(output_dir=test_type), jobs=util.Property('jobs', default='$(getconf _NPROCESSORS_ONLN'))]))
-    f_quick_build.addStep(steps.ShellCommand(name=f"create {test_type} var archive", alwaysRun=True, command=['bash', '-c', util.Interpolate(createVar(output_dir=test_type))], doStepIf=hasFailed))
+            """,
+                    mtr_additional_args=mtrArgs,
+                    jobs=util.Property("jobs", default="$(getconf _NPROCESSORS_ONLN)"),
+                ),
+            ],
+            timeout=950,
+            haltOnFailure="true",
+            parallel=mtrJobsMultiplier,
+            dbpool=mtrDbPool,
+            autoCreateTables=True,
+            env=MTR_ENV,
+        )
+    )
+    f_quick_build.addStep(
+        steps.ShellCommand(
+            name=f"move {test_type} mariadb log files",
+            alwaysRun=True,
+            command=[
+                "bash",
+                "-c",
+                util.Interpolate(
+                    moveMTRLogs(output_dir=test_type),
+                    jobs=util.Property("jobs", default="$(getconf _NPROCESSORS_ONLN"),
+                ),
+            ],
+        )
+    )
+    f_quick_build.addStep(
+        steps.ShellCommand(
+            name=f"create {test_type} var archive",
+            alwaysRun=True,
+            command=["bash", "-c", util.Interpolate(createVar(output_dir=test_type))],
+            doStepIf=hasFailed,
+        )
+    )
     return f_quick_build
 
+
 def addGaleraTests(f_quick_build, mtrDbPool):
-    f_quick_build.addStep(steps.MTR(
-        description="testing galera",
-        descriptionDone="test galera",
-        logfiles={"mysqld*": "/buildbot/mysql_logs.html"},
-        test_type='nm',
-        command=["sh", "-c", util.Interpolate("""
+    f_quick_build.addStep(
+        steps.MTR(
+            description="testing galera",
+            descriptionDone="test galera",
+            logfiles={"mysqld*": "/buildbot/mysql_logs.html"},
+            test_type="nm",
+            command=[
+                "sh",
+                "-c",
+                util.Interpolate(
+                    """
            cd mysql-test &&
            if [ -f "$WSREP_PROVIDER" ]; then exec perl mysql-test-run.pl --verbose-restart --force --retry=3 --max-save-core=1 --max-save-datadir=10 --max-test-fail=20 --mem --big-test --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s --suite=wsrep,galera,galera_3nodes,galera_3nodes_sr; fi
            """,
@@ -294,40 +335,51 @@ def addGaleraTests(f_quick_build, mtrDbPool):
     )
     return f_quick_build
 
+
 def getQuickBuildFactory(test_type, mtrDbPool):
     f = getBuildFactoryPreTest()
-    addTests(f, test_type, mtrDbPool, util.Property( "mtr_additional_args", default=""))
+    addTests(f, test_type, mtrDbPool, util.Property("mtr_additional_args", default=""))
     addGaleraTests(f, mtrDbPool)
     return addPostTests(f)
+
 
 def getLastNFailedBuildsFactory(test_type, mtrDbPool):
     @util.renderer
     def getTests(props):
-        mtr_additional_args = props.getProperty('mtr_additional_args', '--suite=main')
-        tests_to_run = props.getProperty('tests_to_run', None)
+        mtr_additional_args = props.getProperty("mtr_additional_args", "--suite=main")
+        tests_to_run = props.getProperty("tests_to_run", None)
         if tests_to_run:
-            mtr_additional_args = re.sub('--suite=\S*', '--skip-not-found ' + tests_to_run, mtr_additional_args)
+            mtr_additional_args = re.sub(
+                "--suite=\S*", "--skip-not-found " + tests_to_run, mtr_additional_args
+            )
 
         return mtr_additional_args
 
-    config={
-            "nm": {
-                "args" : ("RelWithDebInfo", "-DWITH_EMBEDDED_SERVER=ON"),
-                "steps": ("nm", "ps", "emb", "emb-ps") # TODO "view"
-            },
-            "debug": {
-                "args" : ("Debug", "-DWITH_EMBEDDED_SERVER=ON"),
-                "steps": ("debug", "debug-ps", "debug-emb", "debug-emb-ps") # TODO "view"
-            }
+    config = {
+        "nm": {
+            "args": ("RelWithDebInfo", "-DWITH_EMBEDDED_SERVER=ON"),
+            "steps": ("nm", "ps", "emb", "emb-ps"),  # TODO "view"
+        },
+        "debug": {
+            "args": ("Debug", "-DWITH_EMBEDDED_SERVER=ON"),
+            "steps": ("debug", "debug-ps", "debug-emb", "debug-emb-ps"),  # TODO "view"
+        },
     }
 
-    f = getBuildFactoryPreTest(*config[test_type]['args'])
+    f = getBuildFactoryPreTest(*config[test_type]["args"])
 
-    for typ in config[test_type]['steps']:
-        f.addStep(FetchTestData(name=f"Get last N failed {typ} tests", mtrDbPool=mtrDbPool, test_type=typ))
+    for typ in config[test_type]["steps"]:
+        f.addStep(
+            FetchTestData(
+                name=f"Get last N failed {typ} tests",
+                mtrDbPool=mtrDbPool,
+                test_type=typ,
+            )
+        )
         addTests(f, typ, mtrDbPool, getTests)
 
     return addPostTests(f)
+
 
 def getRpmAutobakeFactory(mtrDbPool):
     ## f_rpm_autobake
