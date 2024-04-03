@@ -45,15 +45,12 @@ container_tag=${container_tag,,*}
 case "${buildername#*ubuntu-}" in
   2404-deb-autobake)
     pkgver=ubu2404
-    bbnet=noble
     ;;
   2204-deb-autobake)
     pkgver=ubu2204
-    bbnet=jammy
     ;;
   2004-deb-autobake)
     pkgver=ubu2004
-    bbnet=focal
     ;;
   *)
     echo "unknown base buildername $buildername"
