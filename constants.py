@@ -252,14 +252,15 @@ for os_i in os_info:
         if not ("install_only" in os_info[os_i] and os_info[os_i]["install_only"]):
             all_platforms.add(arch)
             builders_autobake.append(builder_name_autobake)
-            # Currently there are no VMs for x86 and s390x and OpenSUSE and SLES
-        addInstall = True
-        if "has_install" in os_info[os_i]:
-            addInstall = os_info[os_i]["has_install"]
-        if arch not in ["s390x", "x86"] and addInstall:
+        addUpgrade = True
+        if "has_upgrade" in os_info[os_i]:
+            addUpgrade = os_info[os_i]["has_upgrade"]
+        # Currently there are no VMs for x86 and s390x and OpenSUSE and SLES
+        if arch not in ["s390x", "x86"]:
             builders_install.append(builder_name_autobake + "-install")
-            builders_upgrade.append(builder_name_autobake + "-minor-upgrade")
-            builders_upgrade.append(builder_name_autobake + "-major-upgrade")
+            if addUpgrade:
+                builders_upgrade.append(builder_name_autobake + "-minor-upgrade")
+                builders_upgrade.append(builder_name_autobake + "-major-upgrade")
 
 builders_galera = list(
     map(lambda x: "gal-" + "-".join(x.split("-")[:3]), builders_autobake)
