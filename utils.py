@@ -136,7 +136,7 @@ def createWorker(
     return ((base_name, name + worker_name_suffix), worker_instance)
 
 
-def downloadSourceTarball(output_dir="/mnt/packages/"):
+def downloadSourceTarball(output_dir="packages"):
     return ShellCommand(
         name="fetch_tarball",
         description="fetching source tarball",
@@ -150,6 +150,7 @@ def downloadSourceTarball(output_dir="/mnt/packages/"):
     d="""
                 + output_dir
                 + """
+    [[ -d packages ]] || mkdir packages
     f="%(prop:tarbuildnum)s_%(prop:mariadb_version)s.tar.gz"
     find $d -type f -mtime +2 -delete -ls
 
@@ -341,8 +342,9 @@ def savePackage(step, savedBranches=savedPackageBranches):
 
 
 # Return a HTML file that contains links to MTR logs
-def getHTMLLogString(base_path="/buildbot"):
+def getHTMLLogString(base_path="buildbot"):
     return f"""
+mkdir -p buildbot
 echo '<!DOCTYPE html>
 <html>
 <body>' >> {base_path}/mysql_logs.html
@@ -357,7 +359,7 @@ def hasFailed(step):
     return step.build.results == FAILURE
 
 
-def createVar(base_path="/buildbot", output_dir=""):
+def createVar(base_path="buildbot", output_dir=""):
     return f"""
 if [ -d mysql-test/var ]; then
     extra=
@@ -372,7 +374,7 @@ fi"""
 
 
 # Function to move the MTR logs to a known location so that they can be saved
-def moveMTRLogs(base_path="/buildbot", output_dir=""):
+def moveMTRLogs(base_path="buildbot", output_dir=""):
     return f"""
 echo Logs available at {os.getenv('ARTIFACTS_URL', default='https://ci.mariadb.org')}/%(prop:tarbuildnum)s/logs/%(prop:buildername)s/
 mkdir -p {base_path}/logs/{output_dir}
