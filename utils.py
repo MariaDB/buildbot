@@ -342,7 +342,7 @@ def savePackage(step, savedBranches=savedPackageBranches):
 
 
 # Return a HTML file that contains links to MTR logs
-def getHTMLLogString(base_path="buildbot"):
+def getHTMLLogString(base_path="./buildbot"):
     return f"""
 mkdir -p buildbot
 echo '<!DOCTYPE html>
@@ -359,7 +359,7 @@ def hasFailed(step):
     return step.build.results == FAILURE
 
 
-def createVar(base_path="buildbot", output_dir=""):
+def createVar(base_path="./buildbot", output_dir=""):
     return f"""
 if [ -d mysql-test/var ]; then
     extra=
@@ -374,7 +374,7 @@ fi"""
 
 
 # Function to move the MTR logs to a known location so that they can be saved
-def moveMTRLogs(base_path="buildbot", output_dir=""):
+def moveMTRLogs(base_path="./buildbot", output_dir=""):
     return f"""
 echo Logs available at {os.getenv('ARTIFACTS_URL', default='https://ci.mariadb.org')}/%(prop:tarbuildnum)s/logs/%(prop:buildername)s/
 mkdir -p {base_path}/logs/{output_dir}
