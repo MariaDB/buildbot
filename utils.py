@@ -160,7 +160,7 @@ def downloadSourceTarball(output_dir="./packages/"):
     if [[ $os != "AIX" && $os != "Darwin" && $os != "FreeBSD" ]]; then
       use_flock="flock \"$d$f\" "
     fi
-    cmd="$use_flock wget -cO \"$d$f\" \""""
+    cmd="$use_flock wget --progress=bar:force:noscroll -cO \"$d$f\" \""""
                 + os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org")
                 + """/%(prop:tarbuildnum)s/%(prop:mariadb_version)s.tar.gz\""
 
