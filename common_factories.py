@@ -191,7 +191,7 @@ def getBuildFactoryPreTest(build_type="RelWithDebInfo", additional_args=""):
     f_quick_build.addStep(
         steps.ShellCommand(
             command=util.Interpolate(
-                "tar -xzf /mnt/packages/%(prop:tarbuildnum)s_%(prop:mariadb_version)s.tar.gz --strip-components=1"
+                "tar -xzf ./packages/%(prop:tarbuildnum)s_%(prop:mariadb_version)s.tar.gz --strip-components=1"
             )
         )
     )
@@ -420,7 +420,7 @@ def getRpmAutobakeFactory(mtrDbPool):
     f_rpm_autobake.addStep(
         steps.ShellCommand(
             command=util.Interpolate(
-                "tar -xzf /mnt/packages/%(prop:tarbuildnum)s_%(prop:mariadb_version)s.tar.gz --strip-components=1"
+                "tar -xzf ./packages/%(prop:tarbuildnum)s_%(prop:mariadb_version)s.tar.gz --strip-components=1"
             )
         )
     )
