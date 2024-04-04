@@ -77,13 +77,11 @@ fedora-40:
     - amd64
     - aarch64
   type: rpm
-  has_upgrade: False
 opensuse-15:
   version_name: 15
   arch:
     - amd64
   type: rpm
-  has_upgrade: False
 rhel-7:
   version_name: 7
   arch:
@@ -120,14 +118,12 @@ sles-12:
   arch:
     - s390x
   type: rpm
-  has_upgrade: False
 sles-15:
   version_name: 15
   arch:
     - amd64
     - s390x
   type: rpm
-  has_upgrade: False
 ubuntu-2004:
   version_name: focal
   arch:
@@ -150,7 +146,6 @@ ubuntu-2310:
     - amd64
     - aarch64
   type: deb
-  has_upgrade: False
 ubuntu-2404:
   version_name: noble
   arch:
@@ -159,4 +154,3 @@ ubuntu-2404:
     - ppc64le
     - s390x
   type: deb
-  has_upgrade: False
