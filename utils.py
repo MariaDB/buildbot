@@ -136,7 +136,7 @@ def createWorker(
     return ((base_name, name + worker_name_suffix), worker_instance)
 
 
-def downloadSourceTarball(output_dir="packages"):
+def downloadSourceTarball(output_dir="./packages/"):
     return ShellCommand(
         name="fetch_tarball",
         description="fetching source tarball",
