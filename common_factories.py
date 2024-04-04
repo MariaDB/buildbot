@@ -82,7 +82,7 @@ def addPostTests(f_quick_build):
             name="save log files",
             compress="bz2",
             alwaysRun=True,
-            workersrc="/buildbot/logs/",
+            workersrc="./buildbot/logs/",
             masterdest=util.Interpolate(
                 "/srv/buildbot/packages/"
                 + "%(prop:tarbuildnum)s"
@@ -239,7 +239,7 @@ def addTests(f_quick_build, test_type, mtrDbPool, mtrArgs):
     f_quick_build.addStep(
         steps.MTR(
             name=f"{test_type} test",
-            logfiles={"mysqld*": "/buildbot/mysql_logs.html"},
+            logfiles={"mysqld*": "./buildbot/mysql_logs.html"},
             test_type=test_type,
             command=[
                 "sh",
@@ -291,7 +291,7 @@ def addGaleraTests(f_quick_build, mtrDbPool):
         steps.MTR(
             description="testing galera",
             descriptionDone="test galera",
-            logfiles={"mysqld*": "/buildbot/mysql_logs.html"},
+            logfiles={"mysqld*": "./buildbot/mysql_logs.html"},
             test_type="nm",
             command=[
                 "sh",
@@ -324,9 +324,9 @@ def addGaleraTests(f_quick_build, mtrDbPool):
                 "bash",
                 "-c",
                 util.Interpolate(
-                    "mv /buildbot/logs /buildbot/logs_main\n"
+                    "mv ./buildbot/logs ./buildbot/logs_main\n"
                     + moveMTRLogs()
-                    + "\nmv /buildbot/logs /buildbot/logs_galera; mv /buildbot/logs_main /buildbot/logs; mv /buildbot/logs_galera /buildbot/logs/galera\n",
+                    + "\nmv ./buildbot/logs ./buildbot/logs_galera; mv ./buildbot/logs_main ./buildbot/logs; mv ./buildbot/logs_galera ./buildbot/logs/galera\n",
                     jobs=util.Property("jobs", default="$(getconf _NPROCESSORS_ONLN)"),
                 ),
             ],
