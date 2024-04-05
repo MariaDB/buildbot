@@ -15,14 +15,7 @@ typeset -r d="./packages"
 typeset -r tarbuildnum="%(prop:tarbuildnum)s"
 typeset -r mariadb_version="%(prop:mariadb_version)s"
 
-# //TEMP this is not clean, try to find a way to pass ARTIFACT_URL to workers
-# and use the following:
-# artifacts_url=${ARTIFACTS_URL:-https://ci.mariadb.org}
-if [[ $BUILDMASTER == "100.64.101.1" ]]; then
-  artifacts_url=https://ci.dev.mariadb.org
-else
-  artifacts_url=https://ci.mariadb.org
-fi
+artifacts_url=${ARTIFACTS_URL:-https://ci.mariadb.org}
 
 command -v wget >/dev/null ||
   err "wget command not found"
