@@ -16,17 +16,20 @@ typeset -r d="./packages"
 typeset -r tarbuildnum="%(prop:tarbuildnum)s"
 typeset -r mariadb_version="%(prop:mariadb_version)s"
 
-if [[ -z $ARTIFACTS_URL ]]; then
-  artifacts_url="https://ci.mariadb.org"
+# //TEMP this is not clean, try to find a way to pass ARTIFACT_URL to workers
+# and use the following:
+# artifacts_url=${ARTIFACTS_URL:-https://ci.mariadb.org}
+if [[ $BUILDMASTER == "100.64.101.1" ]]; then
+  artifacts_url=https://ci.dev.mariadb.org
 else
-  artifacts_url=$ARTIFACTS_URL
+  artifacts_url=https://ci.mariadb.org
 fi
 
 command -v wget >/dev/null ||
   err "wget command not found"
 
 [[ -d $d ]] || mkdir $d
-f="${tarbuildnum}${mariadb_version}.tar.gz"
+f="${tarbuildnum}/${mariadb_version}.tar.gz"
 
 # Do not use flock for AIX/MacOS/FreeBSD
 os=$(uname -s)
@@ -34,7 +37,7 @@ use_flock=""
 if [[ $os != "AIX" && $os != "Darwin" && $os != "FreeBSD" ]]; then
   use_flock="flock $d/$f"
 fi
-cmd="$use_flock wget -cO $d/$f $artifacts_url/$f"
+cmd="$use_flock wget --progress=bar:force:noscroll -cO $d/$f $artifacts_url/$f"
 
 res=1
 for i in {1..10}; do
