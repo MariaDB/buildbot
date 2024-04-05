@@ -136,51 +136,13 @@ def createWorker(
     return ((base_name, name + worker_name_suffix), worker_instance)
 
 
-def getSourceTarball(output_dir="./packages/"):
+def getSourceTarball():
     return ShellCommand(
         name="get_tarball",
         description="get source tarball",
         descriptionDone="get source tarball...done",
         haltOnFailure=True,
-        command=[
-            "bash",
-            "-xc",
-            util.Interpolate(
-                """
-    d="""
-                + output_dir
-                + """
-    [[ -d packages ]] || mkdir packages
-    f="%(prop:tarbuildnum)s_%(prop:mariadb_version)s.tar.gz"
-    find $d -type f -mtime +2 -delete -ls
-
-    # Do not use flock for AIX
-    os=$(uname -s)
-    use_flock=""
-    if [[ $os != "AIX" && $os != "Darwin" && $os != "FreeBSD" ]]; then
-      use_flock="flock \"$d$f\" "
-    fi
-    cmd="$use_flock wget --progress=bar:force:noscroll -cO \"$d$f\" \""""
-                + os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org")
-                + """/%(prop:tarbuildnum)s/%(prop:mariadb_version)s.tar.gz\""
-
-    res=1
-    for i in {1..10}; do
-      if eval "$cmd"; then
-        res=0
-        break
-      else
-        sleep "$i"
-      fi
-    done
-    if ((res != 0)); then
-      exit $res
-    fi
-
-    tar -xzf ./packages/%(prop:tarbuildnum)s_%(prop:mariadb_version)s.tar.gz --strip-components=1
-"""
-            ),
-        ],
+        command=util.Interpolate(read_template("get_tarball")),
     )
 
 
