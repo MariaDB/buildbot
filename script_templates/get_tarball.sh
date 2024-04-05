@@ -12,16 +12,20 @@ err() {
   exit 1
 }
 
-d=packages
-tarbuildnum="%(prop:tarbuildnum)s"
-mariadb_version="%(prop:mariadb_version)s"
+typeset -r d="./packages"
+typeset -r tarbuildnum="%(prop:tarbuildnum)s"
+typeset -r mariadb_version="%(prop:mariadb_version)s"
+
 if [[ -z $ARTIFACTS_URL ]]; then
   artifacts_url="https://ci.mariadb.org"
 else
   artifacts_url=$ARTIFACTS_URL
 fi
 
-[[ -d packages ]] || mkdir packages
+command -v wget >/dev/null ||
+  err "wget command not found"
+
+[[ -d $d ]] || mkdir $d
 f="${tarbuildnum}${mariadb_version}.tar.gz"
 
 # Do not use flock for AIX/MacOS/FreeBSD
@@ -45,4 +49,4 @@ if ((res != 0)); then
   exit $res
 fi
 
-tar -xzf ./packages/$f --strip-components=1
+tar -xzf $d/$f --strip-components=1
