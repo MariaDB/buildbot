@@ -187,14 +187,7 @@ def getBuildFactoryPreTest(build_type="RelWithDebInfo", additional_args=""):
             description="dockerfile",
         )
     )
-    f_quick_build.addStep(downloadSourceTarball())
-    f_quick_build.addStep(
-        steps.ShellCommand(
-            command=util.Interpolate(
-                "tar -xzf ./packages/%(prop:tarbuildnum)s_%(prop:mariadb_version)s.tar.gz --strip-components=1"
-            )
-        )
-    )
+    f_quick_build.addStep(getSourceTarball())
     f_quick_build.addStep(
         steps.ShellCommand(
             name="create html log file",
@@ -416,14 +409,7 @@ def getRpmAutobakeFactory(mtrDbPool):
             doStepIf=hasCompat,
         )
     )
-    f_rpm_autobake.addStep(downloadSourceTarball())
-    f_rpm_autobake.addStep(
-        steps.ShellCommand(
-            command=util.Interpolate(
-                "tar -xzf ./packages/%(prop:tarbuildnum)s_%(prop:mariadb_version)s.tar.gz --strip-components=1"
-            )
-        )
-    )
+    f_rpm_autobake.addStep(getSourceTarball())
     f_rpm_autobake.addStep(steps.ShellCommand(command="ls .."))
     # build steps
     f_rpm_autobake.addStep(
