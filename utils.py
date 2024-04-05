@@ -136,11 +136,11 @@ def createWorker(
     return ((base_name, name + worker_name_suffix), worker_instance)
 
 
-def downloadSourceTarball(output_dir="./packages/"):
+def getSourceTarball(output_dir="./packages/"):
     return ShellCommand(
-        name="fetch_tarball",
-        description="fetching source tarball",
-        descriptionDone="fetching source tarball...done",
+        name="get_tarball",
+        description="get source tarball",
+        descriptionDone="get source tarball...done",
         haltOnFailure=True,
         command=[
             "bash",
@@ -176,6 +176,8 @@ def downloadSourceTarball(output_dir="./packages/"):
     if ((res != 0)); then
       exit $res
     fi
+
+    tar -xzf ./packages/%(prop:tarbuildnum)s_%(prop:mariadb_version)s.tar.gz --strip-components=1
 """
             ),
         ],
