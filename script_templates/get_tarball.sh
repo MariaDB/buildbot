@@ -5,7 +5,6 @@
 
 set -o errexit
 set -o pipefail
-set -o posix
 
 err() {
   echo >&2 "ERROR: $*"
@@ -29,15 +28,16 @@ command -v wget >/dev/null ||
   err "wget command not found"
 
 [[ -d $d ]] || mkdir $d
-f="${tarbuildnum}/${mariadb_version}.tar.gz"
+tarball="${mariadb_version}.tar.gz"
+f="${tarbuildnum}/$tarball"
 
 # Do not use flock for AIX/MacOS/FreeBSD
 os=$(uname -s)
 use_flock=""
 if [[ $os != "AIX" && $os != "Darwin" && $os != "FreeBSD" ]]; then
-  use_flock="flock $d/$f"
+  use_flock="flock $d/$tarball"
 fi
-cmd="$use_flock wget --progress=bar:force:noscroll -cO $d/$f $artifacts_url/$f"
+cmd="$use_flock wget --progress=bar:force:noscroll -cO $d/$tarball $artifacts_url/$f"
 
 res=1
 for i in {1..10}; do
@@ -52,4 +52,4 @@ if ((res != 0)); then
   exit $res
 fi
 
-tar -xzf $d/$f --strip-components=1
+tar -xzf $d/$tarball --strip-components=1
