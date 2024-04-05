@@ -142,7 +142,12 @@ def getSourceTarball():
         description="get source tarball",
         descriptionDone="get source tarball...done",
         haltOnFailure=True,
-        command=util.Interpolate(read_template("get_tarball")),
+        env={'ARTIFACTS_URL': os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org")},
+        command=[
+              "bash",
+              "-ec",
+              util.Interpolate(read_template("get_tarball")),
+        ]
     )
 
 
