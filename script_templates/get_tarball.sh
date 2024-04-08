@@ -5,6 +5,7 @@
 
 set -o errexit
 set -o pipefail
+set -o posix
 
 err() {
   echo >&2 "ERROR: $*"
