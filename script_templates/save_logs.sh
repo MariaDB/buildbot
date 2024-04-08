@@ -16,9 +16,9 @@ typeset -r buildername="%(prop:buildername)s"
 [[ -d ./buildbot/logs ]] ||
   err "./buildbot/logs does not exist, no log can be saved"
 
-[[ -d /srv/buildbot/packages/$tarbuildnum/logs/$buildername/ ]] ||
-  mkdir -p /srv/buildbot/packages/$tarbuildnum/logs/$buildername
+[[ -d /packages/$tarbuildnum/logs/$buildername/ ]] ||
+  mkdir -p /packages/$tarbuildnum/logs/$buildername
 
-cp -rv ./buildbot/logs/* /srv/buildbot/packages/$tarbuildnum/logs/$buildername/
+cp -rv ./buildbot/logs/* /packages/$tarbuildnum/logs/$buildername/
 
 echo "Logs available at $artifacts_url/$tarbuildnum/logs/$buildername/"
