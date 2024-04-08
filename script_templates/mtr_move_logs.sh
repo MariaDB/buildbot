@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# This is a template file for a shell script that is used to compile a binary tarball.
-# The script CANNOT BE EXECUTED DIRECTLY, it is a template for the buildbot to use.
+# This is a template file for a bash script that is used by BB, the script
+# CANNOT BE EXECUTED DIRECTLY.
 
 set -o errexit
 set -o pipefail
