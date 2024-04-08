@@ -155,6 +155,7 @@ def saveLogs():
         name="Save logs",
         description="saving logs",
         descriptionDone="save logs...done",
+        alwaysRun=True,
         haltOnFailure=True,
         env={'ARTIFACTS_URL': os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org")},
         command=[
