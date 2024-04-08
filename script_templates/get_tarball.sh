@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 
-# This is a template file for a shell script that is used to compile a binary tarball.
-# The script CANNOT BE EXECUTED DIRECTLY, it is a template for the buildbot to use.
-
 set -o errexit
 set -o pipefail
+set -o posix
 
 err() {
   echo >&2 "ERROR: $*"
