@@ -150,6 +150,19 @@ def getSourceTarball():
         ]
     )
 
+def saveLogs():
+    return ShellCommand(
+        name="Save logs",
+        description="saving logs",
+        descriptionDone="save logs...done",
+        haltOnFailure=True,
+        env={'ARTIFACTS_URL': os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org")},
+        command=[
+              "bash",
+              "-ec",
+              util.Interpolate(read_template("save_logs")),
+        ]
+    )
 
 def createDebRepo():
     return ShellCommand(
@@ -345,7 +358,6 @@ fi"""
 # Function to move the MTR logs to a known location so that they can be saved
 def moveMTRLogs(base_path="./buildbot", output_dir=""):
     return f"""
-echo Logs available at {os.getenv('ARTIFACTS_URL', default='https://ci.mariadb.org')}/%(prop:tarbuildnum)s/logs/%(prop:buildername)s/
 mkdir -p {base_path}/logs/{output_dir}
 
 filename="mysql-test/var/log/mysqld.1.err"

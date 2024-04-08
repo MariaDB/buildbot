@@ -77,20 +77,7 @@ class FetchTestData(MTR):
 
 
 def addPostTests(f_quick_build):
-    f_quick_build.addStep(
-        steps.DirectoryUpload(
-            name="save log files",
-            compress="bz2",
-            alwaysRun=True,
-            workersrc="./buildbot/logs/",
-            masterdest=util.Interpolate(
-                "/srv/buildbot/packages/"
-                + "%(prop:tarbuildnum)s"
-                + "/logs/"
-                + "%(prop:buildername)s"
-            ),
-        )
-    )
+    f_quick_build.addStep(saveLogs())
 
     ## trigger packages
     f_quick_build.addStep(
