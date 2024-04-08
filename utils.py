@@ -343,40 +343,22 @@ fi"""
 
 
 # Function to move the MTR logs to a known location so that they can be saved
-def moveMTRLogs(base_path="./buildbot", output_dir=""):
-    return f"""
-echo Logs available at {os.getenv('ARTIFACTS_URL', default='https://ci.mariadb.org')}/%(prop:tarbuildnum)s/logs/%(prop:buildername)s/
-mkdir -p {base_path}/logs/{output_dir}
-
-filename="mysql-test/var/log/mysqld.1.err"
-if [ -f $filename ]; then
-   cp $filename {base_path}/logs/{output_dir}/mysqld.1.err
-fi
-
-mtr=1
-mysqld=1
-
-while true
-do
-  while true
-  do
-    logname="mysqld.$mysqld.err.$mtr"
-    filename="mysql-test/var/$mtr/log/mysqld.$mysqld.err"
-    if [ -f $filename ]; then
-       cp $filename {base_path}/logs/{output_dir}/$logname
-    else
-       break
-    fi
-    mysqld=$(( mysqld + 1 ))
-  done
-  mysqld=1
-  mtr=$(( mtr + 1 ))
-  filename="mysql-test/var/$mtr/log/mysqld.$mysqld.err"
-  if [ ! -f $filename ]
-  then
-    break
-  fi
-done"""
+def moveMTRLogs(test_type=""):
+    return ShellCommand(
+        name="Move MTR logs: {test_type}",
+        description="move MTR logs ({test_type})",
+        descriptionDone="move MTR logs ({test_type})...done",
+        haltOnFailure=True,
+        env={
+            'ARTIFACTS_URL': os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org"),
+            'TEST_TYPE': test_type
+        },
+        command=[
+              "bash",
+              "-ec",
+              util.Interpolate(read_template("mtr_move_logs")),
+        ]
+    )
 
 
 @util.renderer

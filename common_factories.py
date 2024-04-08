@@ -254,20 +254,7 @@ def addTests(f_quick_build, test_type, mtrDbPool, mtrArgs):
             env=MTR_ENV,
         )
     )
-    f_quick_build.addStep(
-        steps.ShellCommand(
-            name=f"move {test_type} mariadb log files",
-            alwaysRun=True,
-            command=[
-                "bash",
-                "-c",
-                util.Interpolate(
-                    moveMTRLogs(output_dir=test_type),
-                    jobs=util.Property("jobs", default="$(getconf _NPROCESSORS_ONLN"),
-                ),
-            ],
-        )
-    )
+    f_quick_build.addStep(moveMTRLogs(test_type))
     f_quick_build.addStep(
         steps.ShellCommand(
             name=f"create {test_type} var archive",
