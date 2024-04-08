@@ -17,7 +17,7 @@ typeset -r tarbuildnum="%(prop:tarbuildnum)s"
 typeset -r buildername="%(prop:buildername)s"
 
 artifacts_url=${ARTIFACTS_URL:-https://ci.mariadb.org}
-mtr_test=${TEST_TYPE}
+mtr_test=${TEST_TYPE:-""}
 
 echo "Logs available at $artifacts_url/$tarbuildnum/logs/$buildername"
 
