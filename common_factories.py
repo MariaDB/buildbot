@@ -76,90 +76,10 @@ class FetchTestData(MTR):
         return results.SUCCESS
 
 
-def addPostTests(f_quick_build):
-    f_quick_build.addStep(saveLogs())
-
-    ## trigger packages
-    f_quick_build.addStep(
-        steps.Trigger(
-            schedulerNames=["s_packages"],
-            waitForFinish=False,
-            updateSourceStamp=False,
-            alwaysRun=True,
-            set_properties={
-                "parentbuildername": Property("buildername"),
-                "tarbuildnum": Property("tarbuildnum"),
-                "mariadb_version": Property("mariadb_version"),
-                "master_branch": Property("master_branch"),
-            },
-            doStepIf=hasAutobake,
-        )
-    )
-    ## trigger bigtest
-    f_quick_build.addStep(
-        steps.Trigger(
-            schedulerNames=["s_bigtest"],
-            waitForFinish=False,
-            updateSourceStamp=False,
-            set_properties={
-                "parentbuildername": Property("buildername"),
-                "tarbuildnum": Property("tarbuildnum"),
-                "mariadb_version": Property("mariadb_version"),
-                "master_branch": Property("master_branch"),
-            },
-            doStepIf=hasBigtest,
-        )
-    )
-    # create package and upload to master
-    f_quick_build.addStep(
-        steps.SetPropertyFromCommand(
-            command="basename mariadb-*-linux-*.tar.gz",
-            property="mariadb_binary",
-            doStepIf=savePackage,
-        )
-    )
-    f_quick_build.addStep(
-        steps.ShellCommand(
-            name="save_packages",
-            timeout=7200,
-            haltOnFailure=True,
-            command=util.Interpolate(
-                """
-        mkdir -p /packages/%(prop:tarbuildnum)s/%(prop:buildername)s \
-        && sha256sum %(prop:mariadb_binary)s >> sha256sums.txt \
-        && cp %(prop:mariadb_binary)s sha256sums.txt /packages/%(prop:tarbuildnum)s/%(prop:buildername)s/ \
-        && sync /packages/%(prop:tarbuildnum)s
-        """
-            ),
-            doStepIf=savePackage,
-        )
-    )
-    f_quick_build.addStep(
-        steps.Trigger(
-            name="eco",
-            schedulerNames=["s_eco"],
-            waitForFinish=False,
-            updateSourceStamp=False,
-            set_properties={
-                "parentbuildername": Property("buildername"),
-                "tarbuildnum": Property("tarbuildnum"),
-                "mariadb_binary": Property("mariadb_binary"),
-                "mariadb_version": Property("mariadb_version"),
-                "master_branch": Property("master_branch"),
-                "parentbuildername": Property("buildername"),
-            },
-            doStepIf=lambda step: savePackage(step) and hasEco(step),
-        )
-    )
-    f_quick_build.addStep(
-        steps.ShellCommand(
-            name="cleanup", command="rm -r * .* 2> /dev/null || true", alwaysRun=True
-        )
-    )
-    return f_quick_build
+########### Helper functions #############
 
 
-def getBuildFactoryPreTest(build_type="RelWithDebInfo", additional_args=""):
+def getBuildFactoryPreCompile(padding=False):
     f_quick_build = util.BuildFactory()
     f_quick_build.addStep(
         steps.ShellCommand(
@@ -174,6 +94,10 @@ def getBuildFactoryPreTest(build_type="RelWithDebInfo", additional_args=""):
             description="dockerfile",
         )
     )
+    if padding:
+        f_quick_build.workdir = (
+            f_quick_build.workdir + "/padding_for_CPACK_RPM_BUILD_SOURCE_DIRS_PREFIX/"
+        )
     f_quick_build.addStep(getSourceTarball())
     f_quick_build.addStep(
         steps.ShellCommand(
@@ -188,6 +112,16 @@ def getBuildFactoryPreTest(build_type="RelWithDebInfo", additional_args=""):
             ],
         )
     )
+    return f_quick_build
+
+
+def addCompile(
+    f_quick_build,
+    build_type="RelWithDebInfo",
+    additional_args="",
+    c_compiler="gcc",
+    cxx_compiler="g++",
+):
     # build steps
     f_quick_build.addStep(
         steps.Compile(
@@ -199,8 +133,8 @@ def getBuildFactoryPreTest(build_type="RelWithDebInfo", additional_args=""):
                     perf_schema=util.Property("perf_schema", default="YES"),
                     build_type=util.Property("build_type", default=f"{build_type}"),
                     jobs=util.Property("jobs", default="$(getconf _NPROCESSORS_ONLN)"),
-                    c_compiler=util.Property("c_compiler", default="gcc"),
-                    cxx_compiler=util.Property("cxx_compiler", default="g++"),
+                    c_compiler=util.Property("c_compiler", default=c_compiler),
+                    cxx_compiler=util.Property("cxx_compiler", default=cxx_compiler),
                     additional_args=util.Property(
                         "additional_args", default=f"{additional_args}"
                     ),
@@ -215,7 +149,7 @@ def getBuildFactoryPreTest(build_type="RelWithDebInfo", additional_args=""):
     return f_quick_build
 
 
-def addTests(f_quick_build, test_type, mtrDbPool, mtrArgs):
+def addTests(f_quick_build, test_type, mtrDbPool, mtrCommand, mtrArgs):
     f_quick_build.addStep(
         steps.MTR(
             name=f"{test_type} test",
@@ -225,10 +159,7 @@ def addTests(f_quick_build, test_type, mtrDbPool, mtrArgs):
                 "sh",
                 "-c",
                 util.Interpolate(
-                    f"""
-            cd mysql-test &&
-            exec perl mysql-test-run.pl {test_type_to_mtr_arg[test_type]} --verbose-restart --force --retry=3 --max-save-core=1 --max-save-datadir=10 --max-test-fail=20 --mem --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s
-            """,
+                    mtrCommand,
                     mtr_additional_args=mtrArgs,
                     jobs=util.Property("jobs", default="$(getconf _NPROCESSORS_ONLN)"),
                 ),
@@ -316,9 +247,126 @@ def addGaleraTests(f_quick_build, mtrDbPool):
     return f_quick_build
 
 
+def addPostTests(f_quick_build, skipTrigger=False):
+    f_quick_build.addStep(saveLogs())
+
+    if not skipTrigger:
+        ## trigger packages
+        f_quick_build.addStep(
+            steps.Trigger(
+                schedulerNames=["s_packages"],
+                waitForFinish=False,
+                updateSourceStamp=False,
+                alwaysRun=True,
+                set_properties={
+                    "parentbuildername": Property("buildername"),
+                    "tarbuildnum": Property("tarbuildnum"),
+                    "mariadb_version": Property("mariadb_version"),
+                    "master_branch": Property("master_branch"),
+                },
+                doStepIf=hasAutobake,
+            )
+        )
+        ## trigger bigtest
+        f_quick_build.addStep(
+            steps.Trigger(
+                schedulerNames=["s_bigtest"],
+                waitForFinish=False,
+                updateSourceStamp=False,
+                set_properties={
+                    "parentbuildername": Property("buildername"),
+                    "tarbuildnum": Property("tarbuildnum"),
+                    "mariadb_version": Property("mariadb_version"),
+                    "master_branch": Property("master_branch"),
+                },
+                doStepIf=hasBigtest,
+            )
+        )
+        # create package and upload to master
+        f_quick_build.addStep(
+            steps.SetPropertyFromCommand(
+                command="basename mariadb-*-linux-*.tar.gz",
+                property="mariadb_binary",
+                doStepIf=savePackage,
+            )
+        )
+        f_quick_build.addStep(
+            steps.ShellCommand(
+                name="save_packages",
+                timeout=7200,
+                haltOnFailure=True,
+                command=util.Interpolate(
+                    """
+            mkdir -p /packages/%(prop:tarbuildnum)s/%(prop:buildername)s \
+            && sha256sum %(prop:mariadb_binary)s >> sha256sums.txt \
+            && cp %(prop:mariadb_binary)s sha256sums.txt /packages/%(prop:tarbuildnum)s/%(prop:buildername)s/ \
+            && sync /packages/%(prop:tarbuildnum)s
+            """
+                ),
+                doStepIf=savePackage,
+            )
+        )
+        f_quick_build.addStep(
+            steps.Trigger(
+                name="eco",
+                schedulerNames=["s_eco"],
+                waitForFinish=False,
+                updateSourceStamp=False,
+                set_properties={
+                    "parentbuildername": Property("buildername"),
+                    "tarbuildnum": Property("tarbuildnum"),
+                    "mariadb_binary": Property("mariadb_binary"),
+                    "mariadb_version": Property("mariadb_version"),
+                    "master_branch": Property("master_branch"),
+                    "parentbuildername": Property("buildername"),
+                },
+                doStepIf=lambda step: savePackage(step) and hasEco(step),
+            )
+        )
+    f_quick_build.addStep(
+        steps.ShellCommand(
+            name="cleanup", command="rm -r * .* 2> /dev/null || true", alwaysRun=True
+        )
+    )
+    return f_quick_build
+
+
+def getQuickMtrCommand(test_type):
+    mtr_command = [
+        "cd mysql-test",
+        "&&",
+        "exec perl mysql-test-run.pl",
+        test_type_to_mtr_arg[test_type],
+        "--verbose-restart",
+        "--force",
+        "--retry=3",
+        "--max-save-core=1",
+        "--max-save-datadir=10",
+        "--max-test-fail=20",
+        "--mem",
+        "--parallel=$(expr %(kw:jobs)s \* 2)",
+        "%(kw:mtr_additional_args)s",
+    ]
+
+    return " ".join(mtr_command)
+
+
+########### Factory definition functions #############
+
+
 def getQuickBuildFactory(test_type, mtrDbPool):
-    f = getBuildFactoryPreTest()
-    addTests(f, test_type, mtrDbPool, util.Property("mtr_additional_args", default=""))
+    f = getBuildFactoryPreCompile()
+    addCompile(f)
+
+    mtr_command = getQuickMtrCommand(test_type)
+
+    addTests(
+        f,
+        test_type,
+        mtrDbPool,
+        mtrCommand=mtr_command,
+        mtrArgs=util.Property("mtr_additional_args", default=""),
+    )
     addGaleraTests(f, mtrDbPool)
     return addPostTests(f)
 
@@ -346,7 +394,10 @@ def getLastNFailedBuildsFactory(test_type, mtrDbPool):
         },
     }
 
-    f = getBuildFactoryPreTest(*config[test_type]["args"])
+    f = getBuildFactoryPreCompile()
+    addCompile(f, *config[test_type]["args"])
+
+    mtr_command = getQuickMtrCommand(test_type)
 
     for typ in config[test_type]["steps"]:
         f.addStep(
@@ -356,27 +407,14 @@ def getLastNFailedBuildsFactory(test_type, mtrDbPool):
                 test_type=typ,
             )
         )
-        addTests(f, typ, mtrDbPool, getTests)
+        addTests(f, typ, mtrDbPool, mtr_command, getTests)
 
     return addPostTests(f)
 
 
 def getRpmAutobakeFactory(mtrDbPool):
     ## f_rpm_autobake
-    f_rpm_autobake = util.BuildFactory()
-    f_rpm_autobake.addStep(
-        steps.ShellCommand(
-            name="Environment details",
-            command=["bash", "-c", "date -u && uname -a && ulimit -a"],
-        )
-    )
-    f_rpm_autobake.addStep(
-        steps.SetProperty(
-            property="dockerfile",
-            value=util.Interpolate("%(kw:url)s", url=dockerfile),
-            description="dockerfile",
-        )
-    )
+    f_rpm_autobake = getBuildFactoryPreCompile(padding=True)
     f_rpm_autobake.workdir = (
         f_rpm_autobake.workdir + "/padding_for_CPACK_RPM_BUILD_SOURCE_DIRS_PREFIX/"
     )
@@ -396,8 +434,6 @@ def getRpmAutobakeFactory(mtrDbPool):
             doStepIf=hasCompat,
         )
     )
-    f_rpm_autobake.addStep(getSourceTarball())
-    f_rpm_autobake.addStep(steps.ShellCommand(command="ls .."))
     # build steps
     f_rpm_autobake.addStep(
         steps.ShellCommand(
@@ -543,3 +579,79 @@ Repository available with: curl %(kw:url)s/%(prop:tarbuildnum)s/%(prop:builderna
         )
     )
     return f_rpm_autobake
+
+
+def getAsanUbsanFactory(mtrDbPool, ubsan=False):
+    ## f_rpm_autobake
+    f_asan_ubsan_build = getBuildFactoryPreCompile()
+
+    f_asan_ubsan_build.addStep(
+        steps.ShellCommand(
+            command='echo "leak:libtasn1\nleak:libgnutls\nleak:libgmp" > mysql-test/lsan.supp',
+            doStepIf=filterBranch,
+        )
+    )
+    f_asan_ubsan_build.addStep(
+        steps.ShellCommand(command="cat mysql-test/lsan.supp", doStepIf=filterBranch)
+    )
+
+    additional_args = [
+        "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+        "-DWITH_ASAN=YES",
+        "-DPLUGIN_ROCKSDB=NO",
+        "-DPLUGIN_CONNECT=NO",
+        "-DWITH_SAFEMALLOC=OFF",
+        "-DWITH_ZLIB=bundled",
+        "-DWITH_SSL=bundled",
+        "-DWITH_DBUG_TRACE=OFF",
+        "-DWITH_SAFEMALLOC=OFF",
+    ]
+    if ubsan:
+        c_compiler = "gcc"
+        cxx_compiler = "g++"
+        additional_args += ["-DWITH_UBSAN=YES"]
+    else:
+        c_compiler = "clang-14"
+        cxx_compiler = "clang++-14"
+        additional_args += [
+            '-DCMAKE_C_FLAGS="-O2 -msse4.2 -Wno-unused-command-line-argument -fdebug-macro -Wno-inconsistent-missing-override"',
+            '-DCMAKE_CXX_FLAGS="-O2 -msse4.2 -Wno-unused-command-line-argument -fdebug-macro -Wno-inconsistent-missing-override',
+        ]
+
+    addCompile(
+        f_asan_ubsan_build,
+        build_type="Debug",
+        additional_args=" ".join(additional_args),
+        c_compiler=c_compiler,
+        cxx_compiler=cxx_compiler,
+    )
+
+    mtr_command = [
+        "cd mysql-test",
+        "&&",
+        "MTR_FEEDBACK_PLUGIN=1",
+        'ASAN_OPTIONS="abort_on_error=1"',
+        'LSAN_OPTIONS="print_suppressions=0,suppressions=$(pwd)/lsan.supp"',
+        "perl",
+        "mysql-test-run.pl",
+        "--verbose-restart",
+        "--force",
+        "--retry=3",
+        "--max-save-core=1",
+        "--max-save-datadir=10",
+        "--max-test-fail=20",
+        "--mem",
+        "--parallel=$(expr %(kw:jobs)s \* 2)",
+    ]
+
+    addTests(
+        f_asan_ubsan_build,
+        "ubsan" if ubsan else "asan",
+        mtrDbPool,
+        mtrCommand=" ".join(mtr_command),
+        mtrArgs="",
+    )
+
+    addPostTests(f_asan_ubsan_build, skipTrigger=True)
+
+    return f_asan_ubsan_build
