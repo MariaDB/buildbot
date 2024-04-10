@@ -86,5 +86,11 @@ else
 fi
 
 echo "extract $d/$tarball"
-tar -xzf $d/$tarball --strip-components=1
+#//TEMP path on AIX are specific
+os=$(uname -s)
+if [[ $os == "AIX" ]]; then
+  tar -xzf $d/$tarball
+else
+  tar -xzf $d/$tarball --strip-components=1
+fi
 echo "done"
