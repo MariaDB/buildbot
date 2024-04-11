@@ -32,6 +32,16 @@ fi
 [[ -d $artifact_dest/$tarbuildnum/logs/$buildername/ ]] ||
   mkdir -p $artifact_dest/$tarbuildnum/logs/$buildername
 
+echo "copy logs"
 cp -rv ./buildbot/logs/* "$artifact_dest/$tarbuildnum/logs/$buildername/"
+echo "done"
+
+if [[ $os == "FreeBSD" ]]; then
+  echo "set rights"
+  chmod 755 "$artifact_dest/$tarbuildnum/logs/$buildername"
+  find "$artifact_dest/$tarbuildnum/logs/$buildername" -type d -print0 | xargs -0 chmod 755
+  find "$artifact_dest/$tarbuildnum/logs/$buildername" -type f -print0 | xargs -0 chmod 644
+  echo "done"
+fi
 
 echo "Logs available at $artifacts_url/$tarbuildnum/logs/$buildername/"
