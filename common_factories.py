@@ -76,7 +76,7 @@ class FetchTestData(MTR):
         return results.SUCCESS
 
 
-def addPostTests(f_quick_build):
+def addPostTests(f_quick_build, mtr_tmp_cleanup=False):
     f_quick_build.addStep(saveLogs())
 
     ## trigger packages
@@ -151,9 +151,15 @@ def addPostTests(f_quick_build):
             doStepIf=lambda step: savePackage(step) and hasEco(step),
         )
     )
+    if mtr_tmp_cleanup:
+        mtr_tmp_path = "/tmp/var_auto_*"
+    else:
+        mtr_tmp_path = ""
     f_quick_build.addStep(
         steps.ShellCommand(
-            name="cleanup", command="rm -r * .* 2> /dev/null || true", alwaysRun=True
+            name="cleanup",
+            command=f"rm -r * .* {mtr_tmp_path} 2> /dev/null || true",
+            alwaysRun=True,
         )
     )
     return f_quick_build
@@ -316,11 +322,11 @@ def addGaleraTests(f_quick_build, mtrDbPool):
     return f_quick_build
 
 
-def getQuickBuildFactory(test_type, mtrDbPool):
+def getQuickBuildFactory(test_type, mtrDbPool, mtr_tmp_cleanup=False):
     f = getBuildFactoryPreTest()
     addTests(f, test_type, mtrDbPool, util.Property("mtr_additional_args", default=""))
     addGaleraTests(f, mtrDbPool)
-    return addPostTests(f)
+    return addPostTests(f, mtr_tmp_cleanup)
 
 
 def getLastNFailedBuildsFactory(test_type, mtrDbPool):
