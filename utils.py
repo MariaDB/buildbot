@@ -470,8 +470,12 @@ def hasDockerLibrary(step):
     # from https://github.com/MariaDB/mariadb-docker/blob/next/update.sh#L7-L15
     if fnmatch.fnmatch(branch, "10.[4-6]"):
         dockerbase = "ubuntu-2004-deb-autobake"
-    else:
+    elif fnmatch.fnmatch(branch, "10.11"):
         dockerbase = "ubuntu-2204-deb-autobake"
+    elif fnmatch.fnmatch(branch, "11.[012]"):
+        dockerbase = "ubuntu-2204-deb-autobake"
+    else:
+        dockerbase = "ubuntu-2404-deb-autobake"
 
     # We only build on the above autobakes for all architectures
     return builderName.endswith(dockerbase)
