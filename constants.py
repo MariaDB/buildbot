@@ -141,6 +141,7 @@ supportedPlatforms["10.5"] += [
     "s390x-sles-12",
     "s390x-sles-15",
     "s390x-ubuntu-2004",
+    "s390x-ubuntu-2004-debug",
 ]
 
 supportedPlatforms["10.6"] = supportedPlatforms["10.5"].copy()
