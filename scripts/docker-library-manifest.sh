@@ -152,13 +152,13 @@ if (($(buildah manifest inspect "$devmanifest" | jq '.manifests | length') >= ex
 
   declare -A specialtags
   if ! wget -nv https://downloads.mariadb.org/rest-api/mariadb/ -O "$t"; then
-    >&2 echo "Wget failed"
+    echo >&2 "Wget failed"
   fi
-  specialtags['verylatest']=$(jq '.major_releases[0].release_id' < "$t")
-  specialtags['latest']=$(jq '.major_releases | map(select(.release_status == "Stable"))[0].release_id' < "$t")
-  specialtags['latest-lts']=$(jq '.major_releases | map(select(.release_status == "Stable" and .release_support_type == "Long Term Support"))[0].release_id' < "$t")
-  specialtags['earliest']=$(jq '.major_releases | map(select( (( (.release_eol_date // "2031-01-01") + "T00:00:00Z") | fromdate) > now))[-1].release_id' < "$t")
-  specialtags['earliest-lts']=$(jq '.major_releases | map(select(.release_status == "Stable" and .release_support_type == "Long Term Support" and (( (.release_eol_date // "2031-01-01") + "T00:00:00Z") | fromdate) > now ))[-1].release_id' < "$t")
+  specialtags['verylatest']=$(jq '.major_releases[0].release_id' <"$t")
+  specialtags['latest']=$(jq '.major_releases | map(select(.release_status == "Stable"))[0].release_id' <"$t")
+  specialtags['latest-lts']=$(jq '.major_releases | map(select(.release_status == "Stable" and .release_support_type == "Long Term Support"))[0].release_id' <"$t")
+  specialtags['earliest']=$(jq '.major_releases | map(select( (( (.release_eol_date // "2031-01-01") + "T00:00:00Z") | fromdate) > now))[-1].release_id' <"$t")
+  specialtags['earliest-lts']=$(jq '.major_releases | map(select(.release_status == "Stable" and .release_support_type == "Long Term Support" and (( (.release_eol_date // "2031-01-01") + "T00:00:00Z") | fromdate) > now ))[-1].release_id' <"$t")
   for tag in "${!specialtags[@]}"; do
     if [ \""$container_tag"\" == "${specialtags[$tag]}" ]; then
       if [ "$prod_environment" = "True" ]; then
@@ -200,9 +200,9 @@ if (($(buildah manifest inspect "$devmanifest" | jq '.manifests | length') >= ex
   # clean buildah containers
   buildah containers --format "{{.ContainerID}}" | xargs --no-run-if-empty buildah rm || echo "had trouble cleaning containers"
   # clean images
-  buildah images --json |  jq ".[] | select(.readonly ==false) |  select(.created <= $lastweek) | select( .names == null) | .id" | xargs --no-run-if-empty buildah rmi || echo "had trouble cleaning images"
+  buildah images --json | jq ".[] | select(.readonly ==false) |  select(.created <= $lastweek) | select( .names == null) | .id" | xargs --no-run-if-empty buildah rmi || echo "had trouble cleaning images"
   # clean manifests
-  buildah images --json |  jq ".[] | select(.readonly ==false) |  select(.created <= $lastweek) | select( try .names[0]? catch \"\" | startswith(\"localhost/mariadb-\") ) | .id" | xargs --no-run-if-empty buildah manifest rm || echo "trouble cleaning manifests"
+  buildah images --json | jq ".[] | select(.readonly ==false) |  select(.created <= $lastweek) | select( try .names[0]? catch \"\" | startswith(\"localhost/mariadb-\") ) | .id" | xargs --no-run-if-empty buildah manifest rm || echo "trouble cleaning manifests"
   buildah images
 fi
 
