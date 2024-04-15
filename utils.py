@@ -456,6 +456,8 @@ def hasCompat(step):
         return step.getProperty("rpm_type")[-1] in ["7", "8"]
     if "fedora" in builderName:
         return step.getProperty("rpm_type")[-1] in ["35", "36"]
+    if "alma" in builderName or "rocky" in builderName:
+        return False
     return True
 
 
