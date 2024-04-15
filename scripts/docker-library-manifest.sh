@@ -164,7 +164,7 @@ if (($(buildah manifest inspect "$devmanifest" | jq '.manifests | length') >= ex
       if [ "$prod_environment" = "True" ]; then
         buildah manifest push --all "$devmanifest" "docker://quay.io/mariadb-foundation/mariadb-devel:$tag"
       else
-        echo "not pushing quay.io/mariadb-foundation/mariadb-devel:$tag as not a PROD environment"
+        echo "not pushing quay.io/mariadb-foundation/mariadb-devel:$tag as in DEV environment"
       fi
     fi
   done
@@ -182,10 +182,10 @@ if (($(buildah manifest inspect "$devmanifest" | jq '.manifests | length') >= ex
   t=$(mktemp)
   buildah manifest inspect "$debugmanifest" | tee "${t}"
   trap 'manifest_image_cleanup "$t"' EXIT
-  if [ "$ENVIRON" = "PROD" ]; then
-    buildah manifest push --all --rm "$debugmanifest" "docker://quay.io/mariadb-foundation/mariadb-debug:${container_tag}"
-  else
+  if [ "$ENVIRON" = "DEV" ]; then
     buildah manifest rm "$debugmanifest"
+  else
+    buildah manifest push --all --rm "$debugmanifest" "docker://quay.io/mariadb-foundation/mariadb-debug:${container_tag}"
   fi
   manifest_image_cleanup "$t"
 
