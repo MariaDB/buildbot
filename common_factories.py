@@ -227,7 +227,7 @@ def addTests(f_quick_build, test_type, mtrDbPool, mtrArgs):
                 util.Interpolate(
                     f"""
             cd mysql-test &&
-            exec perl mysql-test-run.pl {test_type_to_mtr_arg[test_type]} --verbose-restart --force --retry=3 --max-save-core=1 --max-save-datadir=10 --max-test-fail=20 --mem --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s
+            exec perl mysql-test-run.pl {test_type_to_mtr_arg[test_type]} --verbose-restart --force --retry=3 --max-save-core=2 --max-save-datadir=10 --max-test-fail=20 --mem --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s
             """,
                     mtr_additional_args=mtrArgs,
                     jobs=util.Property("jobs", default="$(getconf _NPROCESSORS_ONLN)"),
@@ -279,7 +279,7 @@ def addGaleraTests(f_quick_build, mtrDbPool):
                 util.Interpolate(
                     """
            cd mysql-test &&
-           if [ -f "$WSREP_PROVIDER" ]; then exec perl mysql-test-run.pl --verbose-restart --force --retry=3 --max-save-core=1 --max-save-datadir=10 --max-test-fail=20 --mem --big-test --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s --suite=wsrep,galera,galera_3nodes,galera_3nodes_sr; fi
+           if [ -f "$WSREP_PROVIDER" ]; then exec perl mysql-test-run.pl --verbose-restart --force --retry=3 --max-save-core=2 --max-save-datadir=10 --max-test-fail=20 --mem --big-test --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s --suite=wsrep,galera,galera_3nodes,galera_3nodes_sr; fi
            """,
                     mtr_additional_args=util.Property(
                         "mtr_additional_args", default=""
