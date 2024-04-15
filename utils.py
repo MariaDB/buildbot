@@ -142,13 +142,18 @@ def getSourceTarball():
         description="get source tarball",
         descriptionDone="get source tarball...done",
         haltOnFailure=True,
-        env={'ARTIFACTS_URL': os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org")},
+        env={
+            "ARTIFACTS_URL": os.getenv(
+                "ARTIFACTS_URL", default="https://ci.mariadb.org"
+            )
+        },
         command=[
-              "bash",
-              "-ec",
-              util.Interpolate(read_template("get_tarball")),
-        ]
+            "bash",
+            "-ec",
+            util.Interpolate(read_template("get_tarball")),
+        ],
     )
+
 
 def saveLogs():
     return ShellCommand(
@@ -157,13 +162,18 @@ def saveLogs():
         descriptionDone="save logs...done",
         alwaysRun=True,
         haltOnFailure=True,
-        env={'ARTIFACTS_URL': os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org")},
+        env={
+            "ARTIFACTS_URL": os.getenv(
+                "ARTIFACTS_URL", default="https://ci.mariadb.org"
+            )
+        },
         command=[
-              "bash",
-              "-ec",
-              util.Interpolate(read_template("save_logs")),
-        ]
+            "bash",
+            "-ec",
+            util.Interpolate(read_template("save_logs")),
+        ],
     )
+
 
 def createDebRepo():
     return ShellCommand(
@@ -327,7 +337,7 @@ def savePackage(step, savedBranches=savedPackageBranches):
 # Return a HTML file that contains links to MTR logs
 def getHTMLLogString(base_path="./buildbot"):
     return f"""
-mkdir -p buildbot
+mkdir -p {base_path}
 echo '<!DOCTYPE html>
 <html>
 <body>' >> {base_path}/mysql_logs.html
