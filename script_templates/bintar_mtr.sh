@@ -54,4 +54,4 @@ if test -f suite/plugins/pam/pam_mariadb_mtr.so; then
 fi
 perl mysql-test-run.pl --verbose-restart --force --parallel=4 \
     --retry=3 --vardir="$(readlink -f /dev/shm/var)" \
-    --max-save-core=0 --max-save-datadir=1
+    --max-save-core=2 --max-save-datadir=1
