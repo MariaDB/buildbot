@@ -142,13 +142,18 @@ def getSourceTarball():
         description="get source tarball",
         descriptionDone="get source tarball...done",
         haltOnFailure=True,
-        env={'ARTIFACTS_URL': os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org")},
+        env={
+            "ARTIFACTS_URL": os.getenv(
+                "ARTIFACTS_URL", default="https://ci.mariadb.org"
+            )
+        },
         command=[
-              "bash",
-              "-ec",
-              util.Interpolate(read_template("get_tarball")),
-        ]
+            "bash",
+            "-ec",
+            util.Interpolate(read_template("get_tarball")),
+        ],
     )
+
 
 def saveLogs():
     return ShellCommand(
@@ -157,13 +162,18 @@ def saveLogs():
         descriptionDone="save logs...done",
         alwaysRun=True,
         haltOnFailure=True,
-        env={'ARTIFACTS_URL': os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org")},
+        env={
+            "ARTIFACTS_URL": os.getenv(
+                "ARTIFACTS_URL", default="https://ci.mariadb.org"
+            )
+        },
         command=[
-              "bash",
-              "-ec",
-              util.Interpolate(read_template("save_logs")),
-        ]
+            "bash",
+            "-ec",
+            util.Interpolate(read_template("save_logs")),
+        ],
     )
+
 
 def createDebRepo():
     return ShellCommand(
@@ -446,6 +456,8 @@ def hasCompat(step):
         return step.getProperty("rpm_type")[-1] in ["7", "8"]
     if "fedora" in builderName:
         return step.getProperty("rpm_type")[-1] in ["35", "36"]
+    if "alma" in builderName or "rocky" in builderName:
+        return False
     return True
 
 
