@@ -355,19 +355,31 @@ def hasFailed(step):
 def createVar(base_path="./buildbot", output_dir=""):
     return f"""
 if [[ -d ./mysql-test/var ]]; then
-  typeset extra=""
-  compgen -G ./mysql-test/var/log/*/core* >/dev/null &&
-    extra="$extra ./mysql-test/var/log/*/core*"
-  compgen -G ./mysql-test/var/*/log/*/mysqld.*/data/core* >/dev/null &&
-     extra="$extra ./mysql-test/var/*/log/*/mysqld.*/data/core*"
-  compgen -G ./mysql-test/var/*/log/*/core* >/dev/null &&
-     extra="$extra  ./mysql-test/var/*/log/*/core*"
-  if [[ -f sql/mysqld ]] && [[ ! -L sql/mysqld ]]; then
-    extra="$extra sql/mysqld"
+  typeset -r var_tarball_list="var_tarball_list.txt"
+  if [[ -f $var_tarball_list ]]; then
+    rm $var_tarball_list
   fi
-  [[ -f sql/mariadbd ]] && extra="$extra sql/mariadbd"
-  tar czvf var.tar.gz mysql-test/var/*/log/*.err mysql-test/var/log "$extra"
-  mv var.tar.gz {base_path}/logs/{output_dir}/
+  touch $var_tarball_list
+
+  # save defaults logs
+  echo "mysql-test/var/log" >>$var_tarball_list
+  find mysql-test/var/ -name "*.err" >>$var_tarball_list
+
+  # save core dumps
+  find ./mysql-test/var/ -name "core*" >>$var_tarball_list
+
+  # save binaries (if not already saved by another mtr failing test)
+  if [[ -f sql/mysqld ]] && [[ ! -L sql/mysqld ]]; then
+    [[ -f "./$MTR_LOG_DIR/logs/mysqld.gz" ]] ||
+      gzip -c sql/mysqld >"./$MTR_LOG_DIR/logs/mysqld.gz"
+  fi
+  if [[ -f sql/mariadbd ]]; then
+    [[ -f "./$MTR_LOG_DIR/logs/mariadbd.gz" ]] ||
+      gzip -c sql/mariadbd >"./$MTR_LOG_DIR/logs/mariadbd.gz"
+  fi
+
+  tar czvf var.tar.gz -T ./$var_tarball_list
+  mv var.tar.gz "./$MTR_LOG_DIR/logs/$test_name"
 fi"""
 
 
