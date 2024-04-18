@@ -356,14 +356,12 @@ def createVar(base_path="./buildbot", output_dir=""):
     return f"""
 if [[ -d ./mysql-test/var ]]; then
   typeset extra=""
-  for dir in \
-    ./mysql-test/var/log/*/core* \
-    ./mysql-test/var/*/log/*/mysqld.*/data/core* \
-    ./mysql-test/var/*/log/*/core*; do
-    if compgen -G "$dir" >/dev/null; then
-      extra="$extra $dir"
-    fi
-  done
+  compgen -G ./mysql-test/var/log/*/core* >/dev/null &&
+    extra="$extra ./mysql-test/var/log/*/core*"
+  compgen -G ./mysql-test/var/*/log/*/mysqld.*/data/core* >/dev/null &&
+     extra="$extra ./mysql-test/var/*/log/*/mysqld.*/data/core*"
+  compgen -G ./mysql-test/var/*/log/*/core* >/dev/null &&
+     extra="$extra  ./mysql-test/var/*/log/*/core*"
   if [[ -f sql/mysqld ]] && [[ ! -L sql/mysqld ]]; then
     extra="$extra sql/mysqld"
   fi
