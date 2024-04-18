@@ -255,13 +255,11 @@ def addTests(f_quick_build, test_type, mtrDbPool, mtrArgs):
             ],
         )
     )
-    f_quick_build.addStep(
-        steps.ShellCommand(
-            name=f"create {test_type} var archive",
-            alwaysRun=True,
-            command=["bash", "-c", util.Interpolate(createVar(output_dir=test_type))],
-            doStepIf=hasFailed,
-        )
+    f_quick_build.addStep(createVar(),
+        name=f"Create {test_type} var tarball",
+        env={"MTR_TEST_NAME": {test_type}},
+        alwaysRun=True,
+        doStepIf=hasFailed
     )
     return f_quick_build
 
