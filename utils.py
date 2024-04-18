@@ -352,18 +352,15 @@ def hasFailed(step):
     return step.build.results == FAILURE
 
 
-def createVar(base_path="./buildbot", output_dir=""):
-    return f"""
-if [ -d mysql-test/var ]; then
-    extra=
-    if compgen -G  ./mysql-test/var/*/log/*/mysqld.*/data/core* > /dev/null ||
-      compgen -G ./mysql-test/var/log/*/core* > /dev/null; then
-      if [ -f sql/mysqld ]; then extra="$extra sql/mysqld"; fi
-      if [ -f sql/mariadbd ]; then extra="$extra sql/mariadbd"; fi
-    fi
-    tar zcf var.tar.gz mysql-test/var/*/log/*.err mysql-test/var/log ${{extra}}
-    mv var.tar.gz {base_path}/logs/{output_dir}/
-fi"""
+def createVar():
+    return ShellCommand(
+        haltOnFailure=True,
+        command=[
+            "bash",
+            "-c",
+            util.Interpolate(read_template("create_var")),
+        ],
+    )
 
 
 # Function to move the MTR logs to a known location so that they can be saved
