@@ -354,15 +354,22 @@ def hasFailed(step):
 
 def createVar(base_path="./buildbot", output_dir=""):
     return f"""
-if [ -d mysql-test/var ]; then
-    extra=
-    if compgen -G  ./mysql-test/var/*/log/*/mysqld.*/data/core* > /dev/null ||
-      compgen -G ./mysql-test/var/log/*/core* > /dev/null; then
-      if [ -f sql/mysqld ]; then extra="$extra sql/mysqld"; fi
-      if [ -f sql/mariadbd ]; then extra="$extra sql/mariadbd"; fi
+if [[ -d ./mysql-test/var ]]; then
+  typeset extra=""
+  for dir in \
+    ./mysql-test/var/log/*/core* \
+    ./mysql-test/var/*/log/*/mysqld.*/data/core* \
+    ./mysql-test/var/*/log/*/core*; do
+    if compgen -G "$dir" >/dev/null; then
+      extra="$extra $dir"
     fi
-    tar zcf var.tar.gz mysql-test/var/*/log/*.err mysql-test/var/log ${{extra}}
-    mv var.tar.gz {base_path}/logs/{output_dir}/
+  done
+  if [[ -f sql/mysqld ]] && [[ ! -L sql/mysqld ]]; then
+    extra="$extra sql/mysqld"
+  fi
+  [[ -f sql/mariadbd ]] && extra="$extra sql/mariadbd"
+  tar czvf var.tar.gz mysql-test/var/*/log/*.err mysql-test/var/log "$extra"
+  mv var.tar.gz {base_path}/logs/{output_dir}/
 fi"""
 
 
