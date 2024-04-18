@@ -363,7 +363,7 @@ if [[ -d ./mysql-test/var ]]; then
 
   # save defaults logs
   echo "mysql-test/var/log" >>$var_tarball_list
-  find mysql-test/var/ -name "*.err" >>$var_tarball_list
+  find mysql-test/var/*/log -name "*.err" >>$var_tarball_list
 
   # save core dumps
   find ./mysql-test/var/ -name "core*" >>$var_tarball_list
