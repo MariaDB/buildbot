@@ -147,6 +147,7 @@ supportedPlatforms["10.6"] = supportedPlatforms["10.5"].copy()
 
 # Add only 10.5 supported platforms
 supportedPlatforms["10.5"] += [
+    "amd64-debian-sid",
     "amd64-kvm-centos-6-bintar",
     "amd64-kvm-ubuntu-1604-bintar",
     "x86-kvm-centos-6-bintar",
@@ -179,7 +180,6 @@ supportedPlatforms["10.11"] = [
     "aarch64-ubuntu-2310",
     "aarch64-ubuntu-2404",
     "amd64-debian-12",
-    "amd64-debian-sid",
     "amd64-fedora-40",
     "amd64-ubuntu-2310",
     "amd64-ubuntu-2404",
