@@ -136,6 +136,24 @@ def createWorker(
     return ((base_name, name + worker_name_suffix), worker_instance)
 
 
+def printEnv():
+    return ShellCommand(
+        name="Environment details",
+        command=[
+            "bash",
+            "-c",
+            util.Interpolate(
+                """
+            date -u
+            uname -a
+            ulimit -a
+            command -v lscpu >/dev/null && lscpu
+            """
+            ),
+        ],
+    )
+
+
 def getSourceTarball():
     return ShellCommand(
         name="get_tarball",

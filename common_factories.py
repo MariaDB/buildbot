@@ -161,12 +161,7 @@ def addPostTests(f_quick_build):
 
 def getBuildFactoryPreTest(build_type="RelWithDebInfo", additional_args=""):
     f_quick_build = util.BuildFactory()
-    f_quick_build.addStep(
-        steps.ShellCommand(
-            name="Environment details",
-            command=["bash", "-c", "date -u && uname -a && ulimit -a"],
-        )
-    )
+    f_quick_build.addStep(printEnv())
     f_quick_build.addStep(
         steps.SetProperty(
             property="dockerfile",
@@ -364,12 +359,7 @@ def getLastNFailedBuildsFactory(test_type, mtrDbPool):
 def getRpmAutobakeFactory(mtrDbPool):
     ## f_rpm_autobake
     f_rpm_autobake = util.BuildFactory()
-    f_rpm_autobake.addStep(
-        steps.ShellCommand(
-            name="Environment details",
-            command=["bash", "-c", "date -u && uname -a && ulimit -a"],
-        )
-    )
+    f_rpm_autobake.addStep(printEnv())
     f_rpm_autobake.addStep(
         steps.SetProperty(
             property="dockerfile",
