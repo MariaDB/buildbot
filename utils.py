@@ -327,8 +327,6 @@ def ls2list(rc, stdout, stderr):
 
 # Save packages for current branch?
 def savePackage(step, savedBranches=savedPackageBranches):
-    builderName = str(step.getProperty("buildername"))
-
     return step.getProperty("save_packages") and fnmatch_any(
         step.getProperty("branch"), savedBranches
     )
