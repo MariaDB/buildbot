@@ -21,7 +21,7 @@ branches_main = [
 
 # Defines what builders report status to GitHub
 github_status_builders = [
-    "aarch64-macos",
+    "aarch64-macos-compile-only",
     "amd64-centos-7",
     "amd64-centos-7-rpm-autobake",
     "amd64-debian-10",
@@ -76,6 +76,7 @@ supportedPlatforms["10.4"] = [
     "aarch64-debian-10",
     "aarch64-debian-10-bintar",
     "aarch64-macos",
+    "aarch64-macos-compile-only",
     "aarch64-rhel-8",
     "aarch64-ubuntu-2004",
     "aarch64-ubuntu-2004-debug",
