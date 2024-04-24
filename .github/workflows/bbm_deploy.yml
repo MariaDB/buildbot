@@ -40,6 +40,10 @@ jobs:
       - uses: actions/checkout@v4
       - name: Check master.cfg files
         run: ./validate_master_cfg.sh
+      - name: Check get_ssh_cnx_num.py
+        run: |
+          cd master-libvirt
+          python get_ssh_cnx_num.py
 
   deploy:
     runs-on: ubuntu-latest
