@@ -148,6 +148,7 @@ def printEnv():
             uname -a
             ulimit -a
             command -v lscpu >/dev/null && lscpu
+            LD_SHOW_AUXV=1 sleep 0
             """
             ),
         ],
