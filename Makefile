@@ -27,9 +27,8 @@ venv: ## Create python3 venv if it does not exists
 
 install-pip-packages: ## Install python3 requirements
 	$(info --> Install requirements via `pip`)
-	pip install pip -U
-	pip install wheel
-	pip install -r requirements.txt
+	uv pip install wheel
+	uv pip install -r requirements.txt
 
 install-vlad-bb-fork: ## Install vlad bb fork
 	$(info --> Install vlad's bb fork)
@@ -39,12 +38,12 @@ install-vlad-bb-fork: ## Install vlad bb fork
 	if [[ ! -d $(VENDOR_DIR) ]]; then \
 		git clone --branch grid https://github.com/vladbogo/buildbot $(VENDOR_DIR); \
 	  cd $(VENDOR_DIR)/master && python setup.py bdist_wheel; \
-	  pip install ./dist/*.whl; \
+	  uv pip install ./dist/*.whl; \
 	fi
 
 install-pre-commit: ## Install pre-commit tool
 	$(info --> Install pre-commit tool via `pip`)
-	pip install pre-commit
+	uv pip install pre-commit
 
 pre-commit-run: ## Run pre-commit hooks with $PRE_COMMIT_ARGS default to (diff master...[current_branch])
 	$(info --> run pre-commit on changed files (pre-commit run))
