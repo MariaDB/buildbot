@@ -69,6 +69,7 @@ repos:
             "--errors-only",
             "-sn", # Don't display the score
             "--rcfile=.pylintrc", # Config file
+            "--disable=django-not-configured", # Silence django warning
           ]
   - repo: local
     hooks:
