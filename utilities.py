@@ -1,3 +1,6 @@
+from buildbot.plugins import *
+from buildbot.steps.shell import ShellCommand
+
 # This file is for storing all utility functions used within buildbot's master.cfg
 # The goal is to clean up the master.cfg such that only basic declarative logic is
 # needed in master.cfg
