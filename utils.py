@@ -101,15 +101,7 @@ def createWorker(
         dockerfile_str = open("dockerfiles/" + dockerfile).read()
         image_str = None
         need_pull = False
-    if (
-        "rhel" in worker_type
-        and dockerfile_str is not None
-        and not "download" in dockerfile
-    ):
-        dockerfile_str = dockerfile_str % (
-            private_config["private"]["rhel_sub"]["user"],
-            config["private"]["rhel_sub"]["password"],
-        )
+
     worker_instance = worker.DockerLatentWorker(
         name + worker_name_suffix,
         None,
@@ -279,20 +271,6 @@ def nextBuild(bldr, requests):
             return r
     return requests[0]
 
-
-@defer.inlineCallbacks
-def shell(command, worker, builder):
-    args = {
-        "command": command,
-        "logEnviron": False,
-        "workdir": "/srv/buildbot/worker",
-        "want_stdout": False,
-        "want_stderr": False,
-    }
-    cmd = RemoteCommand("shell", args, stdioLogName=None)
-    cmd.worker = worker
-    yield cmd.run(FakeStep(), worker.conn, builder.name)
-    return cmd.rc
 
 
 def canStartBuild(builder, wfb, request):
