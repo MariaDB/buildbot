@@ -30,6 +30,7 @@ github_status_builders = [
     "amd64-debian-10-last-N-failed",
     "amd64-debian-11-debug-ps-embedded",
     "amd64-debian-11-msan",
+    "amd64-debian-11-msan-clang-16",
     "amd64-fedora-38",
     "amd64-fedora-38-last-N-failed",
     "amd64-ubuntu-2004-debug",
