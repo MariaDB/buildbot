@@ -2,7 +2,7 @@
 exclude: "dockerfiles|ci_build_images/qpress|cross-reference/crossreference/cr/static/cr/font-awesome"
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v4.6.0
     hooks:
       - id: check-added-large-files
       - id: check-ast
@@ -28,7 +28,7 @@ repos:
   #     - id: flake8
   #       name: Check python (flake8)
   - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.32.0
+    rev: v1.35.1
     hooks:
       - id: yamllint
         name: Check yaml files (yamllint)
@@ -53,6 +53,23 @@ repos:
         name: Checks for common misspellings in text files
         entry: codespell
         language: python
+  - repo: https://github.com/PyCQA/pylint.git
+    rev: v3.1.0
+    hooks:
+      - id: pylint
+        name: Check python (pylint)
+        entry: pylint
+        language: system
+        types: [file]
+        files: \.(cfg|py|tac)$
+        # TODO add cross-reference in the future
+        # exclude: ^cross-reference/.*$
+        args:
+          [
+            "--errors-only",
+            "-sn", # Don't display the score
+            "--rcfile=.pylintrc", # Config file
+          ]
   - repo: local
     hooks:
       - id: docker-hadolint
