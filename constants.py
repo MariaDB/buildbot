@@ -239,7 +239,7 @@ test_type_to_mtr_arg = {
 # The following code is auto-generated based on the content of os_info.yaml.
 # Edit with care
 
-with open("/srv/buildbot/master/os_info.yaml", "r") as f:
+with open("/srv/buildbot/master/os_info.yaml") as f:
     os_info = yaml.safe_load(f)
 
 # Generate install builders based on the os_info data
