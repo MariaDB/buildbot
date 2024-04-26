@@ -2,6 +2,7 @@
 
 import os
 import shutil
+
 import yaml
 
 BASE_PATH = "autogen/"
