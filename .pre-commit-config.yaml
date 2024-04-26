@@ -87,6 +87,7 @@ repos:
     hooks:
       - id: isort
         name: check python imports order (isort)
+        args: ["--profile", "black", "--filter-files"]
   - repo: local
     hooks:
       - id: docker-hadolint
