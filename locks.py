@@ -4,8 +4,7 @@ from buildbot.plugins import *
 from buildbot.process.properties import Properties, Property
 from buildbot.process.remotecommand import RemoteCommand
 from buildbot.steps.mtrlogobserver import MTR, MtrLogObserver
-from buildbot.steps.shell import (Compile, SetPropertyFromCommand,
-                                  ShellCommand, Test)
+from buildbot.steps.shell import Compile, SetPropertyFromCommand, ShellCommand, Test
 from buildbot.steps.source.github import GitHub
 from constants import *
 
