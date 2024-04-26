@@ -3,7 +3,7 @@ watchdog script"""
 
 import yaml
 
-with open("../os_info.yaml", "r") as f:
+with open("../os_info.yaml") as f:
     os_info = yaml.safe_load(f)
 
 SSH_CONNECTIONS = 0
