@@ -1,14 +1,15 @@
+#libmariadb-dev not available on Alpine Linux so far
+#mysqlclient
+black
 buildbot-prometheus
 buildbot-worker
+django
 docker==4.3.1
 flask
 libvirt-python
-#libmariadb-dev not available on Alpine Linux so far
-#mysqlclient
+pylint
+pylint-django
 python-dotenv
 pyzabbix
 sqlalchemy==1.3.23
 treq
-pylint
-pylint-django
-django
