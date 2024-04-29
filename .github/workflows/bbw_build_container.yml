@@ -117,6 +117,10 @@ jobs:
             image: opensuse/leap:15.3
             tag: opensuse15
             platforms: linux/amd64
+          - dockerfile: sles.Dockerfile pip.Dockerfile
+            image: registry.suse.com/bci/bci-base:15.5
+            tag: sles15
+            platforms: linux/amd64, linux/s390x
           - dockerfile: centos.Dockerfile
             image: rockylinux:8
             platforms: linux/amd64, linux/arm64/v8
