@@ -182,10 +182,10 @@ if (($(buildah manifest inspect "$devmanifest" | jq '.manifests | length') >= ex
   t=$(mktemp)
   buildah manifest inspect "$debugmanifest" | tee "${t}"
   trap 'manifest_image_cleanup "$t"' EXIT
-  if [ "$ENVIRON" = "DEV" ]; then
-    buildah manifest rm "$debugmanifest"
-  else
+  if [ "$prod_environment" = "True" ]; then
     buildah manifest push --all --rm "$debugmanifest" "docker://quay.io/mariadb-foundation/mariadb-debug:${container_tag}"
+  else
+    buildah manifest rm "$debugmanifest"
   fi
   manifest_image_cleanup "$t"
 
