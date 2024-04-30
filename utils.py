@@ -365,16 +365,16 @@ if [[ -d ./mysql-test/var ]]; then
 
   # save binaries (if not already saved by another mtr failing test)
   if [[ -f sql/mysqld ]] && [[ ! -L sql/mysqld ]]; then
-    [[ -f "./$MTR_LOG_DIR/logs/mysqld.gz" ]] ||
-      gzip -c sql/mysqld >"./$MTR_LOG_DIR/logs/mysqld.gz"
+    [[ -f "./{base_path}/logs/mysqld.gz" ]] ||
+      gzip -c sql/mysqld >"./{base_path}/logs/mysqld.gz"
   fi
   if [[ -f sql/mariadbd ]]; then
-    [[ -f "./$MTR_LOG_DIR/logs/mariadbd.gz" ]] ||
-      gzip -c sql/mariadbd >"./$MTR_LOG_DIR/logs/mariadbd.gz"
+    [[ -f "./{base_path}/logs/mariadbd.gz" ]] ||
+      gzip -c sql/mariadbd >"./{base_path}/logs/mariadbd.gz"
   fi
 
   tar czvf var.tar.gz -T ./$var_tarball_list
-  mv var.tar.gz "./$MTR_LOG_DIR/logs/$test_name"
+  mv var.tar.gz "./{base_path}/logs/{output_dir}"
 fi"""
 
 
