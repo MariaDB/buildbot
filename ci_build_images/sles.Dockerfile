@@ -34,8 +34,14 @@ RUN zypper -n update \
     snappy-devel \
     subversion \
     wget \
+    # temporary add opensuse oss repo for some deps \
+    && zypper ar -f https://download.opensuse.org/distribution/leap/RELEASEVER/repo/oss/ repo-oss \
+    && sed -i "s/RELEASEVER/\$releasever/" /etc/zypp/repos.d/repo-oss.repo \
+    && zypper -n --no-gpg-checks install \
+    judy-devel \
+    scons \
+    && rm /etc/zypp/repos.d/repo-oss.repo \
     && zypper modifyrepo --enable SLE_BCI_source \
-    && zypper -n install "https://ftp.lysator.liu.se/pub/opensuse/distribution/leap/15.5/repo/oss/$(arch)/judy-devel-1.0.5-1.2.$(arch).rpm" \
     && zypper -n source-install -d mariadb \
     && zypper clean -a \
     && curl -sLo /usr/local/bin/dumb-init "https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_$(uname -m)" \
