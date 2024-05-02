@@ -21,7 +21,7 @@ branches_main = [
 
 # Defines what builders report status to GitHub
 github_status_builders = [
-    "aarch64-macos",
+    "aarch64-macos-compile-only",
     "amd64-centos-7",
     "amd64-centos-7-rpm-autobake",
     "amd64-debian-10",
@@ -30,6 +30,7 @@ github_status_builders = [
     "amd64-debian-10-last-N-failed",
     "amd64-debian-11-debug-ps-embedded",
     "amd64-debian-11-msan",
+    "amd64-debian-11-msan-clang-16",
     "amd64-fedora-38",
     "amd64-fedora-38-last-N-failed",
     "amd64-ubuntu-2004-debug",
@@ -75,6 +76,7 @@ supportedPlatforms["10.4"] = [
     "aarch64-debian-10",
     "aarch64-debian-10-bintar",
     "aarch64-macos",
+    "aarch64-macos-compile-only",
     "aarch64-rhel-8",
     "aarch64-ubuntu-2004",
     "aarch64-ubuntu-2004-debug",
@@ -255,7 +257,6 @@ for os_i in os_info:
         # Currently there are no VMs for x86 and s390x and OpenSUSE and SLES
         if (
             arch not in ["s390x", "x86"]
-            and "opensuse" not in os_i
             and "sles" not in os_i
         ):
             builders_install.append(builder_name_autobake + "-install")

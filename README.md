@@ -10,15 +10,17 @@
 
 [![pre-commit](https://github.com/MariaDB/buildbot/actions/workflows/pre-commit.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/pre-commit.yml)
 
-Any code submitted to this project is checked with the
-[pre-commit](https://pre-commit.com/) framework. To make sure that your
-code will pass the checks, you can execute the pre-commit checks locally before
-"git pushing" your code.
+Any code submitted to this project is checked with the [pre-commit](https://pre-commit.com/) framework. To make sure that your code will pass the checks, you can execute the pre-commit checks locally before "git pushing" your code.
 
-Here is how:
+You will need the following:
+
+- uv (see: <https://github.com/astral-sh/uv>)
+- libvirt-dev
+
+Then you should be able to setup your environment with:
 
 ```console
-make venv
+make install
 source .venv/bin/activate
 make install-pre-commit
 make pre-commit-run

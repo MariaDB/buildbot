@@ -11,9 +11,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       #//TEMP we need to check only modified files WRT main
-      - name: run pre-commit (all)
+      - name: Install requirements (apt)
         run: |
+          sudo apt-get update
+          sudo apt-get install -y libvirt-dev
+      - name: Install requirements (uv pip)
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
           make venv
+          make install
           make install-pre-commit
+      - name: Run pre-commit (all)
+        run: |
           source .venv/bin/activate
           make pre-commit-run-all

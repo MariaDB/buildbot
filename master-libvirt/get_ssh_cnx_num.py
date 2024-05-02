@@ -11,8 +11,7 @@ for os in os_info:
     for arch in os_info[os]["arch"]:
         if (
             arch not in ["s390x", "x86"]
-            and "opensuse" not in os_i
-            and "sles" not in os_i
+            and "sles" not in os
         ):
             SSH_CONNECTIONS += 1
 

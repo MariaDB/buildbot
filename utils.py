@@ -101,15 +101,7 @@ def createWorker(
         dockerfile_str = open("dockerfiles/" + dockerfile).read()
         image_str = None
         need_pull = False
-    if (
-        "rhel" in worker_type
-        and dockerfile_str is not None
-        and not "download" in dockerfile
-    ):
-        dockerfile_str = dockerfile_str % (
-            private_config["private"]["rhel_sub"]["user"],
-            config["private"]["rhel_sub"]["password"],
-        )
+
     worker_instance = worker.DockerLatentWorker(
         name + worker_name_suffix,
         None,
@@ -148,6 +140,7 @@ def printEnv():
             uname -a
             ulimit -a
             command -v lscpu >/dev/null && lscpu
+            LD_SHOW_AUXV=1 sleep 0
             """
             ),
         ],
@@ -280,20 +273,6 @@ def nextBuild(bldr, requests):
     return requests[0]
 
 
-@defer.inlineCallbacks
-def shell(command, worker, builder):
-    args = {
-        "command": command,
-        "logEnviron": False,
-        "workdir": "/srv/buildbot/worker",
-        "want_stdout": False,
-        "want_stderr": False,
-    }
-    cmd = RemoteCommand("shell", args, stdioLogName=None)
-    cmd.worker = worker
-    yield cmd.run(FakeStep(), worker.conn, builder.name)
-    return cmd.rc
-
 
 def canStartBuild(builder, wfb, request):
     worker = wfb.worker
@@ -386,16 +365,16 @@ if [[ -d ./mysql-test/var ]]; then
 
   # save binaries (if not already saved by another mtr failing test)
   if [[ -f sql/mysqld ]] && [[ ! -L sql/mysqld ]]; then
-    [[ -f "./$MTR_LOG_DIR/logs/mysqld.gz" ]] ||
-      gzip -c sql/mysqld >"./$MTR_LOG_DIR/logs/mysqld.gz"
+    [[ -f "./{base_path}/logs/mysqld.gz" ]] ||
+      gzip -c sql/mysqld >"./{base_path}/logs/mysqld.gz"
   fi
   if [[ -f sql/mariadbd ]]; then
-    [[ -f "./$MTR_LOG_DIR/logs/mariadbd.gz" ]] ||
-      gzip -c sql/mariadbd >"./$MTR_LOG_DIR/logs/mariadbd.gz"
+    [[ -f "./{base_path}/logs/mariadbd.gz" ]] ||
+      gzip -c sql/mariadbd >"./{base_path}/logs/mariadbd.gz"
   fi
 
   tar czvf var.tar.gz -T ./$var_tarball_list
-  mv var.tar.gz "./$MTR_LOG_DIR/logs/$test_name"
+  mv var.tar.gz "./{base_path}/logs/{output_dir}"
 fi"""
 
 
