@@ -145,12 +145,14 @@ rpm_repo_dir() {
 }
 
 rpm_pkg() {
-  if command -v dnf >/dev/null; then
-    echo dnf
-  elif command -v yum >/dev/null; then
-    echo yum
-  elif command -v zypper >/dev/null; then
+  if [[ $ID_LIKE =~ ^suse* ]]; then
     echo zypper
+  else
+    if command -v dnf >/dev/null; then
+      echo dnf
+    elif command -v yum >/dev/null; then
+      echo yum
+    fi
   fi
 }
 
