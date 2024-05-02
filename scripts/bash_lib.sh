@@ -136,11 +136,21 @@ apt_get_update() {
   fi
 }
 
+rpm_repo_dir() {
+  if [[ $ID_LIKE =~ ^suse* ]]; then
+    echo "/etc/zypp/repos.d"
+  else
+    echo "/etc/yum.repos.d"
+  fi
+}
+
 rpm_pkg() {
   if command -v dnf >/dev/null; then
     echo dnf
   elif command -v yum >/dev/null; then
     echo yum
+  elif command -v zypper >/dev/null; then
+    echo zypper
   fi
 }
 
@@ -155,7 +165,12 @@ rpm_pkg_makecache() {
     if [[ $ID == "rhel" ]]; then
       sudo subscription-manager refresh
     fi
-    if sudo "$pkg_cmd" makecache; then
+    if [[ $ID_LIKE =~ ^suse* ]]; then
+      pkg_cache="refresh"
+    else
+      pkg_cache="makecache"
+    fi
+    if sudo "$pkg_cmd" "$pkg_cache"; then
       made_cache=1
       break
     else
@@ -171,18 +186,22 @@ rpm_pkg_makecache() {
 }
 
 rpm_repoquery() {
-  if [[ -f /etc/yum.repos.d/MariaDB.repo ]]; then
-    repo_name_tmp=$(grep -v "\#" /etc/yum.repos.d/MariaDB.repo | head -n1)
+  if [[ -f $(rpm_repo_dir)/MariaDB.repo ]]; then
+    repo_name_tmp=$(grep -v "\#" "$(rpm_repo_dir)/MariaDB.repo" | head -n1)
     # remove brackets
     repo_name=${repo_name_tmp/\[/}
     repo_name=${repo_name/\]/}
   else
-    bb_log_err "/etc/yum.repos.d/MariaDB.repo is missing"
+    bb_log_err "$(rpm_repo_dir)/MariaDB.repo is missing"
   fi
 
   # return full package list from repository
-  repoquery --disablerepo=* --enablerepo="${repo_name}" -a -q |
-    cut -d ":" -f1 | sort -u | sed 's/-0//'
+  if [[ $ID_LIKE =~ ^suse* ]]; then
+    zypper packages -r "${repo_name}" | grep "MariaDB" | awk '{print $8}'
+  else
+    repoquery --disablerepo=* --enablerepo="${repo_name}" -a -q |
+      cut -d ":" -f1 | sort -u | sed 's/-0//'
+  fi
 }
 
 wait_for_mariadb_upgrade() {
@@ -266,7 +285,7 @@ rpm_setup_mariadb_mirror() {
     bb_log_warn "rpm_setup_mariadb_mirror: $branch packages for $dist_name $version_name does not exist on https://rpm.mariadb.org/"
     exit 0
   fi
-  cat <<EOF | sudo tee /etc/yum.repos.d/MariaDB.repo
+  cat <<EOF | sudo tee "$(rpm_repo_dir)/MariaDB.repo"
 [mariadb]
 name=MariaDB
 baseurl=$baseurl
@@ -293,7 +312,7 @@ rpm_setup_bb_artifacts_mirror() {
   # stop if any variable is undefined
   set -u
   bb_log_info "setup buildbot artifact repository"
-  sudo wget "$artifactsURL/$tarbuildnum/$parentbuildername/MariaDB.repo" -O /etc/yum.repos.d/MariaDB.repo || {
+  sudo wget "$artifactsURL/$tarbuildnum/$parentbuildername/MariaDB.repo" -O "$(rpm_repo_dir)/MariaDB.repo" || {
     bb_log_err "unable to download $artifactsURL/$tarbuildnum/$parentbuildername/MariaDB.repo"
     exit 1
   }
@@ -304,7 +323,7 @@ rpm_setup_bb_galera_artifacts_mirror() {
   # stop if any variable is undefined
   set -u
   bb_log_info "setup buildbot galera artifact repository"
-  sudo wget "$artifactsURL/galera/mariadb-4.x-latest-gal-${parentbuildername/-rpm-autobake/}.repo" -O /etc/yum.repos.d/galera.repo || {
+  sudo wget "$artifactsURL/galera/mariadb-4.x-latest-gal-${parentbuildername/-rpm-autobake/}.repo" -O "$(rpm_repo_dir)/galera.repo" || {
     bb_log_err "unable to download $artifactsURL/galera/mariadb-4.x-latest-gal-${parentbuildername/-rpm-autobake/}.repo"
     exit 1
   }
