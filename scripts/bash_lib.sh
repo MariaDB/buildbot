@@ -209,7 +209,7 @@ rpm_repoquery() {
 wait_for_mariadb_upgrade() {
   res=1
   for i in {1..20}; do
-    if pgrep -i 'mysql_upgrade|mysqlcheck|mysqlrepair|mysqlanalyze|mysqloptimize|mariadb-upgrade|mariadb-check'; then
+    if pgrep -if 'mysql_upgrade|mysqlcheck|mysqlrepair|mysqlanalyze|mysqloptimize|mariadb-upgrade|mariadb-check'; then
       bb_log_info "wait for mysql_upgrade to finish ($i)"
       sleep 5
     else
