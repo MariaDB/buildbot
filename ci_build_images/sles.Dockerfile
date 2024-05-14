@@ -15,6 +15,7 @@ RUN zypper -n update \
     bzip2 \
     ccache \
     check-devel \
+    checkpolicy \
     cracklib-devel \
     git \
     glibc-locale \
