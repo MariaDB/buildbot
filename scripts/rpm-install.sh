@@ -47,11 +47,14 @@ rpm_pkg_makecache
 pkg_list=$(rpm_repoquery) ||
   bb_log_err "Unable to retrieve package list from repository"
 
+# ID_LIKE may not exist
+set +u
 if [[ $ID_LIKE =~ ^suse* ]]; then
   echo "$pkg_list" | xargs sudo "$pkg_cmd" -n install
 else
   echo "$pkg_list" | xargs sudo "$pkg_cmd" -y install
 fi
+set -u
 
 sh -c 'g=/usr/lib*/galera*/libgalera_smm.so; echo -e "[galera]\nwsrep_provider=$g"' | sudo tee /etc/my.cnf.d/galera.cnf
 case "$systemdCapability" in

@@ -137,14 +137,19 @@ apt_get_update() {
 }
 
 rpm_repo_dir() {
+  # ID_LIKE may not exist
+  set +u
   if [[ $ID_LIKE =~ ^suse* ]]; then
     echo "/etc/zypp/repos.d"
   else
     echo "/etc/yum.repos.d"
   fi
+  set -u
 }
 
 rpm_pkg() {
+  # ID_LIKE may not exist
+  set +u
   if [[ $ID_LIKE =~ ^suse* ]]; then
     echo zypper
   else
@@ -154,6 +159,7 @@ rpm_pkg() {
       echo yum
     fi
   fi
+  set -u
 }
 
 rpm_pkg_makecache() {
@@ -167,11 +173,14 @@ rpm_pkg_makecache() {
     if [[ $ID == "rhel" ]]; then
       sudo subscription-manager refresh
     fi
+    # ID_LIKE may not exist
+    set +u
     if [[ $ID_LIKE =~ ^suse* ]]; then
       pkg_cache="refresh"
     else
       pkg_cache="makecache"
     fi
+    set -u
     if sudo "$pkg_cmd" "$pkg_cache"; then
       made_cache=1
       break
@@ -197,6 +206,8 @@ rpm_repoquery() {
     bb_log_err "$(rpm_repo_dir)/MariaDB.repo is missing"
   fi
 
+  # ID_LIKE may not exist
+  set +u
   # return full package list from repository
   if [[ $ID_LIKE =~ ^suse* ]]; then
     zypper packages -r "${repo_name}" | grep "MariaDB" | awk '{print $8}'
@@ -204,6 +215,7 @@ rpm_repoquery() {
     repoquery --disablerepo=* --enablerepo="${repo_name}" -a -q |
       cut -d ":" -f1 | sort -u | sed 's/-0//'
   fi
+  set -u
 }
 
 wait_for_mariadb_upgrade() {
