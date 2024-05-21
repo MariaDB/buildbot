@@ -6,7 +6,8 @@ build_deps() {
   # MDEV-32815 - awaiting for 10.1.1+ bump.
   # manually remove install directory when changeing version
   # v=9.1.0,9.0.0,8.1.1 - fails to build
-  v=8.0.1
+  # Currently unreleased - manual build as of b817610
+  v=10.2.2
   wget https://github.com/fmtlib/fmt/archive/refs/tags/${v}.tar.gz -O - | tar -zxf -
   rm -rf build-fmt
   mkdir -p build-fmt
@@ -36,7 +37,6 @@ build() {
     -DCMAKE_CXX_COMPILER=g++-11 \
     -DCMAKE_AR=/usr/bin/ar \
     -DCMAKE_PREFIX_PATH=/opt/freeware/ \
-    -DCMAKE_REQUIRED_LINK_OPTIONS=-L/opt/freeware/lib \
     -DCMAKE_REQUIRED_FLAGS=-I\ /opt/freeware/include \
     -DPLUGIN_OQGRAPH=NO \
     -DWITH_UNIT_TESTS=NO \
