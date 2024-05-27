@@ -291,7 +291,8 @@ rpm_setup_mariadb_mirror() {
 [mariadb]
 name=MariaDB
 baseurl=$baseurl
-# //TEMP following is probably not needed for all OS
+# //TEMP following is not needed for all OS
+# - rhel8 based OS (almalinux 8, rockylinux 8, centos 8)
 module_hotfixes = 1
 gpgkey=https://rpm.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
