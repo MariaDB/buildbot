@@ -16,6 +16,7 @@ RUN zypper -n update \
     ccache \
     check-devel \
     cracklib-devel \
+    gdb \
     git \
     glibc-locale \
     jemalloc-devel \
