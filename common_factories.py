@@ -70,7 +70,7 @@ class FetchTestData(MTR):
             )
 
             if tests:
-                test_args = " ".join(tests)
+                test_args = " ".join(set(tests))
                 self.setProperty("tests_to_run", test_args)
 
         return results.SUCCESS
