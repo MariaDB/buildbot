@@ -1,0 +1,14 @@
+#!/usr/bin/expect
+spawn zypper si -d mariadb
+
+expect {
+    "Choose from above solutions by number or skip, retry or cancel*" {
+        send "2\r"
+        exp_continue
+    }
+    "Continue?*" {
+        send "y\r"
+        exp_continue
+    }
+}
+
