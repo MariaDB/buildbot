@@ -134,6 +134,7 @@ supportedPlatforms["10.5"] += [
     "amd64-fedora-39",
     "amd64-freebsd-14",
     "amd64-rhel-9",
+    "amd64-sles-15",
     "ppc64be-aix-71",
     "ppc64le-centos-stream9",
     "ppc64le-debian-11",

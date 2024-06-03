@@ -70,7 +70,7 @@ class FetchTestData(MTR):
             )
 
             if tests:
-                test_args = " ".join(tests)
+                test_args = " ".join(set(tests))
                 self.setProperty("tests_to_run", test_args)
 
         return results.SUCCESS
@@ -463,7 +463,7 @@ name=MariaDB %(prop:branch)s repo (build %(prop:tarbuildnum)s)
 baseurl=%(kw:url)s/%(prop:tarbuildnum)s/%(prop:buildername)s/rpms
 gpgcheck=0
 EOF
-            if [ "%(prop:rpm_type)s" = rhel8 ] || [ "%(prop:rpm_type)s" = centosstream8 ]; then
+            if [ "%(prop:rpm_type)s" = rhel8 ] || [ "%(prop:rpm_type)s" = centosstream8 ] || [ "%(prop:rpm_type)s" = alma8 ] || [ "%(prop:rpm_type)s" = rocky8 ]; then
                 echo "module_hotfixes = 1" >> MariaDB.repo
             fi
         """,
