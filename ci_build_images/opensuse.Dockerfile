@@ -8,43 +8,44 @@ ARG BASE_IMAGE
 FROM "$BASE_IMAGE"
 LABEL maintainer="MariaDB Buildbot maintainers"
 
+COPY --chmod=755 mariadb_zypper_expect /
 # Install updates and required packages
 RUN zypper update -y && \
     zypper install -y -t pattern devel_basis && \
     zypper install -y \
-    boost-devel \
     bzip2 \
     ccache \
     check-devel \
     cmake \
     cracklib-devel \
-    createrepo \
+    createrepo_c \
     curl \
+    expect \
     git \
     glibc-locale \
-    gnutls-devel \
     jemalloc-devel \
-    libboost_filesystem1_66_0-devel \
-    libboost_program_options1_66_0-devel \
-    libboost_system1_66_0-devel \
+    libboost_filesystem1_75_0-devel \
+    libboost_program_options1_75_0-devel \
+    libboost_system1_75_0-devel \
     libbz2-devel \
     libcurl-devel \
     libffi-devel \
+    libfmt8 \
+    libgnutls-devel \
     liblz4-devel \
+    libopenssl-3-devel \
+    liburing2-devel \
     libxml2-devel \
-    openssl-devel \
     perl-Net-SSLeay \
     policycoreutils \
-    python-devel \
-    python-pip \
-    python3-pip \
+    python311-devel \
+    python311-pip \
     rpm-build \
     rpmlint \
-    scons \
     snappy-devel \
     subversion \
     wget \
-    && zypper -n si -d mariadb \
+    && ./mariadb_zypper_expect \
     && zypper clean -a \
     && curl -sLo /usr/local/bin/dumb-init "https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_$(uname -m)" \
     && chmod +x /usr/local/bin/dumb-init
