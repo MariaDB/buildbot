@@ -95,13 +95,6 @@ jobs:
           - dockerfile: fedora.Dockerfile
             image: fedora:40
             platforms: linux/amd64, linux/arm64/v8
-          - dockerfile: centos7.Dockerfile pip.Dockerfile
-            image: centos:7
-            platforms: linux/amd64
-          - dockerfile: centos.Dockerfile
-            image: quay.io/centos/centos:stream8
-            tag: centosstream8
-            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
           - dockerfile: centos.Dockerfile pip.Dockerfile
             image: quay.io/centos/centos:stream9
             tag: centosstream9

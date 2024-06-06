@@ -26,7 +26,6 @@ private["master-variables"] = {
             ],
         "ppc64le": [
                 'ppc64le-rhel8-bbw1',
-                'ppc64le-rhel7-bbw1',
                 'ppc64le-db-bbw1',
                 'ppc64le-raptor-bbw1',
             ],
@@ -42,7 +41,6 @@ private["master-variables"] = {
 }
 private["worker_pass"]= {
     "hz-bbw2-ubuntu1804":"1234",
-    "hz-bbw2-libvirt-debian-10":"1234",
     "hz-freebsd-bbw1":"1234",
     "bm-bbw1-ubuntu1804":"1234",
     "shinnok-bbw1-macos":"1234",
@@ -68,7 +66,6 @@ private["docker_workers"]= {
     "gsk-bbw1-docker":"tcp://IP_address:port",
     "bm-bbw1-docker":"tcp://IP_address:port",
     "ppc64le-rhel8-bbw1-docker":"tcp://IP_address:port",
-    "ppc64le-rhel7-bbw1-docker":"tcp://IP_address:port",
     "ppc64le-db-bbw1-docker":"tcp://IP_address:port",
     "ppc64le-raptor-bbw1-docker":"tcp://IP_address:port",
     "aarch64-bbw1-docker":"tcp://IP_address:port",
