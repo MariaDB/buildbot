@@ -1,5 +1,4 @@
 builders:
-- aarch64-centos-stream8
 - aarch64-centos-stream9
 - aarch64-debian-10
 - aarch64-debian-11
