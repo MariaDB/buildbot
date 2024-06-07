@@ -273,7 +273,6 @@ def nextBuild(bldr, requests):
     return requests[0]
 
 
-
 def canStartBuild(builder, wfb, request):
     worker = wfb.worker
     if not "s390x" in worker.name:
@@ -704,3 +703,7 @@ def getMetric(hostname, metric):
 def read_template(template_name):
     with open(f"/srv/buildbot/master/script_templates/{template_name}.sh", "r") as f:
         return f.read()
+
+
+def isJepsenBranch(step):
+    return step.getProperty("branch").startswith("jpsn")
