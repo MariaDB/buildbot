@@ -21,6 +21,7 @@ RUN zypper update -y && \
     createrepo_c \
     curl \
     expect \
+    gcc-c++ \
     git \
     glibc-locale \
     jemalloc-devel \
