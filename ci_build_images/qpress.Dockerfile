@@ -1,6 +1,7 @@
 
 # qpress.Dockerfile
 # those steps are common to all images
+USER root
 
 # install qpress (MDEV-29043)
 COPY qpress/* /tmp/qpress/

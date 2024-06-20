@@ -26,10 +26,10 @@ jobs:
         include:
           - dockerfile: centos.Dockerfile
             image: almalinux:8
-            platforms: linux/amd64
+            platforms: linux/amd64, linux/arm64/v8
           - dockerfile: centos.Dockerfile pip.Dockerfile
             image: almalinux:9
-            platforms: linux/amd64
+            platforms: linux/amd64, linux/arm64/v8
           - dockerfile: debian.Dockerfile
             image: debian:11
             branch: 10.11
@@ -98,10 +98,6 @@ jobs:
           - dockerfile: centos7.Dockerfile pip.Dockerfile
             image: centos:7
             platforms: linux/amd64
-          - dockerfile: centos.Dockerfile
-            image: quay.io/centos/centos:stream8
-            tag: centosstream8
-            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
           - dockerfile: centos.Dockerfile pip.Dockerfile
             image: quay.io/centos/centos:stream9
             tag: centosstream9
@@ -110,7 +106,7 @@ jobs:
             # s390x)
             # platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
           - dockerfile: opensuse.Dockerfile pip.Dockerfile
-            image: opensuse/leap:15.3
+            image: opensuse/leap:15.5
             tag: opensuse15
             platforms: linux/amd64
           - dockerfile: sles.Dockerfile pip.Dockerfile
@@ -123,6 +119,11 @@ jobs:
           - dockerfile: centos.Dockerfile pip.Dockerfile
             image: rockylinux:9
             platforms: linux/amd64, linux/arm64/v8
+          - dockerfile: debian.Dockerfile jepsen-mysql.Dockerfile
+            image: ubuntu:22.04
+            branch: 10.11
+            platforms: linux/amd64
+            tag: ubuntu22.04-jepsen-mysql
     env:
       BUILD_RHEL: false
       DEPLOY_IMAGES: false
@@ -149,6 +150,10 @@ jobs:
           cd ${{ env.WORKDIR }}
           cat ${{ matrix.dockerfile }} qpress.Dockerfile buildbot-worker.Dockerfile >$GITHUB_WORKSPACE/Dockerfile
           cp -r qpress $GITHUB_WORKSPACE
+      - name: opensuse extra
+        if: matrix.tag == 'opensuse15'
+        run: |
+          cp ${{ env.WORKDIR }}/mariadb_zypper_expect $GITHUB_WORKSPACE
       - name: No wsrep on 32 bit platforms
         if: >
           (contains(matrix.platforms, 'linux/386'))
