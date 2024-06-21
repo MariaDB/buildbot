@@ -1,19 +1,24 @@
+import fnmatch
 import os
 import re
 import sys
-import fnmatch
-from datetime import timedelta, datetime
-from pyzabbix import ZabbixAPI
+from datetime import datetime, timedelta
+
 import docker
-from twisted.internet import defer
-from buildbot.plugins import *
-from buildbot.process.properties import Property, Properties
-from buildbot.process.results import FAILURE
-from buildbot.steps.shell import ShellCommand, Compile, Test, SetPropertyFromCommand
-from buildbot.steps.mtrlogobserver import MTR, MtrLogObserver
-from buildbot.steps.source.github import GitHub
+from buildbot.plugins import steps, util, worker
+from buildbot.process.properties import Properties, Property
 from buildbot.process.remotecommand import RemoteCommand
-from constants import *
+from buildbot.process.results import FAILURE
+from buildbot.steps.mtrlogobserver import MTR, MtrLogObserver
+from buildbot.steps.shell import (Compile, SetPropertyFromCommand,
+                                  ShellCommand, Test)
+from buildbot.steps.source.github import GitHub
+from pyzabbix import ZabbixAPI
+from twisted.internet import defer
+
+from constants import (DEVELOPMENT_BRANCH, builders_autobake, builders_big,
+                       builders_eco, builders_galera_mtr, builders_install,
+                       builders_upgrade, releaseBranches, savedPackageBranches, os_info)
 
 private_config = {"private": {}}
 exec(open("/srv/buildbot/master/master-private.cfg").read(), private_config, {})
@@ -273,7 +278,6 @@ def nextBuild(bldr, requests):
     return requests[0]
 
 
-
 def canStartBuild(builder, wfb, request):
     worker = wfb.worker
     if not "s390x" in worker.name:
@@ -461,26 +465,12 @@ def hasEco(props):
 def hasCompat(step):
     builderName = str(step.getProperty("buildername"))
 
-    # For s390x there are no compat files
-    if "s390x" in builderName:
+    # For s390x and the listed distros there are no compat files
+    if any(builderName.find(sub) != -1 for sub in {"s390x", "fedora", "alma", "rocky"}):
         return False
     if "rhel" in builderName or "centos" in builderName:
         return step.getProperty("rpm_type")[-1] in ["7", "8"]
-    if "fedora" in builderName:
-        return step.getProperty("rpm_type")[-1] in ["35", "36"]
-    if "alma" in builderName or "rocky" in builderName:
-        return False
     return True
-
-
-@util.renderer
-def getDockerLibraryNames(props):
-    return builders_dockerlibrary[0]
-
-
-@util.renderer
-def getWordpressNames(props):
-    return builders_wordpress[0]
 
 
 def hasDockerLibrary(step):
@@ -577,85 +567,6 @@ def getArch(props):
     return buildername.split("-")[0]
 
 
-####### SCHEDULER HELPER FUNCTIONS
-@util.renderer
-def getBranchBuilderNames(props):
-    mBranch = props.getProperty("master_branch")
-
-    builders = list(
-        filter(lambda x: x not in github_status_builders, supportedPlatforms[mBranch])
-    )
-
-    return builders
-
-
-@util.renderer
-def getProtectedBuilderNames(props):
-    mBranch = props.getProperty("master_branch")
-
-    builders = list(
-        filter(lambda x: x in supportedPlatforms[mBranch], github_status_builders)
-    )
-
-    return builders
-
-
-@util.renderer
-def getAutobakeBuilderNames(props):
-    builderName = props.getProperty("parentbuildername")
-    for b in builders_autobake:
-        if builderName in b:
-            return [b]
-    return []
-
-
-@util.renderer
-def getBigtestBuilderNames(props):
-    builderName = str(props.getProperty("parentbuildername"))
-
-    for b in builders_big:
-        if builderName in b:
-            return [b]
-    return []
-
-
-@util.renderer
-def getInstallBuilderNames(props):
-    builderName = str(props.getProperty("parentbuildername"))
-
-    for b in builders_install:
-        if builderName in b:
-            builders = [b]
-            if "rhel" in builderName:
-                builders.append(b.replace("rhel", "almalinux"))
-            return builders
-    return []
-
-
-@util.renderer
-def getUpgradeBuilderNames(props):
-    builderName = str(props.getProperty("parentbuildername"))
-
-    builds = []
-    for b in builders_upgrade:
-        if builderName in b:
-            if "rhel" in builderName:
-                builds.append(b.replace("rhel", "almalinux"))
-            builds.append(b)
-    return builds
-
-
-@util.renderer
-def getEcoBuilderNames(props):
-    builderName = str(props.getProperty("parentbuildername"))
-
-    builds = []
-    for b in builders_eco:
-        if builderName in b:
-            builds.append(b)
-    return builds
-
-
 ##### Builder priority
 # Prioritize builders. At this point, only the Windows builders need a higher priority
 # since the others run on dedicated machines.
@@ -706,7 +617,7 @@ def getMetric(hostname, metric):
 
 
 def read_template(template_name):
-    with open(f"/srv/buildbot/master/script_templates/{template_name}.sh", "r") as f:
+    with open(f"/srv/buildbot/master/script_templates/{template_name}.sh") as f:
         return f.read()
 
 

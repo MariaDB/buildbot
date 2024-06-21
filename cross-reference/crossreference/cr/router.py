@@ -1,4 +1,4 @@
-from .models import Builder, TestFailure, TestRun
+from .models import TestRun, TestFailure, Builder
 
 
 class MariaDBRouter:
