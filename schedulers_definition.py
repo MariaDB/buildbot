@@ -95,7 +95,6 @@ def getWordpressNames(props):
     return builders_wordpress[0]
 
 
-
 def getSchedulers():
     l = []
 
