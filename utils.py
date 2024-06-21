@@ -10,15 +10,23 @@ from buildbot.process.properties import Properties, Property
 from buildbot.process.remotecommand import RemoteCommand
 from buildbot.process.results import FAILURE
 from buildbot.steps.mtrlogobserver import MTR, MtrLogObserver
-from buildbot.steps.shell import (Compile, SetPropertyFromCommand,
-                                  ShellCommand, Test)
+from buildbot.steps.shell import Compile, SetPropertyFromCommand, ShellCommand, Test
 from buildbot.steps.source.github import GitHub
 from pyzabbix import ZabbixAPI
 from twisted.internet import defer
 
-from constants import (DEVELOPMENT_BRANCH, builders_autobake, builders_big,
-                       builders_eco, builders_galera_mtr, builders_install,
-                       builders_upgrade, releaseBranches, savedPackageBranches, os_info)
+from constants import (
+    DEVELOPMENT_BRANCH,
+    builders_autobake,
+    builders_big,
+    builders_eco,
+    builders_galera_mtr,
+    builders_install,
+    builders_upgrade,
+    releaseBranches,
+    savedPackageBranches,
+    os_info,
+)
 
 private_config = {"private": {}}
 exec(open("/srv/buildbot/master/master-private.cfg").read(), private_config, {})
