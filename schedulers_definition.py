@@ -1,9 +1,16 @@
 from buildbot.plugins import schedulers, util
 
-from constants import (builders_autobake, builders_big, builders_dockerlibrary,
-                       builders_eco, builders_install, builders_upgrade,
-                       builders_wordpress, github_status_builders,
-                       supportedPlatforms)
+from constants import (
+    builders_autobake,
+    builders_big,
+    builders_dockerlibrary,
+    builders_eco,
+    builders_install,
+    builders_upgrade,
+    builders_wordpress,
+    github_status_builders,
+    supportedPlatforms,
+)
 
 
 ####### SCHEDULER HELPER FUNCTIONS
