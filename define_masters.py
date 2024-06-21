@@ -8,7 +8,7 @@ BASE_PATH = "autogen/"
 config = {"private": {}}
 exec(open("master-private.cfg").read(), config, {})
 
-with open("os_info.yaml", encoding="utf-8") as file:
+with open("os_info.yaml", mode="r", encoding="utf-8") as file:
     os_info = yaml.safe_load(file)
 
 platforms = {}
@@ -64,7 +64,7 @@ for arch in platforms:
         shutil.copyfile("master-private.cfg", dir_path + "/master-private.cfg")
 
         buildbot_tac = (
-            open("buildbot.tac", encoding="utf-8").read()
+            open("buildbot.tac", mode="r", encoding="utf-8").read()
             % master_config["log_name"]
         )
         with open(dir_path + "/buildbot.tac", mode="w", encoding="utf-8") as f:

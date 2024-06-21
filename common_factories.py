@@ -220,7 +220,7 @@ def addTests(factory, test_type, mtrDbPool, mtrArgs):
                 "sh",
                 "-c",
                 util.Interpolate(
-                    fr"""
+                    f"""
             cd mysql-test &&
             exec perl mysql-test-run.pl {test_type_to_mtr_arg[test_type]} --verbose-restart --force --retry=3 --max-save-core=2 --max-save-datadir=10 --max-test-fail=20 --mem --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s
             """,
@@ -272,7 +272,7 @@ def addGaleraTests(factory, mtrDbPool):
                 "sh",
                 "-c",
                 util.Interpolate(
-                    r"""
+                    """
            cd mysql-test &&
            if [ -f "$WSREP_PROVIDER" ]; then exec perl mysql-test-run.pl --verbose-restart --force --retry=3 --max-save-core=2 --max-save-datadir=10 --max-test-fail=20 --mem --big-test --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s --suite=wsrep,galera,galera_3nodes,galera_3nodes_sr; fi
            """,
@@ -325,7 +325,7 @@ def getLastNFailedBuildsFactory(test_type, mtrDbPool):
         tests_to_run = props.getProperty("tests_to_run", None)
         if tests_to_run:
             mtr_additional_args = re.sub(
-                r"--suite=\S*", "--skip-not-found " + tests_to_run, mtr_additional_args
+                "--suite=\S*", "--skip-not-found " + tests_to_run, mtr_additional_args
             )
 
         return mtr_additional_args
