@@ -47,14 +47,14 @@ repos:
       - id: markdownlint
         name: check for markdown lint (mdl)
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.6
+    rev: v2.3.0
     hooks:
       - id: codespell
         name: check for common misspellings in text files
         entry: codespell
         language: python
   - repo: https://github.com/PyCQA/pylint.git
-    rev: v3.1.0
+    rev: v3.2.3
     hooks:
       - id: pylint
         name: check python syntax (pylint)
@@ -77,7 +77,7 @@ repos:
       - id: black
         name: check python formating (black)
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.15.2
+    rev: v3.16.0
     hooks:
       - id: pyupgrade
         name: check python syntax (pyupgrade)
