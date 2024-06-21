@@ -21,7 +21,7 @@ install: ## Install all necessary tools
 
 venv: ## Create python3 venv if it does not exists
 	$(info --> Create python virtual env ($(VENV_DIR)))
-	[[ -d $(VENV_DIR) ]] || uv venv $(VENV_DIR)
+	[[ -d $(VENV_DIR) ]] || $(shell command -v python3) -m venv $(VENV_DIR)
 	@echo -e "\n--> You should now activate the python3 venv with:"
 	@echo -e "source $(VENV_DIR)/bin/activate\n"
 
