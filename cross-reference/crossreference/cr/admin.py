@@ -1,5 +1,5 @@
-from django.contrib import admin
 from cr.models import TestFailure, TestRun
+from django.contrib import admin
 
 admin.site.register(TestFailure)
 admin.site.register(TestRun)

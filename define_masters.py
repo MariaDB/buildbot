@@ -2,6 +2,7 @@
 
 import os
 import shutil
+
 import yaml
 
 BASE_PATH = "autogen/"
@@ -64,8 +65,7 @@ for arch in platforms:
         shutil.copyfile("master-private.cfg", dir_path + "/master-private.cfg")
 
         buildbot_tac = (
-            open("buildbot.tac", encoding="utf-8").read()
-            % master_config["log_name"]
+            open("buildbot.tac", encoding="utf-8").read() % master_config["log_name"]
         )
         with open(dir_path + "/buildbot.tac", mode="w", encoding="utf-8") as f:
             f.write(buildbot_tac)

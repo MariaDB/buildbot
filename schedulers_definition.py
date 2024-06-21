@@ -1,5 +1,4 @@
 from buildbot.plugins import schedulers, util
-
 from constants import (
     builders_autobake,
     builders_big,
