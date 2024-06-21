@@ -15,7 +15,7 @@ def checkoutUsingGitWorktree():
             "bash",
             "-xc",
             util.Interpolate(
-                """
+                r"""
   d=/mnt/packages/
   cd "$d"
   revision="%(prop:revision)s"
