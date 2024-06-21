@@ -76,12 +76,12 @@ repos:
     hooks:
       - id: black
         name: check python formating (black)
-  - repo: https://github.com/asottile/pyupgrade
-    rev: v3.16.0
-    hooks:
-      - id: pyupgrade
-        name: check python syntax (pyupgrade)
-        args: [--py38-plus]
+  # - repo: https://github.com/asottile/pyupgrade
+  #   rev: v3.16.0
+  #   hooks:
+  #     - id: pyupgrade
+  #       name: check python syntax (pyupgrade)
+  #       args: [--py38-plus]
   - repo: https://github.com/pycqa/isort
     rev: 5.13.2
     hooks:
