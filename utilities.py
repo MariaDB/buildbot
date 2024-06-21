@@ -1,16 +1,21 @@
 from buildbot.plugins import *
 from buildbot.steps.shell import ShellCommand
 
+
 # This file is for storing all utility functions used within buildbot's master.cfg
 # The goal is to clean up the master.cfg such that only basic declarative logic is
 # needed in master.cfg
 def checkoutUsingGitWorktree():
     return ShellCommand(
-             name="fetch_using_git",
-             description="fetching using git",
-             descriptionDone="fetch and git checked out...done",
-             haltOnFailure=True,
-             command=["bash", "-xc", util.Interpolate("""
+        name="fetch_using_git",
+        description="fetching using git",
+        descriptionDone="fetch and git checked out...done",
+        haltOnFailure=True,
+        command=[
+            "bash",
+            "-xc",
+            util.Interpolate(
+                """
   d=/mnt/packages/
   cd "$d"
   revision="%(prop:revision)s"
@@ -35,5 +40,7 @@ def checkoutUsingGitWorktree():
   git clean -dfx
   git checkout $revision
   git submodule update --recursive
-""")])
-
+"""
+            ),
+        ],
+    )
