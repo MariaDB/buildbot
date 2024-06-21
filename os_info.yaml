@@ -133,12 +133,6 @@ ubuntu-2204:
     - ppc64le
     - s390x
   type: deb
-ubuntu-2310:
-  version_name: mantic
-  arch:
-    - amd64
-    - aarch64
-  type: deb
 ubuntu-2404:
   version_name: noble
   arch:
