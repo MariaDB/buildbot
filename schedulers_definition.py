@@ -2,53 +2,42 @@ from buildbot.plugins import *
 
 from utils import *
 
-
 def getSchedulers():
     l = []
 
-    l.append(
-        schedulers.Triggerable(
-            name="s_upstream_all", builderNames=getBranchBuilderNames
-        )
-    )
+    l.append(schedulers.Triggerable(name="s_upstream_all",
+        builderNames=getBranchBuilderNames))
 
-    schedulerProtectedBranches = schedulers.Triggerable(
-        name="s_protected_branches", builderNames=getProtectedBuilderNames
-    )
+    schedulerProtectedBranches = schedulers.Triggerable(name="s_protected_branches",
+        builderNames=getProtectedBuilderNames)
     l.append(schedulerProtectedBranches)
 
-    schedulerPackages = schedulers.Triggerable(
-        name="s_packages", builderNames=getAutobakeBuilderNames
-    )
+    schedulerPackages = schedulers.Triggerable(name="s_packages",
+            builderNames=getAutobakeBuilderNames)
     l.append(schedulerPackages)
 
-    schedulerBigtests = schedulers.Triggerable(
-        name="s_bigtest", builderNames=getBigtestBuilderNames
-    )
+    schedulerBigtests = schedulers.Triggerable(name="s_bigtest",
+            builderNames=getBigtestBuilderNames)
     l.append(schedulerBigtests)
 
-    schedulerInstall = schedulers.Triggerable(
-        name="s_install", builderNames=getInstallBuilderNames
-    )
+    schedulerInstall = schedulers.Triggerable(name="s_install",
+            builderNames=getInstallBuilderNames)
     l.append(schedulerInstall)
 
-    schedulerUpgrade = schedulers.Triggerable(
-        name="s_upgrade", builderNames=getUpgradeBuilderNames
-    )
+    schedulerUpgrade = schedulers.Triggerable(name="s_upgrade",
+            builderNames=getUpgradeBuilderNames)
     l.append(schedulerUpgrade)
 
-    schedulerEco = schedulers.Triggerable(name="s_eco", builderNames=getEcoBuilderNames)
+    schedulerEco = schedulers.Triggerable(name="s_eco",
+            builderNames=getEcoBuilderNames)
     l.append(schedulerEco)
 
-    schedulerDockerlibrary = schedulers.Triggerable(
-        name="s_dockerlibrary", builderNames=getDockerLibraryNames
-    )
+    schedulerDockerlibrary = schedulers.Triggerable(name="s_dockerlibrary",
+            builderNames=getDockerLibraryNames)
     l.append(schedulerDockerlibrary)
 
     l.append(schedulers.Triggerable(name="s_wordpress", builderNames=getWordpressNames))
 
-    l.append(
-        schedulers.Triggerable(name="s_release_prep", builderNames=["release-prep"])
-    )
+    l.append(schedulers.Triggerable(name="s_release_prep", builderNames=["release-prep"]))
 
     return l
