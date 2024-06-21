@@ -88,25 +88,25 @@ def select_test_failures(filters, include_failures=True):
         "branch": [
             # Pattern: 10.?
             {
-                "pattern": r"^([0-9]{1,2}\.)(\?)$",
+                "pattern": "^([0-9]{1,2}\.)(\?)$",
                 "filter": [("test_run_id__branch__startswith", "AND")],
                 "replace": True,
             },
             # Pattern: 10.1, 10.2, 5.5...
             {
-                "pattern": r"^([0-9]{1,2}\.)([0-9]{1,2})$",
+                "pattern": "^([0-9]{1,2}\.)([0-9]{1,2})$",
                 "filter": [("test_run_id__branch__exact", "AND")],
                 "replace": False,
             },
             # Pattern: *10.1*, *10.2*...
             {
-                "pattern": r"^\*([0-9]{1,2}\.)([0-9]{1,2})\*$",
+                "pattern": "^\*([0-9]{1,2}\.)([0-9]{1,2})\*$",
                 "filter": [("test_run_id__branch__icontains", "AND")],
                 "replace": True,
             },
             # Pattern *10.?*
             {
-                "pattern": r"^\*([0-9]{1,2}\.)(\?)\*$",
+                "pattern": "^\*([0-9]{1,2}\.)(\?)\*$",
                 "filter": [
                     ("test_run_id__branch__icontains", "AND"),
                     ("test_run_id__branch__startswith", "OR"),
@@ -133,7 +133,7 @@ def select_test_failures(filters, include_failures=True):
                 "replace": False,
             },
             {
-                "pattern": r"^\*[a-zA-Z0-9_.-]*\*$",
+                "pattern": "^\*[a-zA-Z0-9_.-]*\*$",
                 "filter": [("test_run_id__platform__icontains", "AND")],
                 "replace": True,
             },
@@ -145,7 +145,7 @@ def select_test_failures(filters, include_failures=True):
                 "replace": False,
             },
             {
-                "pattern": r"^[a-zA-Z0-9]*\*$",
+                "pattern": "^[a-zA-Z0-9]*\*$",
                 "filter": [("test_run_id__typ__startswith", "AND")],
                 "replace": True,
             },
@@ -157,7 +157,7 @@ def select_test_failures(filters, include_failures=True):
                 "replace": False,
             },
             {
-                "pattern": r"^[a-zA-Z0-9]*\*$",
+                "pattern": "^[a-zA-Z0-9]*\*$",
                 "filter": [("test_run_id__info__startswith", "AND")],
                 "replace": True,
             },
@@ -169,7 +169,7 @@ def select_test_failures(filters, include_failures=True):
                 "replace": False,
             },
             {
-                "pattern": r"^\*\.[/a-zA-Z0-9_.-]*$",
+                "pattern": "^\*\.[/a-zA-Z0-9_.-]*$",
                 "filter": [("test_name__icontains", "AND")],
                 "replace": True,
             },
@@ -181,7 +181,7 @@ def select_test_failures(filters, include_failures=True):
                 "replace": False,
             },
             {
-                "pattern": r"^\*[a-zA-Z0-9]*\*$",
+                "pattern": "^\*[a-zA-Z0-9]*\*$",
                 "filter": [("test_variant__in", "AND")],
                 "replace": True,
             },
@@ -193,7 +193,7 @@ def select_test_failures(filters, include_failures=True):
                 "replace": False,
             },
             {
-                "pattern": r"^\*[a-zA-Z0-9]*\*$",
+                "pattern": "^\*[a-zA-Z0-9]*\*$",
                 "filter": [("failure_text__icontains", "AND")],
                 "replace": True,
             },
@@ -219,7 +219,7 @@ def select_test_failures(filters, include_failures=True):
                     # If the input contains ? or * then eliminate them
                     # This is the case for multiple Regex rules. Example: 10.?, *timeout* etc.
                     if expression["replace"]:
-                        search_string = re.sub(r"(\?)|(\*)", "", search_string)
+                        search_string = re.sub("(\?)|(\*)", "", search_string)
 
                     # Loop through all the filters of a pattern
                     # The filters are used for the database columns
