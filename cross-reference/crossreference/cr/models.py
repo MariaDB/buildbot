@@ -1,9 +1,9 @@
-import re
-from datetime import datetime
-from pprint import pprint
-
-from django.db import connection, connections, models
+from django.db import models, connections
 from django.db.models import Q
+from pprint import pprint
+import re
+from django.db import connection
+from datetime import datetime
 
 
 class Builder(models.Model):

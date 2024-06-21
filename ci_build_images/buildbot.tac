@@ -2,9 +2,11 @@ import fnmatch
 import os
 import sys
 
-from buildbot_worker.bot import Worker
 from twisted.application import service
-from twisted.python.log import FileLogObserver, ILogObserver
+from twisted.python.log import FileLogObserver
+from twisted.python.log import ILogObserver
+
+from buildbot_worker.bot import Worker
 
 # setup worker
 basedir = os.path.abspath(os.path.dirname(__file__))

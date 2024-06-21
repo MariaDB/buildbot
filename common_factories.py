@@ -1,16 +1,15 @@
-from twisted.internet import defer
-
 from buildbot.plugins import *
 from buildbot.process import results
-from buildbot.process.properties import Properties, Property
-from buildbot.process.remotecommand import RemoteCommand
-from buildbot.steps.mtrlogobserver import MTR, MtrLogObserver
+from buildbot.process.properties import Property, Properties
 from buildbot.steps.package.rpm.rpmlint import RpmLint
-from buildbot.steps.shell import (Compile, SetPropertyFromCommand,
-                                  ShellCommand, Test)
+from buildbot.steps.shell import ShellCommand, Compile, Test, SetPropertyFromCommand
+from buildbot.steps.mtrlogobserver import MTR, MtrLogObserver
 from buildbot.steps.source.github import GitHub
-from constants import *
+from buildbot.process.remotecommand import RemoteCommand
+from twisted.internet import defer
+
 from utils import *
+from constants import *
 
 
 # TODO for FetchTestData/getLastNFailedBuildsFactory
