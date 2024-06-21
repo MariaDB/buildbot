@@ -1,19 +1,24 @@
+import fnmatch
 import os
 import re
 import sys
-import fnmatch
-from datetime import timedelta, datetime
-from pyzabbix import ZabbixAPI
+from datetime import datetime, timedelta
+
 import docker
-from twisted.internet import defer
-from buildbot.plugins import *
-from buildbot.process.properties import Property, Properties
-from buildbot.process.results import FAILURE
-from buildbot.steps.shell import ShellCommand, Compile, Test, SetPropertyFromCommand
-from buildbot.steps.mtrlogobserver import MTR, MtrLogObserver
-from buildbot.steps.source.github import GitHub
+from buildbot.plugins import steps, util, worker
+from buildbot.process.properties import Properties, Property
 from buildbot.process.remotecommand import RemoteCommand
-from constants import *
+from buildbot.process.results import FAILURE
+from buildbot.steps.mtrlogobserver import MTR, MtrLogObserver
+from buildbot.steps.shell import (Compile, SetPropertyFromCommand,
+                                  ShellCommand, Test)
+from buildbot.steps.source.github import GitHub
+from pyzabbix import ZabbixAPI
+from twisted.internet import defer
+
+from constants import (DEVELOPMENT_BRANCH, builders_autobake, builders_big,
+                       builders_eco, builders_galera_mtr, builders_install,
+                       builders_upgrade, releaseBranches, savedPackageBranches, os_info)
 
 private_config = {"private": {}}
 exec(open("/srv/buildbot/master/master-private.cfg").read(), private_config, {})
@@ -273,7 +278,6 @@ def nextBuild(bldr, requests):
     return requests[0]
 
 
-
 def canStartBuild(builder, wfb, request):
     worker = wfb.worker
     if not "s390x" in worker.name:
@@ -469,16 +473,6 @@ def hasCompat(step):
     return True
 
 
-@util.renderer
-def getDockerLibraryNames(props):
-    return builders_dockerlibrary[0]
-
-
-@util.renderer
-def getWordpressNames(props):
-    return builders_wordpress[0]
-
-
 def hasDockerLibrary(step):
     # Can only build with a saved package
     if not savePackage(step):
@@ -571,85 +565,6 @@ def hasRpmLint(step):
 def getArch(props):
     buildername = props.getProperty("buildername")
     return buildername.split("-")[0]
-
-
-####### SCHEDULER HELPER FUNCTIONS
-@util.renderer
-def getBranchBuilderNames(props):
-    mBranch = props.getProperty("master_branch")
-
-    builders = list(
-        filter(lambda x: x not in github_status_builders, supportedPlatforms[mBranch])
-    )
-
-    return builders
-
-
-@util.renderer
-def getProtectedBuilderNames(props):
-    mBranch = props.getProperty("master_branch")
-
-    builders = list(
-        filter(lambda x: x in supportedPlatforms[mBranch], github_status_builders)
-    )
-
-    return builders
-
-
-@util.renderer
-def getAutobakeBuilderNames(props):
-    builderName = props.getProperty("parentbuildername")
-    for b in builders_autobake:
-        if builderName in b:
-            return [b]
-    return []
-
-
-@util.renderer
-def getBigtestBuilderNames(props):
-    builderName = str(props.getProperty("parentbuildername"))
-
-    for b in builders_big:
-        if builderName in b:
-            return [b]
-    return []
-
-
-@util.renderer
-def getInstallBuilderNames(props):
-    builderName = str(props.getProperty("parentbuildername"))
-
-    for b in builders_install:
-        if builderName in b:
-            builders = [b]
-            if "rhel" in builderName:
-                builders.append(b.replace("rhel", "almalinux"))
-            return builders
-    return []
-
-
-@util.renderer
-def getUpgradeBuilderNames(props):
-    builderName = str(props.getProperty("parentbuildername"))
-
-    builds = []
-    for b in builders_upgrade:
-        if builderName in b:
-            if "rhel" in builderName:
-                builds.append(b.replace("rhel", "almalinux"))
-            builds.append(b)
-    return builds
-
-
-@util.renderer
-def getEcoBuilderNames(props):
-    builderName = str(props.getProperty("parentbuildername"))
-
-    builds = []
-    for b in builders_eco:
-        if builderName in b:
-            builds.append(b)
-    return builds
 
 
 ##### Builder priority
