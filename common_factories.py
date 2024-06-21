@@ -6,7 +6,8 @@ from buildbot.process.properties import Properties, Property
 from buildbot.process.remotecommand import RemoteCommand
 from buildbot.steps.mtrlogobserver import MTR, MtrLogObserver
 from buildbot.steps.package.rpm.rpmlint import RpmLint
-from buildbot.steps.shell import Compile, SetPropertyFromCommand, ShellCommand, Test
+from buildbot.steps.shell import (Compile, SetPropertyFromCommand,
+                                  ShellCommand, Test)
 from buildbot.steps.source.github import GitHub
 from constants import *
 from utils import *
@@ -220,7 +221,7 @@ def addTests(factory, test_type, mtrDbPool, mtrArgs):
                 "sh",
                 "-c",
                 util.Interpolate(
-                    rf"""
+                    fr"""
             cd mysql-test &&
             exec perl mysql-test-run.pl {test_type_to_mtr_arg[test_type]} --verbose-restart --force --retry=3 --max-save-core=2 --max-save-datadir=10 --max-test-fail=20 --mem --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s
             """,
