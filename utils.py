@@ -273,6 +273,7 @@ def nextBuild(bldr, requests):
     return requests[0]
 
 
+
 def canStartBuild(builder, wfb, request):
     worker = wfb.worker
     if not "s390x" in worker.name:
