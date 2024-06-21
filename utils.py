@@ -1,20 +1,18 @@
-import fnmatch
 import os
 import re
 import sys
-from datetime import datetime, timedelta
-
-import docker
+import fnmatch
+from datetime import timedelta, datetime
 from pyzabbix import ZabbixAPI
+import docker
 from twisted.internet import defer
-
 from buildbot.plugins import *
-from buildbot.process.properties import Properties, Property
-from buildbot.process.remotecommand import RemoteCommand
+from buildbot.process.properties import Property, Properties
 from buildbot.process.results import FAILURE
+from buildbot.steps.shell import ShellCommand, Compile, Test, SetPropertyFromCommand
 from buildbot.steps.mtrlogobserver import MTR, MtrLogObserver
-from buildbot.steps.shell import Compile, SetPropertyFromCommand, ShellCommand, Test
 from buildbot.steps.source.github import GitHub
+from buildbot.process.remotecommand import RemoteCommand
 from constants import *
 
 private_config = {"private": {}}
