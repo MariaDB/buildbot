@@ -707,7 +707,7 @@ def getMetric(hostname, metric):
 
 
 def read_template(template_name):
-    with open(f"/srv/buildbot/master/script_templates/{template_name}.sh") as f:
+    with open(f"/srv/buildbot/master/script_templates/{template_name}.sh", "r") as f:
         return f.read()
 
 
