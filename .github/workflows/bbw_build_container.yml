@@ -52,14 +52,14 @@ jobs:
           - dockerfile: debian.Dockerfile msan.Dockerfile
             image: debian:11
             branch: 10.11
-            tag: debian11-msan
-            clang_version: 15
-            platforms: linux/amd64
-          - dockerfile: debian.Dockerfile msan.Dockerfile
-            image: debian:11
-            branch: 10.11
             tag: debian11-msan-clang-16
             clang_version: 16
+            platforms: linux/amd64
+          - dockerfile: debian.Dockerfile msan.Dockerfile
+            image: debian:12
+            branch: 11.4
+            tag: debian12-msan-clang-18
+            clang_version: 18
             platforms: linux/amd64
           - dockerfile: debian.Dockerfile
             image: debian:sid
