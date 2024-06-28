@@ -91,6 +91,11 @@ RUN . /etc/os-release \
     fi \
     && if [ "${VERSION_ID}" = 22.04 ]; then \
       apt-get -y install --no-install-recommends clang-14 libpcre3-dev llvm; \
+    elif [ "${VERSION_ID}" = 24.04 ]; then \
+      # https://packages.ubuntu.com/noble/libclang-rt-18-dev, provider of asan, needs 32bit deps \
+      dpkg --add-architecture i386 \
+      && apt-get update \
+      && apt-get -y install --no-install-recommends clang llvm-dev libclang-rt-18-dev; \
     fi \
     && apt-get clean
 
