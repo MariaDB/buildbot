@@ -2,6 +2,7 @@
 name: bbm-build-container
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - "Dockerfile"
