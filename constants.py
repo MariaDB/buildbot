@@ -72,7 +72,6 @@ releaseBranches = ["bb-*-release", "preview-*"]
 # For example, if Debian 10 has MariaDB 10.3 by default, we don't support MariaDB 10.2 on it.
 supportedPlatforms = {}
 supportedPlatforms["10.4"] = [
-    "aarch64-centos-stream8",
     "aarch64-debian-10",
     "aarch64-debian-10-bintar",
     "aarch64-macos",
@@ -82,7 +81,6 @@ supportedPlatforms["10.4"] = [
     "aarch64-ubuntu-2004-debug",
     "amd64-centos-7",
     "amd64-centos-7-bintar",
-    "amd64-centos-stream8",
     "amd64-debian-10",
     "amd64-debian-10-debug-embedded",
     "amd64-debian-10-last-N-failed",
@@ -99,7 +97,6 @@ supportedPlatforms["10.4"] = [
     "amd64-ubuntu-2204-icc",
     "amd64-windows",
     "amd64-windows-packages",
-    "ppc64le-centos-stream8",
     "ppc64le-rhel-8",
     "ppc64le-ubuntu-2004",
     "ppc64le-ubuntu-2004-debug",
