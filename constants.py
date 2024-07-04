@@ -221,6 +221,7 @@ MTR_ENV = {
 test_type_to_mtr_arg = {
     "nm": "",
     "ps": "--ps-protocol",
+    "connect": "--suite=connect",
     "emb": "--embedded",
     "emb-ps": "--embedded --ps-protocol",
     "view": "--view-protocol",
