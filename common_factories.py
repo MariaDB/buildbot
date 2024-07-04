@@ -210,41 +210,77 @@ def getBuildFactoryPreTest(build_type="RelWithDebInfo", additional_args=""):
     return f_quick_build
 
 
-def addTests(factory, test_type, mtrDbPool, mtrArgs):
+def addTests(
+    factory,
+    mtr_test_type,
+    mtr_step_db_pool,
+    mtr_additional_args,
+    *,
+    mtr_args=None,
+    mtr_feedback_plugin=0,
+    mtr_retry=3,
+    mtr_max_save_core=2,
+    mtr_max_save_datadir=10,
+    mtr_max_test_fail=20,
+    mtr_step_timeout=950,
+    mtr_step_auto_create_tables=True
+):
+    """
+    Adds a MTR test run step to the build factory.
+
+    Parameters:
+    - factory: The build factory to which the test step will be added.
+    - mtr_test_type: The type of test to run, which determines the MTR arguments.
+    - mtr_step_db_pool: Database pool for the MTR.
+    - mtr_additional_args: Additional arguments to pass to the MTR.
+    - mtr_args: A dictionary mapping test types to MTR arguments (default: test_type_to_mtr_arg).
+    - mtr_feedback_plugin: The feedback plugin to use with the MTR (default: 0).
+    - mtr_retry: The number of times to retry a failed test (default: 3).
+    - mtr_max_save_core: The maximum number of core dumps to save (default: 2).
+    - mtr_max_save_datadir: The maximum number of data directories to save (default: 10).
+    - mtr_max_test_fail: The maximum number of test failures before halting (default: 20).
+    - mtr_step_timeout: The timeout for the MTR step (default: 950).
+    - mtr_step_auto_create_tables: Whether to automatically create tables for the MTR step (default: False).
+
+    """
+    # test_type_to_mtr_arg is imported from constants.py.
+    if mtr_args is None:
+        mtr_args = test_type_to_mtr_arg
+
     factory.addStep(
         steps.MTR(
-            name=f"{test_type} test",
+            name=f"{mtr_test_type} test",
             logfiles={"mysqld*": "./buildbot/mysql_logs.html"},
-            test_type=test_type,
+            test_type=mtr_test_type,
             command=[
-                "sh",
+                "bash",
                 "-c",
                 util.Interpolate(
                     f"""
             cd mysql-test &&
-            exec perl mysql-test-run.pl {test_type_to_mtr_arg[test_type]} --verbose-restart --force --retry=3 --max-save-core=2 --max-save-datadir=10 --max-test-fail=20 --mem --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s
+            MTR_FEEDBACK_PLUGIN={mtr_feedback_plugin} exec perl mysql-test-run.pl {mtr_args[mtr_test_type]} --verbose-restart --force --retry={mtr_retry} --max-save-core={mtr_max_save_core} --max-save-datadir={mtr_max_save_datadir} --max-test-fail={mtr_max_test_fail} --mem --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s
             """,
-                    mtr_additional_args=mtrArgs,
+                    mtr_additional_args=mtr_additional_args,
                     jobs=util.Property("jobs", default="$(getconf _NPROCESSORS_ONLN)"),
                 ),
             ],
-            timeout=950,
+            timeout=mtr_step_timeout,
             haltOnFailure="true",
             parallel=mtrJobsMultiplier,
-            dbpool=mtrDbPool,
-            autoCreateTables=True,
+            dbpool=mtr_step_db_pool,
+            autoCreateTables=mtr_step_auto_create_tables,
             env=MTR_ENV,
         )
     )
     factory.addStep(
         steps.ShellCommand(
-            name=f"move {test_type} mariadb log files",
+            name=f"move {mtr_test_type} mariadb log files",
             alwaysRun=True,
             command=[
                 "bash",
                 "-c",
                 util.Interpolate(
-                    moveMTRLogs(output_dir=test_type),
+                    moveMTRLogs(output_dir=mtr_test_type),
                     jobs=util.Property("jobs", default="$(getconf _NPROCESSORS_ONLN"),
                 ),
             ],
@@ -252,9 +288,9 @@ def addTests(factory, test_type, mtrDbPool, mtrArgs):
     )
     factory.addStep(
         steps.ShellCommand(
-            name=f"create {test_type} var archive",
+            name=f"create {mtr_test_type} var archive",
             alwaysRun=True,
-            command=["bash", "-c", util.Interpolate(createVar(output_dir=test_type))],
+            command=["bash", "-c", util.Interpolate(createVar(output_dir=mtr_test_type))],
             doStepIf=hasFailed,
         )
     )
