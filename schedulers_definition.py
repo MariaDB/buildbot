@@ -150,7 +150,9 @@ def getSchedulers():
     )
 
     l.append(
-        schedulers.Triggerable(name="s_jepsen", builderNames=["amd64-ubuntu-2204-jepsen-mysql"])
+        schedulers.Triggerable(
+            name="s_jepsen", builderNames=["amd64-ubuntu-2204-jepsen-mysql"]
+        )
     )
 
     return l
