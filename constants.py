@@ -233,8 +233,8 @@ test_type_to_mtr_arg = {
     "debug-ps": "--ps-protocol",
     "debug-emb": "--embedded",
     "debug-emb-ps": "--embedded --ps-protocol",
-    "nm_func_1_2":"--suite=funcs_1,funcs_2,stress,jp --big --mysqld=--open-files-limit=0 --mysqld=--log-warnings=1",
-    "nm_engines":"--suite=spider,spider/bg,engines/funcs,engines/iuds --big --mysqld=--open-files-limit=0 --mysqld=--log-warnings=1",
+    "nm_func_1_2": "--suite=funcs_1,funcs_2,stress,jp --big --mysqld=--open-files-limit=0 --mysqld=--log-warnings=1",
+    "nm_engines": "--suite=spider,spider/bg,engines/funcs,engines/iuds --big --mysqld=--open-files-limit=0 --mysqld=--log-warnings=1",
 }
 
 # =============================================================================

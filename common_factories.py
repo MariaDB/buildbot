@@ -2,6 +2,7 @@ from twisted.internet import defer
 
 from buildbot.plugins import *
 from buildbot.process import results
+from buildbot.process.factory import BuildFactory
 from buildbot.process.properties import Properties, Property
 from buildbot.process.remotecommand import RemoteCommand
 from buildbot.steps.mtrlogobserver import MTR, MtrLogObserver
@@ -211,20 +212,20 @@ def getBuildFactoryPreTest(build_type="RelWithDebInfo", additional_args=""):
 
 
 def addTests(
-    factory,
-    mtr_test_type,
-    mtr_step_db_pool,
-    mtr_additional_args,
+    factory: BuildFactory,
+    mtr_test_type: str,
+    mtr_step_db_pool: str,
+    mtr_additional_args: str,
     *,
-    mtr_args=None,
-    mtr_feedback_plugin=0,
-    mtr_retry=3,
-    mtr_max_save_core=2,
-    mtr_max_save_datadir=10,
-    mtr_max_test_fail=20,
-    mtr_step_timeout=950,
-    mtr_step_auto_create_tables=True
-):
+    mtr_args: dict[str, str] = test_type_to_mtr_arg,
+    mtr_feedback_plugin: int = 0,
+    mtr_retry: int = 3,
+    mtr_max_save_core: int = 2,
+    mtr_max_save_datadir: int = 10,
+    mtr_max_test_fail: int = 20,
+    mtr_step_timeout: int = 950,
+    mtr_step_auto_create_tables: bool = True,
+) -> BuildFactory:
     """
     Adds a MTR test run step to the build factory.
 
@@ -233,20 +234,16 @@ def addTests(
     - mtr_test_type: The type of test to run, which determines the MTR arguments.
     - mtr_step_db_pool: Database pool for the MTR.
     - mtr_additional_args: Additional arguments to pass to the MTR.
-    - mtr_args: A dictionary mapping test types to MTR arguments (default: test_type_to_mtr_arg).
-    - mtr_feedback_plugin: The feedback plugin to use with the MTR (default: 0).
-    - mtr_retry: The number of times to retry a failed test (default: 3).
-    - mtr_max_save_core: The maximum number of core dumps to save (default: 2).
-    - mtr_max_save_datadir: The maximum number of data directories to save (default: 10).
-    - mtr_max_test_fail: The maximum number of test failures before halting (default: 20).
-    - mtr_step_timeout: The timeout for the MTR step (default: 950).
-    - mtr_step_auto_create_tables: Whether to automatically create tables for the MTR step (default: False).
+    - mtr_args: A dictionary mapping test types to MTR arguments.
+    - mtr_feedback_plugin: The feedback plugin to use with the MTR.
+    - mtr_retry: The number of times to retry a failed test.
+    - mtr_max_save_core: The maximum number of core dumps to save.
+    - mtr_max_save_datadir: The maximum number of data directories to save.
+    - mtr_max_test_fail: The maximum number of test failures before halting.
+    - mtr_step_timeout: The timeout for the MTR step.
+    - mtr_step_auto_create_tables: Whether to automatically create tables for the MTR step.
 
     """
-    # test_type_to_mtr_arg is imported from constants.py.
-    if mtr_args is None:
-        mtr_args = test_type_to_mtr_arg
-
     factory.addStep(
         steps.MTR(
             name=f"{mtr_test_type} test",
@@ -290,7 +287,11 @@ def addTests(
         steps.ShellCommand(
             name=f"create {mtr_test_type} var archive",
             alwaysRun=True,
-            command=["bash", "-c", util.Interpolate(createVar(output_dir=mtr_test_type))],
+            command=[
+                "bash",
+                "-c",
+                util.Interpolate(createVar(output_dir=mtr_test_type)),
+            ],
             doStepIf=hasFailed,
         )
     )
