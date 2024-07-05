@@ -3,7 +3,7 @@
 # Provides a base OpenSUSE image with latest buildbot worker installed
 # and MariaDB build dependencies
 
-FROM registry.suse.com/suse/sle15:15.2
+FROM registry.suse.com/bci/bci-base:15.6
 LABEL maintainer="MariaDB Buildbot maintainers"
 
 ADD http://lxslsmt.marist.edu/smt.crt /etc/pki/trust/anchors/smt.crt

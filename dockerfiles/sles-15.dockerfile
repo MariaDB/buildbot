@@ -3,7 +3,7 @@
 # Provides a base OpenSUSE image with latest buildbot worker installed
 # and MariaDB build dependencies
 
-FROM registry.suse.com/suse/sle15:15.2
+FROM registry.suse.com/suse/bci/bci-base:15.6
 LABEL maintainer="MariaDB Buildbot maintainers"
 
 ENV ADDITIONAL_MODULES sle-module-development-tools,PackageHub
