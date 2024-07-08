@@ -50,11 +50,15 @@ builders_wordpress = ["amd64-rhel8-wordpress"]
 builders_galera_mtr = [
     "aarch64-debian-12",
     "amd64-fedora-39",
+    "amd64-fedora-40",
+    "amd64-freebsd-14",
+    "amd64-ubuntu-2404-debug",
     "s390x-ubuntu-2004",
     "s390x-ubuntu-2204",
+    "s390x-ubuntu-2404",
     "ppc64le-ubuntu-2004",
     "ppc64le-ubuntu-2204",
-    "amd64-freebsd-14",
+    "ppc64le-ubuntu-2404",
 ]
 
 # Defines branches for which we save packages
