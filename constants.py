@@ -171,6 +171,7 @@ supportedPlatforms["10.11"] = [
     "amd64-sles-15",
     "amd64-ubuntu-2310",
     "amd64-ubuntu-2404",
+    "amd64-ubuntu-2404-debug",
     "ppc64le-ubuntu-2404",
     "s390x-sles-15",
     "s390x-ubuntu-2404",
