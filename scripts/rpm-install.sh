@@ -56,6 +56,7 @@ else
 fi
 set -u
 
+sudo mkdir -p /etc/my.cnf.d
 sh -c 'g=/usr/lib*/galera*/libgalera_smm.so; echo -e "[galera]\nwsrep_provider=$g"' | sudo tee /etc/my.cnf.d/galera.cnf
 case "$systemdCapability" in
   yes)
