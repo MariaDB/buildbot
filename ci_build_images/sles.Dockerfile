@@ -8,6 +8,7 @@ ARG BASE_IMAGE
 FROM "$BASE_IMAGE"
 LABEL maintainer="MariaDB Buildbot maintainers"
 
+COPY --chmod=755 mariadb_zypper_expect /
 # Install updates and required packages
 RUN zypper -n update \
     && zypper -n install -t pattern devel_basis \
@@ -17,6 +18,9 @@ RUN zypper -n update \
     check-devel \
     checkpolicy \
     cracklib-devel \
+    createrepo_c \
+    expect \
+    gcc-c++ \
     gdb \
     git \
     glibc-locale \
@@ -26,11 +30,15 @@ RUN zypper -n update \
     libboost_system1_66_0-devel \
     libcurl-devel \
     libffi-devel \
+    libfmt8 \
     libgnutls-devel \
+    liblz4-devel \
+    libopenssl-3-devel \
+    liburing2-devel \
     perl-Net-SSLeay \
     policycoreutils \
-    python3-devel \
-    python3-pip \
+    python312-devel \
+    python312-pip \
     rpm-build \
     rpmlint \
     snappy-devel \
@@ -41,10 +49,9 @@ RUN zypper -n update \
     && sed -i "s/RELEASEVER/\$releasever/" /etc/zypp/repos.d/repo-oss.repo \
     && zypper -n --no-gpg-checks install \
     judy-devel \
-    scons \
     && rm /etc/zypp/repos.d/repo-oss.repo \
     && zypper modifyrepo --enable SLE_BCI_source \
-    && zypper -n source-install -d mariadb \
+    && ./mariadb_zypper_expect \
     && zypper clean -a \
     && curl -sLo /usr/local/bin/dumb-init "https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_$(uname -m)" \
     && chmod +x /usr/local/bin/dumb-init

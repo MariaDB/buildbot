@@ -39,8 +39,8 @@ RUN zypper update -y && \
     libxml2-devel \
     perl-Net-SSLeay \
     policycoreutils \
-    python311-devel \
-    python311-pip \
+    python312-devel \
+    python312-pip \
     rpm-build \
     rpmlint \
     snappy-devel \
