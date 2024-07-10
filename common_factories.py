@@ -324,7 +324,7 @@ def addGaleraTests(factory, mtrDbPool):
             parallel=mtrJobsMultiplier,
             dbpool=mtrDbPool,
             autoCreateTables=True,
-            env=MTR_ENV,
+            env=mtrEnv,
             doStepIf=hasGalera,
         )
     )
