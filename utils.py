@@ -17,6 +17,7 @@ from buildbot.steps.shell import Compile, SetPropertyFromCommand, ShellCommand, 
 from buildbot.steps.source.github import GitHub
 from constants import (
     DEVELOPMENT_BRANCH,
+    MTR_ENV,
     builders_autobake,
     builders_big,
     builders_eco,
@@ -631,3 +632,28 @@ def read_template(template_name):
 
 def isJepsenBranch(step):
     return step.getProperty("branch").startswith("jpsn")
+
+
+@util.renderer
+def mtrEnv(props) -> dict:
+    """
+    Renders the MTR environment variables.
+
+    If mtr_env property is set it will return a dictionary
+    with the merged values of the default MTR_ENV and the mtr_env property,
+    otherwise the default MTR_ENV constant will be returned.
+
+    Args:
+        props (object): The properties object.
+
+    Returns:
+        dict: The rendered MTR environment.
+    """
+    if props.hasProperty("mtr_env"):
+        mtr_add_env = props.getProperty("mtr_env")
+        for key, value in MTR_ENV.items():
+            if key not in mtr_add_env:
+                mtr_add_env[key] = value
+        return mtr_add_env
+    else:
+        return MTR_ENV
