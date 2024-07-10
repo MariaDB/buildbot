@@ -54,6 +54,7 @@ builders_galera_mtr = [
     "s390x-ubuntu-2204",
     "ppc64le-ubuntu-2004",
     "ppc64le-ubuntu-2204",
+    "amd64-freebsd-14",
 ]
 
 # Defines branches for which we save packages
