@@ -208,6 +208,14 @@ def getBuildFactoryPreTest(build_type="RelWithDebInfo", additional_args=""):
             haltOnFailure="true",
         )
     )
+
+    f_quick_build.addStep(
+        steps.SetProperty(
+            name="mark compile step as completed",
+            property="compile_step_completed",
+            value=True,
+        )
+    )
     return f_quick_build
 
 
@@ -301,6 +309,8 @@ def addTests(
 def addGaleraTests(factory, mtrDbPool):
     factory.addStep(
         steps.MTR(
+            name="Galera tests",
+            alwaysRun=True,
             description="testing galera",
             descriptionDone="test galera",
             logfiles={"mysqld*": "./buildbot/mysql_logs.html"},
@@ -325,7 +335,8 @@ def addGaleraTests(factory, mtrDbPool):
             dbpool=mtrDbPool,
             autoCreateTables=True,
             env=mtrEnv,
-            doStepIf=hasGalera,
+            doStepIf=hasGalera
+            and util.Property("compile_step_completed", default=False),
         )
     )
     factory.addStep(
@@ -342,7 +353,8 @@ def addGaleraTests(factory, mtrDbPool):
                     jobs=util.Property("jobs", default="$(getconf _NPROCESSORS_ONLN)"),
                 ),
             ],
-            doStepIf=hasGalera,
+            doStepIf=hasGalera
+            and util.Property("compile_step_completed", default=False),
         )
     )
     return factory
