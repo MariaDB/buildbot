@@ -8,7 +8,8 @@ FROM "$BASE_IMAGE"
 LABEL maintainer="MariaDB Buildbot maintainers"
 
 # Install updates and required packages
-RUN dnf -y upgrade \
+RUN echo "fastestmirror=true" >> /etc/dnf/dnf.conf \
+    && dnf -y upgrade \
     && dnf -y install 'dnf-command(builddep)' \
     && dnf -y builddep mariadb-server \
     && dnf -y install \
