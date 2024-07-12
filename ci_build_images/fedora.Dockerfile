@@ -56,6 +56,7 @@ RUN dnf -y upgrade \
     wget \
     which \
     && source /etc/os-release \
+    && if [ "$VERSION_ID" = 39 ]; then curl -s 'https://gitlab.kitware.com/cmake/cmake/-/raw/v3.28.5/Modules/Internal/CPack/CPackRPM.cmake?ref_type=tags' -o /usr/share/cmake/Modules/Internal/CPack/CPackRPM.cmake ; fi \
     && if [ "$(uname -m)" = "x86_64" ]; then dnf -y install libpmem-devel; fi \
     && dnf clean all
 
