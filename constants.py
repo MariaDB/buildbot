@@ -54,6 +54,7 @@ builders_galera_mtr = [
     "s390x-ubuntu-2204",
     "ppc64le-ubuntu-2004",
     "ppc64le-ubuntu-2204",
+    "amd64-freebsd-14",
 ]
 
 # Defines branches for which we save packages
@@ -93,8 +94,8 @@ supportedPlatforms["10.4"] = [
     "amd64-ubuntu-2004-fulltest",
     "amd64-ubuntu-2204-debug-ps",
     "amd64-ubuntu-2204-valgrind",
-    "amd64-ubuntu-2204-clang14-asan",
     "amd64-ubuntu-2204-icc",
+    "amd64-ubuntu-2404-clang18-asan",
     "amd64-windows",
     "amd64-windows-packages",
     "ppc64le-rhel-8",
@@ -221,6 +222,7 @@ MTR_ENV = {
 test_type_to_mtr_arg = {
     "nm": "",
     "ps": "--ps-protocol",
+    "connect": "--suite=connect",
     "emb": "--embedded",
     "emb-ps": "--embedded --ps-protocol",
     "view": "--view-protocol",
@@ -232,6 +234,8 @@ test_type_to_mtr_arg = {
     "debug-ps": "--ps-protocol",
     "debug-emb": "--embedded",
     "debug-emb-ps": "--embedded --ps-protocol",
+    "nm_func_1_2": "--suite=funcs_1,funcs_2,stress,jp --big --mysqld=--open-files-limit=0 --mysqld=--log-warnings=1",
+    "nm_engines": "--suite=spider,spider/bg,engines/funcs,engines/iuds --big --mysqld=--open-files-limit=0 --mysqld=--log-warnings=1",
 }
 
 # =============================================================================
@@ -239,7 +243,7 @@ test_type_to_mtr_arg = {
 # The following code is auto-generated based on the content of os_info.yaml.
 # Edit with care
 
-with open("/srv/buildbot/master/os_info.yaml", "r") as f:
+with open("/srv/buildbot/master/os_info.yaml") as f:
     os_info = yaml.safe_load(f)
 
 # Generate install builders based on the os_info data

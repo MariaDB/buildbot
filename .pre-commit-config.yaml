@@ -12,11 +12,11 @@ repos:
       - id: check-symlinks
       - id: check-xml
       - id: check-yaml
-        name: Check yaml files
+        name: check yaml files
       - id: debug-statements
-        name: Check for Python debug statements
+        name: check for Python debug statements
       - id: trailing-whitespace
-        name: Check trailing whitespace
+        name: check trailing whitespace
         args: [--markdown-linebreak-ext=md]
         exclude: |
             (?x)^(
@@ -26,38 +26,38 @@ repos:
   #   rev: 3.9.2
   #   hooks:
   #     - id: flake8
-  #       name: Check python (flake8)
+  #       name: check python (flake8)
   - repo: https://github.com/adrienverge/yamllint.git
     rev: v1.35.1
     hooks:
       - id: yamllint
-        name: Check yaml files (yamllint)
+        name: check yaml files (yamllint)
   - repo: https://github.com/fauust/pre-commit-shell
     rev: v1.1
     hooks:
       - id: shellcheck
-        name: Check shell script (shellcheck)
+        name: check shell script (shellcheck)
         args: ["-x"]
       # - id: shfmt
-      #   name: Check shell style (shfmt)
+      #   name: check shell style (shfmt)
       #   args: ["-d", "-i", "2", "-ci"]
   - repo: https://github.com/markdownlint/markdownlint
     rev: v0.12.0
     hooks:
       - id: markdownlint
-        name: Check for markdown lint (mdl)
+        name: check for markdown lint (mdl)
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.6
+    rev: v2.3.0
     hooks:
       - id: codespell
-        name: Checks for common misspellings in text files
+        name: check for common misspellings in text files
         entry: codespell
         language: python
   - repo: https://github.com/PyCQA/pylint.git
-    rev: v3.1.0
+    rev: v3.2.3
     hooks:
       - id: pylint
-        name: Check python (pylint)
+        name: check python syntax (pylint)
         entry: pylint
         language: system
         types: [file]
@@ -71,6 +71,23 @@ repos:
             "--rcfile=.pylintrc", # Config file
             "--disable=django-not-configured", # Silence django warning
           ]
+  - repo: https://github.com/psf/black
+    rev: 24.4.2
+    hooks:
+      - id: black
+        name: check python formating (black)
+  # - repo: https://github.com/asottile/pyupgrade
+  #   rev: v3.16.0
+  #   hooks:
+  #     - id: pyupgrade
+  #       name: check python syntax (pyupgrade)
+  #       args: [--py38-plus]
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        name: check python imports order (isort)
+        args: ["--profile", "black", "--filter-files"]
   - repo: local
     hooks:
       - id: docker-hadolint

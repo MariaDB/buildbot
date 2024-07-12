@@ -5,20 +5,29 @@ import sys
 from datetime import datetime, timedelta
 
 import docker
+from pyzabbix import ZabbixAPI
+from twisted.internet import defer
+
 from buildbot.plugins import steps, util, worker
 from buildbot.process.properties import Properties, Property
 from buildbot.process.remotecommand import RemoteCommand
 from buildbot.process.results import FAILURE
 from buildbot.steps.mtrlogobserver import MTR, MtrLogObserver
-from buildbot.steps.shell import (Compile, SetPropertyFromCommand,
-                                  ShellCommand, Test)
+from buildbot.steps.shell import Compile, SetPropertyFromCommand, ShellCommand, Test
 from buildbot.steps.source.github import GitHub
-from pyzabbix import ZabbixAPI
-from twisted.internet import defer
-
-from constants import (DEVELOPMENT_BRANCH, builders_autobake, builders_big,
-                       builders_eco, builders_galera_mtr, builders_install,
-                       builders_upgrade, releaseBranches, savedPackageBranches, os_info)
+from constants import (
+    DEVELOPMENT_BRANCH,
+    MTR_ENV,
+    builders_autobake,
+    builders_big,
+    builders_eco,
+    builders_galera_mtr,
+    builders_install,
+    builders_upgrade,
+    os_info,
+    releaseBranches,
+    savedPackageBranches,
+)
 
 private_config = {"private": {}}
 exec(open("/srv/buildbot/master/master-private.cfg").read(), private_config, {})
@@ -617,9 +626,34 @@ def getMetric(hostname, metric):
 
 
 def read_template(template_name):
-    with open(f"/srv/buildbot/master/script_templates/{template_name}.sh", "r") as f:
+    with open(f"/srv/buildbot/master/script_templates/{template_name}.sh") as f:
         return f.read()
 
 
 def isJepsenBranch(step):
     return step.getProperty("branch").startswith("jpsn")
+
+
+@util.renderer
+def mtrEnv(props) -> dict:
+    """
+    Renders the MTR environment variables.
+
+    If mtr_env property is set it will return a dictionary
+    with the merged values of the default MTR_ENV and the mtr_env property,
+    otherwise the default MTR_ENV constant will be returned.
+
+    Args:
+        props (object): The properties object.
+
+    Returns:
+        dict: The rendered MTR environment.
+    """
+    if props.hasProperty("mtr_env"):
+        mtr_add_env = props.getProperty("mtr_env")
+        for key, value in MTR_ENV.items():
+            if key not in mtr_add_env:
+                mtr_add_env[key] = value
+        return mtr_add_env
+    else:
+        return MTR_ENV

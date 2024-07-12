@@ -1,15 +1,16 @@
-from buildbot.plugins import *
-from buildbot.process import results
-from buildbot.process.properties import Property, Properties
-from buildbot.steps.package.rpm.rpmlint import RpmLint
-from buildbot.steps.shell import ShellCommand, Compile, Test, SetPropertyFromCommand
-from buildbot.steps.mtrlogobserver import MTR, MtrLogObserver
-from buildbot.steps.source.github import GitHub
-from buildbot.process.remotecommand import RemoteCommand
 from twisted.internet import defer
 
-from utils import *
+from buildbot.plugins import *
+from buildbot.process import results
+from buildbot.process.factory import BuildFactory
+from buildbot.process.properties import Properties, Property
+from buildbot.process.remotecommand import RemoteCommand
+from buildbot.steps.mtrlogobserver import MTR, MtrLogObserver
+from buildbot.steps.package.rpm.rpmlint import RpmLint
+from buildbot.steps.shell import Compile, SetPropertyFromCommand, ShellCommand, Test
+from buildbot.steps.source.github import GitHub
 from constants import *
+from utils import *
 
 
 # TODO for FetchTestData/getLastNFailedBuildsFactory
@@ -207,44 +208,84 @@ def getBuildFactoryPreTest(build_type="RelWithDebInfo", additional_args=""):
             haltOnFailure="true",
         )
     )
+
+    f_quick_build.addStep(
+        steps.SetProperty(
+            name="mark compile step as completed",
+            property="compile_step_completed",
+            value=True,
+        )
+    )
     return f_quick_build
 
 
-def addTests(factory, test_type, mtrDbPool, mtrArgs):
+def addTests(
+    factory: BuildFactory,
+    mtr_test_type: str,
+    mtr_step_db_pool: str,
+    mtr_additional_args: str,
+    *,
+    mtr_args: dict[str, str] = test_type_to_mtr_arg,
+    mtr_feedback_plugin: int = 0,
+    mtr_retry: int = 3,
+    mtr_max_save_core: int = 2,
+    mtr_max_save_datadir: int = 10,
+    mtr_max_test_fail: int = 20,
+    mtr_step_timeout: int = 950,
+    mtr_step_auto_create_tables: bool = True,
+) -> BuildFactory:
+    """
+    Adds a MTR test run step to the build factory.
+
+    Parameters:
+    - factory: The build factory to which the test step will be added.
+    - mtr_test_type: The type of test to run, which determines the MTR arguments.
+    - mtr_step_db_pool: Database pool for the MTR.
+    - mtr_additional_args: Additional arguments to pass to the MTR.
+    - mtr_args: A dictionary mapping test types to MTR arguments.
+    - mtr_feedback_plugin: The feedback plugin to use with the MTR.
+    - mtr_retry: The number of times to retry a failed test.
+    - mtr_max_save_core: The maximum number of core dumps to save.
+    - mtr_max_save_datadir: The maximum number of data directories to save.
+    - mtr_max_test_fail: The maximum number of test failures before halting.
+    - mtr_step_timeout: The timeout for the MTR step.
+    - mtr_step_auto_create_tables: Whether to automatically create tables for the MTR step.
+
+    """
     factory.addStep(
         steps.MTR(
-            name=f"{test_type} test",
+            name=f"{mtr_test_type} test",
             logfiles={"mysqld*": "./buildbot/mysql_logs.html"},
-            test_type=test_type,
+            test_type=mtr_test_type,
             command=[
-                "sh",
+                "bash",
                 "-c",
                 util.Interpolate(
                     f"""
             cd mysql-test &&
-            exec perl mysql-test-run.pl {test_type_to_mtr_arg[test_type]} --verbose-restart --force --retry=3 --max-save-core=2 --max-save-datadir=10 --max-test-fail=20 --mem --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s
+            MTR_FEEDBACK_PLUGIN={mtr_feedback_plugin} exec perl mysql-test-run.pl {mtr_args[mtr_test_type]} --verbose-restart --force --retry={mtr_retry} --max-save-core={mtr_max_save_core} --max-save-datadir={mtr_max_save_datadir} --max-test-fail={mtr_max_test_fail} --mem --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s
             """,
-                    mtr_additional_args=mtrArgs,
+                    mtr_additional_args=mtr_additional_args,
                     jobs=util.Property("jobs", default="$(getconf _NPROCESSORS_ONLN)"),
                 ),
             ],
-            timeout=950,
+            timeout=mtr_step_timeout,
             haltOnFailure="true",
             parallel=mtrJobsMultiplier,
-            dbpool=mtrDbPool,
-            autoCreateTables=True,
+            dbpool=mtr_step_db_pool,
+            autoCreateTables=mtr_step_auto_create_tables,
             env=MTR_ENV,
         )
     )
     factory.addStep(
         steps.ShellCommand(
-            name=f"move {test_type} mariadb log files",
+            name=f"move {mtr_test_type} mariadb log files",
             alwaysRun=True,
             command=[
                 "bash",
                 "-c",
                 util.Interpolate(
-                    moveMTRLogs(output_dir=test_type),
+                    moveMTRLogs(output_dir=mtr_test_type),
                     jobs=util.Property("jobs", default="$(getconf _NPROCESSORS_ONLN"),
                 ),
             ],
@@ -252,9 +293,13 @@ def addTests(factory, test_type, mtrDbPool, mtrArgs):
     )
     factory.addStep(
         steps.ShellCommand(
-            name=f"create {test_type} var archive",
+            name=f"create {mtr_test_type} var archive",
             alwaysRun=True,
-            command=["bash", "-c", util.Interpolate(createVar(output_dir=test_type))],
+            command=[
+                "bash",
+                "-c",
+                util.Interpolate(createVar(output_dir=mtr_test_type)),
+            ],
             doStepIf=hasFailed,
         )
     )
@@ -264,6 +309,8 @@ def addTests(factory, test_type, mtrDbPool, mtrArgs):
 def addGaleraTests(factory, mtrDbPool):
     factory.addStep(
         steps.MTR(
+            name="Galera tests",
+            alwaysRun=True,
             description="testing galera",
             descriptionDone="test galera",
             logfiles={"mysqld*": "./buildbot/mysql_logs.html"},
@@ -272,7 +319,7 @@ def addGaleraTests(factory, mtrDbPool):
                 "sh",
                 "-c",
                 util.Interpolate(
-                    """
+                    r"""
            cd mysql-test &&
            if [ -f "$WSREP_PROVIDER" ]; then exec perl mysql-test-run.pl --verbose-restart --force --retry=3 --max-save-core=2 --max-save-datadir=10 --max-test-fail=20 --mem --big-test --parallel=$(expr %(kw:jobs)s \* 2) %(kw:mtr_additional_args)s --suite=wsrep,galera,galera_3nodes,galera_3nodes_sr; fi
            """,
@@ -287,8 +334,9 @@ def addGaleraTests(factory, mtrDbPool):
             parallel=mtrJobsMultiplier,
             dbpool=mtrDbPool,
             autoCreateTables=True,
-            env=MTR_ENV,
-            doStepIf=hasGalera,
+            env=mtrEnv,
+            doStepIf=hasGalera
+            and util.Property("compile_step_completed", default=False),
         )
     )
     factory.addStep(
@@ -305,7 +353,8 @@ def addGaleraTests(factory, mtrDbPool):
                     jobs=util.Property("jobs", default="$(getconf _NPROCESSORS_ONLN)"),
                 ),
             ],
-            doStepIf=hasGalera,
+            doStepIf=hasGalera
+            and util.Property("compile_step_completed", default=False),
         )
     )
     return factory
@@ -325,7 +374,7 @@ def getLastNFailedBuildsFactory(test_type, mtrDbPool):
         tests_to_run = props.getProperty("tests_to_run", None)
         if tests_to_run:
             mtr_additional_args = re.sub(
-                "--suite=\S*", "--skip-not-found " + tests_to_run, mtr_additional_args
+                r"--suite=\S*", "--skip-not-found " + tests_to_run, mtr_additional_args
             )
 
         return mtr_additional_args
