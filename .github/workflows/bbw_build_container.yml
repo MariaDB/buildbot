@@ -119,11 +119,11 @@ jobs:
           - dockerfile: centos.Dockerfile pip.Dockerfile
             image: rockylinux:9
             platforms: linux/amd64, linux/arm64/v8
-          - dockerfile: debian.Dockerfile jepsen-mysql.Dockerfile
+          - dockerfile: debian.Dockerfile jepsen-mariadb.Dockerfile
             image: ubuntu:22.04
             branch: 10.11
             platforms: linux/amd64
-            tag: ubuntu22.04-jepsen-mysql
+            tag: ubuntu22.04-jepsen-mariadb
     env:
       BUILD_RHEL: false
       DEPLOY_IMAGES: false
