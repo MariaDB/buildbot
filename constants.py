@@ -17,6 +17,7 @@ branches_main = [
     "11.6",
     "11.7",
     "11.8",
+    "main",
 ]
 
 # Defines what builders report status to GitHub
@@ -204,6 +205,7 @@ supportedPlatforms["11.5"] = supportedPlatforms["11.4"].copy()
 supportedPlatforms["11.6"] = supportedPlatforms["11.5"].copy()
 supportedPlatforms["11.7"] = supportedPlatforms["11.6"].copy()
 supportedPlatforms["11.8"] = supportedPlatforms["11.7"].copy()
+supportedPlatforms["main"] = supportedPlatforms["11.8"].copy()
 
 # Define environment variables for MTR step
 MTR_ENV = {
