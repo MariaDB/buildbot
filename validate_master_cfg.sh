@@ -10,8 +10,10 @@ err() {
   exit 1
 }
 
-[[ -f master-private.cfg ]] || ln -s master-private.cfg-sample master-private.cfg
-[[ -f master-config.yaml ]] || ln -s master-config.yaml-sample master-config.yaml
+[[ -f master-private.cfg ]] ||
+  ln -s master-private.cfg-sample master-private.cfg
+[[ -f master-config.yaml ]] ||
+  ln -s master-config.yaml-sample master-config.yaml
 
 if command -v podman >/dev/null; then
   RUNC=podman
@@ -23,14 +25,30 @@ else
   fi
 fi
 
+command -v python3 >/dev/null ||
+  err "python3 command not found"
+
 python3 define_masters.py
 echo "Checking master.cfg"
-$RUNC run -i -v "$(pwd):/srv/buildbot/master" -w /srv/buildbot/master quay.io/mariadb-foundation/bb-master:master buildbot checkconfig master.cfg
+$RUNC run -i -v "$(pwd):/srv/buildbot/master" \
+  -w /srv/buildbot/master \
+  quay.io/mariadb-foundation/bb-master:master \
+  buildbot checkconfig master.cfg
 echo -e "done\n"
 # not checking libvirt config file (//TEMP we need to find a solution
 # to not check ssh connection)
-for dir in master-bintars master-docker-nonstandard master-docker-nonstandard-2 master-galera master-nonlatent master-web master-protected-branches autogen/*; do
+for dir in autogen/* \
+  master-bintars \
+  master-docker-nonstandard \
+  master-docker-nonstandard-2 \
+  master-galera \
+  master-nonlatent \
+  master-protected-branches \
+  master-web; do
   echo "Checking $dir/master.cfg"
-  $RUNC run -i -v "$(pwd):/srv/buildbot/master" -w /srv/buildbot/master quay.io/mariadb-foundation/bb-master:master bash -c "cd $dir && buildbot checkconfig master.cfg"
+  $RUNC run -i -v "$(pwd):/srv/buildbot/master" \
+    -w /srv/buildbot/master \
+    quay.io/mariadb-foundation/bb-master:master \
+    bash -c "cd $dir && buildbot checkconfig master.cfg"
   echo -e "done\n"
 done
