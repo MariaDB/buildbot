@@ -17,6 +17,7 @@ RUN zypper -n update \
     ccache \
     check-devel \
     checkpolicy \
+    cmake \
     cracklib-devel \
     createrepo_c \
     expect \
