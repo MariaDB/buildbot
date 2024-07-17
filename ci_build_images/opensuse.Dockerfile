@@ -25,6 +25,7 @@ RUN zypper update -y && \
     git \
     glibc-locale \
     jemalloc-devel \
+    libaio-devel \
     libboost_filesystem1_75_0-devel \
     libboost_program_options1_75_0-devel \
     libboost_system1_75_0-devel \
