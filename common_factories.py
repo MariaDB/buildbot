@@ -335,8 +335,8 @@ def addGaleraTests(factory, mtrDbPool):
             dbpool=mtrDbPool,
             autoCreateTables=True,
             env=mtrEnv,
-            doStepIf=hasGalera
-            and util.Property("compile_step_completed", default=False),
+            doStepIf=lambda props: hasGalera(props)
+            and props.hasProperty("compile_step_completed"),
         )
     )
     factory.addStep(
@@ -353,8 +353,8 @@ def addGaleraTests(factory, mtrDbPool):
                     jobs=util.Property("jobs", default="$(getconf _NPROCESSORS_ONLN)"),
                 ),
             ],
-            doStepIf=hasGalera
-            and util.Property("compile_step_completed", default=False),
+            doStepIf=lambda props: hasGalera(props)
+            and props.hasProperty("compile_step_completed"),
         )
     )
     return factory
