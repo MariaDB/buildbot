@@ -38,6 +38,7 @@ RUN zypper update -y && \
     libopenssl-3-devel \
     liburing2-devel \
     libxml2-devel \
+    pcre2-devel \
     perl-Net-SSLeay \
     policycoreutils \
     python312-devel \
