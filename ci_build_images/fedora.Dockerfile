@@ -10,7 +10,11 @@ LABEL maintainer="MariaDB Buildbot maintainers"
 # Install updates and required packages
 RUN echo "fastestmirror=true" >> /etc/dnf/dnf.conf \
     && dnf -y upgrade \
-    && dnf -y install 'dnf-command(builddep)' \
+    && dnf -y install 'dnf-command(builddep)' 'dnf-command(config-manager)' \
+    && source /etc/os-release \
+    && ARCH=$(rpm --query --queryformat='%{ARCH}' rpm) \
+    && if [ "$ARCH" = x86_64 ]; then ARCH=amd64 ; fi \
+    && dnf config-manager --add-repo https://ci.mariadb.org/galera/mariadb-4.x-latest-gal-"${ARCH}"-fedora-"${VERSION_ID}".repo \
     && dnf -y builddep mariadb-server \
     && dnf -y install \
     @development-tools \
@@ -25,7 +29,7 @@ RUN echo "fastestmirror=true" >> /etc/dnf/dnf.conf \
     dumb-init \
     flex \
     fmt-devel \
-    galera \
+    galera-4 \
     gawk \
     gdb \
     iproute \
@@ -56,7 +60,6 @@ RUN echo "fastestmirror=true" >> /etc/dnf/dnf.conf \
     unixODBC-devel \
     wget \
     which \
-    && source /etc/os-release \
     && if [ "$VERSION_ID" = 39 ]; then curl -s 'https://gitlab.kitware.com/cmake/cmake/-/raw/v3.28.5/Modules/Internal/CPack/CPackRPM.cmake?ref_type=tags' -o /usr/share/cmake/Modules/Internal/CPack/CPackRPM.cmake ; fi \
     && if [ "$(uname -m)" = "x86_64" ]; then dnf -y install libpmem-devel; fi \
     && dnf clean all
