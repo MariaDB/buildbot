@@ -33,6 +33,12 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
       fi \
       ;; \
     esac \
+    && source /etc/os-release \
+    && dnf -y install 'dnf-command(config-manager)' \
+    && VERSION_ID=%{VERSION_ID%%.*} \
+    && ARCH=$(rpm --query --queryformat='%{ARCH}' rpm) \
+    && if [ "$ARCH" = x86_64 ]; then ARCH=amd64 ; fi \
+    && dnf config-manager --add-repo https://ci.mariadb.org/galera/mariadb-4.x-latest-gal-${ARCH}-${ID}-${VERSION_ID}.repo \
     && subscription-manager repos --enable "codeready-builder-for-rhel-${v}-$(uname -m)-rpms" \
     && rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-"${v}".noarch.rpm \
     && dnf -y upgrade \
