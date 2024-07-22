@@ -36,6 +36,7 @@ RUN zypper -n update \
     libgnutls-devel \
     liblz4-devel \
     libopenssl-3-devel \
+    libopenssl-devel \
     liburing2-devel \
     pcre2-devel \
     perl-Net-SSLeay \
