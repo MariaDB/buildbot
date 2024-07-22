@@ -11,6 +11,7 @@ LABEL maintainer="MariaDB Buildbot maintainers"
 # hadolint ignore=SC2086
 RUN dnf -y install 'dnf-command(config-manager)' \
     && source /etc/os-release \
+    && ARCH=$(rpm --query --queryformat='%{ARCH}' rpm) \
     && case "$PLATFORM_ID" in \
         "platform:el9") \
           # centosstream9/almalinux9/rockylinux9 \
@@ -25,6 +26,20 @@ RUN dnf -y install 'dnf-command(config-manager)' \
           extra="buildbot-worker"; \
           ;; \
     esac \
+    && case "$ID" in \
+        "centos") \
+          ID=centos-stream; \
+          ;; \
+        "rocky") \
+          ID=rockylinux; \
+          ;& \
+        "almalinux") \
+          if [ "$ARCH" == "aarch64" ]; then ID=rhel; fi ; \
+          ;; \
+    esac \
+    && VERSION_ID=${VERSION_ID%%.*} \
+    && if [ $ARCH = x86_64 ]; then ARCH=amd64 ; fi \
+    && dnf config-manager --add-repo https://ci.mariadb.org/galera/mariadb-4.x-latest-gal-${ARCH}-${ID}-${VERSION_ID}.repo \
     && dnf -y upgrade \
     && dnf -y groupinstall "Development Tools" \
     && dnf -y builddep mariadb-server \
@@ -40,7 +55,7 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     createrepo \
     curl-devel \
     flex \
-    galera \
+    galera-4 \
     java-1.8.0-openjdk-devel \
     java-1.8.0-openjdk \
     jemalloc-devel \
