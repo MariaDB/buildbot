@@ -21,6 +21,7 @@ RUN zypper update -y \
     bzip2 \
     ccache \
     check-devel \
+    checkpolicy \
     cmake \
     cracklib-devel \
     createrepo_c \
