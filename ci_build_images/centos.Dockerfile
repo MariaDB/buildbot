@@ -88,4 +88,4 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     && curl -sL "https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_$(uname -m)" >/usr/local/bin/dumb-init \
     && chmod +x /usr/local/bin/dumb-init
 
-ENV WSREP_PROVIDER=/usr/lib64/galera/libgalera_smm.so
+ENV WSREP_PROVIDER=/usr/lib64/galera-4/libgalera_smm.so
