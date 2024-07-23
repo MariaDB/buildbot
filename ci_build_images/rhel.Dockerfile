@@ -35,7 +35,7 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     esac \
     && source /etc/os-release \
     && dnf -y install 'dnf-command(config-manager)' \
-    && VERSION_ID=%{VERSION_ID%%.*} \
+    && VERSION_ID=${VERSION_ID%%.*} \
     && ARCH=$(rpm --query --queryformat='%{ARCH}' rpm) \
     && if [ "$ARCH" = x86_64 ]; then ARCH=amd64 ; fi \
     && dnf config-manager --add-repo https://ci.mariadb.org/galera/mariadb-4.x-latest-gal-${ARCH}-${ID}-${VERSION_ID}.repo \
@@ -60,7 +60,7 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     createrepo \
     curl-devel \
     flex \
-    galera \
+    galera-4 \
     java-1.8.0-openjdk-devel \
     java-1.8.0-openjdk \
     jemalloc-devel --allowerasing \
@@ -102,4 +102,4 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     && curl -sL "https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_$(uname -m)" >/usr/local/bin/dumb-init \
     && chmod +x /usr/local/bin/dumb-init
 
-ENV WSREP_PROVIDER=/usr/lib64/galera/libgalera_smm.so
+ENV WSREP_PROVIDER=/usr/lib64/galera-4/libgalera_smm.so
