@@ -64,4 +64,4 @@ RUN echo "fastestmirror=true" >> /etc/dnf/dnf.conf \
     && if [ "$(uname -m)" = "x86_64" ]; then dnf -y install libpmem-devel; fi \
     && dnf clean all
 
-ENV WSREP_PROVIDER=/usr/lib64/galera/libgalera_smm.so
+ENV WSREP_PROVIDER=/usr/lib64/galera-4/libgalera_smm.so
