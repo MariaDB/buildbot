@@ -24,80 +24,80 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - dockerfile: centos.Dockerfile
-            image: almalinux:8
-            platforms: linux/amd64, linux/arm64/v8
-          - dockerfile: centos.Dockerfile pip.Dockerfile
-            image: almalinux:9
-            platforms: linux/amd64, linux/arm64/v8
-          - dockerfile: debian.Dockerfile
-            image: debian:11
-            branch: 10.11
-            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
-          - dockerfile: debian.Dockerfile
-            image: debian:12
-            tag: debian12
-            branch: 10.11
-            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
-          - dockerfile: debian.Dockerfile
-            image: debian:12
-            tag: debian12-386
-            branch: 10.11
-            platforms: linux/386
-          - dockerfile: debian.Dockerfile aocc.Dockerfile
-            image: debian:11
-            tag: debian11-aocc
-            branch: 10.11
-            platforms: linux/amd64
-          - dockerfile: debian.Dockerfile msan.Dockerfile
-            image: debian:11
-            branch: 10.11
-            tag: debian11-msan
-            clang_version: 15
-            platforms: linux/amd64
-          - dockerfile: debian.Dockerfile msan.Dockerfile
-            image: debian:11
-            branch: 10.11
-            tag: debian11-msan-clang-16
-            clang_version: 16
-            platforms: linux/amd64
-          - dockerfile: debian.Dockerfile
-            image: debian:sid
-            branch: 10.11
-            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
-          - dockerfile: debian.Dockerfile
-            image: debian:sid
-            tag: debiansid-386
-            branch: 10.11
-            platforms: linux/386
-          - dockerfile: debian.Dockerfile
-            image: ubuntu:20.04
-            branch: 10.11
-            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
-          - dockerfile: debian.Dockerfile
-            image: ubuntu:22.04
-            branch: 10.11
-            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
-          - dockerfile: debian.Dockerfile
-            image: ubuntu:23.10
-            branch: 10.11
-            platforms: linux/amd64, linux/arm64/v8
-          - dockerfile: debian.Dockerfile
-            image: ubuntu:24.04
-            branch: 10.11
-            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
-          - dockerfile: fedora.Dockerfile
-            image: fedora:38
-            platforms: linux/amd64, linux/arm64/v8
-          - dockerfile: fedora.Dockerfile
-            image: fedora:39
-            platforms: linux/amd64, linux/arm64/v8
-          - dockerfile: fedora.Dockerfile
-            image: fedora:40
-            platforms: linux/amd64, linux/arm64/v8
-          - dockerfile: centos7.Dockerfile pip.Dockerfile
-            image: centos:7
-            platforms: linux/amd64
+#          - dockerfile: centos.Dockerfile
+#            image: almalinux:8
+#            platforms: linux/amd64, linux/arm64/v8
+#          - dockerfile: centos.Dockerfile pip.Dockerfile
+#            image: almalinux:9
+#            platforms: linux/amd64, linux/arm64/v8
+#          - dockerfile: debian.Dockerfile
+#            image: debian:11
+#            branch: 10.11
+#            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
+#          - dockerfile: debian.Dockerfile
+#            image: debian:12
+#            tag: debian12
+#            branch: 10.11
+#            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
+#          - dockerfile: debian.Dockerfile
+#            image: debian:12
+#            tag: debian12-386
+#            branch: 10.11
+#            platforms: linux/386
+#          - dockerfile: debian.Dockerfile aocc.Dockerfile
+#            image: debian:11
+#            tag: debian11-aocc
+#            branch: 10.11
+#            platforms: linux/amd64
+#          - dockerfile: debian.Dockerfile msan.Dockerfile
+#            image: debian:11
+#            branch: 10.11
+#            tag: debian11-msan
+#            clang_version: 15
+#            platforms: linux/amd64
+#          - dockerfile: debian.Dockerfile msan.Dockerfile
+#            image: debian:11
+#            branch: 10.11
+#            tag: debian11-msan-clang-16
+#            clang_version: 16
+#            platforms: linux/amd64
+#          - dockerfile: debian.Dockerfile
+#            image: debian:sid
+#            branch: 10.11
+#            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
+#          - dockerfile: debian.Dockerfile
+#            image: debian:sid
+#            tag: debiansid-386
+#            branch: 10.11
+#            platforms: linux/386
+#          - dockerfile: debian.Dockerfile
+#            image: ubuntu:20.04
+#            branch: 10.11
+#            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
+#          - dockerfile: debian.Dockerfile
+#            image: ubuntu:22.04
+#            branch: 10.11
+#            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
+#          - dockerfile: debian.Dockerfile
+#            image: ubuntu:23.10
+#            branch: 10.11
+#            platforms: linux/amd64, linux/arm64/v8
+#          - dockerfile: debian.Dockerfile
+#            image: ubuntu:24.04
+#            branch: 10.11
+#            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
+#          - dockerfile: fedora.Dockerfile
+#            image: fedora:38
+#            platforms: linux/amd64, linux/arm64/v8
+#          - dockerfile: fedora.Dockerfile
+#            image: fedora:39
+#            platforms: linux/amd64, linux/arm64/v8
+#          - dockerfile: fedora.Dockerfile
+#            image: fedora:40
+#            platforms: linux/amd64, linux/arm64/v8
+#          - dockerfile: centos7.Dockerfile pip.Dockerfile
+#            image: centos:7
+#            platforms: linux/amd64
           - dockerfile: centos.Dockerfile pip.Dockerfile
             image: quay.io/centos/centos:stream9
             tag: centosstream9
@@ -113,17 +113,17 @@ jobs:
             image: registry.suse.com/bci/bci-base:15.6
             tag: sles15
             platforms: linux/amd64, linux/s390x
-          - dockerfile: centos.Dockerfile
-            image: rockylinux:8
-            platforms: linux/amd64, linux/arm64/v8
-          - dockerfile: centos.Dockerfile pip.Dockerfile
-            image: rockylinux:9
-            platforms: linux/amd64, linux/arm64/v8
-          - dockerfile: debian.Dockerfile jepsen-mysql.Dockerfile
-            image: ubuntu:22.04
-            branch: 10.11
-            platforms: linux/amd64
-            tag: ubuntu22.04-jepsen-mysql
+#          - dockerfile: centos.Dockerfile
+#            image: rockylinux:8
+#            platforms: linux/amd64, linux/arm64/v8
+#          - dockerfile: centos.Dockerfile pip.Dockerfile
+#            image: rockylinux:9
+#            platforms: linux/amd64, linux/arm64/v8
+#          - dockerfile: debian.Dockerfile jepsen-mysql.Dockerfile
+#            image: ubuntu:22.04
+#            branch: 10.11
+#            platforms: linux/amd64
+#            tag: ubuntu22.04-jepsen-mysql
     env:
       BUILD_RHEL: false
       DEPLOY_IMAGES: false
