@@ -53,6 +53,7 @@ RUN zypper -n update \
     rpmlint \
     snappy-devel \
     subversion \
+    systemd-devel \
     wget \
     # temporary add opensuse oss repo for some deps \
     && zypper ar -f https://download.opensuse.org/distribution/leap/RELEASEVER/repo/oss/ repo-oss \

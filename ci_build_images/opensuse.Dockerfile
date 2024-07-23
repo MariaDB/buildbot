@@ -55,6 +55,7 @@ RUN zypper update -y \
     rpmlint \
     snappy-devel \
     subversion \
+    systemd-devel \
     wget \
     && ./mariadb_zypper_expect \
     && zypper clean -a \
