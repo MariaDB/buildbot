@@ -98,21 +98,21 @@ jobs:
 #          - dockerfile: centos7.Dockerfile pip.Dockerfile
 #            image: centos:7
 #            platforms: linux/amd64
-          - dockerfile: centos.Dockerfile pip.Dockerfile
-            image: quay.io/centos/centos:stream9
-            tag: centosstream9
-            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
-            # //TEMP Error: Unable to find a match: ccache python3-scons (on
-            # s390x)
-            # platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
+#          - dockerfile: centos.Dockerfile pip.Dockerfile
+#            image: quay.io/centos/centos:stream9
+#            tag: centosstream9
+#            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
+#            # //TEMP Error: Unable to find a match: ccache python3-scons (on
+#            # s390x)
+#            # platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
           - dockerfile: opensuse.Dockerfile pip.Dockerfile
             image: opensuse/leap:15.6
             tag: opensuse15
             platforms: linux/amd64
-          - dockerfile: sles.Dockerfile pip.Dockerfile
-            image: registry.suse.com/bci/bci-base:15.6
-            tag: sles15
-            platforms: linux/amd64, linux/s390x
+#          - dockerfile: sles.Dockerfile pip.Dockerfile
+#            image: registry.suse.com/bci/bci-base:15.6
+#            tag: sles15
+#            platforms: linux/amd64, linux/s390x
 #          - dockerfile: centos.Dockerfile
 #            image: rockylinux:8
 #            platforms: linux/amd64, linux/arm64/v8
