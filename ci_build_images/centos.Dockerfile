@@ -35,11 +35,14 @@ RUN dnf -y install 'dnf-command(config-manager)' \
           ;& \
         "almalinux") \
           if [ "$ARCH" == "aarch64" ]; then ID=rhel; fi ; \
-          ;; \
+          ;& \
+        *) \
+          # VERSION_ID has leading -, except on centos-stream
+          VERSION_ID=-${VERSION_ID}; \
     esac \
     && VERSION_ID=${VERSION_ID%%.*} \
     && if [ $ARCH = x86_64 ]; then ARCH=amd64 ; fi \
-    && dnf config-manager --add-repo https://ci.mariadb.org/galera/mariadb-4.x-latest-gal-${ARCH}-${ID}-${VERSION_ID}.repo \
+    && dnf config-manager --add-repo https://ci.mariadb.org/galera/mariadb-4.x-latest-gal-${ARCH}-${ID}${VERSION_ID}.repo \
     && dnf -y upgrade \
     && dnf -y groupinstall "Development Tools" \
     && dnf -y builddep mariadb-server \
