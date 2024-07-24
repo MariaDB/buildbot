@@ -544,6 +544,21 @@ Repository available with: curl %(kw:url)s/%(prop:tarbuildnum)s/%(prop:builderna
     )
     f_rpm_autobake.addStep(
         steps.Trigger(
+            name="dockerlibrary",
+            schedulerNames=["s_dockerlibrary"],
+            waitForFinish=False,
+            updateSourceStamp=False,
+            set_properties={
+                "tarbuildnum": Property("tarbuildnum"),
+                "mariadb_version": Property("mariadb_version"),
+                "master_branch": Property("master_branch"),
+                "parentbuildername": Property("buildername"),
+            },
+            doStepIf=lambda step: hasDockerLibrary(step),
+        )
+    )
+    f_rpm_autobake.addStep(
+        steps.Trigger(
             name="install",
             schedulerNames=["s_install"],
             waitForFinish=False,
