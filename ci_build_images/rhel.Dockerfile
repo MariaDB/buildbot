@@ -83,7 +83,6 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     policycoreutils \
     python3 \
     python3-devel \
-    python3-scons \
     readline-devel \
     rpmlint \
     ruby \

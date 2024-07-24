@@ -70,7 +70,6 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     perl-autodie \
     perl-Net-SSLeay \
     python3-devel \
-    python3-scons \
     readline-devel \
     rpmlint \
     ruby \

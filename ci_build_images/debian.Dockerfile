@@ -79,7 +79,6 @@ RUN . /etc/os-release \
     python3-dev \
     python3-setuptools \
     rsync \
-    scons \
     socat \
     sudo  \
     wget \
