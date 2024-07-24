@@ -41,6 +41,7 @@ else
 fi
 # Container tags must be lower case.
 container_tag=${container_tag,,*}
+ubi=
 
 case "${buildername#*ubuntu-}" in
   2404-deb-autobake)
@@ -51,6 +52,10 @@ case "${buildername#*ubuntu-}" in
     ;;
   2004-deb-autobake)
     pkgver=ubu2004
+    ;;
+  *-rhel-9-rpm-autobake)
+    ubi=-ubi
+    master_branch=${master_branch}-ubi
     ;;
   *)
     echo "unknown base buildername $buildername"
@@ -79,9 +84,28 @@ annotate() {
   done
 }
 
+image=mariadb-${tarbuildnum}-${builderarch}$ubi
+
+if [ -n "$ubi" ]
+then
+
+build() {
+  local repo="mariadb-docker/$master_branch"/MariaDB.repo
+  curl "$artifacts_url"/galera/mariadb-4.x-latest-gal-"${buildername%-rpm-autobake}".repo \
+    -o "$repo"
+  curl "$artifacts_url/$tarbuildnum/${buildername}"/MariaDB.repo \
+    >> "$repo"
+  buildah bud --tag "${image}" \
+    --layers \
+    --arch "$@" \
+    --build-arg MARIADB_VERSION="$mariadb_version" \
+    "${annotations[@]}" \
+    "mariadb-docker/$master_branch"
+}
+
+else
 # Annotations - https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys
 build() {
-  image=mariadb-${tarbuildnum}-${builderarch}
   local galera_repo
   galera_repo="deb [trusted=yes] $(curl "$artifacts_url"/galera/mariadb-4.x-latest-gal-"${buildername%-deb-autobake}".sources | sed '/URIs: /!d ; s///;q') ./"
   buildah bud --tag "${image}" \
@@ -92,6 +116,7 @@ build() {
     "${annotations[@]}" \
     "mariadb-docker/$master_branch"
 }
+fi
 
 #
 # BUILD Image
