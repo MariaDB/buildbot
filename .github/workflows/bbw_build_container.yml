@@ -163,12 +163,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y qemu-user-static
-      - name: Make sure that time is in sync
-        run: |
-          # RHEL subscription needs that time and date
-          # is correct and is syncing with an NTP-server
-          # https://access.redhat.com/discussions/672313#comment-2360508
-          sudo chronyc -a makestep
       - name: Build image
         run: |
           podman manifest create ${{ env.REPO }}:${{ env.IMG }}
