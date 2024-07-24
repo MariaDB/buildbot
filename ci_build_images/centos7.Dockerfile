@@ -43,7 +43,6 @@ RUN yum -y --enablerepo=extras install epel-release \
     python3-pip \
     rpmlint \
     ruby \
-    scons \
     snappy-devel \
     systemd-devel \
     unixODBC \

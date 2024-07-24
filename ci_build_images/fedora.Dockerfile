@@ -53,7 +53,6 @@ RUN echo "fastestmirror=true" >> /etc/dnf/dnf.conf \
     rpmlint \
     rsync \
     rubypick \
-    scons \
     snappy-devel \
     socat \
     unixODBC \
