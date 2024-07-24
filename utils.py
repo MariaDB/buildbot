@@ -508,7 +508,7 @@ def hasDockerLibrary(step):
         "11.5",
         "11.6",
         "main",
-    ] and builderName.endswith("rhel-9-rpm-autobake"):
+    ] and builderName.endswith("amd64-rhel-9-rpm-autobake"):
         return True
 
     # We only build on the above autobakes for all architectures
