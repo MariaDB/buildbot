@@ -26,10 +26,9 @@ f="${tarbuildnum}/$tarball"
 
 verify_checksum() {
   echo "verify checksum"
-  checksum=$(wget -qO- "$artifacts_url/$tarbuildnum/sha256sums.txt" | awk '{print $1}')
-  checksum_file=$(sha256sum "$1" | awk '{print $1}')
+  wget -qO- "$artifacts_url/$tarbuildnum/sha256sums.txt" | sha256sum -c -
 
-  if [[ "$checksum_file" == "$checksum" ]]; then
+  if [ $? ]; then
     echo "checksum match"
     return 0
   else
@@ -61,29 +60,31 @@ download_tarball() {
   fi
 }
 
-if [[ -f $d/$tarball ]]; then
-  echo "$d/$tarball already present"
-  if verify_checksum "$d/$tarball"; then
+pushd "$d"
+if [[ -f $tarball ]]; then
+  echo "$tarball already present"
+  if verify_checksum; then
     true
   else
     echo "download tarball again"
-    rm -f $d/$tarball
+    rm -f $tarball
     download_tarball
-    if verify_checksum "$d/$tarball"; then
+    if verify_checksum; then
       true
     else
       err "checksum does not match, aborting"
     fi
   fi
 else
-  echo "$d/$tarball does not exist, download tarball"
+  echo "$tarball does not exist, download tarball"
   download_tarball
-  if verify_checksum "$d/$tarball"; then
+  if verify_checksum "$tarball"; then
     true
   else
     err "checksum does not match, aborting"
   fi
 fi
+popd
 
 echo "extract $d/$tarball"
 #//TEMP path on AIX are specific
