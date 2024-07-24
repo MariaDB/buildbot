@@ -101,10 +101,7 @@ jobs:
           - dockerfile: centos.Dockerfile pip.Dockerfile
             image: quay.io/centos/centos:stream9
             tag: centosstream9
-            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
-            # //TEMP Error: Unable to find a match: ccache python3-scons (on
-            # s390x)
-            # platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
+            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
           - dockerfile: opensuse.Dockerfile pip.Dockerfile
             image: opensuse/leap:15.6
             tag: opensuse15
