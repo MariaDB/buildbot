@@ -154,7 +154,7 @@ networks:
 def generate_volumes(volumes, indent_level=2):
     indent = "   " * indent_level
     volume_lines = [f"{indent}- {volume}" for volume in volumes]
-    return f"volumes:\n{'\n'.join(volume_lines)}"
+    return "volumes:\n{}".format("\n".join(volume_lines))
 
 
 # Function to construct environment section for Docker Compose
