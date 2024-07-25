@@ -26,13 +26,18 @@ f="${tarbuildnum}/$tarball"
 
 verify_checksum() {
   echo "verify checksum"
-  wget -qO- "$artifacts_url/$tarbuildnum/sha256sums.txt" | sha256sum -c -
+  wget -qO- "$artifacts_url/$tarbuildnum/sha256sums.txt" | tee sha256sums.txt | sha256sum -c -
 
   if [ $? ]; then
     echo "checksum match"
+    rm sha256sums.txt
     return 0
   else
     echo "checksum does not match"
+    sha256sum "$tarball"
+    echo "previous calculation"
+    cat sha256sums.txt
+    rm sha256sums.txt
     return 1
   fi
 }
