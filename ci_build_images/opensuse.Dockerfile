@@ -27,6 +27,7 @@ RUN zypper update -y \
     createrepo_c \
     curl \
     expect \
+    fmt-devel \
     galera-4 \
     gcc-c++ \
     git \
@@ -39,7 +40,6 @@ RUN zypper update -y \
     libbz2-devel \
     libcurl-devel \
     libffi-devel \
-    libfmt8 \
     libgnutls-devel \
     liblz4-devel \
     libopenssl-3-devel \
