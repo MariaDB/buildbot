@@ -176,22 +176,18 @@ supportedPlatforms["10.10"] += supportedPlatforms["10.9"]
 
 supportedPlatforms["10.11"] = [
     "aarch64-debian-12",
-    "aarch64-debian-sid",
     "aarch64-fedora-40",
     "aarch64-ubuntu-2310",
     "aarch64-ubuntu-2404",
     "amd64-debian-12",
-    "amd64-debian-sid",
     "amd64-fedora-40",
     "amd64-opensuse-15",
     "amd64-sles-15",
     "amd64-ubuntu-2310",
     "amd64-ubuntu-2404",
-    "ppc64le-debian-sid",
     "ppc64le-ubuntu-2404",
     "s390x-sles-15",
     "s390x-ubuntu-2404",
-    "x86-debian-sid",
     "ppc64le-debian-12",
 ]
 supportedPlatforms["10.11"] += supportedPlatforms["10.10"]
@@ -201,6 +197,12 @@ supportedPlatforms["11.1"] = supportedPlatforms["11.0"].copy()
 supportedPlatforms["11.2"] = supportedPlatforms["11.1"].copy()
 supportedPlatforms["11.3"] = supportedPlatforms["11.2"].copy()
 supportedPlatforms["11.4"] = supportedPlatforms["11.3"].copy()
+supportedPlatforms["11.4"] += [
+    "aarch64-debian-sid",
+    "amd64-debian-sid",
+    "ppc64le-debian-sid",
+    "x86-debian-sid",
+]
 supportedPlatforms["11.5"] = supportedPlatforms["11.4"].copy()
 supportedPlatforms["11.6"] = supportedPlatforms["11.5"].copy()
 supportedPlatforms["11.7"] = supportedPlatforms["11.6"].copy()
