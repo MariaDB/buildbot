@@ -234,7 +234,17 @@ def addWinTests(
         cmd = f"..\\mysql-test\\collections\\buildbot_suites.bat && cd .."
     else:
         suites = ",".join(mtr_suites)
-        cmd = f"perl mysql-test-run.pl  --verbose-restart --force  --testcase-timeout=8 --suite-timeout=600  --retry=3 --suites={suites} --parallel=%(kw:jobs)s %(kw:mtr_additional_args)s"
+        cmd = (
+            "perl mysql-test-run.pl"
+            " --verbose-restart"
+            " --force"
+            " --testcase-timeout=8"
+            " --suite-timeout=600"
+            " --retry=3"
+            " --suites={suites}"
+            " --parallel=%(kw:jobs)s"
+            "  %(kw:mtr_additional_args)s"
+        ).format(suites=suites)
 
     if create_scripts:
         factory.addStep(
