@@ -13,7 +13,7 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.runner || 'ubuntu-latest' }}
+    runs-on: ${{ matrix.runner || 'ubuntu-22.04' }}
     services:
       registry:
         image: registry:2
