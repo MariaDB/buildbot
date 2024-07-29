@@ -30,7 +30,7 @@ build() {
   mkdir -p build
   cd build
   /opt/bin/ccache --zero-stats
-  cmake ../"$source" -DCMAKE_BUILD_TYPE="$2" \
+  cmake ../"$source" -DCMAKE_BUILD_TYPE=Debug \
     -DCMAKE_C_LAUNCHER=/opt/bin/ccache \
     -DCMAKE_CXX_LAUNCHER=/opt/bin/ccache \
     -DCMAKE_C_COMPILER=gcc-11 \
