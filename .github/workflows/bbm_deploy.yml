@@ -37,7 +37,7 @@ on:
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: Check master.cfg files
@@ -48,7 +48,7 @@ jobs:
           python get_ssh_cnx_num.py
 
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: check
     if: >
       github.ref == 'refs/heads/dev' &&
