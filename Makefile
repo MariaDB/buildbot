@@ -27,11 +27,7 @@ venv: ## Create python3 venv if it does not exists
 
 install-pip-packages: ## Install python3 requirements
 	$(info --> Install requirements via `pip`)
-	# //TEMP needed because of
-	# https://github.com/astral-sh/uv/issues/5551
-	# https://github.com/pypa/setuptools/issues/4519
-	uv pip install setuptools==71.0.0
-	uv pip install --no-build-isolation -r requirements.txt
+	uv pip install -r requirements.txt
 
 install-vlad-bb-fork: ## Install vlad bb fork
 	$(info --> Install vlad's bb fork)
