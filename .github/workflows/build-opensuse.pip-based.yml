@@ -30,12 +30,15 @@ jobs:
           - image: opensuse/leap:15.6
             platforms: linux/amd64
             tag: opensuse15
+            nogalera: false
+
     uses: ./.github/workflows/bbw_build_container_template.yml
     with:
       dockerfile: opensuse.Dockerfile pip.Dockerfile
       image: ${{ matrix.image }}
       platforms: ${{ matrix.platforms }}
       tag: ${{ matrix.tag }}
+      nogalera: ${{ matrix.nogalera }}
       files:
         '[
           {"name": "mariadb_zypper_expect", "source": "''$WORKDIR/mariadb_zypper_expect''", "target": "''$GITHUB_WORKSPACE''"}
