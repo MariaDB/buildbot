@@ -31,6 +31,10 @@ on:
       files:
         required: false
         type: string
+      nogalera:
+        required: false
+        type: string
+        default: 'true'
 
 jobs:
   build:
@@ -67,6 +71,9 @@ jobs:
           cd ${{ env.WORKDIR }}
           cat ${{ inputs.dockerfile }} qpress.Dockerfile buildbot-worker.Dockerfile >$GITHUB_WORKSPACE/Dockerfile
           cp -r qpress $GITHUB_WORKSPACE
+          if [ "${{ inputs.nogalera }}" == true ]; then
+            sed -i -e '/ci.mariadb.org\/galera/d' -e '/galera-4/d' -e '/WSREP_PROVIDER/d' $GITHUB_WORKSPACE/Dockerfile
+          fi
 
       - name: Copy files on runner
         if: ${{ inputs.files }}
@@ -78,8 +85,7 @@ jobs:
             done
 
       - name: No wsrep on 32 bit platforms
-        if: >
-          (contains(inputs.platforms, 'linux/386'))
+        if: contains(inputs.platforms, 'linux/386')
         run: |
           sed -i -e '/WSREP_PROVIDER/d' $GITHUB_WORKSPACE/Dockerfile
       - name: Check Dockerfile with hadolint

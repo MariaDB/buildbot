@@ -25,17 +25,21 @@ jobs:
         include:
           - image: fedora:38
             platforms: linux/amd64, linux/arm64/v8
+            nogalera: false
 
           - image: fedora:39
             platforms: linux/amd64, linux/arm64/v8
+            nogalera: false
 
           - image: fedora:40
             platforms: linux/amd64, linux/arm64/v8
+            nogalera: false
 
           - image: fedora:40
             platforms: linux/amd64
             tag: fedora40-valgrind
             install_valgrind: "true"
+            nogalera: false
 
     uses: ./.github/workflows/bbw_build_container_template.yml
     with:
@@ -44,4 +48,5 @@ jobs:
       platforms: ${{ matrix.platforms }}
       tag: ${{ matrix.tag }}
       install_valgrind: ${{ matrix.install_valgrind }}
+      nogalera: ${{ matrix.nogalera }}
     secrets: inherit

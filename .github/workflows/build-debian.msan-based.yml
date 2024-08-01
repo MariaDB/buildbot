@@ -30,12 +30,14 @@ jobs:
             branch: 10.11
             tag: debian11-msan
             clang_version: 15
+            nogalera: false
 
           - image: debian:11
             platforms: linux/amd64
             branch: 10.11
             tag: debian11-msan-clang-16
             clang_version: 16
+            nogalera: false
 
     uses: ./.github/workflows/bbw_build_container_template.yml
     with:
@@ -45,4 +47,5 @@ jobs:
       tag: ${{ matrix.tag }}
       branch: ${{ matrix.branch }}
       clang_version: ${{ matrix.clang_version }}
+      nogalera: ${{ matrix.nogalera }}
     secrets: inherit

@@ -27,14 +27,17 @@ jobs:
           - dockerfile: rhel7.Dockerfile pip.Dockerfile
             image: rhel7
             platforms: linux/amd64
+            nogalera: false
           - dockerfile: rhel.Dockerfile
             image: ubi8
             tag: rhel8
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
+            nogalera: false
           - dockerfile: rhel.Dockerfile pip.Dockerfile
             image: ubi9
             tag: rhel9
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
+            nogalera: false
     env:
       BUILD_RHEL: false
       DEPLOY_IMAGES: false
@@ -73,6 +76,9 @@ jobs:
         run: |
           cd ${{ env.WORKDIR }}
           cat ${{ matrix.dockerfile }} qpress.Dockerfile buildbot-worker.Dockerfile >$GITHUB_WORKSPACE/Dockerfile
+          if [ "${{ matrix.nogalera }}" == true ]; then
+            sed -i -e '/ci.mariadb.org\/galera/d' -e '/WSREP_PROVIDER/d' -e '/galera-4/d' $GITHUB_WORKSPACE/Dockerfile
+          fi
           cp -r qpress $GITHUB_WORKSPACE
       - name: Check Dockerfile with hadolint
         run: |

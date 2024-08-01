@@ -25,11 +25,15 @@ jobs:
         include:
           - image: almalinux:8
             platforms: linux/amd64, linux/arm64/v8
+            nogalera: false
           - image: rockylinux:8
             platforms: linux/amd64, linux/arm64/v8
+            nogalera: false
+
     uses: ./.github/workflows/bbw_build_container_template.yml
     with:
       dockerfile: centos.Dockerfile
       image: ${{ matrix.image }}
       platforms: ${{ matrix.platforms }}
+      nogalera: ${{ matrix.nogalera }}
     secrets: inherit
