@@ -149,14 +149,16 @@ jobs:
         run: |
           cd ${{ env.WORKDIR }}
           cat ${{ matrix.dockerfile }} qpress.Dockerfile buildbot-worker.Dockerfile >$GITHUB_WORKSPACE/Dockerfile
+          if [ "${{ matrix.nogalera }}" == true ]; then
+            sed -i -e '/ci.mariadb.org\/galera/d' -e '/galera-4/d' $GITHUB_WORKSPACE/Dockerfile
+          fi
           cp -r qpress $GITHUB_WORKSPACE
       - name: opensuse extra
         if: contains(matrix.tag, 'opensuse') || contains(matrix.tag, 'sles')
         run: |
           cp ${{ env.WORKDIR }}/mariadb_zypper_expect $GITHUB_WORKSPACE
-      - name: No wsrep on 32 bit platforms
-        if: >
-          (contains(matrix.platforms, 'linux/386'))
+      - name: No wsrep on 32 bit platforms or nogalera
+        if: contains(matrix.platforms, 'linux/386') || contains(matrix.nogalera, 'true')
         run: |
           sed -i -e '/WSREP_PROVIDER/d' $GITHUB_WORKSPACE/Dockerfile
       - name: Check Dockerfile with hadolint
