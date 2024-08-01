@@ -47,8 +47,8 @@ RUN zypper -n update \
     pcre2-devel \
     perl-Net-SSLeay \
     policycoreutils \
-    python312-devel \
-    python312-pip \
+    python311-devel \
+    python311-pip \
     rpm-build \
     rpmlint \
     snappy-devel \
