@@ -30,7 +30,7 @@ jobs:
         include:
           - image: registry.suse.com/bci/bci-base:15.5
             platforms: linux/amd64, linux/s390x
-            tag: sles15.5
+            tag: sles1505
             nogalera: true
 
           - image: registry.suse.com/bci/bci-base:15.6
