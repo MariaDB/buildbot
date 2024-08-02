@@ -93,7 +93,7 @@ supportedPlatforms["10.4"] = [
     "amd64-ubuntu-2004-debug",
     "amd64-ubuntu-2004-fulltest",
     "amd64-ubuntu-2204-debug-ps",
-    "amd64-ubuntu-2204-valgrind",
+    "amd64-fedora-40-valgrind",
     "amd64-ubuntu-2204-icc",
     "amd64-ubuntu-2404-clang18-asan",
     "amd64-windows",
