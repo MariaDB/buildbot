@@ -11,6 +11,7 @@ commit=${4:-0}
 branch=${5:-${master_branch}}
 prod_environment=${6:-True}
 
+rm -f last_tag
 # keep in sync with docker-cleanup script
 if [[ $branch = *pkgtest* ]]; then
   container_tag=${branch#bb-}
@@ -181,8 +182,10 @@ if (($(buildah manifest inspect "$devmanifest" | jq '.manifests | length') >= ex
   trap 'manifest_image_cleanup "$t"' EXIT
   if [ "$prod_environment" = "True" ]; then
     buildah manifest push --all --rm "$devmanifest" "docker://quay.io/mariadb-foundation/mariadb-devel:${container_tag}"
+    echo "${container_tag}" > last_tag
   else
     buildah manifest rm "$devmanifest"
+    rm -f last_tag
   fi
   manifest_image_cleanup "$t"
 
