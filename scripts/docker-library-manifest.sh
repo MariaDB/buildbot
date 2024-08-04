@@ -110,21 +110,9 @@ buildmanifest "$devmanifest" "$container"
 #
 # MAKE Debug manifest
 
-if [ -n "$ubi" ]; then
-  buildah run --add-history --user root "$container" sh -c \
-    "dnf update \
-       && dnf install MariaDB-server-debuginfo"
-else
-  # linux-tools-common for perf
-  buildah run --add-history "$container" sh -c \
-    "apt-get update \
-       && apt-get install -y linux-tools-common gdbserver gdb curl \
-       && dpkg-query  --showformat='\${Package},\${Version},\${Architecture}\n' --show | grep mariadb \
-       | while IFS=, read  pkg version arch; do \
-            [ \$arch != all ] && apt-get install -y \${pkg}-dbgsym=\${version} ;
-          done; \
-     rm -rf /var/lib/apt/lists/*"
-fi
+debugimage=mariadb-debug-${tarbuildnum}-${builderarch}${ubi}
+buildah bud --tag "$debugimage" --build-arg BASE="$image" -f "Containerfile.debug$ubi"
+container=$(buildah from "$debugimage")
 
 debugmanifest=mariadb-debug-${container_tag}-$commit
 
@@ -132,6 +120,7 @@ buildmanifest "$debugmanifest" "$container" --rm
 trap - EXIT
 
 buildah rmi "$origbuildimage" || echo 'ok, its not there'
+buildah rmi "$debugimage" || echo 'ok, its not there'
 
 expected=4
 
