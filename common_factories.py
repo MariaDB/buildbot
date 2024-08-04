@@ -208,7 +208,106 @@ def getBuildFactoryPreTest(build_type="RelWithDebInfo", additional_args=""):
             haltOnFailure="true",
         )
     )
+
+    f_quick_build.addStep(
+        steps.SetProperty(
+            name="mark compile step as completed",
+            property="compile_step_completed",
+            value=True,
+        )
+    )
     return f_quick_build
+
+
+# TODO single function or class object to handle adding tests for different platforms
+def addWinTests(
+    factory: BuildFactory,
+    mtr_test_type: str,
+    mtr_env: dict[str, str],
+    mtr_additional_args: str,
+    mtr_step_db_pool: str,
+    mtr_suites: list[str],
+    create_scripts: bool = False,
+) -> BuildFactory:
+
+    if "default" in mtr_suites:
+        cmd = f"..\\mysql-test\\collections\\buildbot_suites.bat && cd .."
+    else:
+        suites = ",".join(mtr_suites)
+        cmd = (
+            "perl mysql-test-run.pl"
+            " --verbose-restart"
+            " --force"
+            " --testcase-timeout=8"
+            " --suite-timeout=600"
+            " --retry=3"
+            " --suites={suites}"
+            " --parallel=%(kw:jobs)s"
+            "  %(kw:mtr_additional_args)s"
+        ).format(suites=suites)
+
+    if create_scripts:
+        factory.addStep(
+            steps.StringDownload(
+                util.Interpolate(moveMTRLogs(output_dir="$1")),
+                workerdest="move_logs.sh",
+                name="Create move Logs script",
+            )
+        )
+
+        factory.addStep(
+            steps.StringDownload(
+                util.Interpolate(createVar(output_dir="$1")),
+                workerdest="create_tarball.sh",
+                name="Create tarball script",
+            )
+        )
+
+    factory.addStep(
+        steps.MTR(
+            addLogs=True,
+            name=f"{mtr_test_type} test",
+            test_type=mtr_test_type,
+            command=[
+                "dojob",
+                '"',
+                util.Interpolate(
+                    f'"C:\Program Files (x86)\Microsoft Visual Studio\\2022\BuildTools\Common7\Tools\VsDevCmd.bat" -arch=%(kw:arch)s && cd mysql-test && {cmd}',
+                    mtr_additional_args=mtr_additional_args,
+                    jobs=util.Property("jobs", default=4),
+                    arch=util.Property("arch", default="x64"),
+                ),
+                '"',
+            ],
+            timeout=600,
+            haltOnFailure="true",
+            parallel=mtrJobsMultiplier,
+            dbpool=mtr_step_db_pool,
+            autoCreateTables=True,
+            env=mtr_env,
+        )
+    )
+
+    factory.addStep(
+        steps.ShellCommand(
+            name=f"move {mtr_test_type} mariadb log files",
+            alwaysRun=True,
+            command=["dojob", '"' "bash", f"move_logs.sh {mtr_test_type}"],
+            env={"PATH": ["C:\\Program Files\\Git\\bin\\", "${PATH}"]},
+        )
+    )
+
+    factory.addStep(
+        steps.ShellCommand(
+            name=f"create {mtr_test_type} var.tar archive",
+            alwaysRun=True,
+            command=["dojob", '"' "bash", f"create_tarball.sh {mtr_test_type}"],
+            env={"PATH": ["C:\\Program Files\\Git\\bin\\", "${PATH}"]},
+            doStepIf=hasFailed,
+        )
+    )
+
+    return factory
 
 
 def addTests(
@@ -301,6 +400,8 @@ def addTests(
 def addGaleraTests(factory, mtrDbPool):
     factory.addStep(
         steps.MTR(
+            name="Galera tests",
+            alwaysRun=True,
             description="testing galera",
             descriptionDone="test galera",
             logfiles={"mysqld*": "./buildbot/mysql_logs.html"},
@@ -324,8 +425,9 @@ def addGaleraTests(factory, mtrDbPool):
             parallel=mtrJobsMultiplier,
             dbpool=mtrDbPool,
             autoCreateTables=True,
-            env=MTR_ENV,
-            doStepIf=hasGalera,
+            env=mtrEnv,
+            doStepIf=lambda props: hasGalera(props)
+            and props.hasProperty("compile_step_completed"),
         )
     )
     factory.addStep(
@@ -342,7 +444,8 @@ def addGaleraTests(factory, mtrDbPool):
                     jobs=util.Property("jobs", default="$(getconf _NPROCESSORS_ONLN)"),
                 ),
             ],
-            doStepIf=hasGalera,
+            doStepIf=lambda props: hasGalera(props)
+            and props.hasProperty("compile_step_completed"),
         )
     )
     return factory

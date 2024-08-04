@@ -27,7 +27,6 @@ venv: ## Create python3 venv if it does not exists
 
 install-pip-packages: ## Install python3 requirements
 	$(info --> Install requirements via `pip`)
-	uv pip install wheel
 	uv pip install -r requirements.txt
 
 install-vlad-bb-fork: ## Install vlad bb fork

@@ -23,6 +23,8 @@ MASTER_DIRECTORIES = [
     "master-bintars",
 ]
 
+VOLUMES = ["./logs:/var/log/buildbot", "./buildbot/:/srv/buildbot/master"]
+
 START_TEMPLATE = """
 ---
 version: "3.7"
@@ -109,9 +111,7 @@ DOCKER_COMPOSE_TEMPLATE = """
     restart: unless-stopped
     container_name: {master_name}
     hostname: {master_name}
-    volumes:
-      - ./logs:/var/log/buildbot
-      - ./buildbot/:/srv/buildbot/master
+    {volumes}
     entrypoint:
       - /bin/bash
       - -c
@@ -150,6 +150,13 @@ networks:
 """
 
 
+# Function to generate volumes section for Docker Compose
+def generate_volumes(volumes, indent_level=2):
+    indent = "   " * indent_level
+    volume_lines = [f"{indent}- {volume}" for volume in volumes]
+    return "volumes:\n{}".format("\n".join(volume_lines))
+
+
 # Function to construct environment section for Docker Compose
 def construct_env_section(env_vars):
     env_section = "    environment:\n"
@@ -163,6 +170,15 @@ def construct_env_section(env_vars):
 
 
 def main(args):
+    # Load Volumes
+    master_volumes = {
+        key: VOLUMES[:]
+        for key in [element.replace("/", "_") for element in MASTER_DIRECTORIES]
+    }
+    master_volumes["master-nonlatent"].append(
+        "/srv/buildbot/packages:/srv/buildbot/packages"
+    )  # Using FileUpload step
+
     # Capture the current environment variables' keys
     current_env_keys = set(os.environ.keys())
 
@@ -209,6 +225,7 @@ def main(args):
                 master_directory=master_directory,
                 port=port,
                 buildmaster_wg_ip=env_vars["BUILDMASTER_WG_IP"],
+                volumes=generate_volumes(master_volumes[master_name]),
             )
             port += 1
 

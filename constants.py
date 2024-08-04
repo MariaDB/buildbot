@@ -17,6 +17,7 @@ branches_main = [
     "11.6",
     "11.7",
     "11.8",
+    "main",
 ]
 
 # Defines what builders report status to GitHub
@@ -51,6 +52,7 @@ builders_galera_mtr = [
     "aarch64-debian-12",
     "amd64-fedora-39",
     "amd64-fedora-40",
+    "amd64-freebsd-14",
     "amd64-ubuntu-2404-debug",
     "s390x-ubuntu-2004",
     "s390x-ubuntu-2204",
@@ -89,14 +91,13 @@ supportedPlatforms["10.4"] = [
     "amd64-debian-10-debug-embedded",
     "amd64-debian-10-last-N-failed",
     "amd64-debian-11-debug-ps-embedded",
-    "amd64-opensuse-15",
     "amd64-rhel-7",
     "amd64-rhel-8",
     "amd64-ubuntu-2004",
     "amd64-ubuntu-2004-debug",
     "amd64-ubuntu-2004-fulltest",
     "amd64-ubuntu-2204-debug-ps",
-    "amd64-ubuntu-2204-valgrind",
+    "amd64-fedora-40-valgrind",
     "amd64-ubuntu-2204-icc",
     "amd64-ubuntu-2404-clang18-asan",
     "amd64-windows",
@@ -135,7 +136,6 @@ supportedPlatforms["10.5"] += [
     "amd64-fedora-39",
     "amd64-freebsd-14",
     "amd64-rhel-9",
-    "amd64-sles-15",
     "ppc64be-aix-71",
     "ppc64le-centos-stream9",
     "ppc64le-debian-11",
@@ -143,7 +143,6 @@ supportedPlatforms["10.5"] += [
     "s390x-rhel-8",
     "s390x-rhel-9",
     "s390x-sles-12",
-    "s390x-sles-15",
     "s390x-ubuntu-2004",
     "s390x-ubuntu-2004-debug",
 ]
@@ -181,21 +180,21 @@ supportedPlatforms["10.10"] += supportedPlatforms["10.9"]
 
 supportedPlatforms["10.11"] = [
     "aarch64-debian-12",
-    "aarch64-debian-sid",
     "aarch64-fedora-40",
     "aarch64-ubuntu-2310",
     "aarch64-ubuntu-2404",
     "amd64-debian-12",
-    "amd64-debian-sid",
     "amd64-fedora-40",
+    "amd64-opensuse-15",
+    "amd64-sles-15",
     "amd64-ubuntu-2310",
     "amd64-ubuntu-2404",
     "amd64-ubuntu-2404-debug",
+    "ppc64le-debian-12",
     "ppc64le-debian-sid",
     "ppc64le-ubuntu-2404",
+    "s390x-sles-15",
     "s390x-ubuntu-2404",
-    "x86-debian-sid",
-    "ppc64le-debian-12",
 ]
 supportedPlatforms["10.11"] += supportedPlatforms["10.10"]
 
@@ -204,10 +203,17 @@ supportedPlatforms["11.1"] = supportedPlatforms["11.0"].copy()
 supportedPlatforms["11.2"] = supportedPlatforms["11.1"].copy()
 supportedPlatforms["11.3"] = supportedPlatforms["11.2"].copy()
 supportedPlatforms["11.4"] = supportedPlatforms["11.3"].copy()
+supportedPlatforms["11.4"] += [
+    "aarch64-debian-sid",
+    "amd64-debian-sid",
+    "ppc64le-debian-sid",
+    "x86-debian-sid",
+]
 supportedPlatforms["11.5"] = supportedPlatforms["11.4"].copy()
 supportedPlatforms["11.6"] = supportedPlatforms["11.5"].copy()
 supportedPlatforms["11.7"] = supportedPlatforms["11.6"].copy()
 supportedPlatforms["11.8"] = supportedPlatforms["11.7"].copy()
+supportedPlatforms["main"] = supportedPlatforms["11.8"].copy()
 
 # Define environment variables for MTR step
 MTR_ENV = {

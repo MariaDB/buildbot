@@ -154,7 +154,11 @@ if (($(buildah manifest inspect "$devmanifest" | jq '.manifests | length') >= ex
   if ! wget -nv https://downloads.mariadb.org/rest-api/mariadb/ -O "$t"; then
     echo >&2 "Wget failed"
   fi
-  specialtags['verylatest']=$(jq '.major_releases[0].release_id' <"$t")
+  if [ "$branch" = 'main' ]; then
+    specialtags['verylatest']=\"${container_tag}\"
+  else
+    specialtags['verylatest']=$(jq '.major_releases[0].release_id' <"$t")
+  fi
   specialtags['latest']=$(jq '.major_releases | map(select(.release_status == "Stable"))[0].release_id' <"$t")
   specialtags['latest-lts']=$(jq '.major_releases | map(select(.release_status == "Stable" and .release_support_type == "Long Term Support"))[0].release_id' <"$t")
   specialtags['earliest']=$(jq '.major_releases | map(select( (( (.release_eol_date // "2031-01-01") + "T00:00:00Z") | fromdate) > now))[-1].release_id' <"$t")

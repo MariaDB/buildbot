@@ -48,7 +48,6 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     pcre2-devel \
     python3-pip \
     rpmlint \
-    scons \
     snappy-devel \
     systemd-devel \
     wget \

@@ -2,6 +2,8 @@
 
 set -xeuvo pipefail
 
+trap "cat /data/*.err" EXIT
+
 cd /code
 [ -d PyMySQL ] || git clone https://github.com/PyMySQL/PyMySQL.git
 cd PyMySQL
@@ -64,3 +66,6 @@ else
   pytest -v -k 'not test_auth' pymysql
 
 fi
+
+trap - EXIT
+

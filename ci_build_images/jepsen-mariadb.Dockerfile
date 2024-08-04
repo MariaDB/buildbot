@@ -38,8 +38,8 @@ USER buildbot
 
 WORKDIR /home/buildbot
 
-# Clone the jepsen-mysql repository, download leiningen, and set permissions
-RUN git clone https://github.com/vlad-lesin/jepsen-mysql jepsen-mariadb \
+# Clone the jepsen-mariadb repository, download leiningen, and set permissions
+RUN git clone https://github.com/MariaDB/jepsen-mariadb jepsen-mariadb \
     && curl -o /home/buildbot/lein https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein \
     && chmod a+x /home/buildbot/lein
 
