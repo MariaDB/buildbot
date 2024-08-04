@@ -72,6 +72,7 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     liburing-devel \
     libxml2-devel \
     libzstd-devel \
+    lzo-devel \
     lz4-devel \
     ncurses-devel \
     openssl-devel \
