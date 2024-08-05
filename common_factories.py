@@ -252,6 +252,7 @@ def addWinTests(
                 util.Interpolate(moveMTRLogs(output_dir="$1")),
                 workerdest="move_logs.sh",
                 name="Create move Logs script",
+                alwaysRun=True,
             )
         )
 
@@ -260,6 +261,7 @@ def addWinTests(
                 util.Interpolate(createVar(output_dir="$1")),
                 workerdest="create_tarball.sh",
                 name="Create tarball script",
+                alwaysRun=True,
             )
         )
 
