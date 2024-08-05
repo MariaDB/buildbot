@@ -404,8 +404,12 @@ upgrade_test_type() {
       ;;
     "major")
       major=${major_version%.*}
+      # intentionally twice, 11.5.3 has minor of 5.
       minor=${major_version##*.}
-      if ((minor == 0)); then
+      minor=${major_version##*.}
+      # with the earliest supported 11.X version
+      # and make this the upgrade from 10.11
+      if [ "$minor" -le 1 ]; then
         if ((major == 11)); then
           prev_major_version="10.11"
         else
