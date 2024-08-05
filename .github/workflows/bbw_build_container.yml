@@ -13,7 +13,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner || 'ubuntu-22.04' }}
     services:
       registry:
         image: registry:2
@@ -95,16 +95,21 @@ jobs:
           - dockerfile: fedora.Dockerfile
             image: fedora:40
             platforms: linux/amd64, linux/arm64/v8
+          - dockerfile: fedora.Dockerfile
+            image: fedora:40
+            tag: fedora40-valgrind
+            platforms: linux/amd64
+            install_valigrind: "true"
           - dockerfile: centos7.Dockerfile pip.Dockerfile
             image: centos:7
             platforms: linux/amd64
           - dockerfile: centos.Dockerfile pip.Dockerfile
             image: quay.io/centos/centos:stream9
             tag: centosstream9
+            runner: ubuntu-24.04
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
-            # //TEMP Error: Unable to find a match: ccache python3-scons (on
-            # s390x)
-            # platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
+            # //TEMP chicken/egg problem - could add s390x
+            # but that would need a galera-4 build from on this image
           - dockerfile: opensuse.Dockerfile pip.Dockerfile
             image: opensuse/leap:15.6
             tag: opensuse15
@@ -119,11 +124,11 @@ jobs:
           - dockerfile: centos.Dockerfile pip.Dockerfile
             image: rockylinux:9
             platforms: linux/amd64, linux/arm64/v8
-          - dockerfile: debian.Dockerfile jepsen-mysql.Dockerfile
+          - dockerfile: debian.Dockerfile jepsen-mariadb.Dockerfile
             image: ubuntu:22.04
             branch: 10.11
             platforms: linux/amd64
-            tag: ubuntu22.04-jepsen-mysql
+            tag: ubuntu22.04-jepsen-mariadb
     env:
       BUILD_RHEL: false
       DEPLOY_IMAGES: false
@@ -166,12 +171,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y qemu-user-static
-      - name: Make sure that time is in sync
-        run: |
-          # RHEL subscription needs that time and date
-          # is correct and is syncing with an NTP-server
-          # https://access.redhat.com/discussions/672313#comment-2360508
-          sudo chronyc -a makestep
       - name: Build image
         run: |
           podman manifest create ${{ env.REPO }}:${{ env.IMG }}
@@ -185,7 +184,8 @@ jobs:
               -f $GITHUB_WORKSPACE/Dockerfile \
               --build-arg BASE_IMAGE=${{ matrix.image }} \
               --build-arg CLANG_VERSION=${{ matrix.clang_version }} \
-              --build-arg MARIADB_BRANCH=${{ matrix.branch }}
+              --build-arg MARIADB_BRANCH=${{ matrix.branch }} \
+              --build-arg INSTALL_VALGRIND="${{ matrix.install_valigrind }}"
           done
           podman images
       - name: Push images to local registry

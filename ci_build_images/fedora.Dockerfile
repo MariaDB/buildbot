@@ -6,11 +6,16 @@
 ARG BASE_IMAGE
 FROM "$BASE_IMAGE"
 LABEL maintainer="MariaDB Buildbot maintainers"
+ARG INSTALL_VALGRIND
 
 # Install updates and required packages
 RUN echo "fastestmirror=true" >> /etc/dnf/dnf.conf \
     && dnf -y upgrade \
-    && dnf -y install 'dnf-command(builddep)' \
+    && dnf -y install 'dnf-command(builddep)' 'dnf-command(config-manager)' \
+    && source /etc/os-release \
+    && ARCH=$(rpm --query --queryformat='%{ARCH}' rpm) \
+    && if [ "$ARCH" = x86_64 ]; then ARCH=amd64 ; fi \
+    && dnf config-manager --add-repo https://ci.mariadb.org/galera/mariadb-4.x-latest-gal-"${ARCH}"-fedora-"${VERSION_ID}".repo \
     && dnf -y builddep mariadb-server \
     && dnf -y install \
     @development-tools \
@@ -25,7 +30,7 @@ RUN echo "fastestmirror=true" >> /etc/dnf/dnf.conf \
     dumb-init \
     flex \
     fmt-devel \
-    galera \
+    galera-4 \
     gawk \
     gdb \
     iproute \
@@ -49,16 +54,15 @@ RUN echo "fastestmirror=true" >> /etc/dnf/dnf.conf \
     rpmlint \
     rsync \
     rubypick \
-    scons \
     snappy-devel \
     socat \
     unixODBC \
     unixODBC-devel \
     wget \
     which \
-    && source /etc/os-release \
     && if [ "$VERSION_ID" = 39 ]; then curl -s 'https://gitlab.kitware.com/cmake/cmake/-/raw/v3.28.5/Modules/Internal/CPack/CPackRPM.cmake?ref_type=tags' -o /usr/share/cmake/Modules/Internal/CPack/CPackRPM.cmake ; fi \
     && if [ "$(uname -m)" = "x86_64" ]; then dnf -y install libpmem-devel; fi \
+    && if [ "$INSTALL_VALGRIND" = "true" ]; then dnf -y install valgrind; fi \
     && dnf clean all
 
-ENV WSREP_PROVIDER=/usr/lib64/galera/libgalera_smm.so
+ENV WSREP_PROVIDER=/usr/lib64/galera-4/libgalera_smm.so

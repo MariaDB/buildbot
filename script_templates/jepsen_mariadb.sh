@@ -20,6 +20,7 @@ LEIN_OPTIONS=(
   "--key-count" "40"
   "--no-ssh=true"
   "--innodb-strict-isolation=true"
+  "--mariadb-install-dir=/home/buildbot/mariadb-bin"
 )
 
 cd ../jepsen-mariadb ||
