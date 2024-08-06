@@ -103,11 +103,13 @@ rockylinux-8:
   arch:
     - amd64
   type: rpm
+  install_only: True
 rockylinux-9:
   version_name: 9
   arch:
     - amd64
   type: rpm
+  install_only: True
 sles-12:
   version_name: 12
   arch:
