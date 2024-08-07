@@ -14,7 +14,7 @@ LEIN_OPTIONS=(
   "test"
   "--db" "maria-docker"
   "--nodes" "localhost"
-  "--concurrency ${NPROC}"
+  "--concurrency" "${NPROC}"
   "--rate" "1000"
   "--time-limit" "60"
   "--key-count" "40"
