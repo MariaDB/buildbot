@@ -11,6 +11,7 @@ commit=${4:-0}
 branch=${5:-${master_branch}}
 prod_environment=${6:-True}
 
+rm -f last_tag
 # keep in sync with docker-cleanup script
 if [[ $branch = *pkgtest* ]]; then
   container_tag=${branch#bb-}
@@ -19,10 +20,18 @@ elif [[ $branch =~ ^preview ]]; then
 else
   container_tag=$master_branch
 fi
+
+ubi=
+if [[ "$buildername" = *-rhel-9-rpm-autobake ]]; then
+    ubi=-ubi
+    master_branch=${master_branch}-ubi
+fi
+
 # Container tags must be lower case.
-container_tag=${container_tag,,*}
+container_tag=${container_tag,,*}${ubi}
 
 builderarch=${buildername%%-*}
+
 
 declare -a annotations=(
   "--annotation" "org.opencontainers.image.authors=MariaDB Foundation"
@@ -43,7 +52,7 @@ annotate() {
   done
 }
 
-image=mariadb-${tarbuildnum}-${builderarch}
+image=mariadb-${tarbuildnum}-${builderarch}${ubi}
 
 origbuildimage=$image
 
@@ -101,15 +110,9 @@ buildmanifest "$devmanifest" "$container"
 #
 # MAKE Debug manifest
 
-# linux-tools-common for perf
-buildah run --add-history "$container" sh -c \
-  "apt-get update \
-	&& apt-get install -y linux-tools-common gdbserver gdb curl \
-	&& dpkg-query  --showformat='\${Package},\${Version},\${Architecture}\n' --show | grep mariadb \
-	| while IFS=, read  pkg version arch; do \
-          [ \$arch != all ] && apt-get install -y \${pkg}-dbgsym=\${version} ;
-        done; \
-	rm -rf /var/lib/apt/lists/*"
+debugimage=mariadb-debug-${tarbuildnum}-${builderarch}${ubi}
+buildah bud --tag "$debugimage" --build-arg BASE="$image" -f "Containerfile.debug$ubi"
+container=$(buildah from "$debugimage")
 
 debugmanifest=mariadb-debug-${container_tag}-$commit
 
@@ -117,11 +120,12 @@ buildmanifest "$debugmanifest" "$container" --rm
 trap - EXIT
 
 buildah rmi "$origbuildimage" || echo 'ok, its not there'
+buildah rmi "$debugimage" || echo 'ok, its not there'
 
-if [[ $master_branch =~ 10.[234] ]]; then
-  expected=3
-else
-  expected=4
+expected=4
+
+if [ -n "$ubi" ]; then
+  expected=1
 fi
 
 #
@@ -166,9 +170,9 @@ if (($(buildah manifest inspect "$devmanifest" | jq '.manifests | length') >= ex
   for tag in "${!specialtags[@]}"; do
     if [ \""$container_tag"\" == "${specialtags[$tag]}" ]; then
       if [ "$prod_environment" = "True" ]; then
-        buildah manifest push --all "$devmanifest" "docker://quay.io/mariadb-foundation/mariadb-devel:$tag"
+        buildah manifest push --all "$devmanifest" "docker://quay.io/mariadb-foundation/mariadb-devel:${tag}${ubi}"
       else
-        echo "not pushing quay.io/mariadb-foundation/mariadb-devel:$tag as in DEV environment"
+        echo "not pushing quay.io/mariadb-foundation/mariadb-devel:${tag}${ubi} as in DEV environment"
       fi
     fi
   done
@@ -178,8 +182,10 @@ if (($(buildah manifest inspect "$devmanifest" | jq '.manifests | length') >= ex
   trap 'manifest_image_cleanup "$t"' EXIT
   if [ "$prod_environment" = "True" ]; then
     buildah manifest push --all --rm "$devmanifest" "docker://quay.io/mariadb-foundation/mariadb-devel:${container_tag}"
+    echo "${container_tag}" > last_tag
   else
     buildah manifest rm "$devmanifest"
+    rm -f last_tag
   fi
   manifest_image_cleanup "$t"
 
