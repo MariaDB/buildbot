@@ -111,6 +111,11 @@ jobs:
             # //TEMP chicken/egg problem - could add s390x
             # but that would need a galera-4 build from on this image
           - dockerfile: opensuse.Dockerfile pip.Dockerfile
+            image: opensuse/leap:15.5
+            tag: opensuse15.5
+            platforms: linux/amd64
+            nogalera: true
+          - dockerfile: opensuse.Dockerfile pip.Dockerfile
             image: opensuse/leap:15.6
             tag: opensuse15
             platforms: linux/amd64
@@ -118,6 +123,11 @@ jobs:
             image: registry.suse.com/bci/bci-base:15.6
             tag: sles15
             platforms: linux/amd64, linux/s390x
+          - dockerfile: sles.Dockerfile pip.Dockerfile
+            image: registry.suse.com/bci/bci-base:15.5
+            tag: sles15.5
+            platforms: linux/amd64, linux/s390x
+            nogalera: true
           - dockerfile: centos.Dockerfile
             image: rockylinux:8
             platforms: linux/amd64, linux/arm64/v8
@@ -154,14 +164,16 @@ jobs:
         run: |
           cd ${{ env.WORKDIR }}
           cat ${{ matrix.dockerfile }} qpress.Dockerfile buildbot-worker.Dockerfile >$GITHUB_WORKSPACE/Dockerfile
+          if [ "${{ matrix.nogalera }}" == true ]; then
+            sed -i -e '/ci.mariadb.org\/galera/d' -e '/galera-4/d' $GITHUB_WORKSPACE/Dockerfile
+          fi
           cp -r qpress $GITHUB_WORKSPACE
       - name: opensuse extra
         if: contains(matrix.tag, 'opensuse') || contains(matrix.tag, 'sles')
         run: |
           cp ${{ env.WORKDIR }}/mariadb_zypper_expect $GITHUB_WORKSPACE
-      - name: No wsrep on 32 bit platforms
-        if: >
-          (contains(matrix.platforms, 'linux/386'))
+      - name: No wsrep on 32 bit platforms or nogalera
+        if: contains(matrix.platforms, 'linux/386') || contains(matrix.nogalera, 'true')
         run: |
           sed -i -e '/WSREP_PROVIDER/d' $GITHUB_WORKSPACE/Dockerfile
       - name: Check Dockerfile with hadolint
