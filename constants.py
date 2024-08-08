@@ -4,7 +4,6 @@ DEVELOPMENT_BRANCH = "11.3"
 
 # Used to trigger the appropriate main branch
 branches_main = [
-    "10.4",
     "10.5",
     "10.6",
     "10.11",
@@ -73,7 +72,7 @@ releaseBranches = ["bb-*-release", "preview-*"]
 # Maximum supported branch is the one where the default distro MariaDB package major version <= branch
 # For example, if Debian 10 has MariaDB 10.3 by default, we don't support MariaDB 10.2 on it.
 supportedPlatforms = {}
-supportedPlatforms["10.4"] = [
+supportedPlatforms["10.5"] = [
     "aarch64-debian-10",
     "aarch64-debian-10-bintar",
     "aarch64-macos",
@@ -103,16 +102,6 @@ supportedPlatforms["10.4"] = [
     "ppc64le-ubuntu-2004-debug",
     "ppc64le-ubuntu-2004-without-server",
     "x86-debian-12-fulltest",
-]
-
-supportedPlatforms["10.5"] = supportedPlatforms["10.4"].copy()
-
-# Add only 10.4 supported platforms
-supportedPlatforms["10.4"] += [
-    "amd64-kvm-centos-6-bintar",
-    "amd64-kvm-ubuntu-1210-bintar",
-    "x86-kvm-centos-6-bintar",
-    "x86-kvm-ubuntu-1210-bintar",
 ]
 
 supportedPlatforms["10.5"] += [
