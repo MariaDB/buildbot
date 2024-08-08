@@ -140,16 +140,15 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Uncomment this when we disable the old workflow
-      # - name: Push images to ghcr.io
-      #   if: ${{ env.DEPLOY_IMAGES == 'true' }}
-      #   run: |
-      #     msg="Push docker image to ghcr.io (${{ env.IMG }})"
-      #     line="${msg//?/=}"
-      #     printf "\n${line}\n${msg}\n${line}\n"
-      #     skopeo copy --all --src-tls-verify=0 \
-      #       docker://localhost:5000/${{ env.REPO }}:${{ env.IMG }} \
-      #       docker://ghcr.io/${GITHUB_REPOSITORY,,}/${{ env.REPO }}:${{ env.IMG }}
+      - name: Push images to ghcr.io
+        if: ${{ env.DEPLOY_IMAGES == 'true' }}
+        run: |
+          msg="Push docker image to ghcr.io (${{ env.IMG }})"
+          line="${msg//?/=}"
+          printf "\n${line}\n${msg}\n${line}\n"
+          skopeo copy --all --src-tls-verify=0 \
+            docker://localhost:5000/${{ env.REPO }}:${{ env.IMG }} \
+            docker://ghcr.io/${GITHUB_REPOSITORY,,}/${{ env.REPO }}:${{ env.IMG }}
 
       - name: Login to registry
         if: ${{ env.DEPLOY_IMAGES == 'true' }}
