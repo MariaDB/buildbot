@@ -1,0 +1,33 @@
+name: Build CentOS based images
+
+on:
+  push:
+    paths:
+      - 'ci_build_images/centos.Dockerfile'
+      - 'ci_build_images/qpress.Dockerfile'
+      - 'ci_build_images/buildbot-worker.Dockerfile'
+      - .github/workflows/build-centos-based.yml
+  pull_request:
+    paths:
+      - 'ci_build_images/centos.Dockerfile'
+      - 'ci_build_images/qpress.Dockerfile'
+      - 'ci_build_images/buildbot-worker.Dockerfile'
+      - .github/workflows/build-centos-based.yml
+  workflow_call:
+
+jobs:
+  build-images:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: almalinux:8
+            platforms: linux/amd64, linux/arm64/v8
+          - image: rockylinux:8
+            platforms: linux/amd64, linux/arm64/v8
+    uses: ./.github/workflows/bbw_build_container_template.yml
+    with:
+      dockerfile: centos.Dockerfile
+      image: ${{ matrix.image }}
+      platforms: ${{ matrix.platforms }}
+    secrets: inherit

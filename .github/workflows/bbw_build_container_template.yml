@@ -1,0 +1,171 @@
+---
+name: bbw-build-container-template
+
+on:
+  workflow_call:
+    inputs:
+      dockerfile:
+        required: true
+        type: string
+      image:
+        required: true
+        type: string
+      platforms:
+        required: true
+        type: string
+      tag:
+        required: false
+        type: string
+      runner:
+        required: false
+        type: string
+      clang_version:
+        required: false
+        type: string
+      branch:
+        required: false
+        type: string
+      install_valgrind:
+        required: false
+        type: string
+
+jobs:
+  build:
+    runs-on: ${{ inputs.runner || 'ubuntu-22.04' }}
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    name: ${{ inputs.image }} (${{ inputs.tag }} ${{ inputs.platforms }})
+    env:
+      BUILD_RHEL: false
+      DEPLOY_IMAGES: false
+      WORKDIR: ci_build_images
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up env vars
+        run: |
+          set -vx
+          [[ -n "${{ inputs.image }}" ]] || {
+            echo "Missing base image (FROM)"
+            exit 1
+          }
+          if [[ -n "${{ inputs.tag }}" ]]; then
+            echo "IMG=${{ inputs.tag }}" >>$GITHUB_ENV
+          else
+            TAG_TMP=${{ inputs.image }}
+            echo "IMG=${TAG_TMP/:/}" >>$GITHUB_ENV
+          fi
+          echo "REPO=bb-worker" >>$GITHUB_ENV
+      - name: Generate Dockerfile and necessary files
+        run: |
+          cd ${{ env.WORKDIR }}
+          cat ${{ inputs.dockerfile }} qpress.Dockerfile buildbot-worker.Dockerfile >$GITHUB_WORKSPACE/Dockerfile
+          cp -r qpress $GITHUB_WORKSPACE
+      - name: opensuse extra
+        if: contains(inputs.tag, 'opensuse') || contains(inputs.tag, 'sles')
+        run: |
+          cp ${{ env.WORKDIR }}/mariadb_zypper_expect $GITHUB_WORKSPACE
+      - name: No wsrep on 32 bit platforms
+        if: >
+          (contains(inputs.platforms, 'linux/386'))
+        run: |
+          sed -i -e '/WSREP_PROVIDER/d' $GITHUB_WORKSPACE/Dockerfile
+      - name: Check Dockerfile with hadolint
+        run: |
+          docker run -i -v $(pwd):/mnt -w /mnt ghcr.io/hadolint/hadolint:latest hadolint /mnt/Dockerfile
+      - name: Install qemu-user-static
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-user-static
+      - name: Build image
+        run: |
+          podman manifest create ${{ env.REPO }}:${{ env.IMG }}
+          for arch in $(echo ${{ inputs.platforms }} | sed 's/,/ /g'); do
+            msg="Build $arch:"
+            line="${msg//?/=}"
+            printf "\n${line}\n${msg}\n${line}\n"
+            podman buildx build --tag ${{ env.REPO }}:${{ env.IMG }}-${arch//\//-} \
+              --platform $arch \
+              --manifest ${{ env.REPO }}:${{ env.IMG }} \
+              -f $GITHUB_WORKSPACE/Dockerfile \
+              --build-arg BASE_IMAGE=${{ inputs.image }} \
+              --build-arg CLANG_VERSION=${{ inputs.clang_version }} \
+              --build-arg MARIADB_BRANCH=${{ inputs.branch }} \
+              --build-arg INSTALL_VALGRIND="${{ inputs.install_valgrind }}"
+          done
+          podman images
+      - name: Push images to local registry
+        run: |
+          podman manifest push --tls-verify=0 \
+            --all ${{ env.REPO }}:${{ env.IMG }} \
+            docker://localhost:5000/${{ env.REPO }}:${{ env.IMG }}
+      - name: Check multi-arch container
+        run: |
+          # make some space on the runner
+          if [[ -d $HOME/.local/share/containers ]]; then
+            sudo rm -rf $HOME/.local/share/containers
+          fi
+          for p in ${{ inputs.platforms }}; do
+            platform="${p/,/}"
+            image="localhost:5000/bb-worker:${{ env.IMG }}"
+            msg="Testing docker image $image on platform $platform"
+            line="${msg//?/=}"
+            printf "\n${line}\n${msg}\n${line}\n"
+            docker pull -q --platform "$platform" "$image"
+            docker run -i "$image" buildbot-worker --version
+            docker run -i "$image" dumb-init twistd --pidfile= -y /home/buildbot/buildbot.tac
+            docker run -u root -i "$image" bash -c "touch /tmp/foo && qpress -r /tmp /root/qpress.qp"
+          done
+      - name: Check for registry credentials
+        run: |
+          missing=()
+          [[ -n "${{ secrets.QUAY_USER }}" ]] || missing+=(QUAY_USER)
+          [[ -n "${{ secrets.QUAY_TOKEN }}" ]] || missing+=(QUAY_TOKEN)
+          for i in "${missing[@]}"; do
+            echo "Missing github secret: $i"
+          done
+          if (( ${#missing[@]} == 0 )); then
+            echo "DEPLOY_IMAGES=true" >> $GITHUB_ENV
+          else
+            echo "Not pushing images to registry"
+          fi
+      - name: Login to ghcr.io
+        if: ${{ env.DEPLOY_IMAGES == 'true' }}
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Uncomment this when we disable the old workflow
+      # - name: Push images to ghcr.io
+      #   if: ${{ env.DEPLOY_IMAGES == 'true' }}
+      #   run: |
+      #     msg="Push docker image to ghcr.io (${{ env.IMG }})"
+      #     line="${msg//?/=}"
+      #     printf "\n${line}\n${msg}\n${line}\n"
+      #     skopeo copy --all --src-tls-verify=0 \
+      #       docker://localhost:5000/${{ env.REPO }}:${{ env.IMG }} \
+      #       docker://ghcr.io/${GITHUB_REPOSITORY,,}/${{ env.REPO }}:${{ env.IMG }}
+
+      - name: Login to registry
+        if: ${{ env.DEPLOY_IMAGES == 'true' }}
+        uses: docker/login-action@v2
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USER }}
+          password: ${{ secrets.QUAY_TOKEN }}
+
+      # Uncomment this when we disable the old workflow
+      # - name: Push images to quay.io
+      #   if: ${{ env.DEPLOY_IMAGES == 'true' }}
+      #   run: |
+      #     msg="Push docker image to quay.io (${{ env.IMG }})"
+      #     line="${msg//?/=}"
+      #     printf "\n${line}\n${msg}\n${line}\n"
+      #     skopeo copy --all --src-tls-verify=0 \
+      #     docker://localhost:5000/${{ env.REPO }}:${{ env.IMG }} \
+      #     docker://quay.io/mariadb-foundation/${{ env.REPO }}:${{ env.IMG }}

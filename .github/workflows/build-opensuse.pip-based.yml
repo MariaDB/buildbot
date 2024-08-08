@@ -1,0 +1,35 @@
+name: Build OpenSUSE:pip based images
+
+on:
+  push:
+    paths:
+      - 'ci_build_images/opensuse.Dockerfile'
+      - 'ci_build_images/pip.Dockerfile'
+      - 'ci_build_images/qpress.Dockerfile'
+      - 'ci_build_images/buildbot-worker.Dockerfile'
+      - .github/workflows/build-opensuse.pip-based.yml
+  pull_request:
+    paths:
+      - 'ci_build_images/opensuse.Dockerfile'
+      - 'ci_build_images/pip.Dockerfile'
+      - 'ci_build_images/qpress.Dockerfile'
+      - 'ci_build_images/buildbot-worker.Dockerfile'
+      - .github/workflows/build-opensuse.pip-based.yml
+  workflow_call:
+
+jobs:
+  build-images:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: opensuse/leap:15.6
+            platforms: linux/amd64
+            tag: opensuse15
+    uses: ./.github/workflows/bbw_build_container_template.yml
+    with:
+      dockerfile: opensuse.Dockerfile pip.Dockerfile
+      image: ${{ matrix.image }}
+      platforms: ${{ matrix.platforms }}
+      tag: ${{ matrix.tag }}
+    secrets: inherit

@@ -1,0 +1,43 @@
+name: Dispatch all build container images workflows
+
+on:
+  push:
+    paths:
+      - .github/workflows/bbw_build_container_template.yml
+  pull_request:
+    paths:
+      - .github/workflows/bbw_build_container_template.yml
+  workflow_dispatch:
+
+
+jobs:
+  build-centos-based:
+    uses: ./.github/workflows/build-centos-based.yml
+    secrets: inherit
+  build-centos7pip-based:
+    uses: ./.github/workflows/build-centos7.pip-based.yml
+    secrets: inherit
+  build-centospip-based:
+    uses: ./.github/workflows/build-centos.pip-based.yml
+    secrets: inherit
+  build-debian-based:
+    uses: ./.github/workflows/build-debian-based.yml
+    secrets: inherit
+  build-debian-aocc-based:
+    uses: ./.github/workflows/build-debian.aocc-based.yml
+    secrets: inherit
+  build-debian-jepsen-based:
+    uses: ./.github/workflows/build-debian.jepsen-based.yml
+    secrets: inherit
+  build-debian-msan-based:
+    uses: ./.github/workflows/build-debian.msan-based.yml
+    secrets: inherit
+  build-fedora-based:
+    uses: ./.github/workflows/build-fedora-based.yml
+    secrets: inherit
+  build-opensusepip-based:
+    uses: ./.github/workflows/build-opensuse.pip-based.yml
+    secrets: inherit
+  build-slespip-based:
+    uses: ./.github/workflows/build-sles.pip-based.yml
+    secrets: inherit
