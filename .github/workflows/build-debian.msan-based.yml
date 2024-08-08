@@ -1,0 +1,46 @@
+name: Build Debian:msan based images
+
+on:
+  push:
+    paths:
+      - 'ci_build_images/debian.Dockerfile'
+      - 'ci_build_images/msan.Dockerfile'
+      - 'ci_build_images/qpress.Dockerfile'
+      - 'ci_build_images/buildbot-worker.Dockerfile'
+      - .github/workflows/build-debian.msan-based.yml
+  pull_request:
+    paths:
+      - 'ci_build_images/debian.Dockerfile'
+      - 'ci_build_images/msan.Dockerfile'
+      - 'ci_build_images/qpress.Dockerfile'
+      - 'ci_build_images/buildbot-worker.Dockerfile'
+      - .github/workflows/build-debian.msan-based.yml
+  workflow_call:
+
+jobs:
+  build-images:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: debian:11
+            platforms: linux/amd64
+            branch: 10.11
+            tag: debian11-msan
+            clang_version: 15
+
+          - image: debian:11
+            platforms: linux/amd64
+            branch: 10.11
+            tag: debian11-msan-clang-16
+            clang_version: 16
+
+    uses: ./.github/workflows/bbw_build_container_template.yml
+    with:
+      dockerfile: debian.Dockerfile msan.Dockerfile
+      image: ${{ matrix.image }}
+      platforms: ${{ matrix.platforms }}
+      tag: ${{ matrix.tag }}
+      branch: ${{ matrix.branch }}
+      clang_version: ${{ matrix.clang_version }}
+    secrets: inherit

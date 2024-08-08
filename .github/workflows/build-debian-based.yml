@@ -1,0 +1,71 @@
+name: Build Debian based images
+
+on:
+  push:
+    paths:
+      - 'ci_build_images/debian.Dockerfile'
+      - 'ci_build_images/qpress.Dockerfile'
+      - 'ci_build_images/buildbot-worker.Dockerfile'
+      - .github/workflows/build-debian-based.yml
+  pull_request:
+    paths:
+      - 'ci_build_images/debian.Dockerfile'
+      - 'ci_build_images/qpress.Dockerfile'
+      - 'ci_build_images/buildbot-worker.Dockerfile'
+      - .github/workflows/build-debian-based.yml
+
+  workflow_call:
+
+jobs:
+  build-images:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: debian:11
+            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
+            branch: 10.11
+
+          - image: debian:12
+            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
+            branch: 10.11
+            tag: debian12
+
+          - image: debian:12
+            platforms: linux/386
+            branch: 10.11
+            tag: debian12-386
+
+          - image: debian:sid
+            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
+            branch: 10.11
+
+          - image: debian:sid
+            platforms: linux/386
+            branch: 10.11
+            tag: debiansid-386
+
+          - image: ubuntu:20.04
+            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
+            branch: 10.11
+
+          - image: ubuntu:22.04
+            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
+            branch: 10.11
+
+          - image: ubuntu:23.10
+            platforms: linux/amd64, linux/arm64/v8
+            branch: 10.11
+
+          - image: ubuntu:24.04
+            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
+            branch: 10.11
+
+    uses: ./.github/workflows/bbw_build_container_template.yml
+    with:
+      dockerfile: debian.Dockerfile
+      image: ${{ matrix.image }}
+      platforms: ${{ matrix.platforms }}
+      tag: ${{ matrix.tag }}
+      branch: ${{ matrix.branch }}
+    secrets: inherit

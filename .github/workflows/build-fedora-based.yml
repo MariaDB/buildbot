@@ -1,0 +1,45 @@
+name: Build Fedora based images
+
+on:
+  push:
+    paths:
+      - 'ci_build_images/fedora.Dockerfile'
+      - 'ci_build_images/qpress.Dockerfile'
+      - 'ci_build_images/buildbot-worker.Dockerfile'
+      - .github/workflows/build-fedora-based.yml
+  pull_request:
+    paths:
+      - 'ci_build_images/fedora.Dockerfile'
+      - 'ci_build_images/qpress.Dockerfile'
+      - 'ci_build_images/buildbot-worker.Dockerfile'
+      - .github/workflows/build-fedora-based.yml
+  workflow_call:
+
+jobs:
+  build-images:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: fedora:38
+            platforms: linux/amd64, linux/arm64/v8
+
+          - image: fedora:39
+            platforms: linux/amd64, linux/arm64/v8
+
+          - image: fedora:40
+            platforms: linux/amd64, linux/arm64/v8
+
+          - image: fedora:40
+            platforms: linux/amd64
+            tag: fedora40-valgrind
+            install_valgrind: "true"
+
+    uses: ./.github/workflows/bbw_build_container_template.yml
+    with:
+      dockerfile: fedora.Dockerfile
+      image: ${{ matrix.image }}
+      platforms: ${{ matrix.platforms }}
+      tag: ${{ matrix.tag }}
+      install_valgrind: ${{ matrix.install_valgrind }}
+    secrets: inherit

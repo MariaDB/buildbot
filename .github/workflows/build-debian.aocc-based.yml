@@ -1,0 +1,37 @@
+name: Build Debian:aocc based images
+
+on:
+  push:
+    paths:
+      - 'ci_build_images/debian.Dockerfile'
+      - 'ci_build_images/aocc.Dockerfile'
+      - 'ci_build_images/qpress.Dockerfile'
+      - 'ci_build_images/buildbot-worker.Dockerfile'
+      - .github/workflows/build-debian.aocc-based.yml
+  pull_request:
+    paths:
+      - 'ci_build_images/debian.Dockerfile'
+      - 'ci_build_images/aocc.Dockerfile'
+      - 'ci_build_images/qpress.Dockerfile'
+      - 'ci_build_images/buildbot-worker.Dockerfile'
+      - .github/workflows/build-debian.aocc-based.yml
+  workflow_call:
+
+jobs:
+  build-images:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: debian:11
+            platforms: linux/amd64
+            branch: 10.11
+            tag: debian11-aocc
+    uses: ./.github/workflows/bbw_build_container_template.yml
+    with:
+      dockerfile: debian.Dockerfile aocc.Dockerfile
+      image: ${{ matrix.image }}
+      platforms: ${{ matrix.platforms }}
+      tag: ${{ matrix.tag }}
+      branch: ${{ matrix.branch }}
+    secrets: inherit

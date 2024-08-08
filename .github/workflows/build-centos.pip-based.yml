@@ -1,0 +1,45 @@
+name: Build CentOS:pip based images
+
+on:
+  push:
+    paths:
+      - 'ci_build_images/centos.Dockerfile'
+      - 'ci_build_images/pip.Dockerfile'
+      - 'ci_build_images/qpress.Dockerfile'
+      - 'ci_build_images/buildbot-worker.Dockerfile'
+      - .github/workflows/build-centos.pip-based.yml
+  pull_request:
+    paths:
+      - 'ci_build_images/centos.Dockerfile'
+      - 'ci_build_images/pip.Dockerfile'
+      - 'ci_build_images/qpress.Dockerfile'
+      - 'ci_build_images/buildbot-worker.Dockerfile'
+      - .github/workflows/build-centos.pip-based.yml
+
+  workflow_call:
+
+jobs:
+  build-images:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: almalinux:9
+            platforms: linux/amd64, linux/arm64/v8
+
+          - image: rockylinux:9
+            platforms: linux/amd64, linux/arm64/v8
+
+          - image: quay.io/centos/centos:stream9
+            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
+            tag: centosstream9
+            runner: ubuntu-24.04
+
+    uses: ./.github/workflows/bbw_build_container_template.yml
+    with:
+      dockerfile: centos.Dockerfile pip.Dockerfile
+      image: ${{ matrix.image }}
+      platforms: ${{ matrix.platforms }}
+      runner: ${{ matrix.runner }}
+      tag: ${{ matrix.tag }}
+    secrets: inherit
