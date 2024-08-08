@@ -12,15 +12,15 @@ ENV MSAN_SYMBOLIZER_PATH=/msan-libs/bin/llvm-symbolizer-msan
 
 ENV PATH=$MSAN_LIBDIR/bin:$PATH
 
-RUN mkdir $MSAN_LIBDIR \
+RUN . /etc/os-release; mkdir $MSAN_LIBDIR \
     && mkdir $MSAN_LIBDIR/bin \
     && printf "#!/bin/sh\nunset LD_LIBRARY_PATH\nexec llvm-symbolizer-%s \"\$@\"" "${CLANG_VERSION}" > $MSAN_SYMBOLIZER_PATH \
     && printf '#!/bin/sh\nunset LD_LIBRARY_PATH\nexec /usr/bin/gdb "$@"' > $GDB_PATH \
     && curl -sL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor -o /usr/share/keyrings/llvm-snapshot.gpg \
     && echo "deb [signed-by=/usr/share/keyrings/llvm-snapshot.gpg] \
-    http://apt.llvm.org/bullseye/ llvm-toolchain-bullseye-${CLANG_VERSION} main" > /etc/apt/sources.list.d/llvm-toolchain.list \
+    http://apt.llvm.org/${VERSION_CODENAME}/ llvm-toolchain-${VERSION_CODENAME}-${CLANG_VERSION} main" > /etc/apt/sources.list.d/llvm-toolchain.list \
     && echo "deb-src [signed-by=/usr/share/keyrings/llvm-snapshot.gpg] \
-    http://apt.llvm.org/bullseye/ llvm-toolchain-bullseye-${CLANG_VERSION} main" >> /etc/apt/sources.list.d/llvm-toolchain.list \
+    http://apt.llvm.org/${VERSION_CODENAME}/ llvm-toolchain-${VERSION_CODENAME}-${CLANG_VERSION} main" >> /etc/apt/sources.list.d/llvm-toolchain.list \
     && apt-get update \
     && apt-get -y install --no-install-recommends \
        clang-${CLANG_VERSION} \
@@ -37,7 +37,7 @@ RUN mkdir $MSAN_LIBDIR \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_C_COMPILER=clang-${CLANG_VERSION} \
         -DCMAKE_CXX_COMPILER=clang++-${CLANG_VERSION} \
-        -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi" \
+        -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind" \
         -DLLVM_USE_SANITIZER=MemoryWithOrigins \
     && make -C build -j "$(nproc)" \
     && cp -aL build/lib/libc++.so* $MSAN_LIBDIR \
@@ -85,6 +85,8 @@ RUN apt-get source gnutls28 \
     \
     && apt-get source gmp \
     && mv gmp-*/* . \
+    && mkdir -p doc \
+    && echo 'all:' > doc/Makefile.in \
     && mk-build-deps -it 'apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' \
     && ./configure \
         --disable-assembly \
@@ -98,6 +100,8 @@ ENV CXXFLAGS="$CFLAGS"
 RUN apt-get source cracklib2 \
     && mv cracklib2-*/* . \
     && mk-build-deps -it 'apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' \
+    && aclocal \
+    && automake --add-missing \
     && ./configure \
         --with-default-dict=/usr/share/dict/cracklib-small \
     && make -j "$(nproc)" \
