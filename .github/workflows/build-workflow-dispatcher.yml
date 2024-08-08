@@ -1,43 +1,97 @@
 name: Dispatch all build container images workflows
 
 on:
-  push:
-    paths:
-      - .github/workflows/bbw_build_container_template.yml
-  pull_request:
-    paths:
-      - .github/workflows/bbw_build_container_template.yml
   workflow_dispatch:
-
+    inputs:
+      build-centos-based:
+        description: 'Run CentOS-based builds'
+        required: true
+        default: false
+        type: boolean
+      build-centos7pip-based:
+        description: 'Run CentOS 7 pip-based builds'
+        required: true
+        default: false
+        type: boolean
+      build-centospip-based:
+        description: 'Run CentOS pip-based builds'
+        required: true
+        default: false
+        type: boolean
+      build-debian-based:
+        description: 'Run Debian based builds'
+        required: true
+        default: false
+        type: boolean
+      build-debian-aocc-based:
+        description: 'Run Debian aocc based builds'
+        required: true
+        default: false
+        type: boolean
+      build-debian-jepsen-based:
+        description: 'Run Debian jepsen based builds'
+        required: true
+        default: false
+        type: boolean
+      build-debian-msan-based:
+        description: 'Run Debian msan based builds'
+        required: true
+        default: false
+        type: boolean
+      build-fedora-based:
+        description: 'Run Fedora based builds'
+        required: true
+        default: false
+        type: boolean
+      build-opensusepip-based:
+        description: 'Run OpenSUSE pip based builds'
+        required: true
+        default: false
+        type: boolean
+      build-slespip-based:
+        description: 'Run SLES pip based builds'
+        required: true
+        default: false
+        type: boolean
 
 jobs:
   build-centos-based:
+    if: ${{ inputs.build-centos-based }}
     uses: ./.github/workflows/build-centos-based.yml
     secrets: inherit
   build-centos7pip-based:
+    if: ${{ inputs.build-centos7pip-based }}
     uses: ./.github/workflows/build-centos7.pip-based.yml
     secrets: inherit
   build-centospip-based:
+    if: ${{ inputs.build-centospip-based }}
     uses: ./.github/workflows/build-centos.pip-based.yml
     secrets: inherit
   build-debian-based:
+    if: ${{ inputs.build-debian-based }}
     uses: ./.github/workflows/build-debian-based.yml
     secrets: inherit
   build-debian-aocc-based:
+    if: ${{ inputs.build-debian-aocc-based }}
     uses: ./.github/workflows/build-debian.aocc-based.yml
     secrets: inherit
   build-debian-jepsen-based:
+    if: ${{ inputs.build-debian-jepsen-based }}
     uses: ./.github/workflows/build-debian.jepsen-based.yml
     secrets: inherit
   build-debian-msan-based:
+    if: ${{ inputs.build-debian-msan-based }}
     uses: ./.github/workflows/build-debian.msan-based.yml
     secrets: inherit
   build-fedora-based:
+    if: ${{ inputs.build-fedora-based }}
     uses: ./.github/workflows/build-fedora-based.yml
     secrets: inherit
   build-opensusepip-based:
+    if: ${{ inputs.build-opensusepip-based }}
     uses: ./.github/workflows/build-opensuse.pip-based.yml
     secrets: inherit
   build-slespip-based:
+    if: ${{ inputs.build-slespip-based }}
     uses: ./.github/workflows/build-sles.pip-based.yml
     secrets: inherit

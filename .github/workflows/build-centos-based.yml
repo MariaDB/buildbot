@@ -7,12 +7,14 @@ on:
       - 'ci_build_images/qpress.Dockerfile'
       - 'ci_build_images/buildbot-worker.Dockerfile'
       - .github/workflows/build-centos-based.yml
+      - .github/workflows/bbw_build_container_template.yml
   pull_request:
     paths:
       - 'ci_build_images/centos.Dockerfile'
       - 'ci_build_images/qpress.Dockerfile'
       - 'ci_build_images/buildbot-worker.Dockerfile'
       - .github/workflows/build-centos-based.yml
+      - .github/workflows/bbw_build_container_template.yml
   workflow_call:
 
 jobs:

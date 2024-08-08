@@ -8,6 +8,7 @@ on:
       - 'ci_build_images/qpress.Dockerfile'
       - 'ci_build_images/buildbot-worker.Dockerfile'
       - .github/workflows/build-sles.pip-based.yml
+      - .github/workflows/bbw_build_container_template.yml
   pull_request:
     paths:
       - 'ci_build_images/sles.Dockerfile'
@@ -15,6 +16,7 @@ on:
       - 'ci_build_images/qpress.Dockerfile'
       - 'ci_build_images/buildbot-worker.Dockerfile'
       - .github/workflows/build-sles.pip-based.yml
+      - .github/workflows/bbw_build_container_template.yml
 
   workflow_call:
 
