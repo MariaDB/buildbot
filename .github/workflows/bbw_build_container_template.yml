@@ -28,6 +28,9 @@ on:
       install_valgrind:
         required: false
         type: string
+      files:
+        required: false
+        type: string
 
 jobs:
   build:
@@ -64,10 +67,16 @@ jobs:
           cd ${{ env.WORKDIR }}
           cat ${{ inputs.dockerfile }} qpress.Dockerfile buildbot-worker.Dockerfile >$GITHUB_WORKSPACE/Dockerfile
           cp -r qpress $GITHUB_WORKSPACE
-      - name: opensuse extra
-        if: contains(inputs.tag, 'opensuse') || contains(inputs.tag, 'sles')
+
+      - name: Copy files on runner
+        if: ${{ inputs.files }}
         run: |
-          cp ${{ env.WORKDIR }}/mariadb_zypper_expect $GITHUB_WORKSPACE
+            for file in $(echo '${{ inputs.files }}' | jq -c '.[]'); do
+                source=$(echo $file | jq -r '.source')
+                target=$(echo $file | jq -r '.target')
+                cp $source $target
+            done
+
       - name: No wsrep on 32 bit platforms
         if: >
           (contains(inputs.platforms, 'linux/386'))
