@@ -102,9 +102,6 @@ supportedPlatforms["10.5"] = [
     "ppc64le-ubuntu-2004-debug",
     "ppc64le-ubuntu-2004-without-server",
     "x86-debian-12-fulltest",
-]
-
-supportedPlatforms["10.5"] += [
     "aarch64-centos-stream9",
     "aarch64-debian-11",
     "aarch64-fedora-38",
