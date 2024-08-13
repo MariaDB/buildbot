@@ -167,13 +167,12 @@ jobs:
           username: ${{ secrets.QUAY_USER }}
           password: ${{ secrets.QUAY_TOKEN }}
 
-      # Uncomment this when we disable the old workflow
-      # - name: Push images to quay.io
-      #   if: ${{ env.DEPLOY_IMAGES == 'true' }}
-      #   run: |
-      #     msg="Push docker image to quay.io (${{ env.IMG }})"
-      #     line="${msg//?/=}"
-      #     printf "\n${line}\n${msg}\n${line}\n"
-      #     skopeo copy --all --src-tls-verify=0 \
-      #     docker://localhost:5000/${{ env.REPO }}:${{ env.IMG }} \
-      #     docker://quay.io/mariadb-foundation/${{ env.REPO }}:${{ env.IMG }}
+      - name: Push images to quay.io
+        if: ${{ env.DEPLOY_IMAGES == 'true' }}
+        run: |
+          msg="Push docker image to quay.io (${{ env.IMG }})"
+          line="${msg//?/=}"
+          printf "\n${line}\n${msg}\n${line}\n"
+          skopeo copy --all --src-tls-verify=0 \
+          docker://localhost:5000/${{ env.REPO }}:${{ env.IMG }} \
+          docker://quay.io/mariadb-foundation/${{ env.REPO }}:${{ env.IMG }}
