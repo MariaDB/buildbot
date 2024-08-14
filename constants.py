@@ -1,3 +1,5 @@
+import os
+
 import yaml
 
 DEVELOPMENT_BRANCH = "11.3"
@@ -40,13 +42,19 @@ github_status_builders = [
 
 # Special builders triggering
 builders_big = ["amd64-ubuntu-2004-bigtest"]
-builders_dockerlibrary = ["amd64-rhel8-dockerlibrary"]
 builders_eco = [
     "amd64-debian-10-eco-mysqljs",
     "amd64-debian-10-eco-pymysql",
     "amd64-ubuntu-2004-eco-php",
 ]
-builders_wordpress = ["amd64-rhel8-wordpress"]
+
+if os.getenv("ENVIRON") == "DEV":
+    builders_wordpress = ["amd64-rhel9-wordpress"]
+    builders_dockerlibrary = ["amd64-rhel9-dockerlibrary"]
+else:
+    builders_wordpress = ["amd64-rhel8-wordpress"]
+    builders_dockerlibrary = ["amd64-rhel8-dockerlibrary"]
+
 builders_galera_mtr = [
     "aarch64-debian-12",
     "amd64-fedora-39",
