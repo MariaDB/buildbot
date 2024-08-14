@@ -185,7 +185,9 @@ supportedPlatforms["11.3"] = supportedPlatforms["11.2"].copy()
 supportedPlatforms["11.4"] = supportedPlatforms["11.3"].copy()
 supportedPlatforms["11.4"] += [
     "aarch64-debian-sid",
+    "aarch64-ubuntu-2410",
     "amd64-debian-sid",
+    "amd64-ubuntu-2410",
     "ppc64le-debian-sid",
     "x86-debian-sid",
 ]
