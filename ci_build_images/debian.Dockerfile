@@ -95,3 +95,6 @@ RUN . /etc/os-release \
     && apt-get clean
 
 ENV WSREP_PROVIDER=/usr/lib/galera/libgalera_smm.so
+
+# Prevent debian sid runtime error
+ENV CRYPTOGRAPHY_OPENSSL_NO_LEGACY=1
