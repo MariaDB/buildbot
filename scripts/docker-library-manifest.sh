@@ -200,16 +200,16 @@ if (($(buildah manifest inspect "$devmanifest" | jq '.manifests | length') >= ex
   # lost and forgotten (or just didn't make enough manifest items - build failure on an arch)
   lastweek=$(date +%s --date='1 week ago')
   # clear buildah images
-  buildah images --json | jq '.[] | .id as $id | select(.created <= $lastweek ) | $id' | xargs --no-run-if-empty podman rmi --force || echo "had trouble removing buildah images"
+  buildah images --json | jq --arg lastweek "$lastweek" '.[] | .id as $id | select(.created <= $lastweek ) | $id' | xargs --no-run-if-empty podman rmi --force || echo "had trouble removing buildah images"
 
   # old ubuntu and base images that got updated so are Dangling
-  podman images --format=json | jq ".[] | .Id as \$id |  select(.Created <= $lastweek ) | any( .Names[]? ; startswith(\"mariadb\")) | \$id" | xargs --no-run-if-empty podman rmi --force || echo "continuing cleanup anyway"
+  podman images --format=json | jq --arg lastweek "$lastweek" '.[] | .Id as $id |  select(.Created <= $lastweek ) | any( .Names[]? ; startswith("mariadb")) | $id' | xargs --no-run-if-empty podman rmi --force || echo "continuing cleanup anyway"
   # clean buildah containers
   buildah containers --format "{{.ContainerID}}" | xargs --no-run-if-empty buildah rm || echo "had trouble cleaning containers"
   # clean images
-  buildah images --json | jq ".[] | select(.readonly ==false) |  select(.created <= $lastweek) | select( .names == null) | .id" | xargs --no-run-if-empty buildah rmi || echo "had trouble cleaning images"
+  buildah images --json | jq --arg lastweek "$lastweek" '.[] | select(.readonly ==false) |  select(.created <= $lastweek) | select( .names == null) | .id' | xargs --no-run-if-empty buildah rmi || echo "had trouble cleaning images"
   # clean manifests
-  buildah images --json | jq ".[] | select(.readonly ==false) |  select(.created <= $lastweek) | select( try .names[0]? catch \"\" | startswith(\"localhost/mariadb-\") ) | .id" | xargs --no-run-if-empty buildah manifest rm || echo "trouble cleaning manifests"
+  buildah images --json | jq --arg lastweek "$lastweek" '.[] | select(.readonly ==false) |  select(.created <= $lastweek) | select( try .names[0]? catch "" | startswith("localhost/mariadb-") ) | .id' | xargs --no-run-if-empty buildah manifest rm || echo "trouble cleaning manifests"
   buildah images
 fi
 
