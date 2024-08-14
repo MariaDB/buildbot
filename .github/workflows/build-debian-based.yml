@@ -40,11 +40,11 @@ jobs:
 
           - image: debian:sid
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
-            branch: 10.11
+            branch: 11.4
 
           - image: debian:sid
             platforms: linux/386
-            branch: 10.11
+            branch: 11.4
             tag: debiansid-386
 
           - image: ubuntu:20.04
