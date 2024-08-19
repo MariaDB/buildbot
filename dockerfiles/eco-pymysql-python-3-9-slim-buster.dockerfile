@@ -32,7 +32,8 @@ WORKDIR /buildbot
 
 # Upgrade pip and install packages
 RUN pip3 install -U pip virtualenv
-RUN pip3 install buildbot-worker && \
+RUN pip3 install automat==22.10 && \
+    pip3 install buildbot-worker && \
     pip3 --no-cache-dir install 'twisted[tls]' \
     cryptography \
     'PyNaCl>=1.4.0' \
