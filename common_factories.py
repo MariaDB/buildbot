@@ -646,6 +646,8 @@ Repository available with: curl %(kw:url)s/%(prop:tarbuildnum)s/%(prop:builderna
                 "mariadb_version": Property("mariadb_version"),
                 "master_branch": Property("master_branch"),
                 "parentbuildername": Property("buildername"),
+                "ubi": "ubi",
+                "GH_WORKFLOW": "test-image-ent.yml",
             },
             doStepIf=lambda step: hasDockerLibrary(step),
         )
