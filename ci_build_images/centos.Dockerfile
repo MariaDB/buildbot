@@ -20,15 +20,24 @@ RUN dnf -y install 'dnf-command(config-manager)' \
           extra="python3-pip"; \
           ;; \
         *) \
-          dnf -y --enablerepo=extras install epel-release; \
-          dnf config-manager --set-enabled powertools; \
-          dnf -y module enable mariadb-devel; \
-          extra="buildbot-worker"; \
+          if [ "$ID" == "openEuler" ]; then \
+            extra="python3-pip"; \
+          else \
+            dnf -y --enablerepo=extras install epel-release; \
+            dnf config-manager --set-enabled powertools; \
+            dnf -y module enable mariadb-devel; \
+            extra="buildbot-worker"; \
+          fi \
           ;; \
     esac \
     && case "$ID" in \
         "centos") \
           ID=centos-stream; \
+          ;; \
+        "openEuler") \
+          ID=openeuler; \
+          # VERSION_ID has leading -, except on centos-stream
+          VERSION_ID=-${VERSION_ID}; \
           ;; \
         "rocky") \
           ID=rockylinux; \
@@ -80,7 +89,7 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     wget \
     which \
     xz-devel \
-    yum-utils \
+    && if [ "$ID" != "openeuler" ]; then dnf -y install yum-utils; fi \
     && if [ "$(uname -m)" = "x86_64" ]; then dnf -y install libpmem-devel; fi \
     && dnf clean all \
     # dumb-init rpm is not available on centos (official repo) \
