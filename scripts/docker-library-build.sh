@@ -39,6 +39,9 @@ if [[ $branch =~ ^preview ]]; then
 else
   container_tag=$master_branch
 fi
+if [ -d "mariadb-docker/$master_branch" ]; then
+  branch=main
+fi
 # Container tags must be lower case.
 container_tag=${container_tag,,*}
 ubi=
@@ -69,9 +72,9 @@ declare -a annotations=(
   "--annotation" "org.opencontainers.image.authors=MariaDB Foundation"
   "--annotation" "org.opencontainers.image.documentation=https://hub.docker.com/_/mariadb"
   "--annotation" "org.opencontainers.image.source=https://github.com/MariaDB/mariadb-docker/tree/$(
-    cd "mariadb-docker/$master_branch"
+    cd "mariadb-docker/$branch"
     git rev-parse HEAD
-  )/$master_branch"
+  )/$branch"
   "--annotation" "org.opencontainers.image.licenses=GPL-2.0"
   "--annotation" "org.opencontainers.image.title=MariaDB Server $container_tag CI build"
   "--annotation" "org.opencontainers.image.description=This is not a Release.\nBuild of the MariaDB Server from CI as of commit $commit"
@@ -90,7 +93,7 @@ if [ -n "$ubi" ]
 then
 
 build() {
-  local repo="mariadb-docker/$master_branch"/MariaDB.repo
+  local repo="mariadb-docker/$branch"/MariaDB.repo
   curl "$artifacts_url"/galera/mariadb-4.x-latest-gal-"${buildername%-rpm-autobake}".repo \
     -o "$repo"
   curl "$artifacts_url/$tarbuildnum/${buildername}"/MariaDB.repo \
@@ -100,7 +103,7 @@ build() {
     --arch "$@" \
     --build-arg MARIADB_VERSION="$mariadb_version" \
     "${annotations[@]}" \
-    "mariadb-docker/$master_branch"
+    "mariadb-docker/$branch"
 }
 
 else
@@ -114,7 +117,7 @@ build() {
     --build-arg REPOSITORY="[trusted=yes] $artifacts_url/$tarbuildnum/${buildername}/debs ./\n$galera_repo" \
     --build-arg MARIADB_VERSION="1:$mariadb_version+maria~$pkgver" \
     "${annotations[@]}" \
-    "mariadb-docker/$master_branch"
+    "mariadb-docker/$branch"
 }
 fi
 
