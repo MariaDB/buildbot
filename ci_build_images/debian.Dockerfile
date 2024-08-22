@@ -39,7 +39,7 @@ RUN . /etc/os-release \
     && if curl --head --silent "https://ci.mariadb.org/galera/mariadb-4.x-latest-gal-${ARCH}-${ID}-$(echo "$VERSION_ID" | sed 's/\.//').sources" | head -n1 | grep -q 200; then \
       curl -s "https://ci.mariadb.org/galera/mariadb-4.x-latest-gal-${ARCH}-${ID}-$(echo "$VERSION_ID" | sed 's/\.//').sources" >/etc/apt/sources.list.d/galera-4.sources; fi \
     && apt-get update \
-    && curl -skO https://raw.githubusercontent.com/MariaDB/server/44e4b93316be8df130c6d87880da3500d83dbe10/debian/control \
+    && curl -skO "https://raw.githubusercontent.com/MariaDB/server/$MARIADB_BRANCH/debian/control" \
     && mkdir debian \
     && mv control debian/control \
     && touch debian/rules VERSION debian/not-installed \
