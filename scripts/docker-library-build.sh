@@ -58,7 +58,7 @@ case "${buildername#*ubuntu-}" in
     ;;
   *-rhel-9-rpm-autobake)
     ubi=-ubi
-    master_branch=${master_branch}-ubi
+    branch=${branch}-ubi
     ;;
   *)
     echo "unknown base buildername $buildername"
