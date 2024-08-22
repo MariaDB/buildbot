@@ -37,8 +37,7 @@ RUN . /etc/os-release \
     && if [ "${VERSION_ID}" = "20.04" ]; then apt-get -y install --no-install-recommends g++-10; fi \
     && if [ "$(arch)" = "x86_64" ]; then ARCH="amd64"; else ARCH=$(arch); fi \
     && if curl --head --silent "https://ci.mariadb.org/galera/mariadb-4.x-latest-gal-${ARCH}-${ID}-$(echo "$VERSION_ID" | sed 's/\.//').sources" | head -n1 | grep -q 200; then \
-      curl -s "https://ci.mariadb.org/galera/mariadb-4.x-latest-gal-${ARCH}-${ID}-$(echo "$VERSION_ID" | sed 's/\.//').sources" >/etc/apt/sources.list.d/galera-4.sources; \
-    fi \
+      curl -s "https://ci.mariadb.org/galera/mariadb-4.x-latest-gal-${ARCH}-${ID}-$(echo "$VERSION_ID" | sed 's/\.//').sources" >/etc/apt/sources.list.d/galera-4.sources; fi \
     && apt-get update \
     && curl -skO https://raw.githubusercontent.com/MariaDB/server/44e4b93316be8df130c6d87880da3500d83dbe10/debian/control \
     && mkdir debian \
@@ -82,9 +81,7 @@ RUN . /etc/os-release \
     socat \
     sudo  \
     wget \
-    && if [ "$(getconf LONG_BIT)" = 64 ]; then \
-      apt-get -y install --no-install-recommends galera-4; \
-    fi \
+    && if [ "$(getconf LONG_BIT)" = 64 ]; then apt-get -y install --no-install-recommends galera-4; fi \
     && if [ "${VERSION_ID}" != 18.04 ]; then \
       apt-get -y install --no-install-recommends flex; \
     fi \
