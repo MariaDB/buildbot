@@ -35,7 +35,7 @@ RUN . /etc/os-release \
     equivs  \
     lsb-release \
     && if [ "${VERSION_ID}" = "20.04" ]; then apt-get -y install --no-install-recommends g++-10; fi \
-    && if [ "$(arch)" = "x86_64" ]; then ARCH="amd64"; else ARCH=$(arch); fi \
+    && if [ "$(arch)" = "x86_64" ]; then ARCH="amd64"; else ARCH=$(arch); echo /* galera-4 */; fi \
     && if curl --head --silent "https://ci.mariadb.org/galera/mariadb-4.x-latest-gal-${ARCH}-${ID}-$(echo "$VERSION_ID" | sed 's/\.//').sources" | head -n1 | grep -q 200; then \
       curl -s "https://ci.mariadb.org/galera/mariadb-4.x-latest-gal-${ARCH}-${ID}-$(echo "$VERSION_ID" | sed 's/\.//').sources" >/etc/apt/sources.list.d/galera-4.sources; fi \
     && apt-get update \
