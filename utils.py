@@ -85,6 +85,50 @@ def base_docker_build_factory(dockerfile: str):
     factory.addStep(getSourceTarball())
     return factory
 
+def post_test_steps(factory):
+    factory.addStep(
+        steps.ShellCommand(
+            name="move mysqld log files",
+            alwaysRun=True,
+            command=[
+                "bash",
+                "-c",
+                util.Interpolate(
+                    moveMTRLogs(),
+                    jobs=util.Property("jobs", default="$(getconf _NPROCESSORS_ONLN)"),
+                ),
+            ],
+        )
+    )
+    factory.addStep(
+        steps.ShellCommand(
+            name="create var archive",
+            alwaysRun=True,
+            command=["bash", "-c", util.Interpolate(createVar())],
+            doStepIf=hasFailed,
+        )
+    )
+    factory.addStep(
+        steps.DirectoryUpload(
+            name="save mysqld log files",
+            compress="bz2",
+            alwaysRun=True,
+            workersrc="./buildbot/logs/",
+            masterdest=util.Interpolate(
+                "/srv/buildbot/packages/"
+                + "%(prop:tarbuildnum)s"
+                + "/logs/"
+                + "%(prop:buildername)s"
+            ),
+        )
+    )
+    factory.addStep(
+        steps.ShellCommand(
+            name="cleanup", command="rm -r * .* 2> /dev/null || true", alwaysRun=True
+        )
+    )
+    return factory
+
 
 # BUILD HELPERS
 MASTER_PACKAGES = os.getenv(
