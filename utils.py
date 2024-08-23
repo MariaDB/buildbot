@@ -59,6 +59,33 @@ def getScript(scriptname):
     )
 
 
+def base_docker_build_factory(dockerfile: str):
+    factory = util.BuildFactory()
+    factory.addStep(printEnv())
+    factory.addStep(
+        steps.SetProperty(
+            property="dockerfile",
+            value=util.Interpolate("%(kw:url)s", url=dockerfile),
+            description="dockerfile",
+        )
+    )
+    factory.addStep(
+        steps.ShellCommand(
+            name="create html log file",
+            command=[
+                "bash",
+                "-c",
+                util.Interpolate(
+                    getHTMLLogString(),
+                    jobs=util.Property("jobs", default="$(getconf _NPROCESSORS_ONLN)"),
+                ),
+            ],
+        )
+    )
+    factory.addStep(getSourceTarball())
+    return factory
+
+
 # BUILD HELPERS
 MASTER_PACKAGES = os.getenv(
     "MASTER_PACKAGES_DIR", default="/mnt/autofs/master_packages"
