@@ -73,8 +73,6 @@ def getLocks(props):
         locks = locks + [intel_bbw1_lock.access("counting")]
     if "ppc64le-rhel8-bbw1-docker" in worker_name:
         locks = locks + [p9_rhel8_bbw1_lock.access("counting")]
-    if "ppc64le-rhel7-bbw1-docker" in worker_name:
-        locks = locks + [p9_rhel7_bbw1_lock.access("counting")]
     if "ppc64le-db-bbw1-docker" in worker_name:
         locks = locks + [p9_db_bbw1_lock.access("counting")]
     if "ppc64le-raptor-bbw1-docker" in worker_name:
