@@ -5,11 +5,17 @@ on:
   push:
     paths:
       - .github/workflows/bbw_build_container_rhel.yml
-      - "ci_build_images/**"
+      - 'ci_build_images/rhel.Dockerfile'
+      - 'ci_build_images/pip.Dockerfile'
+      - 'ci_build_images/qpress.Dockerfile'
+      - 'ci_build_images/buildbot-worker.Dockerfile'
   pull_request:
     paths:
       - .github/workflows/bbw_build_container_rhel.yml
-      - "ci_build_images/**"
+      - 'ci_build_images/rhel.Dockerfile'
+      - 'ci_build_images/pip.Dockerfile'
+      - 'ci_build_images/qpress.Dockerfile'
+      - 'ci_build_images/buildbot-worker.Dockerfile'
 
 jobs:
   build:
