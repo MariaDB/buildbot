@@ -110,7 +110,6 @@ supportedPlatforms["10.5"] = [
     "amd64-fedora-39",
     "amd64-fedora-40-valgrind",
     "amd64-freebsd-14",
-    "amd64-rhel-7",
     "amd64-rhel-8",
     "amd64-rhel-9",
     "amd64-ubuntu-2004",

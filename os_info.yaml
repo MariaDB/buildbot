@@ -77,11 +77,6 @@ opensuse-15:
   arch:
     - amd64
   type: rpm
-rhel-7:
-  version_name: 7
-  arch:
-    - amd64
-  type: rpm
 rhel-8:
   version_name: 8
   arch:

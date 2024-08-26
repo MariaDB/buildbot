@@ -24,10 +24,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - dockerfile: rhel7.Dockerfile pip.Dockerfile
-            image: rhel7
-            platforms: linux/amd64
-            nogalera: false
           - dockerfile: rhel.Dockerfile
             image: ubi8
             tag: rhel8
