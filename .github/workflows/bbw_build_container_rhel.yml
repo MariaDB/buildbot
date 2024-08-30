@@ -4,20 +4,20 @@ name: bbw-build-container-rhel
 on:
   push:
     paths:
-      - 'ci_build_images/rhel7.Dockerfile'
-      - 'ci_build_images/rhel.Dockerfile'
-      - 'ci_build_images/pip.Dockerfile'
-      - 'ci_build_images/qpress.Dockerfile'
       - 'ci_build_images/buildbot-worker.Dockerfile'
       - .github/workflows/bbw_build_container_rhel.yml
+      - 'ci_build_images/pip.Dockerfile'
+      - 'ci_build_images/qpress.Dockerfile'
+      - 'ci_build_images/rhel.Dockerfile'
+      - 'ci_build_images/rhel7.Dockerfile'
   pull_request:
     paths:
-      - 'ci_build_images/rhel7.Dockerfile'
-      - 'ci_build_images/rhel.Dockerfile'
-      - 'ci_build_images/pip.Dockerfile'
-      - 'ci_build_images/qpress.Dockerfile'
       - 'ci_build_images/buildbot-worker.Dockerfile'
       - .github/workflows/bbw_build_container_rhel.yml
+      - 'ci_build_images/pip.Dockerfile'
+      - 'ci_build_images/qpress.Dockerfile'
+      - 'ci_build_images/rhel.Dockerfile'
+      - 'ci_build_images/rhel7.Dockerfile'
 
 jobs:
   build:
@@ -204,7 +204,7 @@ jobs:
       - name: ghcr.io - move tag to production
         if: ${{ env.DEPLOY_IMAGES == 'true' && env.MAIN_BRANCH == 'true' }}
         run: |
-          msg="Push docker image to ghcr.io (${{ env.IMG }})"
+          msg="Update tag (dev_${{ env.IMG }} --> ${{ env.IMG }})"
           line="${msg//?/=}"
           printf "\n${line}\n${msg}\n${line}\n"
           skopeo copy --all --src-tls-verify=0 \
@@ -232,7 +232,7 @@ jobs:
       - name: quay.io - push dev tag
         if: ${{ env.DEPLOY_IMAGES == 'true' && env.MAIN_BRANCH == 'true' }}
         run: |
-          msg="Push docker image to quay.io (${{ env.IMG }})"
+          msg="Update tag (dev_${{ env.IMG }} --> ${{ env.IMG }})"
           line="${msg//?/=}"
           printf "\n${line}\n${msg}\n${line}\n"
           skopeo copy --all --src-tls-verify=0 \
