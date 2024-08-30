@@ -39,7 +39,7 @@ if [[ $branch =~ ^preview ]]; then
 else
   container_tag=$master_branch
 fi
-if [ -d "mariadb-docker/$master_branch" ]; then
+if [ ! -d "mariadb-docker/$master_branch" ]; then
   branch=main
 fi
 # Container tags must be lower case.
