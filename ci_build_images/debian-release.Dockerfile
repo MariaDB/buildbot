@@ -3,8 +3,8 @@
 # Provides a base Debian image with latest buildbot worker installed for prep
 # release works.
 
-ARG base_image
-FROM "$base_image"
+ARG BASE_IMAGE
+FROM "$BASE_IMAGE"
 LABEL maintainer="MariaDB Buildbot maintainers"
 
 # This will make apt-get install without question

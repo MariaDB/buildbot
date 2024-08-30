@@ -1,0 +1,34 @@
+name: Build container release
+
+on:
+  push:
+    paths:
+      - 'ci_build_images/debian-release.Dockerfile'
+      - 'ci_build_images/buildbot-worker.Dockerfile'
+      - .github/workflows/build-container-release.yml
+      - .github/workflows/bbw_build_container_template.yml
+  pull_request:
+    paths:
+      - 'ci_build_images/debian-release.Dockerfile'
+      - 'ci_build_images/buildbot-worker.Dockerfile'
+      - .github/workflows/build-container-release.yml
+      - .github/workflows/bbw_build_container_template.yml
+  workflow_dispatch:
+
+jobs:
+  build-images:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: debian:12-slim
+            platforms: linux/amd64
+            tag: debian12-release
+    uses: ./.github/workflows/bbw_build_container_template.yml
+    with:
+      dockerfile: debian-release.Dockerfile
+      image: ${{ matrix.image }}
+      platforms: ${{ matrix.platforms }}
+      tag: ${{ matrix.tag }}
+      noqpress: 'true'
+    secrets: inherit
