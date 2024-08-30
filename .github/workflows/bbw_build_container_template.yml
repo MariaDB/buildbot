@@ -35,6 +35,10 @@ on:
         required: false
         type: string
         default: 'true'
+      noqpress:
+        required: false
+        type: string
+        default: 'false'
 
 jobs:
   build:
@@ -46,11 +50,16 @@ jobs:
           - 5000:5000
     name: ${{ inputs.image }} (${{ inputs.tag }} ${{ inputs.platforms }})
     env:
-      BUILD_RHEL: false
       DEPLOY_IMAGES: false
+      MAIN_BRANCH: false
       WORKDIR: ci_build_images
 
     steps:
+      - name: Enable Production release - no rebuild
+        run: echo "MAIN_BRANCH=true" >> $GITHUB_ENV
+        if: github.ref == 'refs/heads/main'
+
+        #runs always.
       - uses: actions/checkout@v4
       - name: Set up env vars
         run: |
@@ -66,17 +75,25 @@ jobs:
             echo "IMG=${TAG_TMP/:/}" >>$GITHUB_ENV
           fi
           echo "REPO=bb-worker" >>$GITHUB_ENV
+
       - name: Generate Dockerfile and necessary files
+        if: ${{ env.MAIN_BRANCH == 'false' }}
         run: |
           cd ${{ env.WORKDIR }}
-          cat ${{ inputs.dockerfile }} qpress.Dockerfile buildbot-worker.Dockerfile >$GITHUB_WORKSPACE/Dockerfile
-          cp -r qpress $GITHUB_WORKSPACE
+
+          if [ "${{ inputs.noqpress }}" == "true" ]; then
+            cat ${{ inputs.dockerfile }} buildbot-worker.Dockerfile >$GITHUB_WORKSPACE/Dockerfile
+          else
+            cat ${{ inputs.dockerfile }} qpress.Dockerfile buildbot-worker.Dockerfile >$GITHUB_WORKSPACE/Dockerfile
+            cp -r qpress $GITHUB_WORKSPACE
+          fi
+
           if [ "${{ inputs.nogalera }}" == true ]; then
             sed -i -e '/ci.mariadb.org\/galera/d' -e '/galera-4/d' -e '/WSREP_PROVIDER/d' $GITHUB_WORKSPACE/Dockerfile
           fi
 
       - name: Copy files on runner
-        if: ${{ inputs.files }}
+        if: ${{ inputs.files && env.MAIN_BRANCH == 'false' }}
         run: |
             for file in $(echo '${{ inputs.files }}' | jq -c '.[]'); do
                 source=$(echo $file | jq -r '.source')
@@ -85,17 +102,23 @@ jobs:
             done
 
       - name: No wsrep on 32 bit platforms
-        if: contains(inputs.platforms, 'linux/386')
+        if: ${{ contains(inputs.platforms, 'linux/386') && env.MAIN_BRANCH == 'false' }}
         run: |
           sed -i -e '/WSREP_PROVIDER/d' $GITHUB_WORKSPACE/Dockerfile
+
       - name: Check Dockerfile with hadolint
+        if: ${{ env.MAIN_BRANCH == 'false' }}
         run: |
           docker run -i -v $(pwd):/mnt -w /mnt ghcr.io/hadolint/hadolint:latest hadolint /mnt/Dockerfile
+
       - name: Install qemu-user-static
+        if: ${{ env.MAIN_BRANCH == 'false' }}
         run: |
           sudo apt-get update
           sudo apt-get install -y qemu-user-static
+
       - name: Build image
+        if: ${{ env.MAIN_BRANCH == 'false' }}
         run: |
           podman manifest create ${{ env.REPO }}:${{ env.IMG }}
           for arch in $(echo ${{ inputs.platforms }} | sed 's/,/ /g'); do
@@ -112,12 +135,16 @@ jobs:
               --build-arg INSTALL_VALGRIND="${{ inputs.install_valgrind }}"
           done
           podman images
+
       - name: Push images to local registry
+        if: ${{ env.MAIN_BRANCH == 'false'}}
         run: |
           podman manifest push --tls-verify=0 \
             --all ${{ env.REPO }}:${{ env.IMG }} \
             docker://localhost:5000/${{ env.REPO }}:${{ env.IMG }}
+
       - name: Check multi-arch container
+        if: ${{ env.MAIN_BRANCH == 'false' }}
         run: |
           # make some space on the runner
           if [[ -d $HOME/.local/share/containers ]]; then
@@ -132,8 +159,11 @@ jobs:
             docker pull -q --platform "$platform" "$image"
             docker run -i "$image" buildbot-worker --version
             docker run -i "$image" dumb-init twistd --pidfile= -y /home/buildbot/buildbot.tac
-            docker run -u root -i "$image" bash -c "touch /tmp/foo && qpress -r /tmp /root/qpress.qp"
+            if [ "${{ inputs.noqpress }}" == "false" ]; then
+              docker run -u root -i "$image" bash -c "touch /tmp/foo && qpress -r /tmp /root/qpress.qp"
+            fi
           done
+
       - name: Check for registry credentials
         run: |
           missing=()
@@ -147,6 +177,7 @@ jobs:
           else
             echo "Not pushing images to registry"
           fi
+
       - name: Login to ghcr.io
         if: ${{ env.DEPLOY_IMAGES == 'true' }}
         uses: docker/login-action@v2
@@ -155,17 +186,28 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Push images to ghcr.io
-        if: ${{ env.DEPLOY_IMAGES == 'true' }}
+      - name: ghcr.io - push dev tag
+        if: ${{ env.DEPLOY_IMAGES == 'true' && env.MAIN_BRANCH == 'false' }}
         run: |
           msg="Push docker image to ghcr.io (${{ env.IMG }})"
           line="${msg//?/=}"
           printf "\n${line}\n${msg}\n${line}\n"
           skopeo copy --all --src-tls-verify=0 \
             docker://localhost:5000/${{ env.REPO }}:${{ env.IMG }} \
+            docker://ghcr.io/${GITHUB_REPOSITORY,,}/${{ env.REPO }}:dev_${{ env.IMG }}
+
+
+      - name: ghcr.io - move tag to production
+        if: ${{ env.DEPLOY_IMAGES == 'true' && env.MAIN_BRANCH == 'true' }}
+        run: |
+          msg="Update tag (dev_${{ env.IMG }} --> ${{ env.IMG }})"
+          line="${msg//?/=}"
+          printf "\n${line}\n${msg}\n${line}\n"
+          skopeo copy --all --src-tls-verify=0 \
+            docker://ghcr.io/${GITHUB_REPOSITORY,,}/${{ env.REPO }}:dev_${{ env.IMG }} \
             docker://ghcr.io/${GITHUB_REPOSITORY,,}/${{ env.REPO }}:${{ env.IMG }}
 
-      - name: Login to registry
+      - name: Login to quay.io
         if: ${{ env.DEPLOY_IMAGES == 'true' }}
         uses: docker/login-action@v2
         with:
@@ -173,12 +215,22 @@ jobs:
           username: ${{ secrets.QUAY_USER }}
           password: ${{ secrets.QUAY_TOKEN }}
 
-      - name: Push images to quay.io
-        if: ${{ env.DEPLOY_IMAGES == 'true' }}
+      - name: quay.io - push dev tag
+        if: ${{ env.DEPLOY_IMAGES == 'true' && env.MAIN_BRANCH == 'false' }}
         run: |
           msg="Push docker image to quay.io (${{ env.IMG }})"
           line="${msg//?/=}"
           printf "\n${line}\n${msg}\n${line}\n"
           skopeo copy --all --src-tls-verify=0 \
-          docker://localhost:5000/${{ env.REPO }}:${{ env.IMG }} \
-          docker://quay.io/mariadb-foundation/${{ env.REPO }}:${{ env.IMG }}
+            docker://localhost:5000/${{ env.REPO }}:${{ env.IMG }} \
+            docker://quay.io/mariadb-foundation/${{ env.REPO }}:dev_${{ env.IMG }}
+
+      - name: quay.io - move tag to production
+        if: ${{ env.DEPLOY_IMAGES == 'true' && env.MAIN_BRANCH =='true' }}
+        run: |
+          msg="Update tag (dev_${{ env.IMG }} --> ${{ env.IMG }})"
+          line="${msg//?/=}"
+          printf "\n${line}\n${msg}\n${line}\n"
+          skopeo copy --all --src-tls-verify=0 \
+            docker://quay.io/mariadb-foundation/${{ env.REPO }}:dev_${{ env.IMG }} \
+            docker://quay.io/mariadb-foundation/${{ env.REPO }}:${{ env.IMG }}
