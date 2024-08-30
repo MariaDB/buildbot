@@ -18,6 +18,7 @@ on:
       - 'ci_build_images/qpress.Dockerfile'
       - 'ci_build_images/rhel.Dockerfile'
       - 'ci_build_images/rhel7.Dockerfile'
+  workflow_dispatch:
 
 jobs:
   build:
