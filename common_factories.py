@@ -200,7 +200,7 @@ def getBuildFactoryPreTest(build_type="RelWithDebInfo", additional_args=""):
                     additional_args=util.Property(
                         "additional_args", default=f"{additional_args}"
                     ),
-                    create_package=util.Property("create_package", default="package"),
+                    create_package=util.Property("create_package", default="all"),
                     verbose_build=util.Property("verbose_build", default=""),
                 ),
             ],
