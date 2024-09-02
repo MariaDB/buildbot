@@ -21,8 +21,7 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     && case $BASE_IMAGE in \
     ubi9) \
       v=9; \
-      # no buildbot-worker any more \
-      extra="fmt-devel python3-pip"; \
+      extra="fmt-devel buildbot-worker"; \
       ;; \
     ubi8) \
       v=8; \
