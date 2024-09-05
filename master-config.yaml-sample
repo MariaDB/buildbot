@@ -1,10 +1,8 @@
 builders:
 - aarch64-centos-stream9
-- aarch64-debian-10
 - aarch64-debian-11
 - aarch64-debian-12
 - aarch64-debian-sid
-- aarch64-fedora-38
 - aarch64-rhel-8
 - aarch64-rhel-9
 - aarch64-ubuntu-2004
