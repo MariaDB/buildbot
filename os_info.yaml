@@ -25,12 +25,6 @@ centos-stream9:
     - aarch64
     - ppc64le
   type: rpm
-debian-10:
-  version_name: buster
-  arch:
-    - amd64
-    - aarch64
-  type: deb
 debian-11:
   version_name: bullseye
   arch:
@@ -54,12 +48,6 @@ debian-sid:
     - ppc64le
     - x86
   type: deb
-fedora-38:
-  version_name: 38
-  arch:
-    - amd64
-    - aarch64
-  type: rpm
 fedora-39:
   version_name: 39
   arch:
