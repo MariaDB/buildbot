@@ -72,6 +72,12 @@ fedora-40:
     - amd64
     - aarch64
   type: rpm
+oe-2403:
+  version_name: 24.03
+  arch:
+    - amd64
+    - aarch64
+  type: rpm
 opensuse-15:
   version_name: 15
   arch:
