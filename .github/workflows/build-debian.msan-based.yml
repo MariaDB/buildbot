@@ -25,11 +25,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - image: debian:11
+          - image: debian:12
             platforms: linux/amd64
             branch: 10.11
-            tag: debian11-msan
-            clang_version: 15
+            tag: debian12-msan-clang-19
+            clang_version: 19
             nogalera: false
 
           - image: debian:11

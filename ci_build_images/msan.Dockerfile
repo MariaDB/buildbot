@@ -12,15 +12,21 @@ ENV MSAN_SYMBOLIZER_PATH=/msan-libs/bin/llvm-symbolizer-msan
 
 ENV PATH=$MSAN_LIBDIR/bin:$PATH
 
-RUN mkdir $MSAN_LIBDIR \
+# hadolint ignore=SC2046
+RUN . /etc/os-release \
+    && if [ "${CLANG_VERSION}" -gt 17 ]; then \
+        export LLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind"; \
+    else \
+        export LLVM_ENABLE_RUNTIMES="libcxx;libcxxabi"; fi \
+    && mkdir $MSAN_LIBDIR \
     && mkdir $MSAN_LIBDIR/bin \
     && printf "#!/bin/sh\nunset LD_LIBRARY_PATH\nexec llvm-symbolizer-%s \"\$@\"" "${CLANG_VERSION}" > $MSAN_SYMBOLIZER_PATH \
     && printf '#!/bin/sh\nunset LD_LIBRARY_PATH\nexec /usr/bin/gdb "$@"' > $GDB_PATH \
     && curl -sL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor -o /usr/share/keyrings/llvm-snapshot.gpg \
     && echo "deb [signed-by=/usr/share/keyrings/llvm-snapshot.gpg] \
-    http://apt.llvm.org/bullseye/ llvm-toolchain-bullseye-${CLANG_VERSION} main" > /etc/apt/sources.list.d/llvm-toolchain.list \
+    http://apt.llvm.org/${VERSION_CODENAME}/ llvm-toolchain-${VERSION_CODENAME}-${CLANG_VERSION} main" > /etc/apt/sources.list.d/llvm-toolchain.list \
     && echo "deb-src [signed-by=/usr/share/keyrings/llvm-snapshot.gpg] \
-    http://apt.llvm.org/bullseye/ llvm-toolchain-bullseye-${CLANG_VERSION} main" >> /etc/apt/sources.list.d/llvm-toolchain.list \
+    http://apt.llvm.org/${VERSION_CODENAME}/ llvm-toolchain-${VERSION_CODENAME}-${CLANG_VERSION} main" >> /etc/apt/sources.list.d/llvm-toolchain.list \
     && apt-get update \
     && apt-get -y install --no-install-recommends \
        clang-${CLANG_VERSION} \
@@ -28,6 +34,9 @@ RUN mkdir $MSAN_LIBDIR \
        libc++abi-${CLANG_VERSION}-dev \
        libc++-${CLANG_VERSION}-dev \
        llvm-${CLANG_VERSION} \
+       automake \
+    && if [ "${CLANG_VERSION}" = 19 ]; then \
+        apt-get -y install --no-install-recommends libclang-19-dev libllvmlibc-19-dev; fi \
     && apt-get source libc++-${CLANG_VERSION}-dev \
     && mv llvm-toolchain-${CLANG_VERSION}-${CLANG_VERSION}*/* . \
     && mkdir build \
@@ -37,7 +46,8 @@ RUN mkdir $MSAN_LIBDIR \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_C_COMPILER=clang-${CLANG_VERSION} \
         -DCMAKE_CXX_COMPILER=clang++-${CLANG_VERSION} \
-        -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi" \
+        -DLLVM_ENABLE_RUNTIMES="${LLVM_ENABLE_RUNTIMES}" \
+        $(if [ "${CLANG_VERSION}" = 19 ]; then echo "-DLLVM_INCLUDE_TESTS=OFF -DLLVM_INCLUDE_DOCS=OFF -DLLVM_ENABLE_SPHINX=OFF"; fi) \
         -DLLVM_USE_SANITIZER=MemoryWithOrigins \
     && make -C build -j "$(nproc)" \
     && cp -aL build/lib/libc++.so* $MSAN_LIBDIR \
@@ -50,7 +60,8 @@ ENV CFLAGS="-fno-omit-frame-pointer -O2 -g -fsanitize=memory"
 ENV CXXFLAGS="$CFLAGS"
 ENV LDFLAGS="-fsanitize=memory"
 
-RUN apt-get source gnutls28 \
+RUN . /etc/os-release \
+    && apt-get source gnutls28 \
     && mv gnutls28-*/* . \
     && mk-build-deps -it 'apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' \
     && aclocal \
@@ -86,6 +97,10 @@ RUN apt-get source gnutls28 \
     && apt-get source gmp \
     && mv gmp-*/* . \
     && mk-build-deps -it 'apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' \
+    && if [ "${VERSION_CODENAME}" = "bookworm" ]; then \
+        sed -e '/^.*"doc\/Makefile".*/d;s/doc\/Makefile //;' -i.bak configure \
+        && sed -e 's/^\(SUBDIRS = .*\) doc$/\1/;' -i.bak Makefile.in; \
+    fi \
     && ./configure \
         --disable-assembly \
     && make -j "$(nproc)" \
@@ -95,9 +110,14 @@ RUN apt-get source gnutls28 \
 ENV CFLAGS="$CFLAGS -Wno-conversion"
 ENV CXXFLAGS="$CFLAGS"
 
-RUN apt-get source cracklib2 \
+RUN . /etc/os-release \
+    && apt-get source cracklib2 \
     && mv cracklib2-*/* . \
     && mk-build-deps -it 'apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' \
+    && if [ "${VERSION_CODENAME}" = "bookworm" ]; then \
+        aclocal \
+        && automake --add-missing; \
+    fi \
     && ./configure \
         --with-default-dict=/usr/share/dict/cracklib-small \
     && make -j "$(nproc)" \
