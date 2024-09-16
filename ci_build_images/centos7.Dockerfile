@@ -8,9 +8,12 @@ FROM "$BASE_IMAGE"
 LABEL maintainer="MariaDB Buildbot maintainers"
 
 # Install updates and required packages
-RUN yum -y --enablerepo=extras install epel-release \
-    && sed -i '/baseurl/s/^#//g' /etc/yum.repos.d/epel.repo \
-    && sed -i '/metalink/s/^/#/g' /etc/yum.repos.d/epel.repo \
+RUN sed -i -e 's/mirrorlist/#mirrorlist/g' \
+           -e 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-* \
+    && yum -y --enablerepo=extras install epel-release \
+    && sed -i -e '/baseurl/s/^#//g' \
+              -e  's:download.fedoraproject.org/pub:dl.fedoraproject.org/pub/archive/:' \
+              -e '/metalink/s/^/#/g' /etc/yum.repos.d/epel.repo \
     && yum -y upgrade \
     && yum -y groupinstall 'Development Tools' \
     && yum-builddep -y mariadb-server \
