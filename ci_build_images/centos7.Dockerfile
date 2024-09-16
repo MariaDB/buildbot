@@ -28,6 +28,7 @@ RUN sed -i -e 's/mirrorlist/#mirrorlist/g' \
     cracklib-devel \
     createrepo \
     curl-devel \
+    eigen3-devel \
     galera \
     gnutls-devel \
     java-1.8.0-openjdk-devel \
