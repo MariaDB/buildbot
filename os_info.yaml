@@ -60,6 +60,12 @@ fedora-40:
     - amd64
     - aarch64
   type: rpm
+fedora-41:
+  version_name: 41
+  arch:
+    - amd64
+    - aarch64
+  type: rpm
 openeuler-2403:
   version_name: 24.03
   arch:

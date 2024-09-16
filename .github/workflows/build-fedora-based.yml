@@ -31,6 +31,10 @@ jobs:
             platforms: linux/amd64, linux/arm64/v8
             nogalera: false
 
+          - image: fedora:41
+            platforms: linux/amd64, linux/arm64/v8
+            nogalera: true
+
           - image: fedora:40
             platforms: linux/amd64
             tag: fedora40-valgrind
