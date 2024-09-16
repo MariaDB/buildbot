@@ -69,6 +69,7 @@ RUN . /etc/os-release \
     libboost-program-options-dev \
     libbz2-dev \
     libdbi-perl \
+    libeigen3-dev \
     libffi-dev \
     libio-socket-ssl-perl \
     libnet-ssleay-perl \
