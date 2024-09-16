@@ -26,6 +26,7 @@ RUN zypper update -y \
     cracklib-devel \
     createrepo_c \
     curl \
+    eigen3-devel \
     expect \
     fmt-devel \
     galera-4 \
