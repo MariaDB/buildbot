@@ -202,7 +202,7 @@ if (($(buildah manifest inspect "$devmanifest" | jq '.manifests | length') >= ex
   buildah images
   # lost and forgotten (or just didn't make enough manifest items - build failure on an arch)
   lastweek=$(date +%s --date='1 week ago')
-  # note - jq args are treated as strings and need to be cast tonumber to make the comparible.
+  # note - jq args are treated as strings and need to be cast tonumber to make the value comparable.
 
   # clear buildah images
   buildah images --json |
