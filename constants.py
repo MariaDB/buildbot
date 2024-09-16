@@ -158,10 +158,12 @@ supportedPlatforms["10.10"] += supportedPlatforms["10.9"]
 supportedPlatforms["10.11"] = [
     "aarch64-debian-12",
     "aarch64-fedora-40",
+    "aarch64-fedora-41",
     "aarch64-ubuntu-2404",
     "amd64-debian-12",
     "amd64-debian-12-debug-embedded",
     "amd64-fedora-40",
+    "amd64-fedora-41",
     "amd64-opensuse-15",
     "amd64-sles-15",
     "amd64-ubuntu-2404",
