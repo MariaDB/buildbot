@@ -17,7 +17,9 @@ RUN zypper -n update \
     && ARCH=$(rpm --query --queryformat='%{ARCH}' zypper) \
     && if [ "$ARCH" = x86_64 ]; then ARCH=amd64 ; fi \
     && zypper addrepo https://ci.mariadb.org/galera/mariadb-4.x-latest-gal-"${ARCH}-${ID%%leap}-${VERSION_ID}".repo \
-    && zypper -n install \
+    # permissions -> https://bugzilla.opensuse.org/show_bug.cgi?id=1228968 workaround \
+    && zypper -n install permissions; \
+    zypper -n install \
     bzip2 \
     ccache \
     check-devel \
@@ -56,11 +58,15 @@ RUN zypper -n update \
     systemd-devel \
     wget \
     # temporary add opensuse oss repo for some deps \
-    && zypper ar -f https://download.opensuse.org/distribution/leap/RELEASEVER/repo/oss/ repo-oss \
+    && zypper addrepo https://download.opensuse.org/distribution/leap/RELEASEVER/repo/oss/ repo-oss \
     && sed -i "s/RELEASEVER/\$releasever/" /etc/zypp/repos.d/repo-oss.repo \
-    && zypper -n --no-gpg-checks install \
+    # temp add since repo (no 15.6 version) for eigen3 \
+    && zypper addrepo https://download.opensuse.org/repositories/science/SLE_15_SP5/science.repo \
+    && zypper --gpg-auto-import-keys ref science repo-oss \
+    && zypper -n install \
+    eigen3-devel \
     judy-devel \
-    && rm /etc/zypp/repos.d/repo-oss.repo \
+    && rm /etc/zypp/repos.d/repo-oss.repo /etc/zypp/repos.d/science.repo \
     && zypper modifyrepo --enable SLE_BCI_source \
     && ./mariadb_zypper_expect \
     && zypper clean -a \
