@@ -52,6 +52,7 @@ RUN . /etc/os-release \
     && apt-get -y install --no-install-recommends \
     apt-utils \
     build-essential \
+    buildbot-worker \
     bzip2 \
     ccache \
     check \
@@ -75,7 +76,6 @@ RUN . /etc/os-release \
     libnet-ssleay-perl \
     libssl-dev \
     lsof \
-    python3-buildbot-worker \
     python3-dev \
     python3-setuptools \
     rsync \
