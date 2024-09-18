@@ -34,7 +34,7 @@ jobs:
 
           - image: opensuse/leap:15.6
             platforms: linux/amd64
-            tag: opensuse15
+            tag: opensuse1506
             nogalera: false
 
     uses: ./.github/workflows/bbw_build_container_template.yml
