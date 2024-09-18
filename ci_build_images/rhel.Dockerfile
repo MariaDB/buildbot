@@ -58,6 +58,7 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     cracklib-devel \
     createrepo \
     curl-devel \
+    eigen3-devel \
     flex \
     galera-4 \
     java-1.8.0-openjdk-devel \
