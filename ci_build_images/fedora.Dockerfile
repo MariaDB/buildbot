@@ -28,6 +28,7 @@ RUN echo "fastestmirror=true" >> /etc/dnf/dnf.conf \
     createrepo \
     curl-devel \
     dumb-init \
+    eigen3-devel \
     flex \
     fmt-devel \
     galera-4 \

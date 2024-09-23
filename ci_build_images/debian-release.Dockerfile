@@ -16,10 +16,10 @@ RUN . /etc/os-release; \
     && apt-get -y upgrade \
     && apt-get -y install --no-install-recommends \
     aptly \
+    buildbot-worker \
     ca-certificates \
     curl \
     dumb-init \
     gnupg2 \
-    python3-buildbot-worker \
     rsync \
     sudo

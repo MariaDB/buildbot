@@ -8,9 +8,12 @@ FROM "$BASE_IMAGE"
 LABEL maintainer="MariaDB Buildbot maintainers"
 
 # Install updates and required packages
-RUN yum -y --enablerepo=extras install epel-release \
-    && sed -i '/baseurl/s/^#//g' /etc/yum.repos.d/epel.repo \
-    && sed -i '/metalink/s/^/#/g' /etc/yum.repos.d/epel.repo \
+RUN sed -i -e 's/mirrorlist/#mirrorlist/g' \
+           -e 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-* \
+    && yum -y --enablerepo=extras install epel-release \
+    && sed -i -e '/baseurl/s/^#//g' \
+              -e  's:download.fedoraproject.org/pub:dl.fedoraproject.org/pub/archive/:' \
+              -e '/metalink/s/^/#/g' /etc/yum.repos.d/epel.repo \
     && yum -y upgrade \
     && yum -y groupinstall 'Development Tools' \
     && yum-builddep -y mariadb-server \
@@ -25,6 +28,7 @@ RUN yum -y --enablerepo=extras install epel-release \
     cracklib-devel \
     createrepo \
     curl-devel \
+    eigen3-devel \
     galera \
     gnutls-devel \
     java-1.8.0-openjdk-devel \
@@ -61,3 +65,24 @@ RUN yum -y --enablerepo=extras install epel-release \
     && chmod +x /usr/local/bin/dumb-init
 
 ENV WSREP_PROVIDER=/usr/lib64/galera/libgalera_smm.so
+
+# pip.Dockerfile
+# Imported copy as default pip on centos7 doesn't support --no-warn-script-location
+# The pip upgrade would work, but that would needing a customs sles/opensuse build.
+# As Centos7 is EOL, just import it and hopefully no changes.
+
+# Install a recent rust toolchain needed for some arch
+# see: https://cryptography.io/en/latest/installation/
+# then upgrade pip and install BB worker requirements
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs >/tmp/rustup-init.sh \
+    # rust installer does not detect i386 arch \
+    && case $(getconf LONG_BIT) in \
+        "32") bash /tmp/rustup-init.sh -y --default-host=i686-unknown-linux-gnu --profile=minimal ;; \
+        *) bash /tmp/rustup-init.sh -y --profile=minimal ;; \
+    esac \
+    && rm -f /tmp/rustup-init.sh \
+    && source "$HOME/.cargo/env" \
+    && pip3 install --no-cache-dir -U pip \
+    && curl -so /root/requirements.txt \
+       https://raw.githubusercontent.com/MariaDB/buildbot/main/ci_build_images/requirements.txt \
+    && pip3 install --no-cache-dir --no-warn-script-location -r /root/requirements.txt
