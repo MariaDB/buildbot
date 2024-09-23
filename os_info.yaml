@@ -65,6 +65,7 @@ openeuler-2403:
   arch:
     - amd64
     - aarch64
+  type: rpm
 opensuse-1505:
   version_name: 15.5
   arch:
