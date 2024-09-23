@@ -119,8 +119,8 @@ sles-1505:
     - amd64
 # TEMP - currently short on hardware - s390x
   type: rpm
-sles-15:
-  version_name: 15
+sles-1506:
+  version_name: 15.6
   arch:
     - amd64
     - s390x
