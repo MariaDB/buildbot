@@ -168,10 +168,10 @@ supportedPlatforms["10.11"] = [
     "amd64-debian-12-debug-embedded",
     "amd64-fedora-40",
     "amd64-opensuse-1506",
-    "amd64-sles-15",
+    "amd64-sles-1506",
     "amd64-ubuntu-2404",
     "ppc64le-ubuntu-2404",
-    "s390x-sles-15",
+    "s390x-sles-1506",
     "s390x-ubuntu-2404",
     "ppc64le-debian-12",
 ]
