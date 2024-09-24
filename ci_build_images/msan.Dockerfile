@@ -142,6 +142,7 @@ RUN . /etc/os-release \
        libsnappy-dev \
     && chmod -R a+x $MSAN_LIBDIR/bin/*
 
+ENV MSAN_OPTIONS=abort_on_error=1:poison_in_dtor=0
 
 ENV CFLAGS="-fno-omit-frame-pointer -O2 -g -fsanitize=memory"
 ENV CXXFLAGS="$CFLAGS"
