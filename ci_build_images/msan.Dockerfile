@@ -136,6 +136,11 @@ RUN . /etc/os-release \
        libsnappy-dev \
     && chmod -R a+x $MSAN_LIBDIR/bin/*
 
+RUN update-alternatives \
+        --verbose \
+        --install /usr/bin/clang   clang   /usr/bin/clang-"${CLANG_VERSION}" 20 \
+        --slave   /usr/bin/clang++ clang++ /usr/bin/clang++-"${CLANG_VERSION}"
+
 ENV CFLAGS="-fno-omit-frame-pointer -O2 -g -fsanitize=memory"
 ENV CXXFLAGS="$CFLAGS"
 # rr installation

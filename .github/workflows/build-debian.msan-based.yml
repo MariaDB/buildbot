@@ -28,7 +28,7 @@ jobs:
           - image: debian:12
             platforms: linux/amd64
             branch: 10.11
-            tag: debian12-msan-clang-19
+            tag: debian12-msan-clang
             clang_version: 19
             nogalera: false
 
