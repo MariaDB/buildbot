@@ -4,8 +4,8 @@ ARG CLANG_VERSION=15
 
 WORKDIR /tmp/msan
 
-ENV CC=clang-${CLANG_VERSION}
-ENV CXX=clang++-${CLANG_VERSION}
+ENV CC=clang
+ENV CXX=clang++
 ENV GDB_PATH=/msan-libs/bin/gdb
 ENV MSAN_LIBDIR=/msan-libs
 ENV MSAN_SYMBOLIZER_PATH=/msan-libs/bin/llvm-symbolizer-msan
@@ -37,6 +37,10 @@ RUN . /etc/os-release \
        automake \
     && if [ "${CLANG_VERSION}" = 19 ]; then \
         apt-get -y install --no-install-recommends libclang-19-dev libllvmlibc-19-dev; fi \
+    && update-alternatives \
+        --verbose \
+        --install /usr/bin/clang   clang   /usr/bin/clang-"${CLANG_VERSION}" 20 \
+        --slave   /usr/bin/clang++ clang++ /usr/bin/clang++-"${CLANG_VERSION}" \
     && apt-get source libc++-${CLANG_VERSION}-dev \
     && mv llvm-toolchain-${CLANG_VERSION}-${CLANG_VERSION}*/* . \
     && mkdir build \
@@ -136,10 +140,6 @@ RUN . /etc/os-release \
        libsnappy-dev \
     && chmod -R a+x $MSAN_LIBDIR/bin/*
 
-RUN update-alternatives \
-        --verbose \
-        --install /usr/bin/clang   clang   /usr/bin/clang-"${CLANG_VERSION}" 20 \
-        --slave   /usr/bin/clang++ clang++ /usr/bin/clang++-"${CLANG_VERSION}"
 
 ENV CFLAGS="-fno-omit-frame-pointer -O2 -g -fsanitize=memory"
 ENV CXXFLAGS="$CFLAGS"
