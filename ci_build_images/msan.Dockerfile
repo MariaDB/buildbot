@@ -6,11 +6,12 @@ WORKDIR /tmp/msan
 
 ENV CC=clang
 ENV CXX=clang++
-ENV GDB_PATH=/msan-libs/bin/gdb
+ENV NO_MSAN_PATH=/msan-libs/bin
+ENV GDB_PATH=$NO_MSAN_PATH/gdb
 ENV MSAN_LIBDIR=/msan-libs
-ENV MSAN_SYMBOLIZER_PATH=/msan-libs/bin/llvm-symbolizer-msan
+ENV MSAN_SYMBOLIZER_PATH=$NO_MSAN_PATH/llvm-symbolizer-msan
 
-ENV PATH=$MSAN_LIBDIR/bin:$PATH
+ENV PATH=$NO_MSAN_PATH/bin:$PATH
 
 # hadolint ignore=SC2046
 RUN . /etc/os-release \
