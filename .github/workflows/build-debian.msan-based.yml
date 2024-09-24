@@ -41,7 +41,7 @@ jobs:
 
     uses: ./.github/workflows/bbw_build_container_template.yml
     with:
-      dockerfile: debian.Dockerfile msan.Dockerfile
+      dockerfile: rr.Dockerfile debian.Dockerfile msan.Dockerfile
       image: ${{ matrix.image }}
       platforms: ${{ matrix.platforms }}
       tag: ${{ matrix.tag }}

@@ -138,3 +138,10 @@ RUN . /etc/os-release \
 
 ENV CFLAGS="-fno-omit-frame-pointer -O2 -g -fsanitize=memory"
 ENV CXXFLAGS="$CFLAGS"
+# rr installation
+RUN apt-get install --no-install-recommends -y libcapnp-0.9.2 \
+    && apt-get clean
+
+# unknown rr
+# hadolint ignore=DL3022
+COPY --from=rr /tmp/install/usr/ /usr/
