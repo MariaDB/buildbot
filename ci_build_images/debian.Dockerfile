@@ -9,9 +9,6 @@ ARG MARIADB_BRANCH=11.4
 LABEL maintainer="MariaDB Buildbot maintainers"
 ENV CARGO_NET_GIT_FETCH_WITH_CLI=true
 
-# This will make apt-get install without question
-ARG DEBIAN_FRONTEND=noninteractive
-
 # Enable apt sources
 RUN . /etc/os-release \
     && if [ -f "/etc/apt/sources.list.d/$ID.sources" ]; then \
@@ -31,6 +28,7 @@ RUN . /etc/os-release \
     && if [ -n "$ARCH_VARIANT" ]; then \
          echo "APT::Architecture-Variants \"$ARCH_VARIANT\";" > /etc/apt/apt.conf.d/99enable-$ARCH_VARIANT; \
        fi \
+    && export DEBIAN_FRONTEND=noninteractive \
     && apt-get update \
     && apt-get -y upgrade \
     && apt-get -y install --no-install-recommends \
