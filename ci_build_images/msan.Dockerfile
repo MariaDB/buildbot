@@ -111,7 +111,16 @@ RUN . /etc/os-release \
         --disable-assembly \
     && make -j "$(nproc)" \
     && cp -aL .libs/libgmp.so* $MSAN_LIBDIR \
+    && rm -rf -- * \
+    && apt-get source libxml2 \
+    && aclocal \
+    && automake --add-missing \
+    && mv libxml2-*/* . \
+    && ./configure  --without-python --without-docbook --with-icu \
+    && make -j "$(nproc)" \
+    && cp -aL .libs/libxml2.so* $MSAN_LIBDIR \
     && rm -rf -- *
+
 
 ENV CFLAGS="$CFLAGS -Wno-conversion"
 ENV CXXFLAGS="$CFLAGS"
