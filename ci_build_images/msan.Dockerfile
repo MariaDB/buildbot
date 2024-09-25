@@ -150,7 +150,12 @@ ENV CXXFLAGS="$CFLAGS"
 
 ENV CMAKE_GENERATOR=Ninja
 # rr installation + ninja
-RUN apt-get install --no-install-recommends -y libcapnp-0.9.2 ninja-build \
+RUN . /etc/os-release \
+    && if [ "${VERSION_CODENAME}" = "bullseye" ]; then \
+         apt-get install --no-install-recommends -y libcapnp-0.7.0 ninja-build; \
+       else \
+         apt-get install --no-install-recommends -y libcapnp-0.9.2 ninja-build; \
+    fi \
     && apt-get clean
 
 # unknown rr
