@@ -119,8 +119,18 @@ RUN . /etc/os-release \
     && ./configure  --without-python --without-docbook --with-icu \
     && make -j "$(nproc)" \
     && cp -aL .libs/libxml2.so* $MSAN_LIBDIR \
+    && rm -rf -- * \
+    && apt-get source unixodbc-dev \
+    && mv unixodb-dev-*/* . \
+    && libtoolize \
+    && aclocal \
+    && autoheader \
+    && autoconf \
+    && automake --add-missing \
+    &&  ./configure --enable-fastvalidate  --with-pth=no --with-included-ltdl=no \
+    && make -j "$(nproc)" \
+    && mv ./DriverManager/.libs/libodbc.so* . \
     && rm -rf -- *
-
 
 ENV CFLAGS="$CFLAGS -Wno-conversion"
 ENV CXXFLAGS="$CFLAGS"
