@@ -142,12 +142,15 @@ RUN . /etc/os-release \
        libsnappy-dev \
     && chmod -R a+x $MSAN_LIBDIR/bin/*
 
+# For convience of human users of msan image
 ENV MSAN_OPTIONS=abort_on_error=1:poison_in_dtor=0
 
 ENV CFLAGS="-fno-omit-frame-pointer -O2 -g -fsanitize=memory"
 ENV CXXFLAGS="$CFLAGS"
-# rr installation
-RUN apt-get install --no-install-recommends -y libcapnp-0.9.2 \
+
+ENV CMAKE_GENERATOR=Ninja
+# rr installation + ninja
+RUN apt-get install --no-install-recommends -y libcapnp-0.9.2 ninja-build \
     && apt-get clean
 
 # unknown rr
