@@ -11,7 +11,7 @@ ENV GDB_PATH=$NO_MSAN_PATH/gdb
 ENV MSAN_LIBDIR=/msan-libs
 ENV MSAN_SYMBOLIZER_PATH=$NO_MSAN_PATH/llvm-symbolizer-msan
 
-ENV PATH=$NO_MSAN_PATH/bin:$PATH
+ENV PATH=$NO_MSAN_PATH:$PATH
 
 # hadolint ignore=SC2046
 RUN . /etc/os-release \
