@@ -44,11 +44,11 @@ rpm_setup_mariadb_mirror "$prev_major_version"
 case $test_mode in
   all)
     # retrieve full package list from repo
-    pkg_list=$(rpm_repoquery) ||
+    package_list=$(rpm_repoquery) ||
       bb_log_err "unable to retrieve package list from repository"
     ;;
   server)
-    pkg_list="MariaDB-server MariaDB-client"
+    package_list="MariaDB-server MariaDB-client"
     ;;
   *)
     bb_log_err "unknown test mode ($test_mode)"
@@ -59,18 +59,18 @@ esac
 # case $test_mode in
 #   all | deps | columnstore)
 #     if [[ $test_mode == "all" ]]; then
-#       if echo "$pkg_list" | grep -qi columnstore; then
+#       if echo "$package_list" | grep -qi columnstore; then
 #         bb_log_warn "due to MCOL-4120 and other issues, Columnstore upgrade will be tested separately"
 #       fi
-#       package_list=$(echo "$pkg_list" | grep MariaDB |
+#       package_list=$(echo "$package_list" | grep MariaDB |
 #         grep -viE 'galera|columnstore' | sed -e 's/<name>//' |
 #         sed -e 's/<\/name>//' | sort -u | xargs)
 #     elif [[ $test_mode == "deps" ]]; then
-#       package_list=$(echo "$pkg_list" |
+#       package_list=$(echo "$package_list" |
 #         grep -iE 'MariaDB-server|MariaDB-test|MariaDB-client|MariaDB-common|MariaDB-compat' |
 #         sed -e 's/<name>//' | sed -e 's/<\/name>//' | sort -u | xargs)
 #     elif [[ $test_mode == "columnstore" ]]; then
-#       if ! echo "$pkg_list" | grep -q columnstore; then
+#       if ! echo "$package_list" | grep -q columnstore; then
 #         bb_log_warn "columnstore was not found in the released packages, the test will not be run"
 #         exit
 #       fi
@@ -78,7 +78,7 @@ esac
 #     fi
 
 #     if [[ $arch == ppc* ]]; then
-#       package_list=$(echo "$pkg_list" | xargs -n1 | sed -e 's/MariaDB-compat//gi' | xargs)
+#       package_list=$(echo "$package_list" | xargs -n1 | sed -e 's/MariaDB-compat//gi' | xargs)
 #     fi
 #     ;;
 #   server)
@@ -90,7 +90,7 @@ esac
 #     ;;
 # esac
 
-bb_log_info "Package_list: $pkg_list"
+bb_log_info "Package_list: $package_list"
 
 # # //TEMP this needs to be implemented once we have SLES VM in new BB
 # # Prepare yum/zypper configuration for installation of the last release
@@ -149,7 +149,7 @@ bb_log_info "Package_list: $pkg_list"
 sudo "$pkg_cmd" clean all
 
 # Install previous release
-echo "$pkg_list" | xargs sudo "$pkg_cmd" -y install ||
+echo "$package_list" | xargs sudo "$pkg_cmd" -y install ||
   bb_log_err "installation of a previous release failed, see the output above"
 #fi
 
@@ -179,8 +179,8 @@ fi
 
 check_mariadb_server_and_create_structures
 
-# Store information about server version and available plugins/engines before
-# upgrade
+# Store information about the server before upgrade
+collect_dependencies old
 store_mariadb_server_info old
 
 # If the tested branch has the same version as the public repository,
@@ -252,10 +252,10 @@ rpm_setup_bb_galera_artifacts_mirror
 rpm_setup_bb_artifacts_mirror
 if [[ $test_type == "major" ]]; then
   # major upgrade (remove then install)
-  echo "$pkg_list" | xargs sudo "$pkg_cmd" -y install
+  echo "$package_list" | xargs sudo "$pkg_cmd" -y install
 else
   # minor upgrade (upgrade works)
-  echo "$pkg_list" | xargs sudo "$pkg_cmd" -y upgrade
+  echo "$package_list" | xargs sudo "$pkg_cmd" -y upgrade
 fi
 # set +e
 
@@ -297,7 +297,8 @@ set +e
 # Check that the server is functioning and previously created structures are available
 check_mariadb_server_and_verify_structures
 
-# Store information about server version and available plugins/engines after upgrade
+# Store information about the server after upgrade
+collect_dependencies new
 store_mariadb_server_info new
 
 # # Dependency information for new binaries/libraries
