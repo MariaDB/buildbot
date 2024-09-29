@@ -146,41 +146,9 @@ fi
 # Check that the server is functioning and create some structures
 check_mariadb_server_and_create_structures
 
-# Store information about server version and available plugins/engines before upgrade
-if [[ $test_mode == "all" ]]; then
-  # Due to MDEV-14560, we have to restart the server to get the full list of engines
-  # MDEV-14560 is fixed in 10.2
-  if [ "${prev_major_version}" != 10.2 ]; then
-    control_mariadb_server restart
-  fi
-fi
-
+# Store information about the server before upgrade
+collect_dependencies old
 store_mariadb_server_info old
-
-# //TEMP todo, see below
-# # Store dependency information for old binaries/libraries:
-# # - names starting with "mysql*" in the directory where mysqld is located;
-# # - names starting with "mysql*" in the directory where mysql is located;
-# # - everything in the plugin directories installed by any MariaDB packages
-# set +x
-# for i in $(sudo which mysqld | sed -e 's/mysqld$/mysql\*/') $(which mysql | sed -e 's/mysql$/mysql\*/') $(dpkg-query -L $(dpkg -l | grep mariadb | awk '{print $2}' | xargs) | grep -v 'mysql-test' | grep -v '/debug/' | grep '/plugin/' | sed -e 's/[^\/]*$/\*/' | sort | uniq | xargs); do
-#   echo "=== $i"
-#   ldd "$i" | sort | sed 's/(.*)//'
-# done >/buildbot/ldd.old
-# set -x
-
-# # setup repository
-# sudo sh -c "echo 'deb [trusted=yes] https://deb.mariadb.org/$master_branch/$dist_name $version_name main' >/etc/apt/sources.list.d/galera-test-repo.list"
-# # Update galera-test-repo.list to point at either the galera-3 or galera-4 test repo
-# //TEMP
-# case "$branch" in
-#   *10.[1-3]*)
-#     sudo sed -i 's/repo/repo3/' /etc/apt/sources.list.d/galera-test-repo.list
-#     ;;
-#   *10.[4-9]*)
-#     sudo sed -i 's/repo/repo4/' /etc/apt/sources.list.d/galera-test-repo.list
-#     ;;
-# esac
 
 if [[ $test_mode == "deps" ]]; then
   # For the dependency check, only keep the local repo //TEMP what does this do???
@@ -192,10 +160,7 @@ else
 fi
 sudo rm /etc/apt/preferences.d/release
 
-# We also need official mirror for dependencies not available in BB artifacts
-# (Galera) //TEMP seems to not be necessary anymore (galera packages build in
-# artifacts?)
-# deb_setup_mariadb_mirror "$master_branch"
+deb_setup_bb_galera_artifacts_mirror
 deb_setup_bb_artifacts_mirror
 apt_get_update
 
@@ -249,8 +214,8 @@ fi
 # available
 check_mariadb_server_and_verify_structures
 
-# Store information about server version and available plugins/engines after
-# upgrade
+# Store information about the server after upgrade
+collect_dependencies new
 store_mariadb_server_info new
 
 # //TEMP what needs to be done here?
