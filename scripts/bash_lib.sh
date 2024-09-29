@@ -488,9 +488,18 @@ control_mariadb_server() {
 }
 
 store_mariadb_server_info() {
+# We need sudo here because the mariadb local root configured this way, not because we want special write permissions for the resulting file.
+# pre-commit check has an issue with it, so instead of adding an exception before each line, we add a piped sort, which should be bogus,
   sudo mariadb --skip-column-names -e "select @@version" | awk -F'-' '{ print $1 }' >"/tmp/version.$1"
-  sudo mariadb --skip-column-names -e "select engine, support, transactions, savepoints from information_schema.engines" | sort >"/tmp/engines.$1"
-  sudo mariadb --skip-column-names -e "select plugin_name, plugin_status, plugin_type, plugin_library, plugin_license from information_schema.all_plugins" | sort >"/tmp/plugins.$1"
+  sudo mariadb --skip-column-names -e "select engine, support, transactions, savepoints from information_schema.engines order by engine" | sort > "./engines.$1"
+  sudo mariadb --skip-column-names -e "select plugin_name, plugin_status, plugin_type, plugin_library, plugin_license \
+                                       from information_schema.all_plugins order by plugin_name" | sort > "./plugins.$1"
+  sudo mariadb --skip-column-names -e "select 'Stat' t, variable_name name, variable_value val
+                                       from information_schema.global_status where variable_name like '%have%' \
+                                       union \
+                                       select 'Vars' t, variable_name name, variable_value val \
+                                       from information_schema.global_variables where variable_name like '%have%' \
+                                       order by t, name" | sort > "./capabilities.$1"
 }
 
 check_upgraded_versions() {
@@ -528,4 +537,133 @@ check_upgraded_versions() {
     bb_log_err "or if it is a development tree that is based on an old version"
     exit 1
   fi
+
+  res=0
+  engines_disappeared_or_changed=$(comm -23 ./engines.old ./engines.new | wc -l)
+  if ((engines_disappeared_or_changed != 0)); then
+    bb_log_err "the lists of engines in the old and new installations differ"
+    diff -u ./engines.old ./engines.new
+    res=1
+  fi
+  if [[ $test_type == "minor" ]]; then
+
+    # We are using temporary files for further comparison, because we will need to make
+    # some adjustments to them to avoid false positives, but we want original files
+    # to be stored by buildbot
+    for f in ldd-main ldd-columnstore reqs-main reqs-columnstore plugins capabilities; do
+      if [ -e "./${f}.old" ] ; then
+        cp "./${f}.old" "./${f}.old.cmp"
+        cp "./${f}.new" "./${f}.new.cmp"
+      fi
+    done
+
+    # Permanent adjustments
+    sed -i '/libstdc++.so.6(GLIBCXX/d;/libstdc++.so.6(CXXABI/d' ./reqs-*.cmp
+    # Don't compare subversions of libsystemd.so (e.g. libsystemd.so.0(LIBSYSTEMD_227)(64bit))
+    sed -i '/libsystemd.so.[0-9]*(LIBSYSTEMD_/d' ./reqs-*.cmp
+    # Ignore shells, the number of which always changes
+    sed -i '/^\/bin\/sh$/d' ./reqs-*.cmp
+
+    # Here is the place for temporary adjustments,
+    # when legitimate changes in dependencies happen between minor versions.
+    # The adjustments should be done to .cmp files, and removed after the release
+    #
+    # End of temporary adjustments
+
+    bb_log_info "Comparing old and new ldd output for installed binaries"
+    # We are not currently comparing it for Columnstore, too much trouble for nothing
+    if ! diff -U1000 ./ldd-main.old.cmp ./ldd-main.new.cmp | (grep -E '^[-+]|^ =' || true) ; then
+      bb_log_error "Found changes in ldd output on installed binaries"
+      res=1
+    else
+      bb_log_info "OK"
+    fi
+
+    bb_log_info "Comparing old and new package requirements"
+    # We are not currently comparing it for Columnstore, but we may need to in the future
+    if ! diff -U150 ./reqs-main.old.cmp ./reqs-main.new.cmp | (grep -E '^ [^ ]|^[-+]' || true) ; then
+      bb_log_error "Found changes in package requirements"
+      res=1
+    else
+      bb_log_info "OK"
+    fi
+
+    bb_log_info "Comparing old and new server capabilities ('%have%' variables)"
+    if ! diff -u ./capabilities.old.cmp ./capabilities.new.cmp ; then
+      bb_log_error "ERROR: found changes in server capabilities"
+      res=1
+    else
+      bb_log_info "OK"
+    fi
+
+    echo "Comparing old and new plugins"
+    # Columnstore version changes often, we'll ignore it
+    grep -i columnstore ./plugins.old.cmp > /tmp/columnstore.old
+    grep -i columnstore ./plugins.new.cmp > /tmp/columnstore.new
+    if ! diff -u /tmp/columnstore.old /tmp/columnstore.new ; then
+      bb_log_warn "Columnstore version changed. Downgraded to a warning as it is usually intentional"
+      sed -i '/COLUMNSTORE/d;/Columnstore/d' ./plugins.*.cmp
+    fi
+
+    if ! diff -u ./plugins.old.cmp ./plugins.new.cmp ; then
+      bb_log_error "Found changes in available plugins"
+      res=1
+    else
+      bb_log_info "OK"
+    fi
+  fi
+  exit $res
+}
+
+# Collect package requirements and ldd for all binaries included into packages.
+# Expects "old" and "new" as an argument, and
+# $package_list to be set by the time of execution
+collect_dependencies() {
+  old_or_new=$1
+  case "$package_list" in
+  *.rpm)
+    pkgtype=rpm
+    if rpm --noartifact ; then
+      # --noartifact option is needed to avoid build-id in rpm -lp output
+      NOARTIFACT="--noartifact"
+    fi
+    ;;
+  *.deb)
+    pkgtype=deb
+    ;;
+  *)
+    bb_log_err "unknown package type in the package list $package_list"
+    exit 1
+    ;;
+  esac
+
+  rm -f "./ldd-*.${old_or_new}" "./reqs-*.${old_or_new}"
+  bb_log_info "Collecting dependencies for the ${old_or_new} server"
+
+  for p in ${package_list} ${spider_package_list} ; do
+    if [[ "$p" =~ columnstore ]] ; then
+      suffix="columnstore"
+    else
+      suffix="main"
+    fi
+    echo "-----------------"  >> "./reqs-${suffix}.${old_or_new}"
+    echo "$p:" >> "./reqs-${suffix}.${old_or_new}"
+    if [ "$pkgtype" == "rpm" ] ; then
+      rpm -q -R "$p" | awk '{print $1}' | grep -vE '/usr/bin/env|/usr/bin/bash' >> "./reqs-${suffix}.${old_or_new}"
+      # NOARTIFACT is either an empty string or --noartifact option, it won't be globbed or word-splitted
+      # shellcheck disable=SC2086
+      filelist=$(rpm $NOARTIFACT -ql "$p" | sort)
+    else
+      # We need sudo here for the apt-cache command, not for redirection
+      # shellcheck disable=SC2024
+      sudo apt-cache depends "$p" --no-suggests --no-conflicts --no-breaks --no-replaces --no-enhances >> "./reqs-${suffix}.${old_or_new}"
+      filelist=$(dpkg-query -L "$p" | sort)
+    fi
+    echo "====== Package $p" >> "./ldd-${suffix}.${old_or_new}"
+    for f in $filelist ; do
+      sudo ldd "$f" > /dev/null 2>&1 || continue
+      echo "=== $f" >> "./ldd-${suffix}.${old_or_new}"
+      sudo ldd "$f" | sort | sed 's/(.*)//' >> "./ldd-${suffix}.${old_or_new}"
+    done
+  done
 }
