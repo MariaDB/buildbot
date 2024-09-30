@@ -477,7 +477,7 @@ def hasCompat(step):
     # For s390x and the listed distros there are no compat files
     if any(
         builderName.find(sub) != -1
-        for sub in {"s390x", "fedora", "alma", "rocky", "openeuler"}
+        for sub in {"s390x", "fedora", "alma", "rocky", "openeuler", "suse15", "sles15"}
     ):
         return False
     if "rhel" in builderName or "centos" in builderName:
