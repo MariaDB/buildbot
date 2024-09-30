@@ -21,7 +21,7 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     && case $BASE_IMAGE in \
     ubi9) \
       v=9; \
-      extra="fmt-devel buildbot-worker"; \
+      extra="asio-devel buildbot-worker fmt-devel"; \
       ;; \
     ubi8) \
       v=8; \
