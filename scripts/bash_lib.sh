@@ -221,7 +221,7 @@ rpm_repoquery() {
 wait_for_mariadb_upgrade() {
   res=1
   for i in {1..20}; do
-    if pgrep -if 'mysql_upgrade|mysqlcheck|mysqlrepair|mysqlanalyze|mysqloptimize|mariadb-upgrade|mariadb-check'; then
+    if pgrep -ifa 'mysql_upgrade|mysqlcheck|mysqlrepair|mysqlanalyze|mysqloptimize|mariadb-upgrade|mariadb-check'; then
       bb_log_info "wait for mysql_upgrade to finish ($i)"
       sleep 5
     else
@@ -532,17 +532,20 @@ check_upgraded_versions() {
     fi
   fi
   if diff -u /tmp/version.old /tmp/version.new; then
-    bb_log_err "server version has not changed after upgrade"
-    bb_log_err "it can be a false positive if we forgot to bump version after release,"
+    bb_log_err "Server version has not changed after upgrade."
+    bb_log_err "It can be a false positive if we forgot to bump version after release"
     bb_log_err "or if it is a development tree that is based on an old version"
     exit 1
   fi
 
   res=0
+  errors=""
   engines_disappeared_or_changed=$(comm -23 ./engines.old ./engines.new | wc -l)
+  set +x
   if ((engines_disappeared_or_changed != 0)); then
-    bb_log_err "the lists of engines in the old and new installations differ"
+    bb_log_err "Found changes in the list of engines:"
     diff -u ./engines.old ./engines.new
+    errors="$errors engines,"
     res=1
   fi
   if [[ $test_type == "minor" ]]; then
@@ -570,30 +573,34 @@ check_upgraded_versions() {
     #
     # End of temporary adjustments
 
+    set -o pipefail
     bb_log_info "Comparing old and new ldd output for installed binaries"
     # We are not currently comparing it for Columnstore, too much trouble for nothing
     if ! diff -U1000 ./ldd-main.old.cmp ./ldd-main.new.cmp | (grep -E '^[-+]|^ =' || true) ; then
-      bb_log_error "Found changes in ldd output on installed binaries"
+      bb_log_err "Found changes in ldd output, see above"
+      errors="$errors ldd,"
       res=1
     else
-      bb_log_info "OK"
+      bb_log_info "ldd OK"
     fi
 
     bb_log_info "Comparing old and new package requirements"
     # We are not currently comparing it for Columnstore, but we may need to in the future
     if ! diff -U150 ./reqs-main.old.cmp ./reqs-main.new.cmp | (grep -E '^ [^ ]|^[-+]' || true) ; then
-      bb_log_error "Found changes in package requirements"
+      bb_log_err "Found changes in package requirements, see above"
+      errors="$errors requirements,"
       res=1
     else
-      bb_log_info "OK"
+      bb_log_info "Package requirements OK"
     fi
 
     bb_log_info "Comparing old and new server capabilities ('%have%' variables)"
     if ! diff -u ./capabilities.old.cmp ./capabilities.new.cmp ; then
-      bb_log_error "ERROR: found changes in server capabilities"
+      bb_log_err "Found changes in server capabilities, see above"
+      errors="$errors capabilities,"
       res=1
     else
-      bb_log_info "OK"
+      bb_log_info "Capabilities OK"
     fi
 
     echo "Comparing old and new plugins"
@@ -606,40 +613,33 @@ check_upgraded_versions() {
     fi
 
     if ! diff -u ./plugins.old.cmp ./plugins.new.cmp ; then
-      bb_log_error "Found changes in available plugins"
+      bb_log_err "Found changes in available plugins, see above"
+      errors="$errors plugins,"
       res=1
     else
-      bb_log_info "OK"
+      bb_log_info "Plugins OK"
     fi
+  fi
+  if [ -n "$errors" ] ; then
+    bb_log_err "Problems were found with:$errors see above output for details"
   fi
   exit $res
 }
 
 # Collect package requirements and ldd for all binaries included into packages.
-# Expects "old" and "new" as an argument, and
-# $package_list to be set by the time of execution
+# Expects "old" and "new" as the first argument,
+# "deb" or "rpm" as the second argument,
+# and $package_list to be set by the time of execution
 collect_dependencies() {
+  [[ $test_type == "minor" ]] || return
   old_or_new=$1
-  case "$package_list" in
-  *.rpm)
-    pkgtype=rpm
-    if rpm --noartifact ; then
-      # --noartifact option is needed to avoid build-id in rpm -lp output
-      NOARTIFACT="--noartifact"
-    fi
-    ;;
-  *.deb)
-    pkgtype=deb
-    ;;
-  *)
-    bb_log_err "unknown package type in the package list $package_list"
-    exit 1
-    ;;
-  esac
-
-  rm -f "./ldd-*.${old_or_new}" "./reqs-*.${old_or_new}"
+  pkgtype=$2
+  if rpm --noartifact ; then
+    # --noartifact option is needed to avoid build-id in rpm -lp output
+    NOARTIFACT="--noartifact"
+  fi
   bb_log_info "Collecting dependencies for the ${old_or_new} server"
-
+  set +x
   for p in ${package_list} ${spider_package_list} ; do
     if [[ "$p" =~ columnstore ]] ; then
       suffix="columnstore"
@@ -666,4 +666,5 @@ collect_dependencies() {
       sudo ldd "$f" | sort | sed 's/(.*)//' >> "./ldd-${suffix}.${old_or_new}"
     done
   done
+  set -x
 }

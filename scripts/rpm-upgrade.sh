@@ -180,7 +180,7 @@ fi
 check_mariadb_server_and_create_structures
 
 # Store information about the server before upgrade
-collect_dependencies old
+collect_dependencies old rpm
 store_mariadb_server_info old
 
 # If the tested branch has the same version as the public repository,
@@ -292,13 +292,12 @@ fi
 if [[ $major_version == "$development_branch" ]] || [[ $test_type == "major" ]]; then
   sudo mariadb-upgrade
 fi
-set +e
 
 # Check that the server is functioning and previously created structures are available
 check_mariadb_server_and_verify_structures
 
 # Store information about the server after upgrade
-collect_dependencies new
+collect_dependencies new rpm
 store_mariadb_server_info new
 
 # # Dependency information for new binaries/libraries
