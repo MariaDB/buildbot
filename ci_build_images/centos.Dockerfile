@@ -59,6 +59,7 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     # not sure if needed \
     # perl \
     ${extra} \
+    asio-devel \
     bzip2 \
     bzip2-devel \
     ccache \

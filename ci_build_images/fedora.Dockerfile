@@ -19,6 +19,7 @@ RUN echo "fastestmirror=true" >> /etc/dnf/dnf.conf \
     && dnf -y builddep mariadb-server \
     && dnf -y install \
     @development-tools \
+    asio-devel \
     buildbot-worker \
     bzip2 \
     bzip2-devel \
