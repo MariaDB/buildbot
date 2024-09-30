@@ -147,7 +147,7 @@ fi
 check_mariadb_server_and_create_structures
 
 # Store information about the server before upgrade
-collect_dependencies old
+collect_dependencies old deb
 store_mariadb_server_info old
 
 if [[ $test_mode == "deps" ]]; then
@@ -215,7 +215,7 @@ fi
 check_mariadb_server_and_verify_structures
 
 # Store information about the server after upgrade
-collect_dependencies new
+collect_dependencies new deb
 store_mariadb_server_info new
 
 # //TEMP what needs to be done here?
