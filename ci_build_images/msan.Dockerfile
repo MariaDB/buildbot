@@ -121,16 +121,16 @@ RUN . /etc/os-release \
     && cp -aL .libs/libxml2.so* $MSAN_LIBDIR \
     && rm -rf -- * \
     && apt-get source unixodbc-dev \
-    && mv unixodb-dev-*/* . \
-    && libtoolize \
+    && mv unixodbc-*/* . \
+    && libtoolize --force \
     && aclocal \
     && autoheader \
     && autoconf \
     && automake --add-missing \
     &&  ./configure --enable-fastvalidate  --with-pth=no --with-included-ltdl=no \
     && make -j "$(nproc)" \
-    && mv ./DriverManager/.libs/libodbc.so* . \
-    && rm -rf -- *
+    && mv ./DriverManager/.libs/libodbc.so* $MSAN_LIBDIR \
+    && rm -rf -- * \
 
 ENV CFLAGS="$CFLAGS -Wno-conversion"
 ENV CXXFLAGS="$CFLAGS"
