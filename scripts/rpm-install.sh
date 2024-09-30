@@ -74,7 +74,7 @@ case "$systemdCapability" in
 esac
 
 sudo mariadb -e 'drop database if exists test; create database test; use test; create table t(a int primary key) engine=innodb; insert into t values (1); select * from t; drop table t;'
-if find rpms/*.rpm | grep -qi columnstore; then
+if echo "$pkg_list" | grep -qi columnstore; then
   sudo mariadb --verbose -e "create database cs; use cs; create table cs.t_columnstore (a int, b char(8)); insert into cs.t_columnstore select seq, concat('val',seq) from seq_1_to_10; select * from cs.t_columnstore"
   sudo systemctl restart mariadb
   sudo mariadb --verbose -e "select * from cs.t_columnstore; update cs.t_columnstore set b = 'updated'"
