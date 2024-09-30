@@ -131,6 +131,14 @@ RUN . /etc/os-release \
     && make -j "$(nproc)" \
     && mv ./DriverManager/.libs/libodbc.so* $MSAN_LIBDIR \
     && rm -rf -- * \
+    && apt-get source libfmt-dev \
+    && mv fmtlib-*/* . \
+    && mkdir build \
+    && cmake -DFMT_DOC=OFF -DFMT_TEST=OFF  -DBUILD_SHARED_LIBS=on  -DFMT_PEDANTIC=on -S . -B build \
+    && cmake --build build \
+    && mv build/libfmt.so* $MSAN_LIBDIR \
+    && rm -rf -- * \
+    && ls -la $MSAN_LIBDIR
 
 ENV CFLAGS="$CFLAGS -Wno-conversion"
 ENV CXXFLAGS="$CFLAGS"
