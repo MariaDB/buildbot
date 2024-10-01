@@ -30,7 +30,6 @@ debian-11:
   arch:
     - amd64
     - aarch64
-    - ppc64le
   type: deb
 debian-12:
   version_name: bookworm

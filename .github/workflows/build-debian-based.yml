@@ -25,7 +25,7 @@ jobs:
       matrix:
         include:
           - image: debian:11
-            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
+            platforms: linux/amd64, linux/arm64/v8
             branch: 10.11
             nogalera: false
 

@@ -118,7 +118,6 @@ supportedPlatforms["10.5"] = [
     "amd64-windows-packages",
     "ppc64be-aix-71",
     "ppc64le-centos-stream9",
-    "ppc64le-debian-11",
     "ppc64le-rhel-8",
     "ppc64le-rhel-9",
     "ppc64le-ubuntu-2004",
