@@ -138,6 +138,12 @@ RUN . /etc/os-release \
     && cmake --build build \
     && mv build/libfmt.so* $MSAN_LIBDIR \
     && rm -rf -- * \
+    && apt-get source libssl-dev \
+    && mv openssl-*/* . \
+    && ./Configure  shared no-idea no-mdc2 no-rc5 no-zlib no-ssl3 enable-unit-test no-ssl3-method enable-rfc3779 enable-cms no-capieng no-rdrand enable-msan \
+    && make -j "$(nproc)" build_libs \
+    && mv *.so* $MSAN_LIBDIR \
+    && rm -rf -- * \
     && ls -la $MSAN_LIBDIR
 
 ENV CFLAGS="$CFLAGS -Wno-conversion"
