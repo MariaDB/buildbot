@@ -55,11 +55,9 @@ RUN . /etc/os-release \
         -DLLVM_ENABLE_RUNTIMES="${LLVM_ENABLE_RUNTIMES}" \
         $(if [ "${CLANG_VERSION}" = 19 ]; then echo "-DLLVM_INCLUDE_TESTS=OFF -DLLVM_INCLUDE_DOCS=OFF -DLLVM_ENABLE_SPHINX=OFF"; fi) \
         -DLLVM_USE_SANITIZER=MemoryWithOrigins \
-    && make -C build -j "$(nproc)" \
-    && cp -aL build/lib/libc++.so* $MSAN_LIBDIR \
+    && cmake --build build --parallel "$(nproc)" \
+    && cp -aL build/lib/lib*.so* $MSAN_LIBDIR \
     && cp -a build/include/c++/v1 "$MSAN_LIBDIR/include" \
-    && rm $MSAN_LIBDIR/libc++.so \
-    && ln -sf $MSAN_LIBDIR/libc++.so.1 $MSAN_LIBDIR/libc++.so \
     && rm -rf -- *
 
 ENV CFLAGS="-fno-omit-frame-pointer -O2 -g -fsanitize=memory"
