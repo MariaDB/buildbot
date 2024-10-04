@@ -142,6 +142,12 @@ RUN . /etc/os-release \
     && make -j "$(nproc)" build_libs \
     && mv *.so* $MSAN_LIBDIR \
     && rm -rf -- * \
+    && apt-get source  libpcre2-dev \
+    && mv pcre2-*/* . \
+    && cmake -S . -B build/ -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -DPCRE2_BUILD_TESTS=OFF -DPCRE2_SUPPORT_JIT=ON  -DCMAKE_C_FLAGS="${CFLAGS} -Dregcomp=PCRE2regcomp -Dregexec=PCRE2regexec -Dregerror=PCRE2regerror -Dregfree=PCRE2regfree" \
+    && cmake --build build/ \
+    && mv ./build/libpcre2*so* $MSAN_LIBDIR \
+    && rm -rf -- * \
     && ls -la $MSAN_LIBDIR
 
 ENV CFLAGS="$CFLAGS -Wno-conversion"
