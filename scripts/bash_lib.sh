@@ -655,6 +655,8 @@ collect_dependencies() {
     fi
     echo "====== Package $p" >> "./ldd-${suffix}.${old_or_new}"
     for f in $filelist ; do
+      # We do want to match literally here, not as regex
+      # shellcheck disable=SC2076
       if [[ "$f" =~ "/.build-id/" ]] ; then
         continue
       fi
