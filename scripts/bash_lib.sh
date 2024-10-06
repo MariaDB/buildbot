@@ -634,12 +634,8 @@ collect_dependencies() {
   [[ $test_type == "minor" ]] || return
   old_or_new=$1
   pkgtype=$2
-  if rpm --noartifact ; then
-    # --noartifact option is needed to avoid build-id in rpm -lp output
-    NOARTIFACT="--noartifact"
-  fi
   bb_log_info "Collecting dependencies for the ${old_or_new} server"
-  set +x
+#  set +x
   for p in ${package_list} ${spider_package_list} ; do
     if [[ "$p" =~ columnstore ]] ; then
       suffix="columnstore"
@@ -649,22 +645,23 @@ collect_dependencies() {
     echo "-----------------"  >> "./reqs-${suffix}.${old_or_new}"
     echo "$p:" >> "./reqs-${suffix}.${old_or_new}"
     if [ "$pkgtype" == "rpm" ] ; then
-      rpm -q -R "$p" | awk '{print $1}' | grep -vE '/usr/bin/env|/usr/bin/bash' >> "./reqs-${suffix}.${old_or_new}"
-      # NOARTIFACT is either an empty string or --noartifact option, it won't be globbed or word-splitted
-      # shellcheck disable=SC2086
-      filelist=$(rpm $NOARTIFACT -ql "$p" | sort)
+      rpm -q -R "$p" | awk '{print $1}' | sort | grep -vE '/usr/bin/env|/usr/bin/bash' >> "./reqs-${suffix}.${old_or_new}"
+      filelist=$(rpm -ql "$p" | sort)
     else
       # We need sudo here for the apt-cache command, not for redirection
       # shellcheck disable=SC2024
-      sudo apt-cache depends "$p" --no-suggests --no-conflicts --no-breaks --no-replaces --no-enhances >> "./reqs-${suffix}.${old_or_new}"
+      sudo apt-cache depends "$p" --no-suggests --no-conflicts --no-breaks --no-replaces --no-enhances | sort >> "./reqs-${suffix}.${old_or_new}"
       filelist=$(dpkg-query -L "$p" | sort)
     fi
     echo "====== Package $p" >> "./ldd-${suffix}.${old_or_new}"
     for f in $filelist ; do
+      if [[ "$f" =~ "/.build-id/" ]] ; then
+        continue
+      fi
       sudo ldd "$f" > /dev/null 2>&1 || continue
       echo "=== $f" >> "./ldd-${suffix}.${old_or_new}"
       sudo ldd "$f" | sort | sed 's/(.*)//' >> "./ldd-${suffix}.${old_or_new}"
     done
   done
-  set -x
+#  set -x
 }
