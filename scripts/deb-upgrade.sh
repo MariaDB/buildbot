@@ -29,16 +29,31 @@ bb_log_info "Current test mode: $test_mode"
 
 set -x
 
+# Prepare apt repository configuration for installation of the previous major
+# version
+deb_setup_mariadb_mirror "$prev_major_version"
+
+get_packages_file_mirror() {
+  set -u
+  if ! wget "$baseurl/$dist_name/dists/$version_name/main/binary-$(deb_arch)/Packages"
+  then
+    bb_log_err "Could not find the 'Packages' file for a previous version."
+    exit 1
+  fi
+  set +u
+}
+
 # Define the list of packages to install/upgrade
 case $test_mode in
   all)
+    get_packages_file_mirror
     if grep -qi columnstore Packages; then
       bb_log_warn "due to MCOL-4120 (Columnstore leaves the server shut down) and other bugs Columnstore upgrade is tested separately"
     fi
-    package_list=$(grep "^Package:" Packages | grep -vE 'galera|spider|columnstore' | awk '{print $2}' | xargs)
+    package_list=$(grep "^Package:" Packages | grep -vE 'galera|spider|columnstore' | awk '{print $2}' | sort | uniq | xargs)
     if grep -qi spider Packages; then
       bb_log_warn "due to MDEV-14622 Spider will be installed separately after the server"
-      spider_package_list=$(grep "^Package:" Packages | grep 'spider' | awk '{print $2}' | xargs)
+      spider_package_list=$(grep "^Package:" Packages | grep 'spider' | awk '{print $2}' | sort | uniq | xargs)
     fi
     if grep -si tokudb Packages; then
       # For the sake of installing TokuDB, disable hugepages
@@ -52,6 +67,7 @@ case $test_mode in
     package_list=mariadb-server
     ;;
   columnstore)
+    get_packages_file_mirror
     if ! grep columnstore Packages >/dev/null; then
       bb_log_warn "Columnstore was not found in packages, the test will not be run"
       exit
@@ -59,7 +75,7 @@ case $test_mode in
       bb_log_warn "Columnstore isn't necessarily built on Sid, the test will be skipped"
       exit
     fi
-    package_list="mariadb-server "$(grep "^Package:" Packages | grep 'columnstore' | awk '{print $2}' | xargs)
+    package_list="mariadb-server "$(grep "^Package:" Packages | grep 'columnstore' | awk '{print $2}' | sort | uniq | xargs)
     ;;
   *)
     bb_log_err "unknown test mode: $test_mode"
@@ -67,10 +83,6 @@ case $test_mode in
     ;;
 esac
 bb_log_info "Package_list: $package_list"
-
-# Prepare apt repository configuration for installation of the previous major
-# version
-deb_setup_mariadb_mirror "$prev_major_version"
 
 # We need to pin directory to ensure that installation happens from MariaDB
 # repo rather than from the default distro repo
