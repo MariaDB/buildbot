@@ -642,28 +642,36 @@ collect_dependencies() {
     else
       suffix="main"
     fi
+
     echo "-----------------"  >> "./reqs-${suffix}.${old_or_new}"
     echo "$p:" >> "./reqs-${suffix}.${old_or_new}"
     if [ "$pkgtype" == "rpm" ] ; then
       rpm -q -R "$p" | awk '{print $1}' | sort | grep -vE '/usr/bin/env|/usr/bin/bash' >> "./reqs-${suffix}.${old_or_new}"
-      filelist=$(rpm -ql "$p" | sort)
     else
       # We need sudo here for the apt-cache command, not for redirection
       # shellcheck disable=SC2024
-      sudo apt-cache depends "$p" --no-suggests --no-conflicts --no-breaks --no-replaces --no-enhances | sort >> "./reqs-${suffix}.${old_or_new}"
-      filelist=$(dpkg-query -L "$p" | sort)
+      sudo apt-cache depends "$p" --no-suggests --no-conflicts --no-breaks --no-replaces --no-enhances | sort >> "./reqs-${suffix}.${old_or_new}"  
     fi
-    echo "====== Package $p" >> "./ldd-${suffix}.${old_or_new}"
-    for f in $filelist ; do
-      # We do want to match literally here, not as regex
-      # shellcheck disable=SC2076
-      if [[ "$f" =~ "/.build-id/" ]] ; then
-        continue
+
+    # Collect LDD output for files installed by the package on the system
+    if [[ ${p} != "mariadb-test"* ]]; then
+      if [ "$pkgtype" == "rpm" ] ; then
+        filelist=$(rpm -ql "$p" | sort)
+      else
+        filelist=$(dpkg-query -L "$p" | sort)
       fi
-      sudo ldd "$f" > /dev/null 2>&1 || continue
-      echo "=== $f" >> "./ldd-${suffix}.${old_or_new}"
-      sudo ldd "$f" | sort | sed 's/(.*)//' >> "./ldd-${suffix}.${old_or_new}"
-    done
+      echo "====== Package $p" >> "./ldd-${suffix}.${old_or_new}"
+      for f in $filelist ; do
+        # We do want to match literally here, not as regex
+        # shellcheck disable=SC2076
+        if [[ "$f" =~ "/.build-id/" ]] ; then
+          continue
+        fi
+        sudo ldd "$f" > /dev/null 2>&1 || continue
+        echo "=== $f" >> "./ldd-${suffix}.${old_or_new}"
+        sudo ldd "$f" | sort | sed 's/(.*)//' >> "./ldd-${suffix}.${old_or_new}"
+      done
+    fi
   done
 #  set -x
 }
