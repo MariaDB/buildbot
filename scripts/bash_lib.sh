@@ -635,7 +635,7 @@ collect_dependencies() {
   old_or_new=$1
   pkgtype=$2
   bb_log_info "Collecting dependencies for the ${old_or_new} server"
-#  set +x
+ set +x
   for p in ${package_list} ${spider_package_list} ; do
     if [[ "$p" =~ columnstore ]] ; then
       suffix="columnstore"
@@ -650,7 +650,7 @@ collect_dependencies() {
     else
       # We need sudo here for the apt-cache command, not for redirection
       # shellcheck disable=SC2024
-      sudo apt-cache depends "$p" --no-suggests --no-conflicts --no-breaks --no-replaces --no-enhances | sort >> "./reqs-${suffix}.${old_or_new}"  
+      sudo apt-cache depends "$p" --no-suggests --no-conflicts --no-breaks --no-replaces --no-enhances | sort >> "./reqs-${suffix}.${old_or_new}"
     fi
 
     # Collect LDD output for files installed by the package on the system
@@ -673,5 +673,5 @@ collect_dependencies() {
       done
     fi
   done
-#  set -x
+ set -x
 }
