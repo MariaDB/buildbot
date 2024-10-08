@@ -654,7 +654,7 @@ collect_dependencies() {
     fi
 
     # Collect LDD output for files installed by the package on the system
-    if [[ ${p} != "mariadb-test"* ]]; then
+    if [[ ${p,,} != "mariadb-test"* ]]; then
       if [ "$pkgtype" == "rpm" ] ; then
         filelist=$(rpm -ql "$p" | sort)
       else
