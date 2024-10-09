@@ -140,7 +140,7 @@ RUN . /etc/os-release \
     && mv openssl-*/* . \
     && ./Configure  shared no-idea no-mdc2 no-rc5 no-zlib no-ssl3 enable-unit-test no-ssl3-method enable-rfc3779 enable-cms no-capieng no-rdrand enable-msan \
     && make -j "$(nproc)" build_libs \
-    && mv *.so* $MSAN_LIBDIR \
+    && mv ./*.so* $MSAN_LIBDIR \
     && rm -rf -- * \
     && apt-get source  libpcre2-dev \
     && mv pcre2-*/* . \
