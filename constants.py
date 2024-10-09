@@ -213,6 +213,7 @@ MTR_ENV = {
 #   run `./mtr testname`, they need a special build
 test_type_to_mtr_arg = {
     "nm": "",
+    "cursor": "--cursor-protocol",
     "ps": "--ps-protocol",
     "connect": "--suite=connect",
     "emb": "--embedded",
@@ -223,6 +224,7 @@ test_type_to_mtr_arg = {
     "ubsan": "",
     "valgrind": "",
     "debug": "",
+    "debug-cursor": "--cursor-protocol",
     "debug-ps": "--ps-protocol",
     "debug-emb": "--embedded",
     "debug-emb-ps": "--embedded --ps-protocol",
