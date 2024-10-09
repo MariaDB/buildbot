@@ -4,23 +4,31 @@ ARG CLANG_VERSION=15
 
 WORKDIR /tmp/msan
 
-ENV CC=clang-${CLANG_VERSION}
-ENV CXX=clang++-${CLANG_VERSION}
-ENV GDB_PATH=/msan-libs/bin/gdb
+ENV CC=clang
+ENV CXX=clang++
+ENV NO_MSAN_PATH=/msan-libs/bin
+ENV GDB_PATH=$NO_MSAN_PATH/gdb
 ENV MSAN_LIBDIR=/msan-libs
-ENV MSAN_SYMBOLIZER_PATH=/msan-libs/bin/llvm-symbolizer-msan
+ENV MSAN_SYMBOLIZER_PATH=$NO_MSAN_PATH/llvm-symbolizer-msan
 
-ENV PATH=$MSAN_LIBDIR/bin:$PATH
+ENV PATH=$NO_MSAN_PATH:$PATH
 
-RUN mkdir $MSAN_LIBDIR \
+# hadolint ignore=SC2046
+RUN . /etc/os-release \
+    && if [ "${CLANG_VERSION}" -gt 17 ]; then \
+        export LLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind"; \
+    else \
+        export LLVM_ENABLE_RUNTIMES="libcxx;libcxxabi"; fi \
+    && mkdir $MSAN_LIBDIR \
     && mkdir $MSAN_LIBDIR/bin \
     && printf "#!/bin/sh\nunset LD_LIBRARY_PATH\nexec llvm-symbolizer-%s \"\$@\"" "${CLANG_VERSION}" > $MSAN_SYMBOLIZER_PATH \
     && printf '#!/bin/sh\nunset LD_LIBRARY_PATH\nexec /usr/bin/gdb "$@"' > $GDB_PATH \
+    && printf '#!/bin/sh\nunset LD_LIBRARY_PATH\nexec /usr/bin/ctest "$@"' > "$NO_MSAN_PATH"/ctest \
     && curl -sL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor -o /usr/share/keyrings/llvm-snapshot.gpg \
     && echo "deb [signed-by=/usr/share/keyrings/llvm-snapshot.gpg] \
-    http://apt.llvm.org/bullseye/ llvm-toolchain-bullseye-${CLANG_VERSION} main" > /etc/apt/sources.list.d/llvm-toolchain.list \
+    http://apt.llvm.org/${VERSION_CODENAME}/ llvm-toolchain-${VERSION_CODENAME}-${CLANG_VERSION} main" > /etc/apt/sources.list.d/llvm-toolchain.list \
     && echo "deb-src [signed-by=/usr/share/keyrings/llvm-snapshot.gpg] \
-    http://apt.llvm.org/bullseye/ llvm-toolchain-bullseye-${CLANG_VERSION} main" >> /etc/apt/sources.list.d/llvm-toolchain.list \
+    http://apt.llvm.org/${VERSION_CODENAME}/ llvm-toolchain-${VERSION_CODENAME}-${CLANG_VERSION} main" >> /etc/apt/sources.list.d/llvm-toolchain.list \
     && apt-get update \
     && apt-get -y install --no-install-recommends \
        clang-${CLANG_VERSION} \
@@ -28,6 +36,13 @@ RUN mkdir $MSAN_LIBDIR \
        libc++abi-${CLANG_VERSION}-dev \
        libc++-${CLANG_VERSION}-dev \
        llvm-${CLANG_VERSION} \
+       automake \
+    && if [ "${CLANG_VERSION}" = 19 ]; then \
+        apt-get -y install --no-install-recommends libclang-19-dev libllvmlibc-19-dev; fi \
+    && update-alternatives \
+        --verbose \
+        --install /usr/bin/clang   clang   /usr/bin/clang-"${CLANG_VERSION}" 20 \
+        --slave   /usr/bin/clang++ clang++ /usr/bin/clang++-"${CLANG_VERSION}" \
     && apt-get source libc++-${CLANG_VERSION}-dev \
     && mv llvm-toolchain-${CLANG_VERSION}-${CLANG_VERSION}*/* . \
     && mkdir build \
@@ -37,20 +52,20 @@ RUN mkdir $MSAN_LIBDIR \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_C_COMPILER=clang-${CLANG_VERSION} \
         -DCMAKE_CXX_COMPILER=clang++-${CLANG_VERSION} \
-        -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi" \
+        -DLLVM_ENABLE_RUNTIMES="${LLVM_ENABLE_RUNTIMES}" \
+        $(if [ "${CLANG_VERSION}" = 19 ]; then echo "-DLLVM_INCLUDE_TESTS=OFF -DLLVM_INCLUDE_DOCS=OFF -DLLVM_ENABLE_SPHINX=OFF"; fi) \
         -DLLVM_USE_SANITIZER=MemoryWithOrigins \
-    && make -C build -j "$(nproc)" \
-    && cp -aL build/lib/libc++.so* $MSAN_LIBDIR \
+    && cmake --build build --parallel "$(nproc)" \
+    && cp -aL build/lib/lib*.so* $MSAN_LIBDIR \
     && cp -a build/include/c++/v1 "$MSAN_LIBDIR/include" \
-    && rm $MSAN_LIBDIR/libc++.so \
-    && ln -sf $MSAN_LIBDIR/libc++.so.1 $MSAN_LIBDIR/libc++.so \
     && rm -rf -- *
 
 ENV CFLAGS="-fno-omit-frame-pointer -O2 -g -fsanitize=memory"
 ENV CXXFLAGS="$CFLAGS"
 ENV LDFLAGS="-fsanitize=memory"
 
-RUN apt-get source gnutls28 \
+RUN . /etc/os-release \
+    && apt-get source gnutls28 \
     && mv gnutls28-*/* . \
     && mk-build-deps -it 'apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' \
     && aclocal \
@@ -86,18 +101,66 @@ RUN apt-get source gnutls28 \
     && apt-get source gmp \
     && mv gmp-*/* . \
     && mk-build-deps -it 'apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' \
+    && if [ "${VERSION_CODENAME}" = "bookworm" ]; then \
+        sed -e '/^.*"doc\/Makefile".*/d;s/doc\/Makefile //;' -i.bak configure \
+        && sed -e 's/^\(SUBDIRS = .*\) doc$/\1/;' -i.bak Makefile.in; \
+    fi \
     && ./configure \
         --disable-assembly \
     && make -j "$(nproc)" \
     && cp -aL .libs/libgmp.so* $MSAN_LIBDIR \
-    && rm -rf -- *
+    && rm -rf -- * \
+    && apt-get source libxml2 \
+    && mv libxml2-*/* . \
+    && aclocal \
+    && automake --add-missing \
+    && ./configure  --without-python --without-docbook --with-icu \
+    && make -j "$(nproc)" \
+    && cp -aL .libs/libxml2.so* $MSAN_LIBDIR \
+    && rm -rf -- * \
+    && apt-get source unixodbc-dev \
+    && mv unixodbc-*/* . \
+    && libtoolize --force \
+    && aclocal \
+    && autoheader \
+    && autoconf \
+    && automake --add-missing \
+    &&  ./configure --enable-fastvalidate  --with-pth=no --with-included-ltdl=no \
+    && make -j "$(nproc)" \
+    && mv ./DriverManager/.libs/libodbc.so* $MSAN_LIBDIR \
+    && rm -rf -- * \
+    && apt-get source libfmt-dev \
+    && mv fmtlib-*/* . \
+    && mkdir build \
+    && cmake -DFMT_DOC=OFF -DFMT_TEST=OFF  -DBUILD_SHARED_LIBS=on  -DFMT_PEDANTIC=on -S . -B build \
+    && cmake --build build \
+    && mv build/libfmt.so* $MSAN_LIBDIR \
+    && rm -rf -- * \
+    && apt-get source libssl-dev \
+    && mv openssl-*/* . \
+    && ./Configure  shared no-idea no-mdc2 no-rc5 no-zlib no-ssl3 enable-unit-test no-ssl3-method enable-rfc3779 enable-cms no-capieng no-rdrand enable-msan \
+    && make -j "$(nproc)" build_libs \
+    && mv ./*.so* $MSAN_LIBDIR \
+    && rm -rf -- * \
+    && apt-get source  libpcre2-dev \
+    && mv pcre2-*/* . \
+    && cmake -S . -B build/ -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -DPCRE2_BUILD_TESTS=OFF -DPCRE2_SUPPORT_JIT=ON  -DCMAKE_C_FLAGS="${CFLAGS} -Dregcomp=PCRE2regcomp -Dregexec=PCRE2regexec -Dregerror=PCRE2regerror -Dregfree=PCRE2regfree" \
+    && cmake --build build/ \
+    && mv ./build/libpcre2*so* $MSAN_LIBDIR \
+    && rm -rf -- * \
+    && ls -la $MSAN_LIBDIR
 
 ENV CFLAGS="$CFLAGS -Wno-conversion"
 ENV CXXFLAGS="$CFLAGS"
 
-RUN apt-get source cracklib2 \
+RUN . /etc/os-release \
+    && apt-get source cracklib2 \
     && mv cracklib2-*/* . \
     && mk-build-deps -it 'apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' \
+    && if [ "${VERSION_CODENAME}" = "bookworm" ]; then \
+        aclocal \
+        && automake --add-missing; \
+    fi \
     && ./configure \
         --with-default-dict=/usr/share/dict/cracklib-small \
     && make -j "$(nproc)" \
@@ -116,5 +179,22 @@ RUN apt-get source cracklib2 \
        libsnappy-dev \
     && chmod -R a+x $MSAN_LIBDIR/bin/*
 
+# For convenience of human users of msan image
+ENV MSAN_OPTIONS=abort_on_error=1:poison_in_dtor=0
+
 ENV CFLAGS="-fno-omit-frame-pointer -O2 -g -fsanitize=memory"
 ENV CXXFLAGS="$CFLAGS"
+
+ENV CMAKE_GENERATOR=Ninja
+# rr installation + ninja
+RUN . /etc/os-release \
+    && if [ "${VERSION_CODENAME}" = "bullseye" ]; then \
+         apt-get install --no-install-recommends -y libcapnp-0.7.0 ninja-build; \
+       else \
+         apt-get install --no-install-recommends -y libcapnp-0.9.2 ninja-build; \
+    fi \
+    && apt-get clean
+
+# unknown rr
+# hadolint ignore=DL3022
+COPY --from=rr /tmp/install/usr/ /usr/
