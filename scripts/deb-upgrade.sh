@@ -150,7 +150,7 @@ if [[ $systemdCapability == "yes" ]]; then
   fi
 fi
 
-if [[ $test_mode == "all" ]] && [[ $branch == *"10."[5-9]* ]]; then
+if [[ $test_mode == "all" ]]; then
   bb_log_warn "Due to MDEV-23061, an extra server restart is needed"
   control_mariadb_server restart
 fi
