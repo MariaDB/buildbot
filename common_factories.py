@@ -475,11 +475,18 @@ def getLastNFailedBuildsFactory(test_type, mtrDbPool):
     config = {
         "nm": {
             "args": ("RelWithDebInfo", "-DWITH_EMBEDDED_SERVER=ON"),
-            "steps": ("nm", "ps", "emb", "emb-ps", "view"),
+            "steps": ("nm", "cursor", "ps", "emb", "emb-ps", "view"),
         },
         "debug": {
             "args": ("Debug", "-DWITH_EMBEDDED_SERVER=ON"),
-            "steps": ("debug", "debug-ps", "debug-emb", "debug-emb-ps", "debug-view"),
+            "steps": (
+                "debug",
+                "debug-cursor",
+                "debug-ps",
+                "debug-emb",
+                "debug-emb-ps",
+                "debug-view",
+            ),
         },
     }
 
