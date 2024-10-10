@@ -87,14 +87,14 @@ server {
 		proxy_read_timeout 6000s;
 	}
 
-	#FIXME: CrossReference not in DEV. ProxyPass for PROD?
+	#FIXME: CrossReference not in DEV.
 	# Cross-reference
-	# location /cr/static {
-	# 	alias   /srv/cr/static;
-	# }
+	location /cr/static {
+		alias   /srv/cr/static;
+	}
 
-	# location /cr/ {
-	# 	include proxy_params;
-	# 	proxy_pass http://hz-bbw5:8080;
-	# }
+	location /cr/ {
+		include proxy_params;
+		proxy_pass http://hz-bbw5:8080;
+	}
 }
