@@ -72,14 +72,23 @@ services:
     hostname: nginx
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/conf.d/:/etc/nginx/conf.d/:ro
+      - ./nginx/proxy_params:/etc/nginx/proxy_params:ro
+      - ./nginx/templates/:/etc/nginx/templates/:ro
       - /srv/buildbot/packages:/srv/buildbot/packages:ro
       - /srv/buildbot/galera_packages:/srv/buildbot/galera_packages:ro
       - /srv/buildbot/helper_files:/srv/buildbot/helper_files:ro
+      - /etc/letsencrypt/live:/etc/nginx/ssl:ro
+      - ./logs/nginx:/var/log/nginx
     ports:
-      - "127.0.0.1:8080:80"
+      - "443:443"
+      - "80:80"
+    environment:
+      - NGINX_ARTIFACTS_VHOST
+      - NGINX_BUILDBOT_VHOST
+      - NGINX_ARTIFACTS_SSL_PATH
     networks:
       net_front:
+      net_back:
     logging:
       driver: journald
       options:
@@ -96,10 +105,7 @@ services:
     entrypoint:
       - /srv/buildbot/master/docker-compose/start-bbm-web.sh
     networks:
-      net_front:
       net_back:
-    ports:
-      - "127.0.0.1:8010:8010"
     depends_on:
       - mariadb
       - crossbar
