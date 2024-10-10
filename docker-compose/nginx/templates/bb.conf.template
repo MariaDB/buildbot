@@ -1,0 +1,100 @@
+server {
+	listen      80;
+	listen      [::]:80;
+	server_name ${NGINX_BUILDBOT_VHOST};
+	return      301 https://$server_name$request_uri;
+}
+
+
+# Default rate limited zone, with 30 requests per minute
+limit_req_zone $request_uri zone=default:10m rate=30r/m;
+client_max_body_size 10M;
+
+server {
+	listen 443 ssl http2 default_server;
+	listen [::]:443 ssl http2 default_server;
+
+	server_name ${NGINX_BUILDBOT_VHOST};
+
+	# logging
+	access_log /var/log/nginx/buildbot.access.log;
+	error_log /var/log/nginx/buildbot.error.log error;
+
+	# SSL configuration
+	# ssl on; Deprecated in newer versions of NGINX (yields nginx: [emerg] unknown directive "ssl )
+	ssl_certificate /etc/nginx/ssl/${NGINX_BUILDBOT_VHOST}/fullchain.pem; # managed by Certbot
+	ssl_certificate_key /etc/nginx/ssl/${NGINX_BUILDBOT_VHOST}/privkey.pem; # managed by Certbot
+	# put a one day session timeout for websockets to stay longer
+	ssl_session_cache   shared:SSL:10m;
+	ssl_session_timeout 1d;
+	ssl_protocols TLSv1.1 TLSv1.2;
+
+	# Force https - Enable HSTS
+	add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;" always;
+	# # Disable embedding the site
+	add_header X-Frame-Options "SAMEORIGIN";
+	# # Enable XSS protection
+	add_header X-XSS-Protection "1;mode=block";
+
+	# Enable gzipped format
+	#gzip on; already on in main conf
+	# Set level of compression
+	gzip_comp_level 3;
+	# Set mime types
+	gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+
+	proxy_set_header Host $host;
+	proxy_set_header X-Real-IP          $remote_addr;
+	proxy_set_header X-Forwarded-For    $proxy_add_x_forwarded_for;
+	proxy_set_header X-Forwarded-Proto  $scheme;
+	proxy_set_header X-Forwarded-Server $host;
+	proxy_set_header X-Forwarded-Host   $host;
+
+	# Use default zone for rate limiting, allow burst of 10 requests with
+	# no delay
+	limit_req zone=default burst=10 nodelay;
+
+	location / {
+		# Reverse proxy settings
+		include proxy_params;
+		proxy_pass http://master-web:8010;
+	}
+
+	# disable logging for wsgi_dashboards/styles.css since it's generated
+	# somewhere and mess with fail2ban //TEMP find the root cause!
+	location ~ /wsgi_dashboards/styles.css* {
+		access_log off;
+	}
+	location = /favicon.ico {
+		access_log off;
+	}
+	location = /robots.txt {
+		access_log off;
+	}
+
+	# Server sent event (sse) settings
+	location /sse {
+		proxy_buffering off;
+		proxy_pass http://master-web:8010/sse;
+	}
+
+	# Websocket settings
+	location /ws {
+		proxy_http_version 1.1;
+		proxy_set_header Upgrade $http_upgrade;
+		proxy_set_header Connection "upgrade";
+		proxy_pass http://master-web:8010/ws;
+		proxy_read_timeout 6000s;
+	}
+
+	#FIXME: CrossReference not in DEV. ProxyPass for PROD?
+	# Cross-reference
+	# location /cr/static {
+	# 	alias   /srv/cr/static;
+	# }
+
+	# location /cr/ {
+	# 	include proxy_params;
+	# 	proxy_pass http://hz-bbw5:8080;
+	# }
+}
