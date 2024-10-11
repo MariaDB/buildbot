@@ -46,6 +46,8 @@ case $test_mode in
     # retrieve full package list from repo
     package_list=$(rpm_repoquery) ||
       bb_log_err "unable to retrieve package list from repository"
+    package_list=$(echo "$package_list" | grep -viE 'galera|columnstore')
+    bb_log_warn "Due to MCOL-4120 and other issues, Columnstore upgrade will be tested separately"
     ;;
   server)
     package_list="MariaDB-server MariaDB-client"
