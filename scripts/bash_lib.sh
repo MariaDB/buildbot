@@ -571,6 +571,12 @@ check_upgraded_versions() {
     # when legitimate changes in dependencies happen between minor versions.
     # The adjustments should be done to .cmp files, and removed after the release
     #
+
+    # Remove after Q4 2024 release
+    sed -i '/libaio.so/d;liburing.so/d' ./reqs-*.cmp
+    sed -i '/libaio.so/d;liburing.so/d' ./ldd-*.cmp
+    sed -i '/lsof/d' ./reqs-*.cmp
+
     # End of temporary adjustments
 
     set -o pipefail
