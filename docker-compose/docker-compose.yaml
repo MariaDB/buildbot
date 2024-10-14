@@ -52,15 +52,15 @@ services:
       - /srv/buildbot/packages:/srv/buildbot/packages:ro
       - /srv/buildbot/galera_packages:/srv/buildbot/galera_packages:ro
       - /srv/buildbot/helper_files:/srv/buildbot/helper_files:ro
-      - /etc/letsencrypt/live:/etc/nginx/ssl:ro
       - ./logs/nginx:/var/log/nginx
+      - ./certbot/www/:/var/www/certbot/:ro
+      - ./certbot/conf/:/etc/nginx/ssl/:ro
     ports:
       - "443:443"
       - "80:80"
     environment:
       - NGINX_ARTIFACTS_VHOST
       - NGINX_BUILDBOT_VHOST
-      - NGINX_ARTIFACTS_SSL_PATH
     extra_hosts:
       - "hz-bbw5=127.0.0.1"
     networks:
@@ -70,6 +70,14 @@ services:
       driver: journald
       options:
         tag: "bb-nginx"
+
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - ./certbot/www/:/var/www/certbot/:rw
+      - ./certbot/conf/:/etc/letsencrypt/:rw
+    networks:
+      net_front:
 
   master-web:
     image: quay.io/mariadb-foundation/bb-master:master-web
@@ -90,9 +98,6 @@ services:
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MQ_ROUTER_URL
-      - NGINX_ARTIFACTS_SSL_PATH
-      - NGINX_ARTIFACTS_VHOST
-      - NGINX_BUILDBOT_VHOST
       - PORT=8010
       - TITLE
       - TITLE_URL
@@ -127,9 +132,6 @@ services:
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MQ_ROUTER_URL
-      - NGINX_ARTIFACTS_SSL_PATH
-      - NGINX_ARTIFACTS_VHOST
-      - NGINX_BUILDBOT_VHOST
       - PORT=9996
       - TITLE
       - TITLE_URL
@@ -170,9 +172,6 @@ services:
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MQ_ROUTER_URL
-      - NGINX_ARTIFACTS_SSL_PATH
-      - NGINX_ARTIFACTS_VHOST
-      - NGINX_BUILDBOT_VHOST
       - PORT=9997
       - TITLE
       - TITLE_URL
@@ -212,9 +211,6 @@ services:
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MQ_ROUTER_URL
-      - NGINX_ARTIFACTS_SSL_PATH
-      - NGINX_ARTIFACTS_VHOST
-      - NGINX_BUILDBOT_VHOST
       - PORT=9998
       - TITLE
       - TITLE_URL
@@ -254,9 +250,6 @@ services:
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MQ_ROUTER_URL
-      - NGINX_ARTIFACTS_SSL_PATH
-      - NGINX_ARTIFACTS_VHOST
-      - NGINX_BUILDBOT_VHOST
       - PORT=9999
       - TITLE
       - TITLE_URL
@@ -296,9 +289,6 @@ services:
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MQ_ROUTER_URL
-      - NGINX_ARTIFACTS_SSL_PATH
-      - NGINX_ARTIFACTS_VHOST
-      - NGINX_BUILDBOT_VHOST
       - PORT=10000
       - TITLE
       - TITLE_URL
@@ -338,9 +328,6 @@ services:
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MQ_ROUTER_URL
-      - NGINX_ARTIFACTS_SSL_PATH
-      - NGINX_ARTIFACTS_VHOST
-      - NGINX_BUILDBOT_VHOST
       - PORT=10001
       - TITLE
       - TITLE_URL
@@ -380,9 +367,6 @@ services:
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MQ_ROUTER_URL
-      - NGINX_ARTIFACTS_SSL_PATH
-      - NGINX_ARTIFACTS_VHOST
-      - NGINX_BUILDBOT_VHOST
       - PORT=10002
       - TITLE
       - TITLE_URL
@@ -422,9 +406,6 @@ services:
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MQ_ROUTER_URL
-      - NGINX_ARTIFACTS_SSL_PATH
-      - NGINX_ARTIFACTS_VHOST
-      - NGINX_BUILDBOT_VHOST
       - PORT=10003
       - TITLE
       - TITLE_URL
@@ -464,9 +445,6 @@ services:
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MQ_ROUTER_URL
-      - NGINX_ARTIFACTS_SSL_PATH
-      - NGINX_ARTIFACTS_VHOST
-      - NGINX_BUILDBOT_VHOST
       - PORT=10004
       - TITLE
       - TITLE_URL
@@ -506,9 +484,6 @@ services:
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MQ_ROUTER_URL
-      - NGINX_ARTIFACTS_SSL_PATH
-      - NGINX_ARTIFACTS_VHOST
-      - NGINX_BUILDBOT_VHOST
       - PORT=10005
       - TITLE
       - TITLE_URL
@@ -548,9 +523,6 @@ services:
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MQ_ROUTER_URL
-      - NGINX_ARTIFACTS_SSL_PATH
-      - NGINX_ARTIFACTS_VHOST
-      - NGINX_BUILDBOT_VHOST
       - PORT=10006
       - TITLE
       - TITLE_URL
@@ -590,9 +562,6 @@ services:
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MQ_ROUTER_URL
-      - NGINX_ARTIFACTS_SSL_PATH
-      - NGINX_ARTIFACTS_VHOST
-      - NGINX_BUILDBOT_VHOST
       - PORT=10007
       - TITLE
       - TITLE_URL
@@ -632,9 +601,6 @@ services:
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MQ_ROUTER_URL
-      - NGINX_ARTIFACTS_SSL_PATH
-      - NGINX_ARTIFACTS_VHOST
-      - NGINX_BUILDBOT_VHOST
       - PORT=10008
       - TITLE
       - TITLE_URL

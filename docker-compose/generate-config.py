@@ -78,15 +78,15 @@ services:
       - /srv/buildbot/packages:/srv/buildbot/packages:ro
       - /srv/buildbot/galera_packages:/srv/buildbot/galera_packages:ro
       - /srv/buildbot/helper_files:/srv/buildbot/helper_files:ro
-      - /etc/letsencrypt/live:/etc/nginx/ssl:ro
       - ./logs/nginx:/var/log/nginx
+      - ./certbot/www/:/var/www/certbot/:ro
+      - ./certbot/conf/:/etc/nginx/ssl/:ro
     ports:
       - "443:443"
       - "80:80"
     environment:
       - NGINX_ARTIFACTS_VHOST
       - NGINX_BUILDBOT_VHOST
-      - NGINX_ARTIFACTS_SSL_PATH
     extra_hosts:
       - "{cr_host_wg_addr}"
     networks:
@@ -96,6 +96,14 @@ services:
       driver: journald
       options:
         tag: "bb-nginx"
+
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - ./certbot/www/:/var/www/certbot/:rw
+      - ./certbot/conf/:/etc/letsencrypt/:rw
+    networks:
+      net_front:
 
   master-web:
     image: quay.io/mariadb-foundation/bb-master:master-web
@@ -170,7 +178,9 @@ def generate_volumes(volumes, indent_level=2):
 def construct_env_section(env_vars):
     env_section = "    environment:\n"
     for key, value in sorted(env_vars.items()):
-        if key != "PORT":
+        if key.startswith("NGINX_"):
+            continue
+        elif key != "PORT":
             env_section += f"      - {key}\n"
         else:
             env_section += f"      - {key}={value}\n"
