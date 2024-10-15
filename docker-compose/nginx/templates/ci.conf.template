@@ -63,7 +63,7 @@ server {
 	msie_padding off;
 
 	# Enable gzipped format
-	#gzip on; already on in main conf
+	# gzip on; already on in main conf
 	# Set level of compression
 	gzip_comp_level 3;
 	# Set mime types
@@ -74,4 +74,8 @@ server {
 	# limit_req zone=default burst=10 nodelay;
 
 	error_page 404 /older_builds$request_uri;
+
+	# logging
+	access_log /var/log/nginx/${NGINX_ARTIFACTS_VHOST}.access.log;
+	error_log /var/log/nginx/${NGINX_ARTIFACTS_VHOST}.error.log;
 }

@@ -127,9 +127,6 @@ DOCKER_COMPOSE_TEMPLATE = """
       - crossbar
 """
 
-END_TEMPLATE = """
-"""
-
 
 # Function to generate volumes section for Docker Compose
 def generate_volumes(volumes, indent_level=2):
