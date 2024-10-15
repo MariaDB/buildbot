@@ -61,8 +61,6 @@ services:
     environment:
       - NGINX_ARTIFACTS_VHOST
       - NGINX_BUILDBOT_VHOST
-    extra_hosts:
-      - "hz-bbw5=127.0.0.1"
     networks:
       net_front:
       net_back:
