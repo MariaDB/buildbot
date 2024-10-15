@@ -96,14 +96,14 @@ server {
 		proxy_read_timeout 6000s;
 	}
 
-	#FIXME: CrossReference not in DEV.
+	#FIXME: CrossReference not in DEV. ENABLE me when CR is deployed.
 	# Cross-reference
-	location /cr/static {
-		alias   /srv/cr/static;
-	}
+	# location /cr/static {
+	# 	alias   /srv/cr/static;
+	# }
 
-	location /cr/ {
-		include proxy_params;
-		proxy_pass http://hz-bbw5:8080;
-	}
+	# location /cr/ {
+	# 	include proxy_params;
+	# 	proxy_pass http://hz-bbw5:8080;
+	# }
 }

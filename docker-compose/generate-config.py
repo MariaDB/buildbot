@@ -87,8 +87,6 @@ services:
     environment:
       - NGINX_ARTIFACTS_VHOST
       - NGINX_BUILDBOT_VHOST
-    extra_hosts:
-      - "{cr_host_wg_addr}"
     networks:
       net_front:
       net_back:
