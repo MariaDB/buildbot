@@ -117,6 +117,7 @@ services:
       - /srv/buildbot/master/docker-compose/start-bbm-web.sh
     networks:
       net_back:
+      net_front:
     depends_on:
       - mariadb
       - crossbar
