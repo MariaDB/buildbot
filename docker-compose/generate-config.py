@@ -39,15 +39,11 @@ services:
       - MARIADB_DATABASE=buildbot
       - MARIADB_USER=buildmaster
       - MARIADB_PASSWORD=password
-    networks:
-      net_back:
+    network_mode: host
     healthcheck:
       test: ['CMD', "mariadb-admin", "--password=password", "--protocol", "tcp", "ping"]
     volumes:
-    # Only needed during GSOC
-    # - ./db:/docker-entrypoint-initdb.d:ro
       - ./mariadb:/var/lib/mysql:rw
-    # command: --tmpdir=/var/lib/mysql/tmp
     logging:
       driver: journald
       options:
@@ -58,8 +54,7 @@ services:
     restart: unless-stopped
     container_name: crossbar
     hostname: crossbar
-    networks:
-      net_back:
+    network_mode: host
     logging:
       driver: journald
       options:
@@ -72,7 +67,6 @@ services:
     hostname: nginx
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/proxy_params:/etc/nginx/proxy_params:ro
       - ./nginx/conf.d/:/etc/nginx/conf.d/
       - ./nginx/templates/:/etc/nginx/templates/:ro
       - /srv/buildbot/packages:/srv/buildbot/packages:ro
@@ -81,15 +75,10 @@ services:
       - ./logs/nginx:/var/log/nginx
       - ./certbot/www/:/var/www/certbot/:ro
       - ./certbot/conf/:/etc/nginx/ssl/:ro
-    ports:
-      - "443:443"
-      - "80:80"
     environment:
       - NGINX_ARTIFACTS_VHOST
       - NGINX_BUILDBOT_VHOST
-    networks:
-      net_front:
-      net_back:
+    network_mode: host
     logging:
       driver: journald
       options:
@@ -97,11 +86,13 @@ services:
 
   certbot:
     image: certbot/certbot:latest
+    restart: "no"
+    container_name: certbot
+    hostname: certbot
     volumes:
       - ./certbot/www/:/var/www/certbot/:rw
       - ./certbot/conf/:/etc/letsencrypt/:rw
-    networks:
-      net_front:
+    network_mode: host
 
   master-web:
     image: quay.io/mariadb-foundation/bb-master:master-web
@@ -113,9 +104,7 @@ services:
       - ./buildbot/:/srv/buildbot/master
     entrypoint:
       - /srv/buildbot/master/docker-compose/start-bbm-web.sh
-    networks:
-      net_back:
-      net_front:
+    network_mode: host
     depends_on:
       - mariadb
       - crossbar
@@ -132,37 +121,13 @@ DOCKER_COMPOSE_TEMPLATE = """
       - /bin/bash
       - -c
       - "/srv/buildbot/master/docker-compose/start.sh {master_directory}"
-    networks:
-      net_front:
-      net_back:
-    ports:
-      - "{buildmaster_wg_ip}:{port}:{port}"
+    network_mode: host
     depends_on:
       - mariadb
       - crossbar
 """
 
 END_TEMPLATE = """
-networks:
-  net_front:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.200.0.0/24
-    driver_opts:
-      com.docker.network.enable_ipv6: "false"
-      com.docker.network.bridge.name: "br_bb_front"
-  net_back:
-    driver: bridge
-    internal: true
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.16.201.0/24
-    driver_opts:
-      com.docker.network.enable_ipv6: "false"
-      com.docker.network.bridge.name: "br_bb_back"
 """
 
 
@@ -246,13 +211,11 @@ def main(args):
                 master_name=master_name,
                 master_directory=master_directory,
                 port=port,
-                buildmaster_wg_ip=env_vars["BUILDMASTER_WG_IP"],
                 volumes=generate_volumes(master_volumes[master_name]),
             )
             port += 1
 
             file.write(docker_compose_piece)
-        file.write(END_TEMPLATE)
 
 
 if __name__ == "__main__":
