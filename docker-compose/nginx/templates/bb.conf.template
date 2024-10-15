@@ -25,10 +25,6 @@ server {
 
 	server_name ${NGINX_BUILDBOT_VHOST};
 
-	# logging
-	access_log /var/log/nginx/buildbot.access.log;
-	error_log /var/log/nginx/buildbot.error.log error;
-
 	# SSL configuration
 	# ssl on; Deprecated in newer versions of NGINX (yields nginx: [emerg] unknown directive "ssl )
 	ssl_certificate /etc/nginx/ssl/live/${NGINX_BUILDBOT_VHOST}/fullchain.pem; # managed by Certbot
@@ -52,21 +48,19 @@ server {
 	# Set mime types
 	gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
 
-	proxy_set_header Host $host;
-	proxy_set_header X-Real-IP          $remote_addr;
-	proxy_set_header X-Forwarded-For    $proxy_add_x_forwarded_for;
+	proxy_set_header HOST $host;
+	proxy_set_header X-Real-IP $remote_addr;
+	proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 	proxy_set_header X-Forwarded-Proto  $scheme;
-	proxy_set_header X-Forwarded-Server $host;
-	proxy_set_header X-Forwarded-Host   $host;
+	proxy_set_header X-Forwarded-Server  $host;
+	proxy_set_header X-Forwarded-Host  $host;
 
 	# Use default zone for rate limiting, allow burst of 10 requests with
 	# no delay
 	limit_req zone=default burst=10 nodelay;
 
 	location / {
-		# Reverse proxy settings
-		include proxy_params;
-		proxy_pass http://master-web:8010;
+		proxy_pass http://127.0.0.1:8010;
 	}
 
 	# disable logging for wsgi_dashboards/styles.css since it's generated
@@ -84,7 +78,7 @@ server {
 	# Server sent event (sse) settings
 	location /sse {
 		proxy_buffering off;
-		proxy_pass http://master-web:8010/sse;
+		proxy_pass http://127.0.0.1:8010/sse;
 	}
 
 	# Websocket settings
@@ -92,18 +86,14 @@ server {
 		proxy_http_version 1.1;
 		proxy_set_header Upgrade $http_upgrade;
 		proxy_set_header Connection "upgrade";
-		proxy_pass http://master-web:8010/ws;
+		proxy_pass http://127.0.0.1:8010/ws;
 		proxy_read_timeout 6000s;
 	}
 
-	#FIXME: CrossReference not in DEV. ENABLE me when CR is deployed.
+	#FIXME: CrossReference not in DEV.
 	# Cross-reference
-	# location /cr/static {
-	# 	alias   /srv/cr/static;
-	# }
+	location /cr/static {
+		alias   /srv/cr/static;
+	}
 
-	# location /cr/ {
-	# 	include proxy_params;
-	# 	proxy_pass http://hz-bbw5:8080;
-	# }
 }

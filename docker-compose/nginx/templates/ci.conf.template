@@ -47,10 +47,6 @@ server {
 
 	autoindex on;
 
-	# logging
-	access_log /var/log/nginx/ci.access.log;
-	error_log /var/log/nginx/ci.error.log error;
-
 	# SSL configuration
 	# ssl on;
 	ssl_certificate /etc/nginx/ssl/live/${NGINX_BUILDBOT_VHOST}/fullchain.pem;
