@@ -63,18 +63,6 @@ server {
 		proxy_pass http://127.0.0.1:8010;
 	}
 
-	# disable logging for wsgi_dashboards/styles.css since it's generated
-	# somewhere and mess with fail2ban //TEMP find the root cause!
-	location ~ /wsgi_dashboards/styles.css* {
-		access_log off;
-	}
-	location = /favicon.ico {
-		access_log off;
-	}
-	location = /robots.txt {
-		access_log off;
-	}
-
 	# Server sent event (sse) settings
 	location /sse {
 		proxy_buffering off;
@@ -96,4 +84,19 @@ server {
 		alias   /srv/cr/static;
 	}
 
+	# logging
+	access_log /var/log/nginx/${NGINX_BUILDBOT_VHOST}.access.log;
+	error_log /var/log/nginx/${NGINX_BUILDBOT_VHOST}.error.log;
+
+	# disable logging for wsgi_dashboards/styles.css since it's generated
+	# somewhere and mess with fail2ban //TEMP find the root cause!
+	location ~ /wsgi_dashboards/styles.css* {
+		access_log off;
+	}
+	location = /favicon.ico {
+		access_log off;
+	}
+	location = /robots.txt {
+		access_log off;
+	}
 }
