@@ -14,39 +14,16 @@ server {
 	}
 }
 
-
 # Default rate limited zone, with 30 requests per minute
 limit_req_zone $request_uri zone=default:10m rate=30r/m;
 client_max_body_size 10M;
 
 server {
-	listen 443 ssl http2 default_server;
-	listen [::]:443 ssl http2 default_server;
+	listen 443 ssl;
+	listen [::]:443 ssl;
+	http2 on;
 
 	server_name ${NGINX_BUILDBOT_VHOST};
-
-	# SSL configuration
-	# ssl on; Deprecated in newer versions of NGINX (yields nginx: [emerg] unknown directive "ssl )
-	ssl_certificate /etc/nginx/ssl/live/${NGINX_BUILDBOT_VHOST}/fullchain.pem; # managed by Certbot
-	ssl_certificate_key /etc/nginx/ssl/live/${NGINX_BUILDBOT_VHOST}/privkey.pem; # managed by Certbot
-	# put a one day session timeout for websockets to stay longer
-	ssl_session_cache   shared:SSL:10m;
-	ssl_session_timeout 1d;
-	ssl_protocols TLSv1.1 TLSv1.2;
-
-	# Force https - Enable HSTS
-	add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;" always;
-	# # Disable embedding the site
-	add_header X-Frame-Options "SAMEORIGIN";
-	# # Enable XSS protection
-	add_header X-XSS-Protection "1;mode=block";
-
-	# Enable gzipped format
-	#gzip on; already on in main conf
-	# Set level of compression
-	gzip_comp_level 3;
-	# Set mime types
-	gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
 
 	proxy_set_header HOST $host;
 	proxy_set_header X-Real-IP $remote_addr;
