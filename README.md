@@ -1,6 +1,14 @@
 # buildbot.mariadb.org
 
-[![bbw-build-container](https://github.com/MariaDB/buildbot/actions/workflows/bbw_build_container.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/bbw_build_container.yml)
+[![build-centos.pip-based](https://github.com/MariaDB/buildbot/actions/workflows/build-centos.pip-based.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/build-centos.pip-based.yml)
+[![build-centos7.pip-based](https://github.com/MariaDB/buildbot/actions/workflows/build-centos7.pip-based.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/build-centos7.pip-based.yml)
+[![build-debian-based](https://github.com/MariaDB/buildbot/actions/workflows/build-debian-based.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/build-debian-based.yml)
+[![build-debian.aocc-based](https://github.com/MariaDB/buildbot/actions/workflows/build-debian.aocc-based.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/build-debian.aocc-based.yml)
+[![build-debian.jepsen-based](https://github.com/MariaDB/buildbot/actions/workflows/build-debian.jepsen-based.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/build-debian.jepsen-based.yml)
+[![build-debian.msan-based](https://github.com/MariaDB/buildbot/actions/workflows/build-debian.msan-based.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/build-debian.msan-based.yml)
+[![build-fedora-based](https://github.com/MariaDB/buildbot/actions/workflows/build-fedora-based.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/build-fedora-based.yml)
+[![build-opensuse.pip-based](https://github.com/MariaDB/buildbot/actions/workflows/build-opensuse.pip-based.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/build-opensuse.pip-based.yml)
+[![build-sles.pip-based](https://github.com/MariaDB/buildbot/actions/workflows/build-sles.pip-based.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/build-sles.pip-based.yml)
 [![bbw-build-container-rhel](https://github.com/MariaDB/buildbot/actions/workflows/bbw_build_container_rhel.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/bbw_build_container_rhel.yml)
 [![bbm-build-container](https://github.com/MariaDB/buildbot/actions/workflows/bbm_build_container.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/bbm_build_container.yml)
 [![bbm-deploy](https://github.com/MariaDB/buildbot/actions/workflows/bbm_deploy.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/bbm_deploy.yml)
