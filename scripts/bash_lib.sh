@@ -577,6 +577,10 @@ check_upgraded_versions() {
     sed -i '/libaio.so/d;liburing.so/d' ./ldd-*.cmp
     sed -i '/lsof/d' ./reqs-*.cmp
 
+    #Account for mariadb-plugin-mroonga diffs in Debian-11
+    sed -i '/liblz4-1/d' ./reqs-*.cmp
+    sed -i '/liblz4.so.1/d' ./ldd-*.cmp
+
     # End of temporary adjustments
 
     set -o pipefail
