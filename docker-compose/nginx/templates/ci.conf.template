@@ -14,22 +14,12 @@ server {
 	}
 }
 
-# Default rate limited zone, with 30 requests per minute
-limit_req_zone $request_uri zone=default:10m rate=30r/m;
-client_max_body_size 10M;
-
 server {
 	listen 443 ssl;
 	listen [::]:443 ssl;
 	http2 on;
 
 	server_name ${NGINX_ARTIFACTS_VHOST};
-
-	# ratelimit is disabled, do we need it on ci.mariadb.org, probably not
-	# (static website)
-	# Use default zone for rate limiting, allow burst of 10 requests with no
-	# delay
-	# limit_req zone=default burst=10 nodelay;
 
 	root /srv/buildbot/packages/;
 	location /helper_files {
