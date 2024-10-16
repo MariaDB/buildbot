@@ -30,7 +30,7 @@ START_TEMPLATE = """
 version: "3.7"
 services:
   mariadb:
-    image: mariadb:10.6
+    image: mariadb:10.11
     restart: unless-stopped
     container_name: mariadb
     hostname: mariadb
