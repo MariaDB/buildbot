@@ -18,7 +18,7 @@ cd "/srv/buildbot/master/$1" || err "cd /srv/buildbot/master/$1"
 
 VAR_DB_HOST=$(grep db_host master-private.cfg | awk '{print $3}' | sed s/\"//g)
 echo "Waiting for MariaDB to start..."
-while ! nc -z $VAR_DB_HOST 3306; do
+while ! nc -z "$VAR_DB_HOST" 3306; do
   sleep 0.1
 done
 echo "MariaDB started"
