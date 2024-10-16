@@ -15,7 +15,13 @@ set -e
 manual_run_switch "$1"
 
 upgrade_type_mode
-upgrade_test_type "$test_type"
+
+# If there is available previous major version
+# then expect that it will be used as base of
+# installation
+if [ -z "${prev_major_version}" ]; then
+   upgrade_test_type "$test_type"
+fi
 
 bb_print_env
 
