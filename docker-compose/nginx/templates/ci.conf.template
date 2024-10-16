@@ -14,12 +14,22 @@ server {
 	}
 }
 
-# Build artifacts location
+# Default rate limited zone, with 30 requests per minute
+limit_req_zone $request_uri zone=default:10m rate=30r/m;
+client_max_body_size 10M;
+
 server {
-	listen 443 ssl http2;
-	listen [::]:443 ssl http2;
+	listen 443 ssl;
+	listen [::]:443 ssl;
+	http2 on;
 
 	server_name ${NGINX_ARTIFACTS_VHOST};
+
+	# ratelimit is disabled, do we need it on ci.mariadb.org, probably not
+	# (static website)
+	# Use default zone for rate limiting, allow burst of 10 requests with no
+	# delay
+	# limit_req zone=default burst=10 nodelay;
 
 	root /srv/buildbot/packages/;
 	location /helper_files {
@@ -46,32 +56,6 @@ server {
   }
 
 	autoindex on;
-
-	# SSL configuration
-	# ssl on;
-	ssl_certificate /etc/nginx/ssl/live/${NGINX_BUILDBOT_VHOST}/fullchain.pem;
-	ssl_certificate_key /etc/nginx/ssl/live/${NGINX_BUILDBOT_VHOST}/privkey.pem;
-	ssl_protocols TLSv1.1 TLSv1.2;
-
-	# Force https - Enable HSTS
-	add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;" always;
-	# Disable embedding the site
-	add_header X-Frame-Options "SAMEORIGIN";
-	# Enable XSS protection
-	add_header X-XSS-Protection "1;mode=block";
-	max_ranges 1;
-	msie_padding off;
-
-	# Enable gzipped format
-	# gzip on; already on in main conf
-	# Set level of compression
-	gzip_comp_level 3;
-	# Set mime types
-	gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
-
-	# Use default zone for rate limiting, allow burst of 10 requests with
-	# no delay
-	# limit_req zone=default burst=10 nodelay;
 
 	error_page 404 /older_builds$request_uri;
 

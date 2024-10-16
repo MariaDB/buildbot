@@ -74,7 +74,7 @@ services:
       - /srv/buildbot/helper_files:/srv/buildbot/helper_files:ro
       - ./logs/nginx:/var/log/nginx
       - ./certbot/www/:/var/www/certbot/:ro
-      - ./certbot/conf/:/etc/nginx/ssl/:ro
+      - ./certbot/ssl/:/etc/nginx/ssl/:ro
     environment:
       - NGINX_ARTIFACTS_VHOST
       - NGINX_BUILDBOT_VHOST
@@ -83,16 +83,6 @@ services:
       driver: journald
       options:
         tag: "bb-nginx"
-
-  certbot:
-    image: certbot/certbot:latest
-    restart: "no"
-    container_name: certbot
-    hostname: certbot
-    volumes:
-      - ./certbot/www/:/var/www/certbot/:rw
-      - ./certbot/conf/:/etc/letsencrypt/:rw
-    network_mode: host
 
   master-web:
     image: quay.io/mariadb-foundation/bb-master:master-web
