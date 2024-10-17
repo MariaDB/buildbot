@@ -167,8 +167,13 @@ rpm_pkg_makecache() {
   # Try several times, to avoid sporadic "The requested URL returned error: 404"
   made_cache=0
   for i in {1..5}; do
-    sudo rm -rf "/var/cache/$pkg_cmd/*"
-    sudo "$pkg_cmd" clean all
+    if [[ $ID_LIKE =~ ^suse* ]]; then
+      sudo rm -rf "/var/cache/zypp/*"
+      sudo "$pkg_cmd" clean --all
+    else
+      sudo rm -rf "/var/cache/$pkg_cmd/*"
+      sudo "$pkg_cmd" clean all
+    fi
     source /etc/os-release
     if [[ $ID == "rhel" ]]; then
       sudo subscription-manager refresh
@@ -210,7 +215,8 @@ rpm_repoquery() {
   set +u
   # return full package list from repository
   if [[ $ID_LIKE =~ ^suse* ]]; then
-    zypper packages -r "${repo_name}" | grep "MariaDB" | awk '{print $8}'
+    sudo zypper --gpg-auto-import-keys packages -r "${repo_name}">/dev/null
+    zypper packages -r "${repo_name}" | grep "MariaDB" | awk '{print $4}' #After cache is made, no need for sudo
   else
     repoquery --disablerepo=* --enablerepo="${repo_name}" -a -q |
       cut -d ":" -f1 | sort -u | sed 's/-0//'
@@ -571,6 +577,16 @@ check_upgraded_versions() {
     # when legitimate changes in dependencies happen between minor versions.
     # The adjustments should be done to .cmp files, and removed after the release
     #
+
+    # Remove after Q4 2024 release
+    sed -i '/libaio.so/d;liburing.so/d' ./reqs-*.cmp
+    sed -i '/libaio.so/d;liburing.so/d' ./ldd-*.cmp
+    sed -i '/lsof/d' ./reqs-*.cmp
+
+    #Account for mariadb-plugin-mroonga diffs in Debian-11
+    sed -i '/liblz4-1/d' ./reqs-*.cmp
+    sed -i '/liblz4.so.1/d' ./ldd-*.cmp
+
     # End of temporary adjustments
 
     set -o pipefail

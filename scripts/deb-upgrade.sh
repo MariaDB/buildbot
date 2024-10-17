@@ -37,7 +37,7 @@ get_packages_file_mirror() {
   set -u
   if ! wget "$baseurl/$dist_name/dists/$version_name/main/binary-$(deb_arch)/Packages"
   then
-    bb_log_err "Could not find the 'Packages' file for a previous version."
+    bb_log_err "Could not find the 'Packages' file for $dist_name $version_name on deb|archive.mariadb.org."
     exit 1
   fi
   set +u
@@ -50,10 +50,10 @@ case $test_mode in
     if grep -qi columnstore Packages; then
       bb_log_warn "due to MCOL-4120 (Columnstore leaves the server shut down) and other bugs Columnstore upgrade is tested separately"
     fi
-    package_list=$(grep "^Package:" Packages | grep -vE 'galera|spider|columnstore' | awk '{print $2}' | sort | uniq | xargs)
+    package_list=$(grep "^Package:" Packages | grep -vE 'galera|spider|columnstore' | awk '{print $2}' | sort -u | xargs)
     if grep -qi spider Packages; then
       bb_log_warn "due to MDEV-14622 Spider will be installed separately after the server"
-      spider_package_list=$(grep "^Package:" Packages | grep 'spider' | awk '{print $2}' | sort | uniq | xargs)
+      spider_package_list=$(grep "^Package:" Packages | grep 'spider' | awk '{print $2}' | sort -u | xargs)
     fi
     if grep -si tokudb Packages; then
       # For the sake of installing TokuDB, disable hugepages
@@ -75,7 +75,7 @@ case $test_mode in
       bb_log_warn "Columnstore isn't necessarily built on Sid, the test will be skipped"
       exit
     fi
-    package_list="mariadb-server "$(grep "^Package:" Packages | grep 'columnstore' | awk '{print $2}' | sort | uniq | xargs)
+    package_list="mariadb-server "$(grep "^Package:" Packages | grep 'columnstore' | awk '{print $2}' | sort -u | xargs)
     ;;
   *)
     bb_log_err "unknown test mode: $test_mode"
@@ -233,7 +233,7 @@ store_mariadb_server_info new
 # //TEMP what needs to be done here?
 # # Dependency information for new binaries/libraries
 # set +x
-# for i in $(sudo which mysqld | sed -e 's/mysqld$/mysql\*/') $(which mysql | sed -e 's/mysql$/mysql\*/') $(dpkg-query -L $(dpkg -l | grep mariadb | awk '{print $2}' | xargs) | grep -v 'mysql-test' | grep -v '/debug/' | grep '/plugin/' | sed -e 's/[^\/]*$/\*/' | sort | uniq | xargs); do
+# for i in $(sudo which mysqld | sed -e 's/mysqld$/mysql\*/') $(which mysql | sed -e 's/mysql$/mysql\*/') $(dpkg-query -L $(dpkg -l | grep mariadb | awk '{print $2}' | xargs) | grep -v 'mysql-test' | grep -v '/debug/' | grep '/plugin/' | sed -e 's/[^\/]*$/\*/' | sort -u | xargs); do
 #   echo "=== $i"
 #   ldd $i | sort | sed 's/(.*)//'
 # done >/home/buildbot/ldd.new

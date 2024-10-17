@@ -73,6 +73,7 @@ RUN . /etc/os-release \
     libeigen3-dev \
     libffi-dev \
     libio-socket-ssl-perl \
+    libmecab-dev \
     libnet-ssleay-perl \
     libssl-dev \
     lsof \
