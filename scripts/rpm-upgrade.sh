@@ -148,10 +148,16 @@ bb_log_info "Package_list: $package_list"
 # sudo rm -rf
 # /etc/zypp/repos.d/SUSE_Linux_Enterprise_Server_12_SP3_x86_64:SLES12-SP3-Updates.repo
 # /etc/zypp/repos.d/SUSE_Linux_Enterprise_Server_12_SP3_x86_64:SLES12-SP3-Pool.repo
-sudo "$pkg_cmd" clean all
+if [[ $ID_LIKE =~ ^suse* ]]; then
+  sudo "$pkg_cmd" clean --all
+  pkg_cmd_nonint="-n"
+else
+  sudo "$pkg_cmd" clean all
+  pkg_cmd_nonint="-y"
+fi
 
 # Install previous release
-echo "$package_list" | xargs sudo "$pkg_cmd" -y install ||
+echo "$package_list" | xargs sudo "$pkg_cmd" "$pkg_cmd_nonint" install ||
   bb_log_err "installation of a previous release failed, see the output above"
 #fi
 
@@ -246,7 +252,7 @@ fi
 if [[ $test_type == "major" ]]; then
   bb_log_info "remove old packages for major upgrade"
   packages_to_remove=$(rpm -qa | grep 'MariaDB-' | awk -F'-' '{print $1"-"$2}')
-  echo "$packages_to_remove" | xargs sudo "$pkg_cmd" -y remove
+  echo "$packages_to_remove" | xargs sudo "$pkg_cmd" "$pkg_cmd_nonint" remove
   rpm -qa | grep -iE 'maria|mysql' || true
 fi
 
@@ -254,10 +260,10 @@ rpm_setup_bb_galera_artifacts_mirror
 rpm_setup_bb_artifacts_mirror
 if [[ $test_type == "major" ]]; then
   # major upgrade (remove then install)
-  echo "$package_list" | xargs sudo "$pkg_cmd" -y install
+  echo "$package_list" | xargs sudo "$pkg_cmd" "$pkg_cmd_nonint" install
 else
   # minor upgrade (upgrade works)
-  echo "$package_list" | xargs sudo "$pkg_cmd" -y upgrade
+  echo "$package_list" | xargs sudo "$pkg_cmd" "$pkg_cmd_nonint" upgrade
 fi
 # set +e
 
