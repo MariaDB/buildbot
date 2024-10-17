@@ -27,7 +27,6 @@ VOLUMES = ["./logs:/var/log/buildbot", "./buildbot/:/srv/buildbot/master"]
 
 START_TEMPLATE = """
 ---
-version: "3.7"
 services:
   mariadb:
     image: mariadb:10.11
@@ -39,11 +38,13 @@ services:
       - MARIADB_DATABASE=buildbot
       - MARIADB_USER=buildmaster
       - MARIADB_PASSWORD=password
+      - MARIADB_AUTO_UPGRADE=1
     network_mode: host
     healthcheck:
       test: ['CMD', "mariadb-admin", "--password=password", "--protocol", "tcp", "ping"]
     volumes:
       - ./mariadb:/var/lib/mysql:rw
+      - ./mariadb.cnf:/etc/mysql/conf.d/mariadb.cnf:ro
     logging:
       driver: journald
       options:
@@ -96,8 +97,10 @@ services:
       - /srv/buildbot/master/docker-compose/start-bbm-web.sh
     network_mode: host
     depends_on:
-      - mariadb
-      - crossbar
+      mariadb:
+        condition: service_healthy
+      crossbar:
+        condition: service_started
 """
 
 DOCKER_COMPOSE_TEMPLATE = """
@@ -113,8 +116,10 @@ DOCKER_COMPOSE_TEMPLATE = """
       - "/srv/buildbot/master/docker-compose/start.sh {master_directory}"
     network_mode: host
     depends_on:
-      - mariadb
-      - crossbar
+      mariadb:
+        condition: service_healthy
+      crossbar:
+        condition: service_started
 """
 
 
