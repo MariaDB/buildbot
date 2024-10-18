@@ -215,7 +215,6 @@ rpm_repoquery() {
   set +u
   # return full package list from repository
   if [[ $ID_LIKE =~ ^suse* ]]; then
-    sudo zypper --gpg-auto-import-keys packages -r "${repo_name}">/dev/null
     zypper packages -r "${repo_name}" | grep "MariaDB" | awk '{print $4}' #After cache is made, no need for sudo
   else
     repoquery --disablerepo=* --enablerepo="${repo_name}" -a -q |
@@ -315,6 +314,9 @@ module_hotfixes = 1
 gpgkey=https://rpm.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
+  if [[ $ID_LIKE =~ ^suse* ]]; then
+    sudo zypper --gpg-auto-import-keys refresh mariadb
+  fi
   set +u
 }
 
