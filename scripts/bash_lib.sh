@@ -215,7 +215,7 @@ rpm_repoquery() {
   set +u
   # return full package list from repository
   if [[ $ID_LIKE =~ ^suse* ]]; then
-    zypper packages -r "${repo_name}" | grep "MariaDB" | awk '{print $4}' #After cache is made, no need for sudo
+    zypper packages -r "${repo_name}" | grep "MariaDB" | awk -F ' \\| ' '{print $3}' #After cache is made, no need for sudo
   else
     repoquery --disablerepo=* --enablerepo="${repo_name}" -a -q |
       cut -d ":" -f1 | sort -u | sed 's/-0//'
@@ -314,10 +314,12 @@ module_hotfixes = 1
 gpgkey=https://rpm.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
+
+  set +u
+  #ID_LIKE may not exist
   if [[ $ID_LIKE =~ ^suse* ]]; then
     sudo zypper --gpg-auto-import-keys refresh mariadb
   fi
-  set +u
 }
 
 deb_setup_bb_artifacts_mirror() {
@@ -581,13 +583,15 @@ check_upgraded_versions() {
     #
 
     # Remove after Q4 2024 release
-    sed -i '/libaio.so/d;liburing.so/d' ./reqs-*.cmp
-    sed -i '/libaio.so/d;liburing.so/d' ./ldd-*.cmp
+    sed -i '/libaio.so/d;/liburing.so/d' ./reqs-*.cmp
+    sed -i '/libaio.so/d;/liburing.so/d' ./ldd-*.cmp
     sed -i '/lsof/d' ./reqs-*.cmp
 
-    #Account for mariadb-plugin-mroonga diffs in Debian-11
+    #Account for mariadb-plugin-mroonga diffs in Debian
     sed -i '/liblz4-1/d' ./reqs-*.cmp
     sed -i '/liblz4.so.1/d' ./ldd-*.cmp
+    sed -i '/libmecab2/d' ./reqs-*.cmp
+    sed -i '/libmecab.so.2/d' ./ldd-*.cmp
 
     # End of temporary adjustments
 
@@ -654,12 +658,15 @@ collect_dependencies() {
   pkgtype=$2
   bb_log_info "Collecting dependencies for the ${old_or_new} server"
  set +x
+  # Spider_package_list variable does not exist for RPM upgrades.
+  set +u
   for p in ${package_list} ${spider_package_list} ; do
     if [[ "$p" =~ columnstore ]] ; then
       suffix="columnstore"
     else
       suffix="main"
     fi
+  set -u
 
     echo "-----------------"  >> "./reqs-${suffix}.${old_or_new}"
     echo "$p:" >> "./reqs-${suffix}.${old_or_new}"
