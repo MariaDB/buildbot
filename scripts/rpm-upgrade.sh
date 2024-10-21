@@ -148,13 +148,19 @@ bb_log_info "Package_list: $package_list"
 # sudo rm -rf
 # /etc/zypp/repos.d/SUSE_Linux_Enterprise_Server_12_SP3_x86_64:SLES12-SP3-Updates.repo
 # /etc/zypp/repos.d/SUSE_Linux_Enterprise_Server_12_SP3_x86_64:SLES12-SP3-Pool.repo
+
+# ID_LIKE may not exist
+set +u
 if [[ $ID_LIKE =~ ^suse* ]]; then
   sudo "$pkg_cmd" clean --all
   pkg_cmd_options="-n"
+  pkg_cmd_upgrade="update"
 else
   sudo "$pkg_cmd" clean all
   pkg_cmd_options="-y"
+  pkg_cmd_upgrade="upgrade"
 fi
+set -u
 
 # Install previous release
 echo "$package_list" | xargs sudo "$pkg_cmd" "$pkg_cmd_options" install ||
@@ -263,7 +269,7 @@ if [[ $test_type == "major" ]]; then
   echo "$package_list" | xargs sudo "$pkg_cmd" "$pkg_cmd_options" install
 else
   # minor upgrade (upgrade works)
-  echo "$package_list" | xargs sudo "$pkg_cmd" "$pkg_cmd_options" upgrade
+  echo "$package_list" | xargs sudo "$pkg_cmd" "$pkg_cmd_options" "$pkg_cmd_upgrade"
 fi
 # set +e
 

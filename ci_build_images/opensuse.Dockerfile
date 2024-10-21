@@ -34,6 +34,8 @@ RUN zypper update -y \
     git \
     glibc-locale \
     jemalloc-devel \
+    judy-devel \
+    krb5-devel \
     libaio-devel \
     libboost_filesystem1_75_0-devel \
     libboost_program_options1_75_0-devel \
@@ -46,6 +48,7 @@ RUN zypper update -y \
     libopenssl-3-devel \
     liburing2-devel \
     libxml2-devel \
+    lzo-devel \
     pam-devel \
     pcre2-devel \
     perl-Net-SSLeay \
