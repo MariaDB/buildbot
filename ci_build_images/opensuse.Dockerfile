@@ -45,7 +45,6 @@ RUN zypper update -y \
     libffi-devel \
     libgnutls-devel \
     liblz4-devel \
-    libodbc2 \
     libopenssl-3-devel \
     liburing2-devel \
     libxml2-devel \
@@ -63,6 +62,8 @@ RUN zypper update -y \
     snappy-devel \
     subversion \
     systemd-devel \
+    unixODBC \
+    unixODBC-devel \
     wget \
     && ./mariadb_zypper_expect \
     && zypper clean -a \
