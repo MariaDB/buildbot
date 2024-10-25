@@ -45,10 +45,13 @@ RUN zypper update -y \
     libffi-devel \
     libgnutls-devel \
     liblz4-devel \
+    libodbc2 \
     libopenssl-3-devel \
     liburing2-devel \
     libxml2-devel \
+    libzstd-devel \
     lzo-devel \
+    java-11-openjdk-devel \
     pam-devel \
     pcre2-devel \
     perl-Net-SSLeay \
