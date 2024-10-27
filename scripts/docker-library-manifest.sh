@@ -119,9 +119,6 @@ debugmanifest=mariadb-debug-${container_tag}-$commit
 buildmanifest "$debugmanifest" "$container" --rm
 trap - EXIT
 
-buildah rmi "$origbuildimage" || echo 'ok, its not there'
-buildah rmi "$debugimage" || echo 'ok, its not there'
-
 expected=4
 
 if [ -n "$ubi" ]; then
@@ -134,20 +131,17 @@ fi
 #
 
 manifest_image_cleanup() {
-  t=$1
+  local manifest=$1
+  shift
+  local t=$1
   if [ ! -f "$t" ]; then
     return
   fi
-  # A manifest is an image type that podman can remove
-  podman images --filter dangling=true --format '{{.ID}} {{.Digest}}' |
-    while read -r line; do
-      id=${line% *}
-      digest=${line#* }
-      echo id="$id" digest="$digest"
-      if [ -n "$(jq ".manifests[].digest  |select(. == \"$digest\")" <"$t")" ]; then
-        podman rmi "$id"
-      fi
-    done
+  buildah manifest rm "$manifest" || echo "already removed"
+  for arch in amd64 ppc64le s390x aarch64; do
+    buildah rm "mariadb-${tarbuildnum}-${arch}${ubi}" || echo 'trouble removing this image'
+    buildah rm "mariadb-debug-${tarbuildnum}-${arch}${ubi}" || echo 'trouble removing this image'
+  done
   rm -f "$t"
 }
 
@@ -179,25 +173,22 @@ if (($(buildah manifest inspect "$devmanifest" | jq '.manifests | length') >= ex
   rm "$t"
 
   buildah manifest inspect "$devmanifest" | tee "${t}"
-  trap 'manifest_image_cleanup "$t"' EXIT
+  trap 'manifest_image_cleanup "$devmanifest" "$t"' EXIT
   if [ "$prod_environment" = "True" ]; then
     buildah manifest push --all --rm "$devmanifest" "docker://quay.io/mariadb-foundation/mariadb-devel:${container_tag}"
     echo "${container_tag}" > last_tag
   else
-    buildah manifest rm "$devmanifest"
     rm -f last_tag
   fi
-  manifest_image_cleanup "$t"
+  manifest_image_cleanup "$devmanifest" "$t"
 
   t=$(mktemp)
   buildah manifest inspect "$debugmanifest" | tee "${t}"
-  trap 'manifest_image_cleanup "$t"' EXIT
+  trap 'manifest_image_cleanup "$debugmanifest" "$t"' EXIT
   if [ "$prod_environment" = "True" ]; then
     buildah manifest push --all --rm "$debugmanifest" "docker://quay.io/mariadb-foundation/mariadb-debug:${container_tag}"
-  else
-    buildah manifest rm "$debugmanifest"
   fi
-  manifest_image_cleanup "$t"
+  manifest_image_cleanup "$debugmanifest" "$t"
 
   buildah images
   # lost and forgotten (or just didn't make enough manifest items - build failure on an arch)
