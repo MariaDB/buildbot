@@ -93,7 +93,7 @@ if [ -n "$ubi" ]
 then
 
 build() {
-  local repo="mariadb-docker/$branch"/MariaDB.repo
+  local repo="mariadb-docker/$master_branch"/MariaDB.repo
   curl "$artifacts_url"/galera/mariadb-4.x-latest-gal-"${buildername%-rpm-autobake}".repo \
     -o "$repo"
   curl "$artifacts_url/$tarbuildnum/${buildername}"/MariaDB.repo \
