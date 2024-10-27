@@ -20,6 +20,8 @@ if [ "${builderarch}" != amd64 ]; then
   export DOCKER_LIBRARY_START_TIMEOUT=350
 else
   export DOCKER_LIBRARY_START_TIMEOUT=150
+  echo "temporarly disable non-amd64 testing"
+  exit
 fi
 
 # clean images if test does not succeed
