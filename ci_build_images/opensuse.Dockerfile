@@ -42,6 +42,7 @@ RUN zypper update -y \
     libboost_system1_75_0-devel \
     libbz2-devel \
     libcurl-devel \
+    libedit-devel \
     libffi-devel \
     libgnutls-devel \
     liblz4-devel \
