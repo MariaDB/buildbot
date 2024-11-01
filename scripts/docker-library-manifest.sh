@@ -54,8 +54,6 @@ annotate() {
 
 image=mariadb-${tarbuildnum}-${builderarch}${ubi}
 
-origbuildimage=$image
-
 #
 # METADATA:
 
