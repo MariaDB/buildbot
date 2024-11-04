@@ -75,7 +75,7 @@ case $test_mode in
       bb_log_warn "Columnstore isn't necessarily built on Sid, the test will be skipped"
       exit
     fi
-    package_list="mariadb-server "$(grep "^Package:" Packages | grep 'columnstore' | awk '{print $2}' | sort -u | xargs)
+    package_list="mariadb-server mariadb-plugin-columnstore"
     ;;
   *)
     bb_log_err "unknown test mode: $test_mode"
@@ -97,25 +97,6 @@ sudo sh -c "echo 'Pin-Priority: 1000' >> /etc/apt/preferences.d/release"
 
 # apt get update may be running in the background (Ubuntu start).
 apt_get_update
-
-# //TEMP this is called from bash_lib, not good.
-get_columnstore_logs() {
-  if [[ $test_mode == "columnstore" ]]; then
-    bb_log_info "storing Columnstore logs in columnstore_logs"
-    set +ex
-    # It is done in such a weird way, because Columnstore currently makes its logs hard to read
-    # //TEMP this is fragile and weird (test that /var/log/mariadb/columnstore exist)
-    for f in $(sudo ls /var/log/mariadb/columnstore | xargs); do
-      f=/var/log/mariadb/columnstore/$f
-      echo "----------- $f -----------" >>/home/buildbot/columnstore_logs
-      sudo cat "$f" 1>>/home/buildbot/columnstore_logs 2>&1
-    done
-    for f in /tmp/columnstore_tmp_files/*; do
-      echo "----------- $f -----------" >>/home/buildbot/columnstore_logs
-      sudo cat "$f" | sudo tee -a /home/buildbot/columnstore_logs 2>&1
-    done
-  fi
-}
 
 # Install previous release
 # Debian installation/upgrade/startup always attempts to execute mysql_upgrade, and
@@ -229,72 +210,6 @@ check_mariadb_server_and_verify_structures
 # Store information about the server after upgrade
 collect_dependencies new deb
 store_mariadb_server_info new
-
-# //TEMP what needs to be done here?
-# # Dependency information for new binaries/libraries
-# set +x
-# for i in $(sudo which mysqld | sed -e 's/mysqld$/mysql\*/') $(which mysql | sed -e 's/mysql$/mysql\*/') $(dpkg-query -L $(dpkg -l | grep mariadb | awk '{print $2}' | xargs) | grep -v 'mysql-test' | grep -v '/debug/' | grep '/plugin/' | sed -e 's/[^\/]*$/\*/' | sort -u | xargs); do
-#   echo "=== $i"
-#   ldd $i | sort | sed 's/(.*)//'
-# done >/home/buildbot/ldd.new
-# set -x
-# case "$systemdCapability" in
-#   yes)
-#     ls -l /lib/systemd/system/mariadb.service
-#     ls -l /etc/systemd/system/mariadb.service.d/migrated-from-my.cnf-settings.conf
-#     ls -l /etc/init.d/mysql || true
-#     systemctl --no-pager status mariadb.service
-#     systemctl --no-pager status mariadb
-#     systemctl --no-pager status mysql
-#     systemctl --no-pager status mysqld
-#     systemctl --no-pager is-enabled mariadb
-#     ;;
-#   no)
-#     bb_log_info "Steps related to systemd will be skipped"
-#     ;;
-#   *)
-#     bb_log_err "It should never happen, check your configuration (systemdCapability property is not set or is set to a wrong value)"
-#     exit 1
-#     ;;
-# esac
-# set +e
-# # This output is for informational purposes
-# diff -u /tmp/engines.old /tmp/engines.new
-# diff -u /tmp/plugins.old /tmp/plugins.new
-# case "$branch" in
-#   "$development_branch")
-#     bb_log_info "Until $development_branch is GA, the list of plugins/engines might be unstable, skipping the check"
-#     ;;
-#   *)
-#     # Only fail if there are any disappeared/changed engines or plugins
-#     disappeared_or_changed=$(comm -23 /tmp/engines.old /tmp/engines.new | wc -l)
-#     if ((disappeared_or_changed != 0)); then
-#       bb_log_err "the lists of engines in the old and new installations differ"
-#       exit 1
-#     fi
-#     if [[ $test_type == "minor" ]]; then
-#       disappeared_or_changed=$(comm -23 /tmp/plugins.old /tmp/plugins.new | wc -l)
-#       if ((disappeared_or_changed != 0)); then
-#         bb_log_err "the lists of plugins in the old and new installations differ"
-#         exit 1
-#       fi
-#     fi
-#     set -o pipefail
-#     if [[ $test_mode == "all" ]]; then
-#       set -o pipefail
-#       if wget -q --timeout=20 --no-check-certificate "https://raw.githubusercontent.com/MariaDB/mariadb.org-tools/master/buildbot/baselines/ldd.${major_version}.${version_name}.$(deb_arch)" -O /tmp/ldd.baseline; then
-#         ldd_baseline=/tmp/ldd.baseline
-#       else
-#         ldd_baseline=/buildbot/ldd.old
-#       fi
-#       if ! diff -U1000 $ldd_baseline /home/buildbot/ldd.new | (grep -E '^[-+]|^ =' || true); then
-#         bb_log_err "something has changed in the dependencies of binaries or libraries. See the diff above"
-#         exit 1
-#       fi
-#     fi
-#     set +o pipefail
-#     ;;
-# esac
 
 check_upgraded_versions
 
