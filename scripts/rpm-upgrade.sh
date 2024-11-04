@@ -52,45 +52,19 @@ case $test_mode in
   server)
     package_list="MariaDB-server MariaDB-client"
     ;;
+  columnstore)
+    package_list=$(rpm_repoquery)
+    if ! echo "$package_list" | grep -q columnstore-engine; then
+      bb_log_warn "Columnstore was not found in the released packages, the test will not be run"
+      exit
+    fi
+    package_list="MariaDB-server MariaDB-columnstore-engine"
+    ;;
   *)
     bb_log_err "unknown test mode ($test_mode)"
     exit 1
     ;;
 esac
-
-# case $test_mode in
-#   all | deps | columnstore)
-#     if [[ $test_mode == "all" ]]; then
-#       if echo "$package_list" | grep -qi columnstore; then
-#         bb_log_warn "due to MCOL-4120 and other issues, Columnstore upgrade will be tested separately"
-#       fi
-#       package_list=$(echo "$package_list" | grep MariaDB |
-#         grep -viE 'galera|columnstore' | sed -e 's/<name>//' |
-#         sed -e 's/<\/name>//' | sort -u | xargs)
-#     elif [[ $test_mode == "deps" ]]; then
-#       package_list=$(echo "$package_list" |
-#         grep -iE 'MariaDB-server|MariaDB-test|MariaDB-client|MariaDB-common|MariaDB-compat' |
-#         sed -e 's/<name>//' | sed -e 's/<\/name>//' | sort -u | xargs)
-#     elif [[ $test_mode == "columnstore" ]]; then
-#       if ! echo "$package_list" | grep -q columnstore; then
-#         bb_log_warn "columnstore was not found in the released packages, the test will not be run"
-#         exit
-#       fi
-#       package_list="MariaDB-server MariaDB-columnstore-engine"
-#     fi
-
-#     if [[ $arch == ppc* ]]; then
-#       package_list=$(echo "$package_list" | xargs -n1 | sed -e 's/MariaDB-compat//gi' | xargs)
-#     fi
-#     ;;
-#   server)
-#     package_list="MariaDB-server MariaDB-client"
-#     ;;
-#   *)
-#     bb_log_err "unknown test mode: $test_mode"
-#     exit 1
-#     ;;
-# esac
 
 bb_log_info "Package_list: $package_list"
 
@@ -214,46 +188,6 @@ if [[ $package_version == "$old_version" ]]; then
   exit
 fi
 
-# # Store dependency information for old binaries/libraries:
-# # - names starting with "mysql*" in the directory where mysqld is located;
-# # - names starting with "mysql*" in the directory where mysql is located;
-# # - everything in the plugin directories installed by any MariaDB packages
-# set +x
-# for i in $(sudo which mysqld | sed -e 's/mysqld$/mysql\*/') $(which mysql | sed -e 's/mysql$/mysql\*/') $(rpm -ql $(rpm -qa | grep MariaDB | xargs) | grep -v 'mysql-test' | grep -v '/debug/' | grep '/plugin/' | sed -e 's/[^\/]*$/\*/' | sort | uniq | xargs); do
-#   echo "=== $i"
-#   ldd $i | sort | sed 's/(.*)//'
-# done >/home/buildbot/ldd.old
-# set -x
-
-# # Prepare yum/zypper configuration for installation of the new packages
-# # //TEMP again not sure this is needed
-# set -e
-# if [[ $test_type == "major" ]]; then
-#   bb_log_info "remove old packages for major upgrade"
-#   packages_to_remove=$(rpm -qa | grep 'MariaDB-' | awk -F'-' '{print $1"-"$2}' | xargs)
-#   sudo sh -c "$remove_command $packages_to_remove"
-#   rpm -qa | grep -iE 'maria|mysql' || true
-# fi
-# if [[ $test_mode == "deps" ]]; then
-#   sudo mv "$repo_location/MariaDB.repo" /tmp
-#   sudo rm -rf "$repo_location/*"
-#   sudo mv /tmp/MariaDB.repo "$repo_location/"
-#   sudo sh -c "$cleanup_command"
-# fi
-
-# Install the new packages:
-# Between 10.3 and 10.4(.2), required galera version changed from galera(-3) to galera-4.
-# It means that there will be no galera-4 in the "old" repo, and it's not among the local RPMs.
-# So, we need to add a repo for it
-# //TEMP this needs to be fixed
-# if [[ $test_type == "major" ]] && ((${major_version/10./} >= 3)) && ((${prev_major_version/10./} <= 4)); then
-#   sudo sh -c "echo '[galera]
-# name=Galera
-# baseurl=https://yum.mariadb.org/galera/repo4/rpm/$arch
-# gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
-# gpgcheck=1' > $repo_location/galera.repo"
-# fi
-
 # //TEMP upgrade does not work without this but why? Can't we fix it?
 if [[ $test_type == "major" ]]; then
   bb_log_info "remove old packages for major upgrade"
@@ -291,7 +225,7 @@ fi
 
 # Optionally (re)start the server
 set -e
-if [[ $test_type == "major" ]]; then
+if [[ $test_type == "major" ]] || [[ $test_mode == "columnstore" ]]; then
   control_mariadb_server restart
 fi
 
@@ -313,74 +247,6 @@ check_mariadb_server_and_verify_structures
 # Store information about the server after upgrade
 collect_dependencies new rpm
 store_mariadb_server_info new
-
-# # Dependency information for new binaries/libraries
-# set +x
-# for i in $(sudo which mysqld | sed -e 's/mysqld$/mysql\*/') $(which mysql | sed -e 's/mysql$/mysql\*/') $(rpm -ql $(rpm -qa | grep MariaDB | xargs) | grep -v 'mysql-test' | grep -v '/debug/' | grep '/plugin/' | sed -e 's/[^\/]*$/\*/' | sort | uniq | xargs); do
-#   echo "=== $i"
-#   ldd "$i" | sort | sed 's/(.*)//'
-# done >/home/buildbot/ldd.new
-# set -x
-# case "$systemdCapability" in
-#   yes)
-#     ls -l /usr/lib/systemd/system/mariadb.service
-#     ls -l /etc/systemd/system/mariadb.service.d/migrated-from-my.cnf-settings.conf
-#     ls -l /etc/init.d/mysql || true
-#     systemctl status mariadb.service --no-pager
-#     systemctl status mariadb --no-pager
-#     # Not done for SUSE due to MDEV-23044
-#     if [[ "$distro" != *"sles"* ]] && [[ "$distro" != *"suse"* ]]; then
-#       # Major upgrade for RPMs is remove / install, so previous configuration
-#       # could well be lost
-#       if [[ "$test_type" == "major" ]]; then
-#         sudo systemctl enable mariadb
-#       fi
-#       systemctl is-enabled mariadb
-#       systemctl status mysql --no-pager
-#       systemctl status mysqld --no-pager
-#     fi
-#     ;;
-#   no)
-#     bb_log_info "Steps related to systemd will be skipped"
-#     ;;
-#   *)
-#     bb_log_err "It should never happen, check your configuration (systemdCapability property is not set or is set to a wrong value)"
-#     exit 1
-#     ;;
-# esac
-# set +e
-
-# # Until $development_branch is GA, the list of plugins/engines might be unstable, skipping the check
-# # For major upgrade, no point to do the check at all
-# if [[ $major_version != "$development_branch" ]] && [[ $test_type != "major" ]]; then
-#   # This output is for informational purposes
-#   diff -u /tmp/engines.old /tmp/engines.new
-#   diff -u /tmp/plugins.old /tmp/plugins.new
-#   # Only fail if there are any disappeared/changed engines or plugins
-#   disappeared_or_changed=$(comm -23 /tmp/engines.old /tmp/engines.new | wc -l)
-#   if ((disappeared_or_changed != 0)); then
-#     bb_log_err "the lists of engines in the old and new installations differ"
-#     exit 1
-#   fi
-#   disappeared_or_changed=$(comm -23 /tmp/plugins.old /tmp/plugins.new | wc -l)
-#   if ((disappeared_or_changed != 0)); then
-#     bb_log_err "the lists of available plugins in the old and new installations differ"
-#     exit 1
-#   fi
-#   if [[ $test_mode == "all" ]]; then
-#     set -o pipefail
-#     if wget -q --timeout=20 --no-check-certificate "https://raw.githubusercontent.com/MariaDB/mariadb.org-tools/master/buildbot/baselines/ldd.${major_version}.${distro}.${arch}" -O /tmp/ldd.baseline; then
-#       ldd_baseline=/tmp/ldd.baseline
-#     else
-#       ldd_baseline=/home/buildbot/ldd.old
-#     fi
-#     if ! diff -U1000 $ldd_baseline /home/buildbot/ldd.new | (grep -E '^[-+]|^ =' || true); then
-#       bb_log_err "something has changed in the dependencies of binaries or libraries. See the diff above"
-#       exit 1
-#     fi
-#   fi
-#   set +o pipefail
-# fi
 
 check_upgraded_versions
 

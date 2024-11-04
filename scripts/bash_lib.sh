@@ -437,6 +437,24 @@ upgrade_test_type() {
   esac
 }
 
+get_columnstore_logs() {
+  if [[ $test_mode == "columnstore" ]]; then
+    bb_log_info "storing Columnstore logs in columnstore_logs"
+    set +ex
+    # It is done in such a weird way, because Columnstore currently makes its logs hard to read
+    # //TEMP this is fragile and weird (test that /var/log/mariadb/columnstore exist)
+    for f in $(sudo ls /var/log/mariadb/columnstore | xargs); do
+      f=/var/log/mariadb/columnstore/$f
+      echo "----------- $f -----------" >>/home/buildbot/columnstore_logs
+      sudo cat "$f" 1>>/home/buildbot/columnstore_logs 2>&1
+    done
+    for f in /tmp/columnstore_tmp_files/*; do
+      echo "----------- $f -----------" >>/home/buildbot/columnstore_logs
+      sudo cat "$f" | sudo tee -a /home/buildbot/columnstore_logs 2>&1
+    done
+  fi
+}
+
 check_mariadb_server_and_create_structures() {
   # All the commands below should succeed
   set -e
@@ -450,7 +468,7 @@ check_mariadb_server_and_create_structures() {
   sudo mariadb -e "CREATE PROCEDURE db.p() SELECT * FROM db.v_merge"
   sudo mariadb -e "CREATE FUNCTION db.f() RETURNS INT DETERMINISTIC RETURN 1"
   if [[ $test_mode == "columnstore" ]]; then
-    if ! mysql -e "CREATE TABLE db.t_columnstore(a INT, c VARCHAR(8)) ENGINE=ColumnStore; SHOW CREATE TABLE db.t_columnstore; INSERT INTO db.t_columnstore VALUES (1,'foo'),(2,'bar')"; then
+    if ! sudo mariadb -e "CREATE TABLE db.t_columnstore(a INT, c VARCHAR(8)) ENGINE=ColumnStore; SHOW CREATE TABLE db.t_columnstore; INSERT INTO db.t_columnstore VALUES (1,'foo'),(2,'bar')"; then
       get_columnstore_logs
       exit 1
     fi
