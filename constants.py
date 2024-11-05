@@ -125,7 +125,6 @@ supportedPlatforms["10.5"] = [
     "ppc64le-ubuntu-2004-without-server",
     "s390x-rhel-8",
     "s390x-rhel-9",
-    "s390x-sles-12",
     "s390x-ubuntu-2004",
     "s390x-ubuntu-2004-debug",
     "x86-debian-12-fulltest",
