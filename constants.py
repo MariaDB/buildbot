@@ -24,8 +24,6 @@ branches_main = [
 # Defines what builders report status to GitHub
 github_status_builders = [
     "aarch64-macos-compile-only",
-    "amd64-centos-7",
-    "amd64-centos-7-rpm-autobake",
     "amd64-debian-12",
     "amd64-debian-12-debug-embedded",
     "amd64-debian-12-deb-autobake",
@@ -91,7 +89,6 @@ supportedPlatforms["10.5"] = [
     "aarch64-rhel-9",
     "aarch64-ubuntu-2004",
     "aarch64-ubuntu-2004-debug",
-    "amd64-centos-7",
     "amd64-centos-7-bintar",
     "amd64-centos-stream9",
     "amd64-debian-11",
