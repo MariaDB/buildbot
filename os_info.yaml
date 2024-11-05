@@ -114,11 +114,6 @@ rockylinux-9:
     - amd64
   type: rpm
   install_only: True
-sles-12:
-  version_name: 12
-  arch:
-    - s390x
-  type: rpm
 sles-1505:
   version_name: 15.5
   arch:

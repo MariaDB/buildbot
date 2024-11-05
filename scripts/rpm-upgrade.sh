@@ -20,10 +20,6 @@ upgrade_test_type "$test_type"
 package_version=${mariadb_version/mariadb-/}
 distro=$version_name
 
-if [[ $distro == "sles123" ]]; then
-  distro="sles12"
-fi
-
 bb_print_env
 
 # This test can be performed in four modes:
