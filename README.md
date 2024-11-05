@@ -1,7 +1,6 @@
 # buildbot.mariadb.org
 
 [![build-centos.pip-based](https://github.com/MariaDB/buildbot/actions/workflows/build-centos.pip-based.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/build-centos.pip-based.yml)
-[![build-centos7.pip-based](https://github.com/MariaDB/buildbot/actions/workflows/build-centos7.pip-based.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/build-centos7.pip-based.yml)
 [![build-debian-based](https://github.com/MariaDB/buildbot/actions/workflows/build-debian-based.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/build-debian-based.yml)
 [![build-debian.aocc-based](https://github.com/MariaDB/buildbot/actions/workflows/build-debian.aocc-based.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/build-debian.aocc-based.yml)
 [![build-debian.jepsen-based](https://github.com/MariaDB/buildbot/actions/workflows/build-debian.jepsen-based.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/build-debian.jepsen-based.yml)

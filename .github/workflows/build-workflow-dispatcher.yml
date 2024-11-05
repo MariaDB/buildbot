@@ -3,11 +3,6 @@ name: Dispatch all build container images workflows
 on:
   workflow_dispatch:
     inputs:
-      build-centos7pip-based:
-        description: 'Run CentOS 7 pip-based builds'
-        required: true
-        default: false
-        type: boolean
       build-centospip-based:
         description: 'Run CentOS pip-based builds'
         required: true
@@ -50,10 +45,6 @@ on:
         type: boolean
 
 jobs:
-  build-centos7pip-based:
-    if: ${{ inputs.build-centos7pip-based }}
-    uses: ./.github/workflows/build-centos7.pip-based.yml
-    secrets: inherit
   build-centospip-based:
     if: ${{ inputs.build-centospip-based }}
     uses: ./.github/workflows/build-centos.pip-based.yml
