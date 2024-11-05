@@ -26,7 +26,6 @@ private["master-variables"] = {
             ],
         "ppc64le": [
                 'ppc64le-rhel8-bbw1',
-                'ppc64le-rhel7-bbw1',
                 'ppc64le-db-bbw1',
                 'ppc64le-raptor-bbw1',
             ],
@@ -69,7 +68,6 @@ private["docker_workers"]= {
     "gsk-bbw1-docker":"tcp://IP_address:port",
     "bm-bbw1-docker":"tcp://IP_address:port",
     "ppc64le-rhel8-bbw1-docker":"tcp://IP_address:port",
-    "ppc64le-rhel7-bbw1-docker":"tcp://IP_address:port",
     "ppc64le-db-bbw1-docker":"tcp://IP_address:port",
     "ppc64le-raptor-bbw1-docker":"tcp://IP_address:port",
     "aarch64-bbw1-docker":"tcp://IP_address:port",
