@@ -76,6 +76,7 @@ opensuse-1506:
   arch:
     - amd64
   type: rpm
+  install_only: True
 rhel-8:
   version_name: 8
   arch:
@@ -108,7 +109,7 @@ sles-1505:
   version_name: 15.5
   arch:
     - amd64
-# TEMP - currently short on hardware - s390x
+    - s390x
   type: rpm
 sles-1506:
   version_name: 15.6
@@ -116,6 +117,7 @@ sles-1506:
     - amd64
     - s390x
   type: rpm
+  install_only: True
 ubuntu-2004:
   version_name: focal
   arch:
