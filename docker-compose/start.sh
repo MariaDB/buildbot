@@ -38,6 +38,13 @@ if [[ $1 == "master-libvirt" ]]; then
   }
 fi
 
+# configure mc client
+if command -v mc &> /dev/null; then
+  mc alias set minio http://"$MINIO_WG_IP":"$MINIO_PORT" minio minioadmin
+else
+  echo "mc command not found"
+fi
+
 # loop for debug
 # while true; do date && sleep 30; done
 

@@ -67,6 +67,13 @@ RUN apt-get update \
       apt-get purge -y yarnpkg; \
       rm -rf "$(find /opt/buildbot -maxdepth 3 -name node_modules)"; \
     fi \
+    # Install MinIO client (mc)
+    && if [ "$master_type" = "master" ]; then \
+      mkdir -p /root/minio-binaries; \
+      apt-get -y install --no-install-recommends wget; \
+      wget --progress=dot:giga https://dl.min.io/client/mc/release/linux-amd64/mc -O /usr/local/bin/mc; \
+      chmod +x /usr/local/bin/mc; \
+    fi \
     && apt-get autoremove -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
