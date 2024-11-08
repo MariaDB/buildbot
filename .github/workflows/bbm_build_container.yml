@@ -51,7 +51,7 @@ jobs:
           docker run -i localhost:5000/${{ env.REPO }}:master-web buildbot --version
       - name: Check for registry credentials
         if: >
-          github.ref == 'refs/heads/main' &&
+          github.ref == 'refs/heads/dev' &&
           github.repository == 'MariaDB/buildbot'
         run: |
           missing=()
