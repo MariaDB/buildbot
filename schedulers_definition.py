@@ -54,32 +54,32 @@ def getBigtestBuilderNames(props):
     return []
 
 
+def getBuilderNames(builderName, builders_list):
+    builders = []
+    for b in builders_list:
+        if builderName in b:
+            builders.append(b)
+            if "rhel" in builderName:
+                builders.append(b.replace("rhel", "almalinux"))
+                builders.append(b.replace("rhel", "rockylinux"))
+            if "sles-1505" in builderName or "opensuse-1505" in builderName:
+                builders.append(b.replace("1505", "1506"))
+            break
+    return builders
+
+
 @util.renderer
 def getInstallBuilderNames(props):
     builderName = str(props.getProperty("parentbuildername"))
 
-    for b in builders_install:
-        if builderName in b:
-            builders = [b]
-            if "rhel" in builderName:
-                builders.append(b.replace("rhel", "almalinux"))
-                builders.append(b.replace("rhel", "rockylinux"))
-            return builders
-    return []
+    return getBuilderNames(builderName, builders_install)
 
 
 @util.renderer
 def getUpgradeBuilderNames(props):
     builderName = str(props.getProperty("parentbuildername"))
 
-    builds = []
-    for b in builders_upgrade:
-        if builderName in b:
-            if "rhel" in builderName:
-                builds.append(b.replace("rhel", "almalinux"))
-                builds.append(b.replace("rhel", "rockylinux"))
-            builds.append(b)
-    return builds
+    return getBuilderNames(builderName, builders_upgrade)
 
 
 @util.renderer
