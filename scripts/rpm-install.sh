@@ -44,17 +44,18 @@ rpm_setup_bb_artifacts_mirror
 rpm_pkg_makecache
 
 # install all packages
-pkg_list=$(rpm_repoquery) ||
-  bb_log_err "Unable to retrieve package list from repository"
+read -ra package_array = <<< "$(rpm_repoquery)"
 
-# ID_LIKE may not exist
-set +u
-if [[ $ID_LIKE =~ ^suse* ]]; then
-  echo "$pkg_list" | xargs sudo "$pkg_cmd" -n install
-else
-  echo "$pkg_list" | xargs sudo "$pkg_cmd" -y install
+if [ ${#package_array[@]} -eq 0 ]; then
+  bb_log_err "Unable to retrieve package list from repository"
 fi
-set -u
+
+if [[ "${ID_LIKE:-empty}" =~ ^suse* ]]; then
+  sudo "$pkg_cmd" -n install "${package_array[@]}"
+else
+  sudo "$pkg_cmd" -y install "${package_array[@]}"
+fi
+
 
 sh -c 'g=/usr/lib*/galera*/libgalera_smm.so; echo -e "[galera]\nwsrep_provider=$g"' |
   sudo tee /etc/my.cnf.d/galera.cnf

@@ -119,9 +119,7 @@ bb_log_info "Package_list: $package_list"
 # /etc/zypp/repos.d/SUSE_Linux_Enterprise_Server_12_SP3_x86_64:SLES12-SP3-Updates.repo
 # /etc/zypp/repos.d/SUSE_Linux_Enterprise_Server_12_SP3_x86_64:SLES12-SP3-Pool.repo
 
-# ID_LIKE may not exist
-set +u
-if [[ $ID_LIKE =~ ^suse* ]]; then
+if [[ "${ID_LIKE:-empty}" =~ ^suse* ]]; then
   sudo "$pkg_cmd" clean --all
   pkg_cmd_options="-n"
   pkg_cmd_upgrade="update"
@@ -132,10 +130,11 @@ else
 fi
 set -u
 
+read -ra package_array <<< "$package_list"
+
 # Install previous release
-echo "$package_list" | xargs sudo "$pkg_cmd" "$pkg_cmd_options" install ||
-  bb_log_err "installation of a previous release failed, see the output above"
-#fi
+bb_log_info "Install previous release"
+sudo "$pkg_cmd" "$pkg_cmd_options" install "${package_array[@]}"
 
 # Start the server, check that it is working and create some structures
 #
@@ -167,8 +166,8 @@ fi
 # //TEMP upgrade does not work without this but why? Can't we fix it?
 if [[ $test_type == "major" ]]; then
   bb_log_info "remove old packages for major upgrade"
-  packages_to_remove=$(rpm -qa | grep 'MariaDB-' | awk -F'-' '{print $1"-"$2}')
-  echo "$packages_to_remove" | xargs sudo "$pkg_cmd" "$pkg_cmd_options" remove
+  readarray -t package_array <<< "$(rpm -qa | grep 'MariaDB-' | awk -F'-' '{print $1"-"$2}')"
+  sudo "$pkg_cmd" "$pkg_cmd_options" remove "${package_array[@]}"
   rpm -qa | grep -iE 'maria|mysql' || true
 fi
 
@@ -182,10 +181,10 @@ set -e
 
 if [[ $test_type == "major" ]]; then
   # major upgrade (remove then install)
-  echo "$package_list" | xargs sudo "$pkg_cmd" "$pkg_cmd_options" install
+  sudo "$pkg_cmd" "$pkg_cmd_options" install "${package_array[@]}"
 else
   # minor upgrade (upgrade works)
-  echo "$package_list" | xargs sudo "$pkg_cmd" "$pkg_cmd_options" "$pkg_cmd_upgrade"
+  sudo "$pkg_cmd" "$pkg_cmd_options" "$pkg_cmd_upgrade" "${package_array[@]}"
 fi
 # set +e
 
