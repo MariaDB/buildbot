@@ -8,7 +8,7 @@ FROM "$BASE_IMAGE"
 LABEL maintainer="MariaDB Buildbot maintainers"
 
 # This will make apt-get install without question
-ARG DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 
 # Install updates and required packages
 RUN . /etc/os-release; \
