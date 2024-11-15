@@ -2,7 +2,7 @@ import os
 
 import yaml
 
-DEVELOPMENT_BRANCH = "11.3"
+DEVELOPMENT_BRANCH = "main"
 
 # Used to trigger the appropriate main branch
 branches_main = [
