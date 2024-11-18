@@ -13,3 +13,4 @@ master-libvirt/id_ed25519
 master-libvirt/known_hosts
 master-private.cfg
 master-credential-provider
+minio
