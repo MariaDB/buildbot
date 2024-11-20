@@ -4,6 +4,7 @@ private["db_user"] = "buildmaster"
 private["db_password"] = "password"
 private["db_mtr_db"] = "buildbot"
 private["gh_secret"] = "gh_secret"
+private["minio_url"] = "https://access_key:secret_key@minio.mariadb.org"
 private["zabbix_server"] = "https://zabbix.server"
 private["zabbix_token"] = "zabbix_token"
 private["user_pass"]= {
