@@ -37,7 +37,9 @@ RUN dnf -y install 'dnf-command(config-manager)' \
         "openEuler") \
           ID=openeuler; \
           # VERSION_ID has leading -, except on centos-stream
-          VERSION_ID=-${VERSION_ID}; \
+          # remove . from between the version to correspond to
+          # the galera repository name.
+          VERSION_ID=-${VERSION_ID%.*}${VERSION_ID#*.}; \
           ;; \
         "rocky") \
           ID=rockylinux; \
