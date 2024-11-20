@@ -78,7 +78,6 @@ services:
       - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
-      - MC_HOST_minio
       - MQ_ROUTER_URL
       - PORT=8010
       - TITLE
@@ -115,7 +114,7 @@ services:
       - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
-      - MC_HOST_minio
+      - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
       - MQ_ROUTER_URL
       - PORT=9996
       - TITLE
@@ -155,7 +154,7 @@ services:
       - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
-      - MC_HOST_minio
+      - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
       - MQ_ROUTER_URL
       - PORT=9997
       - TITLE
@@ -194,7 +193,7 @@ services:
       - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
-      - MC_HOST_minio
+      - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
       - MQ_ROUTER_URL
       - PORT=9998
       - TITLE
@@ -233,7 +232,7 @@ services:
       - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
-      - MC_HOST_minio
+      - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
       - MQ_ROUTER_URL
       - PORT=9999
       - TITLE
@@ -272,7 +271,7 @@ services:
       - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
-      - MC_HOST_minio
+      - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
       - MQ_ROUTER_URL
       - PORT=10000
       - TITLE
@@ -311,7 +310,7 @@ services:
       - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
-      - MC_HOST_minio
+      - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
       - MQ_ROUTER_URL
       - PORT=10001
       - TITLE
@@ -350,7 +349,7 @@ services:
       - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
-      - MC_HOST_minio
+      - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
       - MQ_ROUTER_URL
       - PORT=10002
       - TITLE
@@ -389,7 +388,7 @@ services:
       - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
-      - MC_HOST_minio
+      - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
       - MQ_ROUTER_URL
       - PORT=10003
       - TITLE
@@ -428,7 +427,7 @@ services:
       - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
-      - MC_HOST_minio
+      - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
       - MQ_ROUTER_URL
       - PORT=10004
       - TITLE
@@ -467,7 +466,7 @@ services:
       - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
-      - MC_HOST_minio
+      - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
       - MQ_ROUTER_URL
       - PORT=10005
       - TITLE
@@ -506,7 +505,7 @@ services:
       - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
-      - MC_HOST_minio
+      - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
       - MQ_ROUTER_URL
       - PORT=10006
       - TITLE
@@ -545,7 +544,7 @@ services:
       - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
-      - MC_HOST_minio
+      - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
       - MQ_ROUTER_URL
       - PORT=10007
       - TITLE
@@ -584,7 +583,7 @@ services:
       - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
-      - MC_HOST_minio
+      - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
       - MQ_ROUTER_URL
       - PORT=10008
       - TITLE
