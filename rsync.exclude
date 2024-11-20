@@ -12,3 +12,4 @@ docker-compose/nginx/conf.d/ci.conf
 master-libvirt/id_ed25519
 master-libvirt/known_hosts
 master-private.cfg
+master-credential-provider
