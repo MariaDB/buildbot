@@ -50,22 +50,27 @@ set -x
 
 # Due to MDEV-14622 and its effect on Spider installation,
 # Spider has to be installed separately after the server
-package_list=$(grep "^Package:" Packages | grep -vE 'galera|spider|columnstore' | awk '{print $2}' | xargs)
+package_list=$(grep "^Package:" Packages |
+  grep -vE 'galera|spider|columnstore' |
+  awk '{print $2}' | xargs)
 if grep -qi spider Packages; then
-  spider_package_list=$(grep "^Package:" Packages | grep 'spider' | awk '{print $2}' | xargs)
+  spider_package_list=$(grep "^Package:" Packages |
+    grep 'spider' | awk '{print $2}' | xargs)
 fi
 if grep -qi columnstore Packages; then
   if [[ $arch != "amd64" ]] && [[ $arch != "arm64" ]]; then
     bb_log_warn "Due to MCOL-4123, Columnstore won't be installed on $arch"
   else
-    columnstore_package_list=$(grep "^Package:" Packages | grep 'columnstore' | awk '{print $2}' | xargs)
+    columnstore_package_list=$(grep "^Package:" Packages |
+      grep 'columnstore' | awk '{print $2}' | xargs)
   fi
 fi
 
 # apt get update may be running in the background (Ubuntu start).
 apt_get_update
 
-sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 apt-get install -y $package_list $columnstore_package_list"
+sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 \
+  apt-get install -y $package_list $columnstore_package_list"
 
 # MDEV-14622: Wait for mysql_upgrade running in the background to finish
 wait_for_mariadb_upgrade
@@ -77,7 +82,8 @@ if [[ $systemdCapability == "yes" ]]; then
     sudo journalctl -xe --no-pager
     bb_log_warn "mariadb service isn't running properly after installation"
     if echo "$package_list" | grep -q columnstore; then
-      bb_log_info "It is likely to be caused by ColumnStore problems upon installation, getting the logs"
+      bb_log_info "It is likely to be caused by ColumnStore"
+      bb_log_info "problems upon installation, getting the logs"
       set +e
       # It is done in such a weird way, because Columnstore currently makes its
       # logs hard to read
@@ -99,10 +105,19 @@ fi
 # Due to MDEV-14622 and its effect on Spider installation,
 # Spider has to be installed separately after the server
 if [[ -n $spider_package_list ]]; then
-  sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 apt-get install -y $spider_package_list"
+  sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 \
+    apt-get install -y $spider_package_list"
 fi
 
-sudo mariadb --verbose -e "create database test; use test; create table t(a int primary key) engine=innodb; insert into t values (1); select * from t; drop table t; drop database test; create user galera identified by 'gal3ra123'; grant all on *.* to galera;"
+sudo mariadb --verbose -e "create database test; \
+  use test; \
+  create table t(a int primary key) engine=innodb; \
+  insert into t values (1); \
+  select * from t; \
+  drop table t; \
+  drop database test; \
+  create user galera identified by 'gal3ra123'; \
+  grant all on *.* to galera;"
 sudo mariadb -e "select @@version"
 bb_log_info "test for MDEV-18563, MDEV-18526"
 set +e
@@ -124,13 +139,18 @@ set +e
 # sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 apt-get install -y mariadb-test"
 if dpkg -l | grep -i spider >/dev/null; then
   bb_log_warn "Workaround for MDEV-22979, otherwise server hangs further in SST steps"
-  sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 apt-get remove --allow-unauthenticated -y mariadb-plugin-spider" || true
-  sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 apt-get purge --allow-unauthenticated -y mariadb-plugin-spider" || true
+  sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 \
+    apt-get remove --allow-unauthenticated -y mariadb-plugin-spider" || true
+  sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 \
+    apt-get purge --allow-unauthenticated -y mariadb-plugin-spider" || true
 fi
 if dpkg -l | grep -i columnstore >/dev/null; then
-  bb_log_warn "Workaround for a bunch of Columnstore bugs, otherwise mysqldump in SST steps fails when Columnstore returns errors"
-  sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 apt-get remove --allow-unauthenticated -y mariadb-plugin-columnstore" || true
-  sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 apt-get purge --allow-unauthenticated -y mariadb-plugin-columnstore" || true
+  bb_log_warn "Workaround for a bunch of Columnstore bugs"
+  bb_log_warn "otherwise mysqldump in SST steps fails when Columnstore returns errors"
+  sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 \
+    apt-get remove --allow-unauthenticated -y mariadb-plugin-columnstore" || true
+  sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 \
+    apt-get purge --allow-unauthenticated -y mariadb-plugin-columnstore" || true
 fi
 
 bb_log_ok "all done"

@@ -56,7 +56,8 @@ else
 fi
 set -u
 
-sh -c 'g=/usr/lib*/galera*/libgalera_smm.so; echo -e "[galera]\nwsrep_provider=$g"' | sudo tee /etc/my.cnf.d/galera.cnf
+sh -c 'g=/usr/lib*/galera*/libgalera_smm.so; echo -e "[galera]\nwsrep_provider=$g"' |
+  sudo tee /etc/my.cnf.d/galera.cnf
 case "$systemdCapability" in
   yes)
     if ! sudo systemctl start mariadb; then
@@ -69,17 +70,30 @@ case "$systemdCapability" in
     sudo /etc/init.d/mysql restart
     ;;
   *)
-    bb_log_warn "should never happen, check your configuration (systemdCapability property is not set or is set to a wrong value)"
+    bb_log_warn "should never happen, check your configuration:"
+    bb_log_warn "(systemdCapability property is not set or is set to a wrong value)"
     ;;
 esac
 
-sudo mariadb -e 'drop database if exists test; create database test; use test; create table t(a int primary key) engine=innodb; insert into t values (1); select * from t; drop table t;'
+sudo mariadb -e "drop database if exists test; \
+  create database test; \
+  use test; \
+  create table t(a int primary key) engine=innodb; \
+  insert into t values (1); \
+  select * from t; \
+  drop table t;"
 if echo "$pkg_list" | grep -qi columnstore; then
-  sudo mariadb --verbose -e "create database cs; use cs; create table cs.t_columnstore (a int, b char(8)) engine=Columnstore; insert into cs.t_columnstore select seq, concat('val',seq) from seq_1_to_10; select * from cs.t_columnstore"
+  sudo mariadb --verbose -e "create database cs; \
+    use cs; \
+    create table cs.t_columnstore (a int, b char(8)) engine=Columnstore; \
+    insert into cs.t_columnstore select seq, concat('val',seq) from seq_1_to_10; \
+    select * from cs.t_columnstore"
   sudo systemctl restart mariadb
-  sudo mariadb --verbose -e "select * from cs.t_columnstore; update cs.t_columnstore set b = 'updated'"
+  sudo mariadb --verbose -e "select * from cs.t_columnstore; \
+    update cs.t_columnstore set b = 'updated'"
   sudo systemctl restart mariadb-columnstore
-  sudo mariadb --verbose -e "update cs.t_columnstore set a = a + 10; select * from cs.t_columnstore"
+  sudo mariadb --verbose -e "update cs.t_columnstore set a = a + 10; \
+    select * from cs.t_columnstore"
 fi
 sudo mariadb -e 'show global status like "wsrep%%"'
 bb_log_info "test for MDEV-18563, MDEV-18526"
