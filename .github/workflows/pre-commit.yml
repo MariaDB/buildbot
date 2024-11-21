@@ -25,3 +25,14 @@ jobs:
         run: |
           source .venv/bin/activate
           make pre-commit-run-all
+      - name: Generate git patch
+        if: ${{ failure() }}
+        run: |
+          git diff > pre-commit.patch
+      - name: Upload git patch
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: git-patch
+          path: pre-commit.patch
+
