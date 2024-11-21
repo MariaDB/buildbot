@@ -35,4 +35,3 @@ jobs:
         with:
           name: git-patch
           path: pre-commit.patch
-
