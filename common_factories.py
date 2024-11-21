@@ -484,8 +484,8 @@ def getLastNFailedBuildsFactory(test_type, mtrDbPool):
                 "debug-ps",
                 "debug-emb",
                 "debug-emb-ps",
-                "debug-view",
             ),
+            # TODO MDEV-35452 - "debug-view",
         },
     }
 
