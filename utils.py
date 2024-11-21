@@ -4,7 +4,6 @@ import re
 import sys
 from datetime import datetime, timedelta
 
-import docker
 from pyzabbix import ZabbixAPI
 from twisted.internet import defer
 
@@ -28,6 +27,7 @@ from constants import (
     releaseBranches,
     savedPackageBranches,
 )
+import docker
 
 private_config = {"private": {}}
 exec(open("/srv/buildbot/master/master-private.cfg").read(), private_config, {})
