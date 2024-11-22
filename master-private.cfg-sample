@@ -26,9 +26,9 @@ private["master-variables"] = {
                 'aarch64-bbw4',
             ],
         "ppc64le": [
-                'ppc64le-rhel8-bbw1',
                 'ppc64le-db-bbw1',
                 'ppc64le-raptor-bbw1',
+                'ppc64le-osuosl-bbw1',
             ],
         "s390x": [
                 's390x-bbw1',
@@ -68,9 +68,9 @@ private["docker_workers"]= {
     "hz-bbw6-docker":"tcp://IP_address:port",
     "gsk-bbw1-docker":"tcp://IP_address:port",
     "bm-bbw1-docker":"tcp://IP_address:port",
-    "ppc64le-rhel8-bbw1-docker":"tcp://IP_address:port",
     "ppc64le-db-bbw1-docker":"tcp://IP_address:port",
     "ppc64le-raptor-bbw1-docker":"tcp://IP_address:port",
+    "ppc64le-osuosl-bbw1-docker":"tcp://IP_address:port",
     "aarch64-bbw1-docker":"tcp://IP_address:port",
     "aarch64-bbw2-docker":"tcp://IP_address:port",
     "aarch64-bbw3-docker":"tcp://IP_address:port",
