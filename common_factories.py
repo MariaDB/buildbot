@@ -1,16 +1,42 @@
+import os
+import re
+
 from twisted.internet import defer
 
-from buildbot.plugins import *
+from buildbot.plugins import steps, util
 from buildbot.process import results
 from buildbot.process.factory import BuildFactory
-from buildbot.process.properties import Properties, Property
-from buildbot.process.remotecommand import RemoteCommand
-from buildbot.steps.mtrlogobserver import MTR, MtrLogObserver
-from buildbot.steps.package.rpm.rpmlint import RpmLint
-from buildbot.steps.shell import Compile, SetPropertyFromCommand, ShellCommand, Test
-from buildbot.steps.source.github import GitHub
-from constants import *
-from utils import *
+from buildbot.process.properties import Property
+from buildbot.steps.mtrlogobserver import MTR
+
+# Local
+from constants import MTR_ENV, test_type_to_mtr_arg
+from utils import (
+    createVar,
+    dockerfile,
+    getArch,
+    getHTMLLogString,
+    getSourceTarball,
+    hasAutobake,
+    hasBigtest,
+    hasCompat,
+    hasDockerLibrary,
+    hasEco,
+    hasFailed,
+    hasFiles,
+    hasGalera,
+    hasInstall,
+    hasRpmLint,
+    hasS3,
+    hasUpgrade,
+    ls2string,
+    moveMTRLogs,
+    mtrEnv,
+    mtrJobsMultiplier,
+    printEnv,
+    saveLogs,
+    savePackage,
+)
 
 
 # TODO for FetchTestData/getLastNFailedBuildsFactory
@@ -80,7 +106,7 @@ class FetchTestData(MTR):
 def addPostTests(factory):
     factory.addStep(saveLogs())
 
-    ## trigger packages
+    # trigger packages
     factory.addStep(
         steps.Trigger(
             schedulerNames=["s_packages"],
@@ -96,7 +122,7 @@ def addPostTests(factory):
             doStepIf=hasAutobake,
         )
     )
-    ## trigger bigtest
+    # trigger bigtest
     factory.addStep(
         steps.Trigger(
             schedulerNames=["s_bigtest"],
@@ -142,7 +168,6 @@ def addPostTests(factory):
             waitForFinish=False,
             updateSourceStamp=False,
             set_properties={
-                "parentbuildername": Property("buildername"),
                 "tarbuildnum": Property("tarbuildnum"),
                 "mariadb_binary": Property("mariadb_binary"),
                 "mariadb_version": Property("mariadb_version"),
@@ -219,7 +244,8 @@ def getBuildFactoryPreTest(build_type="RelWithDebInfo", additional_args=""):
     return f_quick_build
 
 
-# TODO single function or class object to handle adding tests for different platforms
+# TODO single function or class object to handle adding tests for different
+# platforms
 def addWinTests(
     factory: BuildFactory,
     mtr_test_type: str,
@@ -229,9 +255,8 @@ def addWinTests(
     mtr_suites: list[str],
     create_scripts: bool = False,
 ) -> BuildFactory:
-
     if "default" in mtr_suites:
-        cmd = f"..\\mysql-test\\collections\\buildbot_suites.bat && cd .."
+        cmd = "..\\mysql-test\\collections\\buildbot_suites.bat && cd .."
     else:
         suites = ",".join(mtr_suites)
         cmd = (
@@ -274,7 +299,7 @@ def addWinTests(
                 "dojob",
                 '"',
                 util.Interpolate(
-                    f'"C:\Program Files (x86)\Microsoft Visual Studio\\2022\BuildTools\Common7\Tools\VsDevCmd.bat" -arch=%(kw:arch)s && cd mysql-test && {cmd}',
+                    f'"C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\Common7\\Tools\\VsDevCmd.bat" -arch=%(kw:arch)s && cd mysql-test && {cmd}',
                     mtr_additional_args=mtr_additional_args,
                     jobs=util.Property("jobs", default=4),
                     arch=util.Property("arch", default="x64"),
@@ -595,7 +620,6 @@ def getLastNFailedBuildsFactory(test_type, mtrDbPool):
 
 
 def getRpmAutobakeFactory(mtrDbPool):
-    ## f_rpm_autobake
     f_rpm_autobake = util.BuildFactory()
     f_rpm_autobake.addStep(printEnv())
     f_rpm_autobake.addStep(
