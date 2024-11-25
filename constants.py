@@ -42,6 +42,7 @@ STAGING_PROT_TEST_BRANCHES = [
 # Defines what builders report status to GitHub
 GITHUB_STATUS_BUILDERS = [
     "aarch64-macos-compile-only",
+    "aarch64-debian-11",
     "amd64-debian-12",
     "amd64-debian-12-debug-embedded",
     "amd64-debian-12-deb-autobake",
