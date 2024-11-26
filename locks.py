@@ -53,8 +53,8 @@ def getLocks(props):
 
     if (
         builder_name in GITHUB_STATUS_BUILDERS
-        or builder_name in builders_install
-        or builder_name in builders_upgrade
+        or builder_name in BUILDERS_INSTALL
+        or builder_name in BUILDERS_UPGRADE
     ):
         return []
     locks = []

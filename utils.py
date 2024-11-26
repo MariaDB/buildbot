@@ -23,9 +23,9 @@ from constants import (
     DEVELOPMENT_BRANCH,
     MTR_ENV,
     SAVED_PACKAGE_BRANCHES,
-    builders_autobake,
-    builders_install,
-    builders_upgrade,
+    BUILDERS_AUTOBAKE,
+    BUILDERS_INSTALL,
+    BUILDERS_UPGRADE,
     os_info,
     RELEASE_BRANCHES,
 )
@@ -448,7 +448,7 @@ def hasFiles(step):
 def hasInstall(props):
     builderName = str(props.getProperty("buildername"))
 
-    for b in builders_install:
+    for b in BUILDERS_INSTALL:
         if builderName in b:
             return True
     return False
@@ -457,7 +457,7 @@ def hasInstall(props):
 def hasUpgrade(props):
     builderName = str(props.getProperty("buildername"))
 
-    for b in builders_upgrade:
+    for b in BUILDERS_UPGRADE:
         if builderName in b:
             return True
     return False
@@ -552,7 +552,7 @@ def waitIfStaging(step):
 
 def hasAutobake(props):
     builderName = props.getProperty("buildername")
-    for b in builders_autobake:
+    for b in BUILDERS_AUTOBAKE:
         if builderName in b:
             return True
     return False

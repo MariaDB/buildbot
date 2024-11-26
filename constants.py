@@ -241,27 +241,27 @@ with open("/srv/buildbot/master/os_info.yaml") as f:
     os_info = yaml.safe_load(f)
 
 # Generate install builders based on the os_info data
-builders_install = []
-builders_upgrade = []
-builders_autobake = []
-all_platforms = set()
+BUILDERS_INSTALL = []
+BUILDERS_UPGRADE = []
+BUILDERS_AUTOBAKE = []
+ALL_PLATFORMS = set()
 for os_i in os_info:
     for arch in os_info[os_i]["arch"]:
         builder_name_autobake = (
             arch + "-" + os_i + "-" + os_info[os_i]["type"] + "-autobake"
         )
         if not ("install_only" in os_info[os_i] and os_info[os_i]["install_only"]):
-            all_platforms.add(arch)
-            builders_autobake.append(builder_name_autobake)
+            ALL_PLATFORMS.add(arch)
+            BUILDERS_AUTOBAKE.append(builder_name_autobake)
         # Currently there are no VMs for x86 and s390x and OpenSUSE and SLES
         if arch not in ["s390x", "x86"] and "sles" not in os_i:
-            builders_install.append(builder_name_autobake + "-install")
-            builders_upgrade.append(builder_name_autobake + "-minor-upgrade-all")
-            builders_upgrade.append(
+            BUILDERS_INSTALL.append(builder_name_autobake + "-install")
+            BUILDERS_UPGRADE.append(builder_name_autobake + "-minor-upgrade-all")
+            BUILDERS_UPGRADE.append(
                 builder_name_autobake + "-minor-upgrade-columnstore"
             )
-            builders_upgrade.append(builder_name_autobake + "-major-upgrade")
+            BUILDERS_UPGRADE.append(builder_name_autobake + "-major-upgrade")
 
 BUILDERS_GALERA = list(
-    map(lambda x: "gal-" + "-".join(x.split("-")[:3]), builders_autobake)
+    map(lambda x: "gal-" + "-".join(x.split("-")[:3]), BUILDERS_AUTOBAKE)
 )
