@@ -22,12 +22,12 @@ from constants import (
     BUILDERS_S3_MTR,
     DEVELOPMENT_BRANCH,
     MTR_ENV,
+    SAVED_PACKAGE_BRANCHES,
     builders_autobake,
     builders_install,
     builders_upgrade,
     os_info,
-    releaseBranches,
-    savedPackageBranches,
+    RELEASE_BRANCHES,
 )
 
 private_config = {"private": {}}
@@ -280,10 +280,10 @@ def fnmatch_any(s, list_of_patterns):
 # Priority filter based on saved package branches
 def nextBuild(bldr, requests):
     for r in requests:
-        if fnmatch_any(r.sources[""].branch, releaseBranches):
+        if fnmatch_any(r.sources[""].branch, RELEASE_BRANCHES):
             return r
     for r in requests:
-        if fnmatch_any(r.sources[""].branch, savedPackageBranches):
+        if fnmatch_any(r.sources[""].branch, SAVED_PACKAGE_BRANCHES):
             return r
     return requests[0]
 
@@ -337,7 +337,7 @@ def ls2list(rc, stdout, stderr):
 
 
 # Save packages for current branch?
-def savePackage(step, savedBranches=savedPackageBranches):
+def savePackage(step, savedBranches=SAVED_PACKAGE_BRANCHES):
     return step.getProperty("save_packages") and fnmatch_any(
         step.getProperty("branch"), savedBranches
     )
