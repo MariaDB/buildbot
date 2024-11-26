@@ -1,20 +1,21 @@
 import fnmatch
 import os
 import re
-import sys
-from datetime import datetime, timedelta
+from datetime import datetime
+from typing import Any, Tuple
 
 import docker
 from pyzabbix import ZabbixAPI
-from twisted.internet import defer
 
+from buildbot.buildrequest import BuildRequest
+from buildbot.interfaces import IProperties
+from buildbot.master import BuildMaster
 from buildbot.plugins import steps, util, worker
-from buildbot.process.properties import Properties, Property
-from buildbot.process.remotecommand import RemoteCommand
+from buildbot.process.builder import Builder
+from buildbot.process.buildstep import BuildStep
 from buildbot.process.results import FAILURE
-from buildbot.steps.mtrlogobserver import MTR, MtrLogObserver
-from buildbot.steps.shell import Compile, SetPropertyFromCommand, ShellCommand, Test
-from buildbot.steps.source.github import GitHub
+from buildbot.process.workerforbuilder import AbstractWorkerForBuilder
+from buildbot.worker import AbstractWorker
 from constants import (
     DEVELOPMENT_BRANCH,
     MTR_ENV,
@@ -25,7 +26,6 @@ from constants import (
     builders_install,
     builders_s3_mtr,
     builders_upgrade,
-    os_info,
     releaseBranches,
     savedPackageBranches,
 )
@@ -34,8 +34,8 @@ private_config = {"private": {}}
 exec(open("/srv/buildbot/master/master-private.cfg").read(), private_config, {})
 
 
-def envFromProperties(envlist):
-    d = dict()
+def envFromProperties(envlist: list[str]) -> dict[str, str]:
+    d = {}
     for e in envlist:
         d[e] = util.Interpolate(f"%(prop:{e})s")
     d["tarbuildnum"] = util.Interpolate("%(prop:tarbuildnum)s")
@@ -43,7 +43,7 @@ def envFromProperties(envlist):
     return d
 
 
-def getScript(scriptname):
+def getScript(scriptname: str) -> steps.ShellCommand:
     branch = os.getenv("BRANCH", default="main")
     return steps.ShellCommand(
         name=f"fetch_{scriptname}",
@@ -68,25 +68,22 @@ MASTER_PACKAGES = os.getenv(
 
 # Helper function that creates a worker instance.
 def createWorker(
-    worker_name_prefix,
-    worker_id,
-    worker_type,
-    dockerfile,
-    jobs=5,
-    save_packages=False,
-    shm_size="15G",
-    worker_name_suffix="",
-    volumes=[
+    worker_name_prefix: str,
+    worker_id: str,
+    worker_type: str,
+    dockerfile: str,
+    jobs: int = 5,
+    save_packages: bool = False,
+    shm_size: str = "15G",
+    worker_name_suffix: str = "",
+    volumes: list[str] = [
         "/srv/buildbot/ccache:/mnt/ccache",
         "/srv/buildbot/packages:/mnt/packages",
         MASTER_PACKAGES + "/:/packages",
     ],
-):
-    worker_name = worker_name_prefix + str(worker_id) + "-docker"
-    name = worker_name + worker_type
-
-    i = worker_id
-    tls = None
+) -> Tuple[str, worker.DockerLatentWorker]:
+    worker_name = f"{worker_name_prefix}{worker_id}-docker"
+    name = f"{worker_name}{worker_type}"
 
     if worker_name_prefix.startswith("hz"):
         b_name = "x64-bbw"
@@ -123,7 +120,7 @@ def createWorker(
         docker_host=private_config["private"]["docker_workers"][worker_name],
         image=image_str,
         dockerfile=dockerfile_str,
-        tls=tls,
+        tls=None,
         autopull=True,
         alwaysPull=need_pull,
         followStartupLogs=False,
@@ -143,8 +140,8 @@ def createWorker(
     return ((base_name, name + worker_name_suffix), worker_instance)
 
 
-def printEnv():
-    return ShellCommand(
+def printEnv() -> steps.ShellCommand:
+    return steps.ShellCommand(
         name="Environment details",
         command=[
             "bash",
@@ -162,8 +159,8 @@ def printEnv():
     )
 
 
-def getSourceTarball():
-    return ShellCommand(
+def getSourceTarball() -> steps.ShellCommand:
+    return steps.ShellCommand(
         name="get_tarball",
         description="get source tarball",
         descriptionDone="get source tarball...done",
@@ -181,8 +178,8 @@ def getSourceTarball():
     )
 
 
-def saveLogs():
-    return ShellCommand(
+def saveLogs() -> steps.ShellCommand:
+    return steps.ShellCommand(
         name="Save logs",
         description="saving logs",
         descriptionDone="save logs...done",
@@ -201,8 +198,8 @@ def saveLogs():
     )
 
 
-def createDebRepo():
-    return ShellCommand(
+def createDebRepo() -> steps.ShellCommand:
+    return steps.ShellCommand(
         name="Create deb repository",
         haltOnFailure=True,
         command=[
@@ -219,12 +216,15 @@ def createDebRepo():
 """
             ),
         ],
-        doStepIf=lambda step: hasFiles(step) and savePackage(step),
+        doStepIf=(
+            lambda step: hasFiles(step)
+            and savePackageIfBranchMatch(step, savedPackageBranches)
+        ),
     )
 
 
-def uploadDebArtifacts():
-    return ShellCommand(
+def uploadDebArtifacts() -> steps.ShellCommand:
+    return steps.ShellCommand(
         name="Upload artifacts",
         timeout=7200,
         haltOnFailure=True,
@@ -258,7 +258,10 @@ EOF
     """
             ),
         ],
-        doStepIf=lambda step: hasFiles(step) and savePackage(step),
+        doStepIf=(
+            lambda step: hasFiles(step)
+            and savePackageIfBranchMatch(step, savedPackageBranches)
+        ),
         descriptionDone=util.Interpolate(
             """
             Use """
@@ -269,16 +272,17 @@ EOF
     )
 
 
-def staging_branch_fn(branch):
+def staging_branch_fn(branch: str) -> bool:
     return fnmatch.fnmatch(branch, "prot-st-*")
 
 
-def fnmatch_any(s, list_of_patterns):
-    return any(fnmatch.fnmatch(s, p) for p in list_of_patterns)
+def fnmatch_any(branch: str, patterns: list[str]) -> bool:
+    return any(fnmatch.fnmatch(branch, pattern) for pattern in patterns)
 
 
 # Priority filter based on saved package branches
-def nextBuild(bldr, requests):
+def nextBuild(builder: Builder,
+              requests: list[BuildRequest]) -> str:
     for r in requests:
         if fnmatch_any(r.sources[""].branch, releaseBranches):
             return r
@@ -288,13 +292,17 @@ def nextBuild(bldr, requests):
     return requests[0]
 
 
-def canStartBuild(builder, wfb, request):
-    worker = wfb.worker
-    if not "s390x" in worker.name:
+def canStartBuild(
+    builder: Builder, wfb: AbstractWorkerForBuilder, request: BuildRequest
+) -> bool:
+    worker: AbstractWorker = wfb.worker
+    if "s390x" not in worker.name:
         return True
 
-    worker_prefix = "-".join((worker.name).split("-")[0:2])
+    worker_prefix = "-".join(worker.name.split("-")[0:2])
     worker_name = private_config["private"]["worker_name_mapping"][worker_prefix]
+    # TODO(cvicentiu) this could be done with a yield to not have the master
+    # stuck until the network operation is completed.
     load = getMetric(worker_name, "BB_accept_new_build")
 
     if float(load) > 60:
@@ -309,42 +317,45 @@ def canStartBuild(builder, wfb, request):
 
 
 @util.renderer
-def mtrJobsMultiplier(props):
+def mtrJobsMultiplier(props: IProperties) -> int:
     jobs = props.getProperty("jobs", default=20)
     return jobs * 2
 
 
-# ls2string gets the output of ls and returns a space delimited string with the files and directories
-def ls2string(rc, stdout, stderr):
-    lsFilenames = []
+# ls2string gets the output of ls and returns a space delimited string with
+# the files and directories
+def ls2string(rc: int, stdout: str, stderr: str) -> dict[str, str]:
+    ls_filenames = []
+    for line in stdout.strip().split("\n"):
+        line = line.strip()
+        if not line:
+            ls_filenames.append(line)
 
-    for l in stdout.strip().split("\n"):
-        if l != "":
-            lsFilenames.append(l.strip())
-
-    return {"packages": " ".join(lsFilenames)}
+    return {"packages": " ".join(ls_filenames)}
 
 
-# ls2list gets the output of ls and returns a list with the files and directories
-def ls2list(rc, stdout, stderr):
-    lsFilenames = []
+# ls2list gets the output of ls and returns a list with the files and
+# directories
+def ls2list(rc: int, stdout: str, stderr: str) -> dict[str, list[str]]:
+    ls_filenames = []
 
-    for l in stdout.strip().split("\n"):
-        if l != "":
-            lsFilenames.append(l.strip())
+    for line in stdout.strip().split("\n"):
+        line = line.strip()
+        if not line:
+            ls_filenames.append(line)
 
-    return {"packages": lsFilenames}
+    return {"packages": ls_filenames}
 
 
 # Save packages for current branch?
-def savePackage(step, savedBranches=savedPackageBranches):
+def savePackageIfBranchMatch(step: BuildStep, branch_match: str) -> bool:
     return step.getProperty("save_packages") and fnmatch_any(
-        step.getProperty("branch"), savedBranches
+        step.getProperty("branch"), branch_match
     )
 
 
 # Return a HTML file that contains links to MTR logs
-def getHTMLLogString(base_path="./buildbot"):
+def getHTMLLogString(base_path: str = "./buildbot") -> str:
     return f"""
 mkdir -p {base_path}
 echo '<!DOCTYPE html>
@@ -357,11 +368,11 @@ echo '</body>
 </html>' >> {base_path}/mysql_logs.html"""
 
 
-def hasFailed(step):
+def hasFailed(step: BuildStep) -> bool:
     return step.build.results == FAILURE
 
 
-def createVar(base_path="./buildbot", output_dir=""):
+def createVar(base_path: str = "./buildbot", output_dir: str = "") -> str:
     return f"""
 if [[ -d ./mysql-test/var ]]; then
   typeset -r var_tarball_list="var_tarball_list.txt"
@@ -393,7 +404,7 @@ fi"""
 
 
 # Function to move the MTR logs to a known location so that they can be saved
-def moveMTRLogs(base_path="./buildbot", output_dir=""):
+def moveMTRLogs(base_path: str = "./buildbot", output_dir: str = "") -> str:
     return f"""
 mkdir -p {base_path}/logs/{output_dir}
 
@@ -429,7 +440,7 @@ done"""
 
 
 @util.renderer
-def dockerfile(props):
+def dockerfile(props: IProperties) -> str:
     worker = props.getProperty("workername")
     return (
         "https://github.com/MariaDB/buildbot/tree/main/dockerfiles/"
@@ -439,40 +450,35 @@ def dockerfile(props):
 
 
 # checks if the list of files is empty
-def hasFiles(step):
-    if len(step.getProperty("packages")) < 1:
-        return False
-    return True
+def hasFiles(step: BuildStep) -> bool:
+    return len(step.getProperty("packages")) >= 1
 
 
-def hasInstall(props):
-    builderName = str(props.getProperty("buildername"))
-
+def hasInstall(step: BuildStep) -> bool:
+    builder_name = step.getProperty("buildername")
     for b in builders_install:
-        if builderName in b:
+        if builder_name in b:
             return True
     return False
 
 
-def hasUpgrade(props):
-    builderName = str(props.getProperty("buildername"))
-
+def hasUpgrade(step: BuildStep) -> bool:
+    builder_name = step.getProperty("buildername")
     for b in builders_upgrade:
-        if builderName in b:
+        if builder_name in b:
             return True
     return False
 
 
-def hasEco(props):
-    builderName = str(props.getProperty("buildername"))
-
+def hasEco(step: BuildStep) -> bool:
+    builder_name = step.getProperty("buildername")
     for b in builders_eco:
-        if builderName in b:
+        if builder_name in b:
             return True
     return False
 
 
-def hasCompat(step):
+def hasCompat(step: BuildStep) -> bool:
     builderName = str(step.getProperty("buildername"))
 
     # For s390x and the listed distros there are no compat files
@@ -494,13 +500,13 @@ def hasCompat(step):
     return True
 
 
-def hasDockerLibrary(step):
+def hasDockerLibrary(step: BuildStep) -> bool:
     # Can only build with a saved package
-    if not savePackage(step):
+    if not savePackageIfBranchMatch(step, savedPackageBranches):
         return False
 
-    branch = str(step.getProperty("master_branch"))
-    builderName = str(step.getProperty("buildername"))
+    branch = step.getProperty("master_branch")
+    builder_name = step.getProperty("buildername")
 
     # from https://github.com/MariaDB/mariadb-docker/blob/next/update.sh#L7-L15
     if fnmatch.fnmatch(branch, "10.[56]"):
@@ -511,14 +517,14 @@ def hasDockerLibrary(step):
         dockerbase = "ubuntu-2404-deb-autobake"
 
     # UBI images
-    if branch != "10.5" and builderName.endswith("amd64-rhel-9-rpm-autobake"):
+    if branch != "10.5" and builder_name.endswith("amd64-rhel-9-rpm-autobake"):
         return True
 
     # We only build on the above autobakes for all architectures
-    return builderName.endswith(dockerbase)
+    return builder_name.endswith(dockerbase)
 
 
-def filterBranch(step):
+def filterBranch(step: BuildStep) -> str:
     if "10.5" in step.getProperty("branch"):
         return False
     if "10.6" in step.getProperty("branch"):
@@ -527,84 +533,72 @@ def filterBranch(step):
 
 
 # check if branch is a staging branch
-def isStagingBranch(step):
-    if staging_branch_fn(step.getProperty("branch")):
-        return True
-    else:
-        return False
-
-
-# returns true if build is succeeding
-def ifStagingSucceeding(step):
-    if isStagingBranch(step):
-        step.setProperty("build_results", step.build.results)
-        return step.build.results in ("SUCCESS", "WARNINGS")
-    else:
-        return False
+def isStagingBranch(step: BuildStep) -> bool:
+    return staging_branch_fn(step.getProperty("branch"))
 
 
 # set step's waitForFinish to True if staging branch
-def waitIfStaging(step):
+def waitIfStaging(step: BuildStep) -> bool:
     if isStagingBranch(step):
         step.waitForFinish = True
     return True
 
 
-def hasAutobake(props):
-    builderName = props.getProperty("buildername")
+def hasAutobake(step: BuildStep) -> bool:
+    builder_name = step.getProperty("buildername")
     for b in builders_autobake:
-        if builderName in b:
+        if builder_name in b:
             return True
     return False
 
 
-def hasGalera(props):
-    builderName = str(props.getProperty("buildername"))
-
+def hasGalera(step: BuildStep) -> bool:
+    builder_name = step.getProperty("buildername")
     for b in builders_galera_mtr:
-        if builderName in b:
+        if builder_name in b:
             return True
     return False
 
 
 def hasS3(props):
-    builderName = str(props.getProperty("buildername"))
-
+    builder_name = props.getProperty("buildername")
     for b in builders_s3_mtr:
-        if builderName == b:
+        if builder_name == b:
             return True
     return False
 
 
-def hasBigtest(props):
-    builderName = str(props.getProperty("buildername"))
-
+def hasBigtest(step: BuildStep) -> bool:
+    builder_name = step.getProperty("buildername")
     for b in builders_big:
-        if builderName in b:
+        if builder_name in b:
             return True
     return False
 
 
-def hasRpmLint(step):
-    builderName = str(step.getProperty("buildername"))
+def hasRpmLint(step: BuildStep) -> str:
+    builder_name = step.getProperty("buildername")
     # The step fails on s390x SLES 12 due to permissions issues
-    if "s390x-sles-12" in builderName:
+    if "s390x-sles-12" in builder_name:
         return False
     return True
 
 
 @util.renderer
-def getArch(props):
+def getArch(props: IProperties) -> str:
     buildername = props.getProperty("buildername")
     return buildername.split("-")[0]
 
 
-##### Builder priority
-# Prioritize builders. At this point, only the Windows builders need a higher priority
-# since the others run on dedicated machines.
-def prioritizeBuilders(buildmaster, builders):
-    """amd64-windows-* builders should have the highest priority since they are used for
-    protected branches"""
+# Builder priority
+#
+# Prioritize builders. At this point, only the Windows builders need a higher
+# priority since the others run on dedicated machines.
+def prioritizeBuilders(
+    buildmaster: BuildMaster, builders: list[Builder]
+) -> list[Builder]:
+    """amd64-windows-* builders should have the highest priority since they are
+    used for protected branches"""
     builderPriorities = {
         "amd64-windows": 0,
         "amd64-windows-packages": 1,
@@ -613,13 +607,11 @@ def prioritizeBuilders(buildmaster, builders):
     return builders
 
 
-##### Zabbix helper
-def getMetric(hostname, metric):
+# Zabbix helper
+def getMetric(hostname: str, metric: str) -> Any:
     # set API
     zapi = ZabbixAPI(private_config["private"]["zabbix_server"])
-
     zapi.session.verify = True
-
     zapi.timeout = 10
 
     zapi.login(api_token=private_config["private"]["zabbix_token"])
@@ -648,17 +640,17 @@ def getMetric(hostname, metric):
     return last_value
 
 
-def read_template(template_name):
+def read_template(template_name: str) -> str:
     with open(f"/srv/buildbot/master/script_templates/{template_name}.sh") as f:
         return f.read()
 
 
-def isJepsenBranch(step):
+def isJepsenBranch(step: BuildStep) -> bool:
     return step.getProperty("branch").startswith("jpsn")
 
 
 @util.renderer
-def mtrEnv(props) -> dict:
+def mtrEnv(props: IProperties) -> dict:
     """
     Renders the MTR environment variables.
 
@@ -678,5 +670,4 @@ def mtrEnv(props) -> dict:
             if key not in mtr_add_env:
                 mtr_add_env[key] = value
         return mtr_add_env
-    else:
-        return MTR_ENV
+    return MTR_ENV

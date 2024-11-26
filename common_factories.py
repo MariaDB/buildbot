@@ -34,8 +34,9 @@ from utils import (
     mtrEnv,
     mtrJobsMultiplier,
     printEnv,
+    savedPackageBranches,
     saveLogs,
-    savePackage,
+    savePackageIfBranchMatch,
 )
 
 
@@ -142,7 +143,7 @@ def addPostTests(factory):
         steps.SetPropertyFromCommand(
             command="basename mariadb-*-linux-*.tar.gz",
             property="mariadb_binary",
-            doStepIf=savePackage,
+            doStepIf=lambda step: savePackageIfBranchMatch(step, savedPackageBranches),
         )
     )
     factory.addStep(
@@ -158,7 +159,7 @@ def addPostTests(factory):
         && sync /packages/%(prop:tarbuildnum)s
         """
             ),
-            doStepIf=savePackage,
+            doStepIf=lambda step: savePackageIfBranchMatch(step, savedPackageBranches),
         )
     )
     factory.addStep(
@@ -174,7 +175,10 @@ def addPostTests(factory):
                 "master_branch": Property("master_branch"),
                 "parentbuildername": Property("buildername"),
             },
-            doStepIf=lambda step: savePackage(step) and hasEco(step),
+            doStepIf=(
+                lambda step: savePackageIfBranchMatch(step, savedPackageBranches)
+                and hasEco(step)
+            ),
         )
     )
     factory.addStep(
@@ -747,7 +751,10 @@ EOF
                 sync /packages/%(prop:tarbuildnum)s
 """
             ),
-            doStepIf=lambda step: hasFiles(step) and savePackage(step),
+            doStepIf=(
+                lambda step: hasFiles(step)
+                and savePackageIfBranchMatch(step, savedPackageBranches)
+            ),
             descriptionDone=util.Interpolate(
                 """
 Repository available with: curl %(kw:url)s/%(prop:tarbuildnum)s/%(prop:buildername)s/MariaDB.repo -o /etc/yum.repos.d/MariaDB.repo""",
@@ -784,9 +791,11 @@ Repository available with: curl %(kw:url)s/%(prop:tarbuildnum)s/%(prop:builderna
                 "master_branch": Property("master_branch"),
                 "parentbuildername": Property("buildername"),
             },
-            doStepIf=lambda step: hasInstall(step)
-            and savePackage(step)
-            and hasFiles(step),
+            doStepIf=(
+                lambda step: hasInstall(step)
+                and savePackageIfBranchMatch(step, savedPackageBranches)
+                and hasFiles(step)
+            ),
         )
     )
     f_rpm_autobake.addStep(
@@ -801,9 +810,11 @@ Repository available with: curl %(kw:url)s/%(prop:tarbuildnum)s/%(prop:builderna
                 "master_branch": Property("master_branch"),
                 "parentbuildername": Property("buildername"),
             },
-            doStepIf=lambda step: hasUpgrade(step)
-            and savePackage(step)
-            and hasFiles(step),
+            doStepIf=(
+                lambda step: hasUpgrade(step)
+                and savePackageIfBranchMatch(step, savedPackageBranches)
+                and hasFiles(step)
+            ),
         )
     )
     f_rpm_autobake.addStep(
