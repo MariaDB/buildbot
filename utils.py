@@ -18,12 +18,12 @@ from buildbot.steps.source.github import GitHub
 from constants import (
     BUILDERS_BIG,
     BUILDERS_ECO,
+    BUILDERS_GALERA_MTR,
+    BUILDERS_S3_MTR,
     DEVELOPMENT_BRANCH,
     MTR_ENV,
     builders_autobake,
-    builders_galera_mtr,
     builders_install,
-    builders_s3_mtr,
     builders_upgrade,
     os_info,
     releaseBranches,
@@ -561,7 +561,7 @@ def hasAutobake(props):
 def hasGalera(props):
     builderName = str(props.getProperty("buildername"))
 
-    for b in builders_galera_mtr:
+    for b in BUILDERS_GALERA_MTR:
         if builderName in b:
             return True
     return False
@@ -570,7 +570,7 @@ def hasGalera(props):
 def hasS3(props):
     builderName = str(props.getProperty("buildername"))
 
-    for b in builders_s3_mtr:
+    for b in BUILDERS_S3_MTR:
         if builderName in b:
             return True
     return False

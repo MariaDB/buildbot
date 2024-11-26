@@ -52,7 +52,7 @@ else:
     BUILDERS_WORDPRESS = ["amd64-rhel8-wordpress"]
     BUILDERS_DOCKERLIBRARY = ["amd64-rhel8-dockerlibrary"]
 
-builders_galera_mtr = [
+BUILDERS_GALERA_MTR = [
     "aarch64-debian-12",
     "amd64-fedora-39",
     "s390x-ubuntu-2004",
@@ -61,7 +61,7 @@ builders_galera_mtr = [
     "ppc64le-ubuntu-2204",
     "amd64-freebsd-14",
 ]
-builders_s3_mtr = [
+BUILDERS_S3_MTR = [
     "amd64-ubuntu-2004-debug",
     "s390x-sles-1506",
 ]
@@ -262,6 +262,6 @@ for os_i in os_info:
             )
             builders_upgrade.append(builder_name_autobake + "-major-upgrade")
 
-builders_galera = list(
+BUILDERS_GALERA = list(
     map(lambda x: "gal-" + "-".join(x.split("-")[:3]), builders_autobake)
 )
