@@ -453,10 +453,98 @@ def addGaleraTests(factory, mtrDbPool):
     return factory
 
 
+def addS3Tests(factory, mtrDbPool):
+    factory.addStep(
+        steps.MasterShellCommand(
+            name="Create minio S3 bucket",
+            command=[
+                "mc",
+                "mb",
+                util.Interpolate("minio/%(prop:buildername)s-%(prop:buildnumber)s"),
+            ],
+            doStepIf=lambda props: hasS3(props)
+            and props.hasProperty("compile_step_completed"),
+        )
+    )
+    factory.addStep(
+        steps.MTR(
+            name="S3 minio tests",
+            alwaysRun=True,
+            description="testing S3 minio",
+            descriptionDone="test s3 minio",
+            logfiles={"mysqld*": "./buildbot/mysql_logs.html"},
+            test_type="s3",
+            command=[
+                "sh",
+                "-c",
+                util.Interpolate(
+                    r"""
+           cd mysql-test &&
+           exec perl mysql-test-run.pl --verbose-restart --force --retry=3 --max-save-core=2 --max-save-datadir=10 --mem --parallel=$(expr %(kw:jobs)s \* 2) --suite=s3;
+           """,
+                    jobs=util.Property("jobs", default="$(getconf _NPROCESSORS_ONLN)"),
+                ),
+            ],
+            timeout=950,
+            haltOnFailure="true",
+            parallel=mtrJobsMultiplier,
+            dbpool=mtrDbPool,
+            autoCreateTables=True,
+            env={
+                "S3_HOST_NAME": "135.181.42.57",
+                "S3_PORT": "443",
+                "S3_ACCESS_KEY": util.Interpolate("%(secret:minio_access_key)s"),
+                "S3_SECRET_KEY": util.Interpolate("%(secret:minio_secret_key)s"),
+                "S3_BUCKET_NAME": util.Interpolate(
+                    "%(prop:buildername)s-%(prop:buildnumber)s"
+                ),
+                "S3_USE_HTTP": "OFF",
+                "S3_SSL_NO_VERIFY": "ON",
+            },
+            doStepIf=lambda props: hasS3(props)
+            and props.hasProperty("compile_step_completed"),
+        )
+    )
+
+    factory.addStep(
+        steps.MasterShellCommand(
+            name="Delete minio S3 bucket",
+            alwaysRun=True,
+            command=[
+                "mc",
+                "rb",
+                "--force",
+                util.Interpolate("minio/%(prop:buildername)s-%(prop:buildnumber)s"),
+            ],
+            doStepIf=lambda props: hasS3(props)
+            and props.hasProperty("compile_step_completed"),
+        )
+    )
+
+    factory.addStep(
+        steps.ShellCommand(
+            name="move mariadb S3 log files",
+            alwaysRun=True,
+            command=[
+                "bash",
+                "-c",
+                util.Interpolate(
+                    moveMTRLogs(output_dir="S3"),
+                    jobs=util.Property("jobs", default="$(getconf _NPROCESSORS_ONLN)"),
+                ),
+            ],
+            doStepIf=lambda props: hasS3(props)
+            and props.hasProperty("compile_step_completed"),
+        )
+    )
+    return factory
+
+
 def getQuickBuildFactory(test_type, mtrDbPool):
     f = getBuildFactoryPreTest()
     addTests(f, test_type, mtrDbPool, util.Property("mtr_additional_args", default=""))
     addGaleraTests(f, mtrDbPool)
+    addS3Tests(f, mtrDbPool)
     return addPostTests(f)
 
 
