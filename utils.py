@@ -506,20 +506,11 @@ def hasDockerLibrary(step):
         dockerbase = "ubuntu-2004-deb-autobake"
     elif fnmatch.fnmatch(branch, "10.11"):
         dockerbase = "ubuntu-2204-deb-autobake"
-    elif fnmatch.fnmatch(branch, "11.[12]"):
-        dockerbase = "ubuntu-2204-deb-autobake"
     else:
         dockerbase = "ubuntu-2404-deb-autobake"
 
     # UBI images
-    if branch in [
-        "10.6",
-        "10.11",
-        "11.4",
-        "11.5",
-        "11.6",
-        "main",
-    ] and builderName.endswith("amd64-rhel-9-rpm-autobake"):
+    if branch != "10.5" and builderName.endswith("amd64-rhel-9-rpm-autobake"):
         return True
 
     # We only build on the above autobakes for all architectures
