@@ -1,14 +1,14 @@
 from buildbot.plugins import schedulers, util
 from constants import (
+    BUILDERS_AUTOBAKE,
     BUILDERS_BIG,
     BUILDERS_DOCKERLIBRARY,
     BUILDERS_ECO,
+    BUILDERS_INSTALL,
+    BUILDERS_UPGRADE,
     BUILDERS_WORDPRESS,
     GITHUB_STATUS_BUILDERS,
     SUPPORTED_PLATFORMS,
-    builders_autobake,
-    builders_install,
-    builders_upgrade,
 )
 
 
@@ -38,7 +38,7 @@ def getProtectedBuilderNames(props):
 @util.renderer
 def getAutobakeBuilderNames(props):
     builderName = props.getProperty("parentbuildername")
-    for b in builders_autobake:
+    for b in BUILDERS_AUTOBAKE:
         if builderName in b:
             return [b]
     return []
@@ -58,7 +58,7 @@ def getBigtestBuilderNames(props):
 def getInstallBuilderNames(props):
     builderName = str(props.getProperty("parentbuildername"))
 
-    for b in builders_install:
+    for b in BUILDERS_INSTALL:
         if builderName in b:
             builders = [b]
             if "rhel" in builderName:
@@ -73,7 +73,7 @@ def getUpgradeBuilderNames(props):
     builderName = str(props.getProperty("parentbuildername"))
 
     builds = []
-    for b in builders_upgrade:
+    for b in BUILDERS_UPGRADE:
         if builderName in b:
             if "rhel" in builderName:
                 builds.append(b.replace("rhel", "almalinux"))
