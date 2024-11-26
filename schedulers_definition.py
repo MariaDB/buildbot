@@ -1,10 +1,10 @@
 from buildbot.plugins import schedulers, util
 from constants import (
     BUILDERS_BIG,
+    BUILDERS_ECO,
     GITHUB_STATUS_BUILDERS,
     builders_autobake,
     builders_dockerlibrary,
-    builders_eco,
     builders_install,
     builders_upgrade,
     builders_wordpress,
@@ -87,7 +87,7 @@ def getEcoBuilderNames(props):
     builderName = str(props.getProperty("parentbuildername"))
 
     builds = []
-    for b in builders_eco:
+    for b in BUILDERS_ECO:
         if builderName in b:
             builds.append(b)
     return builds
