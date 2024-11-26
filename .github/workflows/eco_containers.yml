@@ -49,7 +49,7 @@ jobs:
           extra-args: --ulimit nofile=16384:16384
       - name: Check for registry credentials
         if: >
-          github.ref == 'refs/heads/main' &&
+          github.ref == 'refs/heads/dev' &&
           github.repository == 'MariaDB/buildbot'
         run: |
           missing=()
