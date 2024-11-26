@@ -52,7 +52,7 @@ def getLocks(props):
     assert builder_name is not None
 
     if (
-        builder_name in github_status_builders
+        builder_name in GITHUB_STATUS_BUILDERS
         or builder_name in builders_install
         or builder_name in builders_upgrade
     ):

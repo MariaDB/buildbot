@@ -22,7 +22,7 @@ BRANCHES_MAIN = [
 ]
 
 # Defines what builders report status to GitHub
-github_status_builders = [
+GITHUB_STATUS_BUILDERS = [
     "aarch64-macos-compile-only",
     "amd64-debian-12",
     "amd64-debian-12-debug-embedded",

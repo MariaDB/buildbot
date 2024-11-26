@@ -1,5 +1,6 @@
 from buildbot.plugins import schedulers, util
 from constants import (
+    GITHUB_STATUS_BUILDERS,
     builders_autobake,
     builders_big,
     builders_dockerlibrary,
@@ -7,7 +8,6 @@ from constants import (
     builders_install,
     builders_upgrade,
     builders_wordpress,
-    github_status_builders,
     supportedPlatforms,
 )
 
@@ -18,7 +18,7 @@ def getBranchBuilderNames(props):
     mBranch = props.getProperty("master_branch")
 
     builders = list(
-        filter(lambda x: x not in github_status_builders, supportedPlatforms[mBranch])
+        filter(lambda x: x not in GITHUB_STATUS_BUILDERS, supportedPlatforms[mBranch])
     )
 
     return builders
@@ -29,7 +29,7 @@ def getProtectedBuilderNames(props):
     mBranch = props.getProperty("master_branch")
 
     builders = list(
-        filter(lambda x: x in supportedPlatforms[mBranch], github_status_builders)
+        filter(lambda x: x in supportedPlatforms[mBranch], GITHUB_STATUS_BUILDERS)
     )
 
     return builders
