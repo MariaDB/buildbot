@@ -5,10 +5,10 @@ from constants import (
     BUILDERS_ECO,
     BUILDERS_WORDPRESS,
     GITHUB_STATUS_BUILDERS,
+    SUPPORTED_PLATFORMS,
     builders_autobake,
     builders_install,
     builders_upgrade,
-    supportedPlatforms,
 )
 
 
@@ -18,7 +18,7 @@ def getBranchBuilderNames(props):
     mBranch = props.getProperty("master_branch")
 
     builders = list(
-        filter(lambda x: x not in GITHUB_STATUS_BUILDERS, supportedPlatforms[mBranch])
+        filter(lambda x: x not in GITHUB_STATUS_BUILDERS, SUPPORTED_PLATFORMS[mBranch])
     )
 
     return builders
@@ -29,7 +29,7 @@ def getProtectedBuilderNames(props):
     mBranch = props.getProperty("master_branch")
 
     builders = list(
-        filter(lambda x: x in supportedPlatforms[mBranch], GITHUB_STATUS_BUILDERS)
+        filter(lambda x: x in SUPPORTED_PLATFORMS[mBranch], GITHUB_STATUS_BUILDERS)
     )
 
     return builders
