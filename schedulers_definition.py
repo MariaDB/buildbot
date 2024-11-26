@@ -1,13 +1,13 @@
 from buildbot.plugins import schedulers, util
 from constants import (
     BUILDERS_BIG,
+    BUILDERS_DOCKERLIBRARY,
     BUILDERS_ECO,
+    BUILDERS_WORDPRESS,
     GITHUB_STATUS_BUILDERS,
     builders_autobake,
-    builders_dockerlibrary,
     builders_install,
     builders_upgrade,
-    builders_wordpress,
     supportedPlatforms,
 )
 
@@ -95,12 +95,12 @@ def getEcoBuilderNames(props):
 
 @util.renderer
 def getDockerLibraryNames(props):
-    return builders_dockerlibrary[0]
+    return BUILDERS_DOCKERLIBRARY[0]
 
 
 @util.renderer
 def getWordpressNames(props):
-    return builders_wordpress[0]
+    return BUILDERS_WORDPRESS[0]
 
 
 def getSchedulers():
