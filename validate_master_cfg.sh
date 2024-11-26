@@ -10,7 +10,7 @@ err() {
   exit 1
 }
 
-mkdir master-credential-provider
+mkdir -p master-credential-provider
 [[ -f master-private.cfg ]] ||
   ln -s master-private.cfg-sample master-private.cfg
 [[ -f master-config.yaml ]] ||
