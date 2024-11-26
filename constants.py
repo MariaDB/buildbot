@@ -46,11 +46,11 @@ BUILDERS_ECO = [
 ]
 
 if os.getenv("ENVIRON") == "DEV":
-    builders_wordpress = ["amd64-rhel9-wordpress"]
-    builders_dockerlibrary = ["amd64-rhel9-dockerlibrary"]
+    BUILDERS_WORDPRESS = ["amd64-rhel9-wordpress"]
+    BUILDERS_DOCKERLIBRARY = ["amd64-rhel9-dockerlibrary"]
 else:
-    builders_wordpress = ["amd64-rhel8-wordpress"]
-    builders_dockerlibrary = ["amd64-rhel8-dockerlibrary"]
+    BUILDERS_WORDPRESS = ["amd64-rhel8-wordpress"]
+    BUILDERS_DOCKERLIBRARY = ["amd64-rhel8-dockerlibrary"]
 
 builders_galera_mtr = [
     "aarch64-debian-12",
