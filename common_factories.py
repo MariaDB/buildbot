@@ -495,7 +495,7 @@ def addS3Tests(factory, mtrDbPool):
                 "S3_PORT": "443",
                 "S3_ACCESS_KEY": util.Interpolate("%(secret:minio_access_key)s"),
                 "S3_SECRET_KEY": util.Interpolate("%(secret:minio_secret_key)s"),
-                "S3_BUCKET_NAME": util.Interpolate(
+                "S3_BUCKET": util.Interpolate(
                     "%(prop:buildername)s-%(prop:buildnumber)s"
                 ),
                 "S3_USE_HTTP": "OFF",
