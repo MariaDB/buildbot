@@ -16,10 +16,10 @@ from buildbot.steps.mtrlogobserver import MTR, MtrLogObserver
 from buildbot.steps.shell import Compile, SetPropertyFromCommand, ShellCommand, Test
 from buildbot.steps.source.github import GitHub
 from constants import (
+    BUILDERS_BIG,
     DEVELOPMENT_BRANCH,
     MTR_ENV,
     builders_autobake,
-    builders_big,
     builders_eco,
     builders_galera_mtr,
     builders_install,
@@ -579,7 +579,7 @@ def hasS3(props):
 def hasBigtest(props):
     builderName = str(props.getProperty("buildername"))
 
-    for b in builders_big:
+    for b in BUILDERS_BIG:
         if builderName in b:
             return True
     return False
