@@ -5,7 +5,7 @@ import yaml
 DEVELOPMENT_BRANCH = "11.3"
 
 # Used to trigger the appropriate main branch
-branches_main = [
+BRANCHES_MAIN = [
     "10.5",
     "10.6",
     "10.11",
@@ -67,7 +67,7 @@ builders_s3_mtr = [
 ]
 
 # Defines branches for which we save packages
-savedPackageBranches = branches_main + [
+savedPackageBranches = BRANCHES_MAIN + [
     "bb-*-release",
     "bb-10.2-compatibility",
     "preview-*",
