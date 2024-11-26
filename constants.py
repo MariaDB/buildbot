@@ -61,6 +61,10 @@ builders_galera_mtr = [
     "ppc64le-ubuntu-2204",
     "amd64-freebsd-14",
 ]
+builders_s3_mtr = [
+    "amd64-ubuntu-2004-debug",
+    "s390x-sles-1506",
+]
 
 # Defines branches for which we save packages
 savedPackageBranches = branches_main + [

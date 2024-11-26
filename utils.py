@@ -23,6 +23,7 @@ from constants import (
     builders_eco,
     builders_galera_mtr,
     builders_install,
+    builders_s3_mtr,
     builders_upgrade,
     os_info,
     releaseBranches,
@@ -561,6 +562,15 @@ def hasGalera(props):
     builderName = str(props.getProperty("buildername"))
 
     for b in builders_galera_mtr:
+        if builderName in b:
+            return True
+    return False
+
+
+def hasS3(props):
+    builderName = str(props.getProperty("buildername"))
+
+    for b in builders_s3_mtr:
         if builderName in b:
             return True
     return False
