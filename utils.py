@@ -281,15 +281,19 @@ def fnmatch_any(branch: str, patterns: list[str]) -> bool:
 
 
 # Priority filter based on saved package branches
-def nextBuild(builder: Builder,
-              requests: list[BuildRequest]) -> str:
-    for r in requests:
-        if fnmatch_any(r.sources[""].branch, releaseBranches):
-            return r
-    for r in requests:
-        if fnmatch_any(r.sources[""].branch, savedPackageBranches):
-            return r
-    return requests[0]
+def nextBuild(builder: Builder, requests: list[BuildRequest]) -> str:
+    def build_request_sort_key(request: BuildRequest):
+        branch = request.sources[""].branch
+        # Booleans are sorted False first.
+        # Priority is given to releaseBranches, savePackageBranches
+        # then it's first come, first serve.
+        return (
+            not fnmatch_any(branch, releaseBranches),
+            not fnmatch_any(branch, savedPackageBranches),
+            request.getSubmitTime(),
+        )
+
+    return sorted(requests, build_request_sort_key)[0]
 
 
 def canStartBuild(
