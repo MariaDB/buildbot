@@ -5,7 +5,7 @@ import yaml
 DEVELOPMENT_BRANCH = "11.3"
 
 # Used to trigger the appropriate main branch
-branches_main = [
+BRANCHES_MAIN = [
     "10.5",
     "10.6",
     "10.11",
@@ -22,7 +22,7 @@ branches_main = [
 ]
 
 # Defines what builders report status to GitHub
-github_status_builders = [
+GITHUB_STATUS_BUILDERS = [
     "aarch64-macos-compile-only",
     "amd64-debian-12",
     "amd64-debian-12-debug-embedded",
@@ -38,21 +38,21 @@ github_status_builders = [
 ]
 
 # Special builders triggering
-builders_big = ["amd64-ubuntu-2004-bigtest"]
-builders_eco = [
+BUILDERS_BIG = ["amd64-ubuntu-2004-bigtest"]
+BUILDERS_ECO = [
     "amd64-debian-10-eco-mysqljs",
     "amd64-debian-10-eco-pymysql",
     "amd64-ubuntu-2004-eco-php",
 ]
 
 if os.getenv("ENVIRON") == "DEV":
-    builders_wordpress = ["amd64-rhel9-wordpress"]
-    builders_dockerlibrary = ["amd64-rhel9-dockerlibrary"]
+    BUILDERS_WORDPRESS = ["amd64-rhel9-wordpress"]
+    BUILDERS_DOCKERLIBRARY = ["amd64-rhel9-dockerlibrary"]
 else:
-    builders_wordpress = ["amd64-rhel8-wordpress"]
-    builders_dockerlibrary = ["amd64-rhel8-dockerlibrary"]
+    BUILDERS_WORDPRESS = ["amd64-rhel8-wordpress"]
+    BUILDERS_DOCKERLIBRARY = ["amd64-rhel8-dockerlibrary"]
 
-builders_galera_mtr = [
+BUILDERS_GALERA_MTR = [
     "aarch64-debian-12",
     "amd64-fedora-39",
     "s390x-ubuntu-2004",
@@ -61,13 +61,13 @@ builders_galera_mtr = [
     "ppc64le-ubuntu-2204",
     "amd64-freebsd-14",
 ]
-builders_s3_mtr = [
+BUILDERS_S3_MTR = [
     "aarch64-ubuntu-2004-debug",
     "s390x-sles-1506",
 ]
 
 # Defines branches for which we save packages
-savedPackageBranches = branches_main + [
+SAVED_PACKAGE_BRANCHES = BRANCHES_MAIN + [
     "bb-*-release",
     "bb-10.2-compatibility",
     "preview-*",
@@ -75,13 +75,13 @@ savedPackageBranches = branches_main + [
 ]
 
 # The trees for which we save binary packages.
-releaseBranches = ["bb-*-release", "preview-*"]
+RELEASE_BRANCHES = ["bb-*-release", "preview-*"]
 
 # Note:
 # Maximum supported branch is the one where the default distro MariaDB package major version <= branch
 # For example, if Debian 10 has MariaDB 10.3 by default, we don't support MariaDB 10.2 on it.
-supportedPlatforms = {}
-supportedPlatforms["10.5"] = [
+SUPPORTED_PLATFORMS = {}
+SUPPORTED_PLATFORMS["10.5"] = [
     "aarch64-centos-stream9",
     "aarch64-debian-10-bintar",
     "aarch64-debian-11",
@@ -130,17 +130,17 @@ supportedPlatforms["10.5"] = [
     "x86-debian-12-fulltest",
 ]
 
-supportedPlatforms["10.6"] = supportedPlatforms["10.5"].copy()
+SUPPORTED_PLATFORMS["10.6"] = SUPPORTED_PLATFORMS["10.5"].copy()
 
 # Add only 10.5 supported platforms
-supportedPlatforms["10.5"] += [
+SUPPORTED_PLATFORMS["10.5"] += [
     "amd64-kvm-centos-6-bintar",
     "amd64-kvm-ubuntu-1604-bintar",
     "x86-kvm-centos-6-bintar",
     "x86-kvm-ubuntu-1604-bintar",
 ]
 
-supportedPlatforms["10.6"] += [
+SUPPORTED_PLATFORMS["10.6"] += [
     "aarch64-ubuntu-2204",
     "amd64-opensuse-1505",
     "amd64-sles-1505",
@@ -151,14 +151,14 @@ supportedPlatforms["10.6"] += [
     "x86-debian-12",
 ]
 
-supportedPlatforms["10.9"] = supportedPlatforms["10.6"].copy()
+SUPPORTED_PLATFORMS["10.9"] = SUPPORTED_PLATFORMS["10.6"].copy()
 
-supportedPlatforms["10.10"] = [
+SUPPORTED_PLATFORMS["10.10"] = [
     "amd64-debian-11-aocc",
 ]
-supportedPlatforms["10.10"] += supportedPlatforms["10.9"]
+SUPPORTED_PLATFORMS["10.10"] += SUPPORTED_PLATFORMS["10.9"]
 
-supportedPlatforms["10.11"] = [
+SUPPORTED_PLATFORMS["10.11"] = [
     "aarch64-debian-12",
     "aarch64-fedora-40",
     "aarch64-fedora-41",
@@ -175,14 +175,14 @@ supportedPlatforms["10.11"] = [
     "s390x-ubuntu-2404",
     "ppc64le-debian-12",
 ]
-supportedPlatforms["10.11"] += supportedPlatforms["10.10"]
+SUPPORTED_PLATFORMS["10.11"] += SUPPORTED_PLATFORMS["10.10"]
 
-supportedPlatforms["11.0"] = supportedPlatforms["10.11"].copy()
-supportedPlatforms["11.1"] = supportedPlatforms["11.0"].copy()
-supportedPlatforms["11.2"] = supportedPlatforms["11.1"].copy()
-supportedPlatforms["11.3"] = supportedPlatforms["11.2"].copy()
-supportedPlatforms["11.4"] = supportedPlatforms["11.3"].copy()
-supportedPlatforms["11.4"] += [
+SUPPORTED_PLATFORMS["11.0"] = SUPPORTED_PLATFORMS["10.11"].copy()
+SUPPORTED_PLATFORMS["11.1"] = SUPPORTED_PLATFORMS["11.0"].copy()
+SUPPORTED_PLATFORMS["11.2"] = SUPPORTED_PLATFORMS["11.1"].copy()
+SUPPORTED_PLATFORMS["11.3"] = SUPPORTED_PLATFORMS["11.2"].copy()
+SUPPORTED_PLATFORMS["11.4"] = SUPPORTED_PLATFORMS["11.3"].copy()
+SUPPORTED_PLATFORMS["11.4"] += [
     "aarch64-debian-sid",
     "aarch64-ubuntu-2410",
     "amd64-debian-sid",
@@ -190,11 +190,11 @@ supportedPlatforms["11.4"] += [
     "ppc64le-debian-sid",
     "x86-debian-sid",
 ]
-supportedPlatforms["11.5"] = supportedPlatforms["11.4"].copy()
-supportedPlatforms["11.6"] = supportedPlatforms["11.5"].copy()
-supportedPlatforms["11.7"] = supportedPlatforms["11.6"].copy()
-supportedPlatforms["11.8"] = supportedPlatforms["11.7"].copy()
-supportedPlatforms["main"] = supportedPlatforms["11.8"].copy()
+SUPPORTED_PLATFORMS["11.5"] = SUPPORTED_PLATFORMS["11.4"].copy()
+SUPPORTED_PLATFORMS["11.6"] = SUPPORTED_PLATFORMS["11.5"].copy()
+SUPPORTED_PLATFORMS["11.7"] = SUPPORTED_PLATFORMS["11.6"].copy()
+SUPPORTED_PLATFORMS["11.8"] = SUPPORTED_PLATFORMS["11.7"].copy()
+SUPPORTED_PLATFORMS["main"] = SUPPORTED_PLATFORMS["11.8"].copy()
 
 # Define environment variables for MTR step
 MTR_ENV = {
@@ -238,30 +238,30 @@ test_type_to_mtr_arg = {
 # Edit with care
 
 with open("/srv/buildbot/master/os_info.yaml") as f:
-    os_info = yaml.safe_load(f)
+    OS_INFO = yaml.safe_load(f)
 
 # Generate install builders based on the os_info data
-builders_install = []
-builders_upgrade = []
-builders_autobake = []
-all_platforms = set()
-for os_i in os_info:
-    for arch in os_info[os_i]["arch"]:
+BUILDERS_INSTALL = []
+BUILDERS_UPGRADE = []
+BUILDERS_AUTOBAKE = []
+ALL_PLATFORMS = set()
+for os_i in OS_INFO:
+    for arch in OS_INFO[os_i]["arch"]:
         builder_name_autobake = (
-            arch + "-" + os_i + "-" + os_info[os_i]["type"] + "-autobake"
+            arch + "-" + os_i + "-" + OS_INFO[os_i]["type"] + "-autobake"
         )
-        if not ("install_only" in os_info[os_i] and os_info[os_i]["install_only"]):
-            all_platforms.add(arch)
-            builders_autobake.append(builder_name_autobake)
+        if not ("install_only" in OS_INFO[os_i] and OS_INFO[os_i]["install_only"]):
+            ALL_PLATFORMS.add(arch)
+            BUILDERS_AUTOBAKE.append(builder_name_autobake)
         # Currently there are no VMs for x86 and s390x and OpenSUSE and SLES
         if arch not in ["s390x", "x86"] and "sles" not in os_i:
-            builders_install.append(builder_name_autobake + "-install")
-            builders_upgrade.append(builder_name_autobake + "-minor-upgrade-all")
-            builders_upgrade.append(
+            BUILDERS_INSTALL.append(builder_name_autobake + "-install")
+            BUILDERS_UPGRADE.append(builder_name_autobake + "-minor-upgrade-all")
+            BUILDERS_UPGRADE.append(
                 builder_name_autobake + "-minor-upgrade-columnstore"
             )
-            builders_upgrade.append(builder_name_autobake + "-major-upgrade")
+            BUILDERS_UPGRADE.append(builder_name_autobake + "-major-upgrade")
 
-builders_galera = list(
-    map(lambda x: "gal-" + "-".join(x.split("-")[:3]), builders_autobake)
+BUILDERS_GALERA = list(
+    map(lambda x: "gal-" + "-".join(x.split("-")[:3]), BUILDERS_AUTOBAKE)
 )

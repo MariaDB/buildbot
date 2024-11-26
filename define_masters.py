@@ -10,14 +10,14 @@ config = {"private": {}}
 exec(open("master-private.cfg").read(), config, {})
 
 with open("os_info.yaml", encoding="utf-8") as file:
-    os_info = yaml.safe_load(file)
+    OS_INFO = yaml.safe_load(file)
 
 platforms = {}
 
-for os_name in os_info:
-    if "install_only" in os_info[os_name] and os_info[os_name]["install_only"]:
+for os_name in OS_INFO:
+    if "install_only" in OS_INFO[os_name] and OS_INFO[os_name]["install_only"]:
         continue
-    for arch in os_info[os_name]["arch"]:
+    for arch in OS_INFO[os_name]["arch"]:
         builder_name = arch + "-" + os_name
         if arch not in platforms:
             platforms[arch] = []
