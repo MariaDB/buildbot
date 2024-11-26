@@ -5,8 +5,8 @@ import sys
 from datetime import datetime, timedelta
 
 import docker
-from pyzabbix import ZabbixAPI
 from twisted.internet import defer
+from zabbix_utils import ZabbixAPI
 
 from buildbot.plugins import steps, util, worker
 from buildbot.process.properties import Properties, Property
@@ -616,13 +616,13 @@ def prioritizeBuilders(buildmaster, builders):
 ##### Zabbix helper
 def getMetric(hostname, metric):
     # set API
-    zapi = ZabbixAPI(private_config["private"]["zabbix_server"])
+    zapi = ZabbixAPI(url=private_config["private"]["zabbix_server"])
 
     zapi.session.verify = True
 
     zapi.timeout = 10
 
-    zapi.login(api_token=private_config["private"]["zabbix_token"])
+    zapi.login(token=private_config["private"]["zabbix_token"])
 
     host_id = None
     for h in zapi.host.get(output="extend"):
