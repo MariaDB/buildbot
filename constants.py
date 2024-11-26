@@ -24,6 +24,7 @@ branches_main = [
 # Defines what builders report status to GitHub
 github_status_builders = [
     "aarch64-macos-compile-only",
+    "aarch64-debian-11",
     "amd64-debian-12",
     "amd64-debian-12-debug-embedded",
     "amd64-debian-12-deb-autobake",
