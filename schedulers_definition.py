@@ -1,8 +1,8 @@
 from buildbot.plugins import schedulers, util
 from constants import (
+    BUILDERS_BIG,
     GITHUB_STATUS_BUILDERS,
     builders_autobake,
-    builders_big,
     builders_dockerlibrary,
     builders_eco,
     builders_install,
@@ -48,7 +48,7 @@ def getAutobakeBuilderNames(props):
 def getBigtestBuilderNames(props):
     builderName = str(props.getProperty("parentbuildername"))
 
-    for b in builders_big:
+    for b in BUILDERS_BIG:
         if builderName in b:
             return [b]
     return []
