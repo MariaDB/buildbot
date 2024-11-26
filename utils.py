@@ -17,10 +17,10 @@ from buildbot.steps.shell import Compile, SetPropertyFromCommand, ShellCommand, 
 from buildbot.steps.source.github import GitHub
 from constants import (
     BUILDERS_BIG,
+    BUILDERS_ECO,
     DEVELOPMENT_BRANCH,
     MTR_ENV,
     builders_autobake,
-    builders_eco,
     builders_galera_mtr,
     builders_install,
     builders_s3_mtr,
@@ -466,7 +466,7 @@ def hasUpgrade(props):
 def hasEco(props):
     builderName = str(props.getProperty("buildername"))
 
-    for b in builders_eco:
+    for b in BUILDERS_ECO:
         if builderName in b:
             return True
     return False

@@ -39,7 +39,7 @@ GITHUB_STATUS_BUILDERS = [
 
 # Special builders triggering
 BUILDERS_BIG = ["amd64-ubuntu-2004-bigtest"]
-builders_eco = [
+BUILDERS_ECO = [
     "amd64-debian-10-eco-mysqljs",
     "amd64-debian-10-eco-pymysql",
     "amd64-ubuntu-2004-eco-php",
