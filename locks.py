@@ -5,7 +5,7 @@ import yaml
 from buildbot.plugins import util
 
 # Local
-from constants import builders_install, builders_upgrade, github_status_builders
+from constants import BUILDERS_INSTALL, BUILDERS_UPGRADE, GITHUB_STATUS_BUILDERS
 
 LOCKS: dict[str, util.MasterLock] = {}
 # worker_locks.yaml currently is in the same folder as locks.py.
@@ -30,9 +30,9 @@ def getLocks(props):
     assert builder_name is not None
 
     if (
-        builder_name in github_status_builders
-        or builder_name in builders_install
-        or builder_name in builders_upgrade
+        builder_name in GITHUB_STATUS_BUILDERS
+        or builder_name in BUILDERS_INSTALL
+        or builder_name in BUILDERS_UPGRADE
     ):
         return []
 

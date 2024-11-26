@@ -17,17 +17,17 @@ from buildbot.process.results import FAILURE
 from buildbot.process.workerforbuilder import AbstractWorkerForBuilder
 from buildbot.worker import AbstractWorker
 from constants import (
+    BUILDERS_AUTOBAKE,
+    BUILDERS_BIG,
+    BUILDERS_ECO,
+    BUILDERS_GALERA_MTR,
+    BUILDERS_INSTALL,
+    BUILDERS_S3_MTR,
+    BUILDERS_UPGRADE,
     DEVELOPMENT_BRANCH,
     MTR_ENV,
-    builders_autobake,
-    builders_big,
-    builders_eco,
-    builders_galera_mtr,
-    builders_install,
-    builders_s3_mtr,
-    builders_upgrade,
-    releaseBranches,
-    savedPackageBranches,
+    RELEASE_BRANCHES,
+    SAVED_PACKAGE_BRANCHES,
 )
 
 private_config = {"private": {}}
@@ -218,7 +218,7 @@ def createDebRepo() -> steps.ShellCommand:
         ],
         doStepIf=(
             lambda step: hasFiles(step)
-            and savePackageIfBranchMatch(step, savedPackageBranches)
+            and savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
         ),
     )
 
@@ -260,7 +260,7 @@ EOF
         ],
         doStepIf=(
             lambda step: hasFiles(step)
-            and savePackageIfBranchMatch(step, savedPackageBranches)
+            and savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
         ),
         descriptionDone=util.Interpolate(
             """
@@ -288,12 +288,10 @@ def nextBuild(builder: Builder, requests: list[BuildRequest]) -> str:
         # Priority is given to releaseBranches, savePackageBranches
         # then it's first come, first serve.
         return (
-            not fnmatch_any(branch, releaseBranches),
-            not fnmatch_any(branch, savedPackageBranches),
+            not fnmatch_any(branch, RELEASE_BRANCHES),
+            not fnmatch_any(branch, SAVED_PACKAGE_BRANCHES),
             request.getSubmitTime(),
         )
-
-    return sorted(requests, build_request_sort_key)[0]
 
 
 def canStartBuild(
@@ -460,7 +458,7 @@ def hasFiles(step: BuildStep) -> bool:
 
 def hasInstall(step: BuildStep) -> bool:
     builder_name = step.getProperty("buildername")
-    for b in builders_install:
+    for b in BUILDERS_INSTALL:
         if builder_name in b:
             return True
     return False
@@ -468,7 +466,7 @@ def hasInstall(step: BuildStep) -> bool:
 
 def hasUpgrade(step: BuildStep) -> bool:
     builder_name = step.getProperty("buildername")
-    for b in builders_upgrade:
+    for b in BUILDERS_UPGRADE:
         if builder_name in b:
             return True
     return False
@@ -476,7 +474,7 @@ def hasUpgrade(step: BuildStep) -> bool:
 
 def hasEco(step: BuildStep) -> bool:
     builder_name = step.getProperty("buildername")
-    for b in builders_eco:
+    for b in BUILDERS_ECO:
         if builder_name in b:
             return True
     return False
@@ -506,7 +504,7 @@ def hasCompat(step: BuildStep) -> bool:
 
 def hasDockerLibrary(step: BuildStep) -> bool:
     # Can only build with a saved package
-    if not savePackageIfBranchMatch(step, savedPackageBranches):
+    if not savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES):
         return False
 
     branch = step.getProperty("master_branch")
@@ -550,7 +548,7 @@ def waitIfStaging(step: BuildStep) -> bool:
 
 def hasAutobake(step: BuildStep) -> bool:
     builder_name = step.getProperty("buildername")
-    for b in builders_autobake:
+    for b in BUILDERS_AUTOBAKE:
         if builder_name in b:
             return True
     return False
@@ -558,7 +556,7 @@ def hasAutobake(step: BuildStep) -> bool:
 
 def hasGalera(step: BuildStep) -> bool:
     builder_name = step.getProperty("buildername")
-    for b in builders_galera_mtr:
+    for b in BUILDERS_GALERA_MTR:
         if builder_name in b:
             return True
     return False
@@ -566,7 +564,7 @@ def hasGalera(step: BuildStep) -> bool:
 
 def hasS3(props):
     builder_name = props.getProperty("buildername")
-    for b in builders_s3_mtr:
+    for b in BUILDERS_S3_MTR:
         if builder_name == b:
             return True
     return False
@@ -574,7 +572,7 @@ def hasS3(props):
 
 def hasBigtest(step: BuildStep) -> bool:
     builder_name = step.getProperty("buildername")
-    for b in builders_big:
+    for b in BUILDERS_BIG:
         if builder_name in b:
             return True
     return False

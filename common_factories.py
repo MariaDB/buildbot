@@ -10,7 +10,7 @@ from buildbot.process.properties import Property
 from buildbot.steps.mtrlogobserver import MTR
 
 # Local
-from constants import MTR_ENV, test_type_to_mtr_arg
+from constants import MTR_ENV, SAVED_PACKAGE_BRANCHES, test_type_to_mtr_arg
 from utils import (
     createVar,
     dockerfile,
@@ -34,7 +34,6 @@ from utils import (
     mtrEnv,
     mtrJobsMultiplier,
     printEnv,
-    savedPackageBranches,
     saveLogs,
     savePackageIfBranchMatch,
 )
@@ -143,7 +142,9 @@ def addPostTests(factory):
         steps.SetPropertyFromCommand(
             command="basename mariadb-*-linux-*.tar.gz",
             property="mariadb_binary",
-            doStepIf=lambda step: savePackageIfBranchMatch(step, savedPackageBranches),
+            doStepIf=(
+                lambda step: savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
+            ),
         )
     )
     factory.addStep(
@@ -159,7 +160,9 @@ def addPostTests(factory):
         && sync /packages/%(prop:tarbuildnum)s
         """
             ),
-            doStepIf=lambda step: savePackageIfBranchMatch(step, savedPackageBranches),
+            doStepIf=(
+                lambda step: savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
+            ),
         )
     )
     factory.addStep(
@@ -176,7 +179,7 @@ def addPostTests(factory):
                 "parentbuildername": Property("buildername"),
             },
             doStepIf=(
-                lambda step: savePackageIfBranchMatch(step, savedPackageBranches)
+                lambda step: savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
                 and hasEco(step)
             ),
         )
@@ -753,7 +756,7 @@ EOF
             ),
             doStepIf=(
                 lambda step: hasFiles(step)
-                and savePackageIfBranchMatch(step, savedPackageBranches)
+                and savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
             ),
             descriptionDone=util.Interpolate(
                 """
@@ -793,7 +796,7 @@ Repository available with: curl %(kw:url)s/%(prop:tarbuildnum)s/%(prop:builderna
             },
             doStepIf=(
                 lambda step: hasInstall(step)
-                and savePackageIfBranchMatch(step, savedPackageBranches)
+                and savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
                 and hasFiles(step)
             ),
         )
@@ -812,7 +815,7 @@ Repository available with: curl %(kw:url)s/%(prop:tarbuildnum)s/%(prop:builderna
             },
             doStepIf=(
                 lambda step: hasUpgrade(step)
-                and savePackageIfBranchMatch(step, savedPackageBranches)
+                and savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
                 and hasFiles(step)
             ),
         )

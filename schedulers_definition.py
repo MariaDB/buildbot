@@ -1,15 +1,15 @@
 from buildbot.interfaces import IProperties
 from buildbot.plugins import schedulers, util
 from constants import (
-    builders_autobake,
-    builders_big,
-    builders_dockerlibrary,
-    builders_eco,
-    builders_install,
-    builders_upgrade,
-    builders_wordpress,
-    github_status_builders,
-    supportedPlatforms,
+    BUILDERS_AUTOBAKE,
+    BUILDERS_BIG,
+    BUILDERS_DOCKERLIBRARY,
+    BUILDERS_ECO,
+    BUILDERS_INSTALL,
+    BUILDERS_UPGRADE,
+    BUILDERS_WORDPRESS,
+    GITHUB_STATUS_BUILDERS,
+    SUPPORTED_PLATFORMS,
 )
 
 
@@ -18,22 +18,30 @@ from constants import (
 ############################
 @util.renderer
 def branchBuilders(props: IProperties) -> list[str]:
-    master_branch = props.getProperty("master_branch")
-    builders = supportedPlatforms[master_branch]
-    return list(filter(lambda x: x not in github_status_builders, builders))
+    mBranch = props.getProperty("master_branch")
+
+    builders = list(
+        filter(lambda x: x not in GITHUB_STATUS_BUILDERS, SUPPORTED_PLATFORMS[mBranch])
+    )
+
+    return builders
 
 
 @util.renderer
 def protectedBranchBuilders(props: IProperties) -> list[str]:
-    master_branch = props.getProperty("master_branch")
-    builders = supportedPlatforms[master_branch]
-    return list(filter(lambda x: x in builders, github_status_builders))
+    mBranch = props.getProperty("master_branch")
+
+    builders = list(
+        filter(lambda x: x in SUPPORTED_PLATFORMS[mBranch], GITHUB_STATUS_BUILDERS)
+    )
+
+    return builders
 
 
 @util.renderer
 def autobakeBuilders(props: IProperties) -> list[str]:
     builder_name = props.getProperty("parentbuildername")
-    for b in builders_autobake:
+    for b in BUILDERS_AUTOBAKE:
         if builder_name in b:
             return [b]
     return []
@@ -42,7 +50,7 @@ def autobakeBuilders(props: IProperties) -> list[str]:
 @util.renderer
 def bigtestBuilders(props: IProperties) -> list[str]:
     builder_name = props.getProperty("parentbuildername")
-    for b in builders_big:
+    for b in BUILDERS_BIG:
         if builder_name in b:
             return [b]
     return []
@@ -51,7 +59,7 @@ def bigtestBuilders(props: IProperties) -> list[str]:
 @util.renderer
 def installBuilders(props: IProperties) -> list[str]:
     builder_name = props.getProperty("parentbuildername")
-    for b in builders_install:
+    for b in BUILDERS_INSTALL:
         if builder_name in b:
             builders = [b]
             if "rhel" in builder_name:
@@ -65,7 +73,7 @@ def installBuilders(props: IProperties) -> list[str]:
 def upgradeBuilders(props: IProperties) -> list[str]:
     builder_name = props.getProperty("parentbuildername")
     builders = []
-    for b in builders_upgrade:
+    for b in BUILDERS_UPGRADE:
         if builder_name in b:
             if "rhel" in builder_name:
                 builders.append(b.replace("rhel", "almalinux"))
@@ -78,7 +86,7 @@ def upgradeBuilders(props: IProperties) -> list[str]:
 def ecoBuilders(props: IProperties) -> list[str]:
     builder_name = props.getProperty("parentbuildername")
     builders = []
-    for b in builders_eco:
+    for b in BUILDERS_ECO:
         if builder_name in b:
             builders.append(b)
     return builders
@@ -86,12 +94,12 @@ def ecoBuilders(props: IProperties) -> list[str]:
 
 @util.renderer
 def dockerLibraryBuilders(props: IProperties) -> list[str]:
-    return builders_dockerlibrary[0]
+    return BUILDERS_DOCKERLIBRARY[0]
 
 
 @util.renderer
 def wordpressBuilders(props: IProperties) -> list[str]:
-    return builders_wordpress[0]
+    return BUILDERS_WORDPRESS[0]
 
 
 SCHEDULERS = [
