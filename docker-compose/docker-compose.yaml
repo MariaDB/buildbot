@@ -60,7 +60,7 @@ services:
         tag: "bb-nginx"
 
   master-web:
-    image: quay.io/mariadb-foundation/bb-master:master-web
+    image: quay.io/mariadb-foundation/bb-master:dev_master-web
     restart: unless-stopped
     container_name: master-web
     environment:
@@ -96,7 +96,7 @@ services:
         condition: service_started
 
   master-nonlatent:
-    image: quay.io/mariadb-foundation/bb-master:master
+    image: quay.io/mariadb-foundation/bb-master:dev_master
     restart: unless-stopped
     container_name: master-nonlatent
     environment:
@@ -136,7 +136,7 @@ services:
         condition: service_started
 
   master-libvirt:
-    image: quay.io/mariadb-foundation/bb-master:master
+    image: quay.io/mariadb-foundation/bb-master:dev_master
     restart: unless-stopped
     container_name: master-libvirt
     environment:
@@ -175,7 +175,7 @@ services:
         condition: service_started
 
   autogen_aarch64-master-0:
-    image: quay.io/mariadb-foundation/bb-master:master
+    image: quay.io/mariadb-foundation/bb-master:dev_master
     restart: unless-stopped
     container_name: autogen_aarch64-master-0
     environment:
@@ -214,7 +214,7 @@ services:
         condition: service_started
 
   autogen_amd64-master-0:
-    image: quay.io/mariadb-foundation/bb-master:master
+    image: quay.io/mariadb-foundation/bb-master:dev_master
     restart: unless-stopped
     container_name: autogen_amd64-master-0
     environment:
@@ -253,7 +253,7 @@ services:
         condition: service_started
 
   autogen_amd64-master-1:
-    image: quay.io/mariadb-foundation/bb-master:master
+    image: quay.io/mariadb-foundation/bb-master:dev_master
     restart: unless-stopped
     container_name: autogen_amd64-master-1
     environment:
@@ -292,7 +292,7 @@ services:
         condition: service_started
 
   autogen_ppc64le-master-0:
-    image: quay.io/mariadb-foundation/bb-master:master
+    image: quay.io/mariadb-foundation/bb-master:dev_master
     restart: unless-stopped
     container_name: autogen_ppc64le-master-0
     environment:
@@ -331,7 +331,7 @@ services:
         condition: service_started
 
   autogen_s390x-master-0:
-    image: quay.io/mariadb-foundation/bb-master:master
+    image: quay.io/mariadb-foundation/bb-master:dev_master
     restart: unless-stopped
     container_name: autogen_s390x-master-0
     environment:
@@ -370,7 +370,7 @@ services:
         condition: service_started
 
   autogen_x86-master-0:
-    image: quay.io/mariadb-foundation/bb-master:master
+    image: quay.io/mariadb-foundation/bb-master:dev_master
     restart: unless-stopped
     container_name: autogen_x86-master-0
     environment:
@@ -409,7 +409,7 @@ services:
         condition: service_started
 
   master-docker-nonstandard:
-    image: quay.io/mariadb-foundation/bb-master:master
+    image: quay.io/mariadb-foundation/bb-master:dev_master
     restart: unless-stopped
     container_name: master-docker-nonstandard
     environment:
@@ -448,7 +448,7 @@ services:
         condition: service_started
 
   master-galera:
-    image: quay.io/mariadb-foundation/bb-master:master
+    image: quay.io/mariadb-foundation/bb-master:dev_master
     restart: unless-stopped
     container_name: master-galera
     environment:
@@ -487,7 +487,7 @@ services:
         condition: service_started
 
   master-protected-branches:
-    image: quay.io/mariadb-foundation/bb-master:master
+    image: quay.io/mariadb-foundation/bb-master:dev_master
     restart: unless-stopped
     container_name: master-protected-branches
     environment:
@@ -526,7 +526,7 @@ services:
         condition: service_started
 
   master-docker-nonstandard-2:
-    image: quay.io/mariadb-foundation/bb-master:master
+    image: quay.io/mariadb-foundation/bb-master:dev_master
     restart: unless-stopped
     container_name: master-docker-nonstandard-2
     environment:
@@ -565,7 +565,7 @@ services:
         condition: service_started
 
   master-bintars:
-    image: quay.io/mariadb-foundation/bb-master:master
+    image: quay.io/mariadb-foundation/bb-master:dev_master
     restart: unless-stopped
     container_name: master-bintars
     environment:
