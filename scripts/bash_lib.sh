@@ -437,27 +437,37 @@ upgrade_test_type() {
   esac
 }
 
-get_columnstore_logs() {
+save_failure_logs() {
+  local logdir=../logs/
+  local logfile=$logdir/$test_mode.log
+  mkdir -p $logdir
+  bb_log_err "Previous step failed, saving mariadb logs"
   if [[ $test_mode == "columnstore" ]]; then
     bb_log_info "storing Columnstore logs in columnstore_logs"
     set +ex
-    # It is done in such a weird way, because Columnstore currently makes its logs hard to read
-    # //TEMP this is fragile and weird (test that /var/log/mariadb/columnstore exist)
-    for f in $(sudo ls /var/log/mariadb/columnstore | xargs); do
-      f=/var/log/mariadb/columnstore/$f
-      echo "----------- $f -----------" >>/home/buildbot/columnstore_logs
-      sudo cat "$f" 1>>/home/buildbot/columnstore_logs 2>&1
+    for f in $(sudo find /tmp/columnstore_tmp_files /var/log/mariadb/columnstore -type f); do
+      echo "----------- $f -----------" >>"$logfile"
+      sudo cat "$f" 1>>"$logfile" 2>&1
     done
-    for f in /tmp/columnstore_tmp_files/*; do
-      echo "----------- $f -----------" >>/home/buildbot/columnstore_logs
-      sudo cat "$f" | sudo tee -a /home/buildbot/columnstore_logs 2>&1
+    for s in mcs-writeengineserver mcs-controllernode.service mcs-ddlproc.service mcs-dmlproc.service \
+            mcs-loadbrm.service mcs-primproc.service mcs-workernode@1.service; do
+        echo "----------- $s -----------" >>"$logfile"
+        sudo journalctl -u "$s" | tee -a "$logfile" 2>&1
     done
+    if [ -d /var/lib/columnstore ]; then
+      tar -Jcvf $logdir/columnstore.tar.bz2 /var/lib/columnstore
+    fi
   fi
+  echo "----------- mariadb.service -----------" >>"$logfile"
+  sudo journalctl -u mariadb.service | tee -a "$logfile" 2>&1
+  if [ -f "$logfile" ]; then
+    bzip2 "$logfile"
+  fi
+  sudo find /var/lib/systemd/coredump/ -type -f -exec mv {} $logdir \;
 }
 
 check_mariadb_server_and_create_structures() {
   # All the commands below should succeed
-  set -e
   sudo mariadb -e "CREATE DATABASE db"
   sudo mariadb -e "CREATE TABLE db.t_innodb(a1 SERIAL, c1 CHAR(8)) ENGINE=InnoDB; INSERT INTO db.t_innodb VALUES (1,'foo'),(2,'bar')"
   sudo mariadb -e "CREATE TABLE db.t_myisam(a2 SERIAL, c2 CHAR(8)) ENGINE=MyISAM; INSERT INTO db.t_myisam VALUES (1,'foo'),(2,'bar')"
@@ -468,19 +478,14 @@ check_mariadb_server_and_create_structures() {
   sudo mariadb -e "CREATE PROCEDURE db.p() SELECT * FROM db.v_merge"
   sudo mariadb -e "CREATE FUNCTION db.f() RETURNS INT DETERMINISTIC RETURN 1"
   if [[ $test_mode == "columnstore" ]]; then
-    if ! sudo mariadb -e "CREATE TABLE db.t_columnstore(a INT, c VARCHAR(8)) ENGINE=ColumnStore; SHOW CREATE TABLE db.t_columnstore; INSERT INTO db.t_columnstore VALUES (1,'foo'),(2,'bar')"; then
-      get_columnstore_logs
-      exit 1
-    fi
+    sudo mariadb -e "CREATE TABLE db.t_columnstore(a INT, c VARCHAR(8)) ENGINE=ColumnStore; SHOW CREATE TABLE db.t_columnstore; INSERT INTO db.t_columnstore VALUES (1,'foo'),(2,'bar')"
   fi
-  set +e
 }
 
 check_mariadb_server_and_verify_structures() {
   # Print "have_xx" capabilitites for the new server
   sudo mariadb -e "select 'Stat' t, variable_name name, variable_value val from information_schema.global_status where variable_name like '%have%' union select 'Vars' t, variable_name name, variable_value val from information_schema.global_variables where variable_name like '%have%' order by t, name"
   # All the commands below should succeed
-  set -e
   sudo mariadb -e "select @@version, @@version_comment"
   sudo mariadb -e "SHOW TABLES IN db"
   sudo mariadb -e "SELECT * FROM db.t_innodb; INSERT INTO db.t_innodb VALUES (3,'foo'),(4,'bar')"
@@ -495,12 +500,8 @@ check_mariadb_server_and_verify_structures() {
   sudo mariadb -e "SELECT db.f()"
 
   if [[ $test_mode == "columnstore" ]]; then
-    if ! sudo mariadb -e "SELECT * FROM db.t_columnstore; INSERT INTO db.t_columnstore VALUES (3,'foo'),(4,'bar')"; then
-      get_columnstore_logs
-      exit 1
-    fi
+    sudo mariadb -e "SELECT * FROM db.t_columnstore; INSERT INTO db.t_columnstore VALUES (3,'foo'),(4,'bar')"
   fi
-  set +e
 }
 
 control_mariadb_server() {
@@ -512,6 +513,11 @@ control_mariadb_server() {
     no)
       sudo /etc/init.d/mysql "$1"
       ;;
+    *)
+      bb_log_warn "should never happen, check your configuration:"
+      bb_log_warn "(systemdCapability property is not set or is set to a wrong value ($systemdCapability))"
+    ;;
+
   esac
 }
 

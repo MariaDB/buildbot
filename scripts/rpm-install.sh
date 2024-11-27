@@ -44,36 +44,32 @@ rpm_setup_bb_artifacts_mirror
 rpm_pkg_makecache
 
 # install all packages
-pkg_list=$(rpm_repoquery) ||
+read -ra package_array = <<< "$(rpm_repoquery)"
+
+if [ ${#package_array[@]} -eq 0 ]; then
   bb_log_err "Unable to retrieve package list from repository"
-
-# ID_LIKE may not exist
-set +u
-if [[ $ID_LIKE =~ ^suse* ]]; then
-  echo "$pkg_list" | xargs sudo "$pkg_cmd" -n install
-else
-  echo "$pkg_list" | xargs sudo "$pkg_cmd" -y install
 fi
-set -u
 
-sh -c 'g=/usr/lib*/galera*/libgalera_smm.so; echo -e "[galera]\nwsrep_provider=$g"' |
+if [[ "${ID_LIKE:-empty}" =~ ^suse* ]]; then
+  sudo "$pkg_cmd" -n install "${package_array[@]}"
+else
+  sudo "$pkg_cmd" -y install "${package_array[@]}"
+fi
+
+
+galera=(/usr/lib*/galera*/libgalera_smm.so)
+if [ ${#galera[@]} -ne 1 ]; then
+    bb_log_error "Expected exactly one file, found ${#galera[@]}"
+    exit 1
+fi
+echo -e "[galera]\nwsrep_provider=${galera[0]}" |
   sudo tee /etc/my.cnf.d/galera.cnf
-case "$systemdCapability" in
-  yes)
-    if ! sudo systemctl start mariadb; then
-      sudo journalctl -lxn 500 --no-pager -u mariadb.service
-      sudo systemctl -l status mariadb.service --no-pager
-      exit 1
-    fi
-    ;;
-  no)
-    sudo /etc/init.d/mysql restart
-    ;;
-  *)
-    bb_log_warn "should never happen, check your configuration:"
-    bb_log_warn "(systemdCapability property is not set or is set to a wrong value)"
-    ;;
-esac
+
+# Any of the below steps could fail
+trap save_failure_logs ERR
+set -e
+
+control_mariadb_server start
 
 sudo mariadb -e "drop database if exists test; \
   create database test; \

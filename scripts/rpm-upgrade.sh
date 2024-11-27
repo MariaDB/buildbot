@@ -119,9 +119,7 @@ bb_log_info "Package_list: $package_list"
 # /etc/zypp/repos.d/SUSE_Linux_Enterprise_Server_12_SP3_x86_64:SLES12-SP3-Updates.repo
 # /etc/zypp/repos.d/SUSE_Linux_Enterprise_Server_12_SP3_x86_64:SLES12-SP3-Pool.repo
 
-# ID_LIKE may not exist
-set +u
-if [[ $ID_LIKE =~ ^suse* ]]; then
+if [[ "${ID_LIKE:-empty}" =~ ^suse* ]]; then
   sudo "$pkg_cmd" clean --all
   pkg_cmd_options="-n"
   pkg_cmd_upgrade="update"
@@ -132,38 +130,19 @@ else
 fi
 set -u
 
+read -ra package_array <<< "$package_list"
+
 # Install previous release
-echo "$package_list" | xargs sudo "$pkg_cmd" "$pkg_cmd_options" install ||
-  bb_log_err "installation of a previous release failed, see the output above"
-#fi
+bb_log_info "Install previous release"
+sudo "$pkg_cmd" "$pkg_cmd_options" install "${package_array[@]}"
 
 # Start the server, check that it is working and create some structures
-case $(expr "$prev_major_version" '<' "10.1")"$systemdCapability" in
-  0yes)
-    sudo systemctl start mariadb
-    if [[ $distro != *"sles"* ]] && [[ $distro != *"suse"* ]]; then
-      sudo systemctl enable mariadb
-    else
-      bb_log_warn "due to MDEV-23044 mariadb service won't be enabled in the test"
-    fi
-    sudo systemctl status mariadb --no-pager
-    ;;
-  *)
-    sudo /etc/init.d/mysql start
-    ;;
-esac
-
-# shellcheck disable=SC2181
-if (($? != 0)); then
-  bb_log_err "Server startup failed"
-  sudo cat /var/log/messages | grep -iE 'mysqld|mariadb'
-  sudo cat /var/lib/mysql/*.err
-  exit 1
-fi
+#
+control_mariadb_server start
 
 check_mariadb_server_and_create_structures
 
-# Store information about the server before upgrade
+bb_log_info "Store information about the server before upgrade"
 collect_dependencies old rpm
 store_mariadb_server_info old
 
@@ -187,19 +166,25 @@ fi
 # //TEMP upgrade does not work without this but why? Can't we fix it?
 if [[ $test_type == "major" ]]; then
   bb_log_info "remove old packages for major upgrade"
-  packages_to_remove=$(rpm -qa | grep 'MariaDB-' | awk -F'-' '{print $1"-"$2}')
-  echo "$packages_to_remove" | xargs sudo "$pkg_cmd" "$pkg_cmd_options" remove
+  readarray -t package_array <<< "$(rpm -qa | grep 'MariaDB-' | awk -F'-' '{print $1"-"$2}')"
+  sudo "$pkg_cmd" "$pkg_cmd_options" remove "${package_array[@]}"
   rpm -qa | grep -iE 'maria|mysql' || true
 fi
 
 rpm_setup_bb_galera_artifacts_mirror
 rpm_setup_bb_artifacts_mirror
+
+# Any of the below steps could fail
+# This is where the new packages are processed from
+trap save_failure_logs ERR
+set -e
+
 if [[ $test_type == "major" ]]; then
   # major upgrade (remove then install)
-  echo "$package_list" | xargs sudo "$pkg_cmd" "$pkg_cmd_options" install
+  sudo "$pkg_cmd" "$pkg_cmd_options" install "${package_array[@]}"
 else
   # minor upgrade (upgrade works)
-  echo "$package_list" | xargs sudo "$pkg_cmd" "$pkg_cmd_options" "$pkg_cmd_upgrade"
+  sudo "$pkg_cmd" "$pkg_cmd_options" "$pkg_cmd_upgrade" "${package_array[@]}"
 fi
 # set +e
 
@@ -225,25 +210,24 @@ if [[ $test_type == "major" ]] || [[ $test_mode == "columnstore" ]]; then
   control_mariadb_server restart
 fi
 
-# Make sure that the new server is running
-if sudo mariadb -e "select @@version" | grep "$old_version"; then
-  bb_log_err "the server was not upgraded or was not restarted after upgrade"
-  exit 1
-fi
+bb_log_info "Make sure that the new server is running"
+sudo mariadb -e "select @@version" | grep "$old_version"
 
-# Run mariadb-upgrade for non-GA branches (minor upgrades in GA branches
-# shouldn't need it)
 if [[ $major_version == "$development_branch" ]] || [[ $test_type == "major" ]]; then
+  bb_log_info "Run MariaDB upgrade"
   sudo mariadb-upgrade
+else
+  bb_log_info "Skipping mariadb-upgrade for non-GA branches and minor upgrades in GA branchesa - shouldn't need it"
 fi
 
-# Check that the server is functioning and previously created structures are available
+bb_log_info "Check that the server is functioning and previously created structures are available"
 check_mariadb_server_and_verify_structures
 
-# Store information about the server after upgrade
+bb_log_info "Store information about the server after upgrade"
 collect_dependencies new rpm
 store_mariadb_server_info new
 
+bb_log_info "Check upgrade versions"
 check_upgraded_versions
 
 bb_log_ok "all done"

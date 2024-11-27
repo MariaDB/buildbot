@@ -110,32 +110,24 @@ apt_get_update
 # We will wait till they finish, to avoid any clashes with SQL we are going to execute
 wait_for_mariadb_upgrade
 
-if ! sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 \
-  apt-get -o Dpkg::Options::=--force-confnew install --allow-unauthenticated -y $package_list"; then
-  bb_log_err "Installation of a previous release failed, see the output above"
-  exit 1
-fi
+bb_log_info "Install previous version"
+sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 \
+  apt-get -o Dpkg::Options::=--force-confnew install --allow-unauthenticated -y $package_list"
 
 wait_for_mariadb_upgrade
 
 if [[ -n $spider_package_list ]]; then
-  if ! sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 \
-    apt-get -o Dpkg::Options::=--force-confnew install --allow-unauthenticated -y $spider_package_list"; then
-    bb_log_err "Installation of Spider from the previous release failed, see the output above"
-    exit 1
-  fi
+  bb_log_info "Install spider packages"
+  sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 \
+    apt-get -o Dpkg::Options::=--force-confnew install --allow-unauthenticated -y $spider_package_list"
   wait_for_mariadb_upgrade
 fi
 
 # To avoid confusing errors in further logic, do an explicit check
 # whether the service is up and running
 if [[ $systemdCapability == "yes" ]]; then
-  if ! sudo systemctl status mariadb --no-pager; then
-    sudo journalctl -xe --no-pager
-    get_columnstore_logs
-    bb_log_err "mariadb service didn't start properly after installation"
-    exit 1
-  fi
+  bb_log_info "Ensure mariadb.service is running"
+  sudo systemctl status mariadb --no-pager
 fi
 
 if [[ $test_mode == "all" ]]; then
@@ -164,20 +156,20 @@ deb_setup_bb_galera_artifacts_mirror
 deb_setup_bb_artifacts_mirror
 apt_get_update
 
-# Install the new packages
-if ! sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 \
-  apt-get -o Dpkg::Options::=--force-confnew install --allow-unauthenticated -y $package_list"; then
-  bb_log_err "installation of the new packages failed, see the output above"
-  exit 1
-fi
+# now we upgrade, this is what we should save
+trap save_failure_logs ERR
+set -e
+
+bb_log_info "Install new packages"
+sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 \
+  apt-get -o Dpkg::Options::=--force-confnew install --allow-unauthenticated -y $package_list"
+
 wait_for_mariadb_upgrade
 
 if [[ -n $spider_package_list ]]; then
-  if ! sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 \
-    apt-get -o Dpkg::Options::=--force-confnew install --allow-unauthenticated -y $spider_package_list"; then
-    bb_log_err "Installation of the new Spider packages failed, see the output above"
-    exit 1
-  fi
+  bb_log_info "Install spider packages $spider_package_list"
+  sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 \
+    apt-get -o Dpkg::Options::=--force-confnew install --allow-unauthenticated -y $spider_package_list"
   wait_for_mariadb_upgrade
 fi
 if [[ $test_mode == "columnstore" ]]; then
