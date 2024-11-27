@@ -138,28 +138,8 @@ echo "$package_list" | xargs sudo "$pkg_cmd" "$pkg_cmd_options" install ||
 #fi
 
 # Start the server, check that it is working and create some structures
-case $(expr "$prev_major_version" '<' "10.1")"$systemdCapability" in
-  0yes)
-    sudo systemctl start mariadb
-    if [[ $distro != *"sles"* ]] && [[ $distro != *"suse"* ]]; then
-      sudo systemctl enable mariadb
-    else
-      bb_log_warn "due to MDEV-23044 mariadb service won't be enabled in the test"
-    fi
-    sudo systemctl status mariadb --no-pager
-    ;;
-  *)
-    sudo /etc/init.d/mysql start
-    ;;
-esac
-
-# shellcheck disable=SC2181
-if (($? != 0)); then
-  bb_log_err "Server startup failed"
-  sudo cat /var/log/messages | grep -iE 'mysqld|mariadb'
-  sudo cat /var/lib/mysql/*.err
-  exit 1
-fi
+#
+control_mariadb_server start
 
 check_mariadb_server_and_create_structures
 

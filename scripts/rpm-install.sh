@@ -62,18 +62,8 @@ sh -c 'g=/usr/lib*/galera*/libgalera_smm.so; echo -e "[galera]\nwsrep_provider=$
 # Any of the below steps could fail
 trap save_failure_logs ERR
 set -e
-case "$systemdCapability" in
-  yes)
-    if ! sudo systemctl start mariadb; then
-      sudo journalctl -lxn 500 --no-pager -u mariadb.service
-      sudo systemctl -l status mariadb.service --no-pager
-      exit 1
-    fi
-    ;;
-  no)
-    sudo /etc/init.d/mysql restart
-    ;;
-esac
+
+control_mariadb_server start
 
 sudo mariadb -e "drop database if exists test; \
   create database test; \
