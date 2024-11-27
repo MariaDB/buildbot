@@ -1,6 +1,6 @@
 # Buildbot master and master-web containers
 
-FROM debian:11-slim
+FROM debian:12-slim
 LABEL maintainer="MariaDB Buildbot maintainers"
 ARG DEBIAN_FRONTEND=noninteractive
 ARG master_type="master"
