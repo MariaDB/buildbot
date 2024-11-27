@@ -81,7 +81,7 @@ jobs:
           for image in master master-web; do
             skopeo copy --all --src-tls-verify=0 \
             docker://localhost:5000/${{ env.REPO }}:${image} \
-            docker://ghcr.io/mariadb/buildbot:${image}
+            docker://ghcr.io/mariadb/buildbot:dev_${image}
           done
       - name: Login to quay.io
         if: ${{ env.DEPLOY_IMAGES == 'true' }}
@@ -99,5 +99,5 @@ jobs:
           for image in master master-web; do
             skopeo copy --all --src-tls-verify=0 \
             docker://localhost:5000/${{ env.REPO }}:${image} \
-            docker://quay.io/mariadb-foundation/${{ env.REPO }}:${image}
+            docker://quay.io/mariadb-foundation/${{ env.REPO }}:dev_${image}
           done
