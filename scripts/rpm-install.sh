@@ -57,7 +57,12 @@ else
 fi
 
 
-sh -c 'g=/usr/lib*/galera*/libgalera_smm.so; echo -e "[galera]\nwsrep_provider=$g"' |
+galera=(/usr/lib*/galera*/libgalera_smm.so)
+if [ ${#galera[@]} -ne 1 ]; then
+    bb_log_error "Expected exactly one file, found ${#galera[@]}"
+    exit 1
+fi
+echo -e "[galera]\nwsrep_provider=${galera[0]}" |
   sudo tee /etc/my.cnf.d/galera.cnf
 
 # Any of the below steps could fail
