@@ -4,7 +4,7 @@ black
 buildbot-prometheus
 buildbot-worker
 django
-docker==4.3.1
+docker==7.1.0
 flask
 libvirt-python
 pylint
