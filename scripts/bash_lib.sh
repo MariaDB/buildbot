@@ -437,22 +437,33 @@ upgrade_test_type() {
   esac
 }
 
-get_columnstore_logs() {
+save_failure_logs() {
+  local logdir=../logs/
+  local logfile=$logdir/$test_mode.log
+  mkdir -p $logdir
+  bb_log_err "Previous step failed, saving mariadb logs"
   if [[ $test_mode == "columnstore" ]]; then
     bb_log_info "storing Columnstore logs in columnstore_logs"
     set +ex
-    # It is done in such a weird way, because Columnstore currently makes its logs hard to read
-    # //TEMP this is fragile and weird (test that /var/log/mariadb/columnstore exist)
-    for f in $(sudo ls /var/log/mariadb/columnstore | xargs); do
-      f=/var/log/mariadb/columnstore/$f
-      echo "----------- $f -----------" >>/home/buildbot/columnstore_logs
-      sudo cat "$f" 1>>/home/buildbot/columnstore_logs 2>&1
+    for f in $(sudo find /tmp/columnstore_tmp_files /var/log/mariadb/columnstore -type f); do
+      echo "----------- $f -----------" >>"$logfile"
+      sudo cat "$f" 1>>"$logfile" 2>&1
     done
-    for f in /tmp/columnstore_tmp_files/*; do
-      echo "----------- $f -----------" >>/home/buildbot/columnstore_logs
-      sudo cat "$f" | sudo tee -a /home/buildbot/columnstore_logs 2>&1
+    for s in mcs-writeengineserver mcs-controllernode.service mcs-ddlproc.service mcs-dmlproc.service \
+            mcs-loadbrm.service mcs-primproc.service mcs-workernode@1.service; do
+        echo "----------- $s -----------" >>"$logfile"
+        sudo journalctl -u "$s" | tee -a "$logfile" 2>&1
     done
+    if [ -d /var/lib/columnstore ]; then
+      tar -Jcvf $logdir/columnstore.tar.bz2 /var/lib/columnstore
+    fi
   fi
+  echo "----------- mariadb.service -----------" >>"$logfile"
+  sudo journalctl -u mariadb.service | tee -a "$logfile" 2>&1
+  if [ -f "$logfile" ]; then
+    bzip2 "$logfile"
+  fi
+  sudo find /var/lib/systemd/coredump/ -type -f -exec mv {} $logdir \;
 }
 
 check_mariadb_server_and_create_structures() {
