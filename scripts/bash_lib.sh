@@ -513,6 +513,11 @@ control_mariadb_server() {
     no)
       sudo /etc/init.d/mysql "$1"
       ;;
+    *)
+      bb_log_warn "should never happen, check your configuration:"
+      bb_log_warn "(systemdCapability property is not set or is set to a wrong value ($systemdCapability))"
+    ;;
+
   esac
 }
 

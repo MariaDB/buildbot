@@ -73,10 +73,6 @@ case "$systemdCapability" in
   no)
     sudo /etc/init.d/mysql restart
     ;;
-  *)
-    bb_log_warn "should never happen, check your configuration:"
-    bb_log_warn "(systemdCapability property is not set or is set to a wrong value)"
-    ;;
 esac
 
 sudo mariadb -e "drop database if exists test; \
