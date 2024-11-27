@@ -468,7 +468,6 @@ save_failure_logs() {
 
 check_mariadb_server_and_create_structures() {
   # All the commands below should succeed
-  set -e
   sudo mariadb -e "CREATE DATABASE db"
   sudo mariadb -e "CREATE TABLE db.t_innodb(a1 SERIAL, c1 CHAR(8)) ENGINE=InnoDB; INSERT INTO db.t_innodb VALUES (1,'foo'),(2,'bar')"
   sudo mariadb -e "CREATE TABLE db.t_myisam(a2 SERIAL, c2 CHAR(8)) ENGINE=MyISAM; INSERT INTO db.t_myisam VALUES (1,'foo'),(2,'bar')"
@@ -484,14 +483,12 @@ check_mariadb_server_and_create_structures() {
       exit 1
     fi
   fi
-  set +e
 }
 
 check_mariadb_server_and_verify_structures() {
   # Print "have_xx" capabilitites for the new server
   sudo mariadb -e "select 'Stat' t, variable_name name, variable_value val from information_schema.global_status where variable_name like '%have%' union select 'Vars' t, variable_name name, variable_value val from information_schema.global_variables where variable_name like '%have%' order by t, name"
   # All the commands below should succeed
-  set -e
   sudo mariadb -e "select @@version, @@version_comment"
   sudo mariadb -e "SHOW TABLES IN db"
   sudo mariadb -e "SELECT * FROM db.t_innodb; INSERT INTO db.t_innodb VALUES (3,'foo'),(4,'bar')"
@@ -511,7 +508,6 @@ check_mariadb_server_and_verify_structures() {
       exit 1
     fi
   fi
-  set +e
 }
 
 control_mariadb_server() {
