@@ -84,22 +84,6 @@ if [[ $systemdCapability == "yes" ]]; then
   if ! sudo systemctl status mariadb --no-pager; then
     sudo journalctl -xe --no-pager
     bb_log_warn "mariadb service isn't running properly after installation"
-    if echo "$package_list" | grep -q columnstore; then
-      bb_log_info "It is likely to be caused by ColumnStore"
-      bb_log_info "problems upon installation, getting the logs"
-      set +e
-      # It is done in such a weird way, because Columnstore currently makes its
-      # logs hard to read
-      for f in $(sudo ls /var/log/mariadb/columnstore | xargs); do
-        f=/var/log/mariadb/columnstore/$f
-        echo "----------- $f -----------"
-        sudo cat "$f"
-      done
-      for f in /tmp/columnstore_tmp_files/*; do
-        echo "----------- $f -----------"
-        sudo cat "$f"
-      done
-    fi
     bb_log_err "mariadb service didn't start properly after installation"
     exit 1
   fi
