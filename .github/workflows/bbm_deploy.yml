@@ -57,7 +57,7 @@ jobs:
           cd master-libvirt
           python get_ssh_cnx_num.py
 
-  deploy:
+  development-deploy:
     runs-on: ubuntu-22.04
     needs: check
     if: >
@@ -69,22 +69,47 @@ jobs:
         run: |
           install -m 600 -D /dev/null ~/.ssh/id_ed25519
           install -m 600 -D /dev/null ~/.ssh/known_hosts
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" >~/.ssh/id_ed25519
-          echo "${{ secrets.SSH_KNOWN_HOSTS }}" >~/.ssh/known_hosts
+          echo "${{ secrets.BBM_DEV_SSH_PRIVATE_KEY }}" >~/.ssh/id_ed25519
+          echo "${{ secrets.BBM_DEV_SSH_KNOWN_HOSTS }}" >~/.ssh/known_hosts
       - name: shutdown stack
         run: |
-          ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} "if [[ -f /srv/dev/docker-compose/docker-compose.yaml ]]; then docker-compose -f /srv/dev/docker-compose/docker-compose.yaml down; fi"
+          ssh -p ${{ secrets.BBM_DEV_SERVER_PORT }} ${{ secrets.BBM_DEV_USER }}@${{ secrets.BBM_DEV_SERVER_IP }} "if [[ -f /srv/dev/docker-compose/docker-compose.yaml ]]; then docker-compose -f /srv/dev/docker-compose/docker-compose.yaml down; fi"
       - name: deploy
         run: |
           # temporary fix of jade templating
           sed -i 's#https://ci.mariadb.org#https://ci.dev.mariadb.org#g' master-web/templates/home.jade
-          rsync -a --progress --delete --exclude-from=rsync.exclude -e "ssh -p ${{ secrets.SERVER_PORT }}" ./ ${{ secrets.USER }}@${{ secrets.SERVER_IP }}:/srv/dev/
-          ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} "cd /srv/dev/docker-compose/ && ./generate-config.py --env=dev"
-          ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} "cd /srv/dev/ && ./define_masters.py"
-          ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} "cd /srv/dev/docker-compose/ && ln -sf .. buildbot"
+          rsync -a --progress --delete --exclude-from=rsync.exclude -e "ssh -p ${{ secrets.BBM_DEV_SERVER_PORT }}" ./ ${{ secrets.BBM_DEV_USER }}@${{ secrets.BBM_DEV_SERVER_IP }}:/srv/dev/
+          ssh -p ${{ secrets.BBM_DEV_SERVER_PORT }} ${{ secrets.BBM_DEV_USER }}@${{ secrets.BBM_DEV_SERVER_IP }} "cd /srv/dev/docker-compose/ && ./generate-config.py --env=dev"
+          ssh -p ${{ secrets.BBM_DEV_SERVER_PORT }} ${{ secrets.BBM_DEV_USER }}@${{ secrets.BBM_DEV_SERVER_IP }} "cd /srv/dev/ && ./define_masters.py"
+          ssh -p ${{ secrets.BBM_DEV_SERVER_PORT }} ${{ secrets.BBM_DEV_USER }}@${{ secrets.BBM_DEV_SERVER_IP }} "cd /srv/dev/docker-compose/ && ln -sf .. buildbot"
       - name: start stack
         run: |
-          ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} "cd /srv/dev/docker-compose && docker-compose pull && docker-compose --env-file .env.dev up -d"
+          ssh -p ${{ secrets.BBM_DEV_SERVER_PORT }} ${{ secrets.BBM_DEV_USER }}@${{ secrets.BBM_DEV_SERVER_IP }} "cd /srv/dev/docker-compose && docker-compose pull && docker-compose --env-file .env.dev up -d"
+      - name: clean
+        run: |
+          rm ~/.ssh/id_ed25519
+
+  production-deploy:
+    runs-on: ubuntu-22.04
+    needs: check
+    if: > 
+      github.event_name == 'workflow_dispatch' && 
+      github.ref == 'refs/heads/main' &&
+      github.repository == 'MariaDB/buildbot'
+    steps:
+      - uses: actions/checkout@v4
+      - name: prepare
+        run: |
+          install -m 600 -D /dev/null ~/.ssh/id_ed25519
+          install -m 600 -D /dev/null ~/.ssh/known_hosts
+          echo "${{ secrets.BBM_PROD_SSH_PRIVATE_KEY }}" >~/.ssh/id_ed25519
+          echo "${{ secrets.BBM_PROD_SSH_KNOWN_HOSTS }}" >~/.ssh/known_hosts
+      - name: deploy
+        run: |
+          rsync -a --progress --delete --exclude-from=rsync.exclude -e "ssh -p ${{ secrets.BBM_PROD_SERVER_PORT }}" ./ ${{ secrets.BBM_PROD_USER }}@${{ secrets.BBM_PROD_SERVER_IP }}:/srv/prod/
+          ssh -p ${{ secrets.BBM_PROD_SERVER_PORT }} ${{ secrets.BBM_PROD_USER }}@${{ secrets.BBM_PROD_SERVER_IP }} "cd /srv/prod/docker-compose/ && ./generate-config.py --env=prod"
+          ssh -p ${{ secrets.BBM_PROD_SERVER_PORT }} ${{ secrets.BBM_PROD_USER }}@${{ secrets.BBM_PROD_SERVER_IP }} "cd /srv/prod/ && ./define_masters.py"
+          ssh -p ${{ secrets.BBM_PROD_SERVER_PORT }} ${{ secrets.BBM_PROD_USER }}@${{ secrets.BBM_PROD_SERVER_IP }} "cd /srv/prod/docker-compose/ && ln -sf .. buildbot"
       - name: clean
         run: |
           rm ~/.ssh/id_ed25519
