@@ -41,8 +41,17 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - name: Check master.cfg files
-        run: ./validate_master_cfg.sh
+
+      - name: Check master.cfg files for DEV container
+        run: ./validate_master_cfg.sh -e DEV
+
+      # When master container is under development we must ensure
+      # that configuration changes are valid on both buildbot master
+      # versions, PROD/DEV. Let's say one will bring a new feature
+      # to Production independently of a master upgrade.
+      - name: Check master.cfg files for PROD container
+        run: ./validate_master_cfg.sh -e PROD
+
       - name: Check get_ssh_cnx_num.py
         run: |
           cd master-libvirt
