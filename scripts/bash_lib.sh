@@ -600,11 +600,6 @@ check_upgraded_versions() {
     # The adjustments should be done to .cmp files, and removed after the release
     #
 
-    # Remove after Q4 2024 release
-    sed -i '/libaio.so/d;/liburing.so/d' ./reqs-*.cmp
-    sed -i '/libaio.so/d;/liburing.so/d' ./ldd-*.cmp
-    sed -i '/lsof/d' ./reqs-*.cmp
-
     #Account for mariadb-plugin-mroonga diffs in Debian
     sed -i '/liblz4-1/d' ./reqs-*.cmp
     sed -i '/liblz4.so.1/d' ./ldd-*.cmp
