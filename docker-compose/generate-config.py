@@ -86,7 +86,7 @@ services:
         tag: "bb-nginx"
 
   master-web:
-    image: quay.io/mariadb-foundation/bb-master:master-web
+    image: quay.io/mariadb-foundation/bb-master:{environment}master-web
     restart: unless-stopped
     container_name: master-web
     hostname: master-web
@@ -105,7 +105,7 @@ services:
 
 DOCKER_COMPOSE_TEMPLATE = """
   {master_name}:
-    image: quay.io/mariadb-foundation/bb-master:master
+    image: quay.io/mariadb-foundation/bb-master:{environment}master
     restart: unless-stopped
     container_name: {master_name}
     hostname: {master_name}
@@ -192,8 +192,10 @@ def main(args):
         )
         file.write(
             start_template.format(
-                port=master_web_port, cr_host_wg_addr=env_vars["CR_HOST_WG_ADDR"]
-            )
+              port=master_web_port,
+              cr_host_wg_addr=env_vars["CR_HOST_WG_ADDR"],
+              environment="" if args.env == "prod" else "dev_",
+          )
         )
         port = starting_port
         for master_directory in MASTER_DIRECTORIES:
@@ -206,6 +208,7 @@ def main(args):
                 port=port,
                 mc_host=mc_host,
                 volumes=generate_volumes(master_volumes[master_name]),
+                environment="" if args.env == "prod" else "dev_",
             )
             port += 1
 
