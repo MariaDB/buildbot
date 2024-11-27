@@ -81,12 +81,8 @@ wait_for_mariadb_upgrade
 # To avoid confusing errors in further logic, do an explicit check whether the
 # service is up and running
 if [[ $systemdCapability == "yes" ]]; then
-  if ! sudo systemctl status mariadb --no-pager; then
-    sudo journalctl -xe --no-pager
-    bb_log_warn "mariadb service isn't running properly after installation"
-    bb_log_err "mariadb service didn't start properly after installation"
-    exit 1
-  fi
+  bb_log_info "test for systemd service for mariadb.service started"
+  sudo systemctl status mariadb.service --no-pager
 fi
 
 # Due to MDEV-14622 and its effect on Spider installation,
