@@ -69,6 +69,9 @@ fi
 # apt get update may be running in the background (Ubuntu start).
 apt_get_update
 
+# set -e already set at start of script
+trap save_failure_logs ERR
+
 sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 \
   apt-get install -y $package_list $columnstore_package_list"
 
@@ -120,6 +123,8 @@ sudo mariadb --verbose -e "create database test; \
   grant all on *.* to galera;"
 sudo mariadb -e "select @@version"
 bb_log_info "test for MDEV-18563, MDEV-18526"
+
+# disabling -e so save_failure_logs won't have an effect while having setting up for next test
 set +e
 
 control_mariadb_server stop
@@ -134,6 +139,7 @@ for p in /bin /sbin /usr/bin /usr/sbin /usr/local/bin /usr/local/sbin; do
   fi
 done
 sudo mariadb-install-db --no-defaults --user=mysql --plugin-maturity=unknown
+
 set +e
 ## Install mariadb-test for further use
 # sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 apt-get install -y mariadb-test"

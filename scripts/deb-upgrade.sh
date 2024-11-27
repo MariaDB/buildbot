@@ -164,6 +164,9 @@ deb_setup_bb_galera_artifacts_mirror
 deb_setup_bb_artifacts_mirror
 apt_get_update
 
+# now we upgrade, this is what we should save
+trap save_failure_logs ERR
+set -e
 # Install the new packages
 if ! sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 \
   apt-get -o Dpkg::Options::=--force-confnew install --allow-unauthenticated -y $package_list"; then
