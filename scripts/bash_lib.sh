@@ -478,10 +478,7 @@ check_mariadb_server_and_create_structures() {
   sudo mariadb -e "CREATE PROCEDURE db.p() SELECT * FROM db.v_merge"
   sudo mariadb -e "CREATE FUNCTION db.f() RETURNS INT DETERMINISTIC RETURN 1"
   if [[ $test_mode == "columnstore" ]]; then
-    if ! sudo mariadb -e "CREATE TABLE db.t_columnstore(a INT, c VARCHAR(8)) ENGINE=ColumnStore; SHOW CREATE TABLE db.t_columnstore; INSERT INTO db.t_columnstore VALUES (1,'foo'),(2,'bar')"; then
-      get_columnstore_logs
-      exit 1
-    fi
+    sudo mariadb -e "CREATE TABLE db.t_columnstore(a INT, c VARCHAR(8)) ENGINE=ColumnStore; SHOW CREATE TABLE db.t_columnstore; INSERT INTO db.t_columnstore VALUES (1,'foo'),(2,'bar')"
   fi
 }
 
@@ -503,10 +500,7 @@ check_mariadb_server_and_verify_structures() {
   sudo mariadb -e "SELECT db.f()"
 
   if [[ $test_mode == "columnstore" ]]; then
-    if ! sudo mariadb -e "SELECT * FROM db.t_columnstore; INSERT INTO db.t_columnstore VALUES (3,'foo'),(4,'bar')"; then
-      get_columnstore_logs
-      exit 1
-    fi
+    sudo mariadb -e "SELECT * FROM db.t_columnstore; INSERT INTO db.t_columnstore VALUES (3,'foo'),(4,'bar')"
   fi
 }
 
