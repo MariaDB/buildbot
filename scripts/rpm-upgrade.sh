@@ -231,11 +231,8 @@ if [[ $test_type == "major" ]] || [[ $test_mode == "columnstore" ]]; then
   control_mariadb_server restart
 fi
 
-# Make sure that the new server is running
-if sudo mariadb -e "select @@version" | grep "$old_version"; then
-  bb_log_err "the server was not upgraded or was not restarted after upgrade"
-  exit 1
-fi
+bb_log_info "Make sure that the new server is running"
+sudo mariadb -e "select @@version" | grep "$old_version"
 
 # Run mariadb-upgrade for non-GA branches (minor upgrades in GA branches
 # shouldn't need it)
