@@ -92,8 +92,8 @@ jobs:
   production-deploy:
     runs-on: ubuntu-22.04
     needs: check
-    if: > 
-      github.event_name == 'workflow_dispatch' && 
+    if: >
+      github.event_name == 'workflow_dispatch' &&
       github.ref == 'refs/heads/main' &&
       github.repository == 'MariaDB/buildbot'
     steps:

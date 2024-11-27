@@ -192,10 +192,10 @@ def main(args):
         )
         file.write(
             start_template.format(
-              port=master_web_port,
-              cr_host_wg_addr=env_vars["CR_HOST_WG_ADDR"],
-              environment="" if args.env == "prod" else "dev_",
-          )
+                port=master_web_port,
+                cr_host_wg_addr=env_vars["CR_HOST_WG_ADDR"],
+                environment="" if args.env == "prod" else "dev_",
+            )
         )
         port = starting_port
         for master_directory in MASTER_DIRECTORIES:
