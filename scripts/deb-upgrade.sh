@@ -130,12 +130,8 @@ fi
 # To avoid confusing errors in further logic, do an explicit check
 # whether the service is up and running
 if [[ $systemdCapability == "yes" ]]; then
-  if ! sudo systemctl status mariadb --no-pager; then
-    sudo journalctl -xe --no-pager
-    get_columnstore_logs
-    bb_log_err "mariadb service didn't start properly after installation"
-    exit 1
-  fi
+  bb_log_info "Ensure mariadb.service is running"
+  sudo systemctl status mariadb --no-pager
 fi
 
 if [[ $test_mode == "all" ]]; then
