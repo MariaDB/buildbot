@@ -142,7 +142,7 @@ control_mariadb_server start
 
 check_mariadb_server_and_create_structures
 
-# Store information about the server before upgrade
+bb_log_info "Store information about the server before upgrade"
 collect_dependencies old rpm
 store_mariadb_server_info old
 
@@ -213,19 +213,21 @@ fi
 bb_log_info "Make sure that the new server is running"
 sudo mariadb -e "select @@version" | grep "$old_version"
 
-# Run mariadb-upgrade for non-GA branches (minor upgrades in GA branches
-# shouldn't need it)
 if [[ $major_version == "$development_branch" ]] || [[ $test_type == "major" ]]; then
+  bb_log_info "Run MariaDB upgrade"
   sudo mariadb-upgrade
+else
+  bb_log_info "Skipping mariadb-upgrade for non-GA branches and minor upgrades in GA branchesa - shouldn't need it"
 fi
 
-# Check that the server is functioning and previously created structures are available
+bb_log_info "Check that the server is functioning and previously created structures are available"
 check_mariadb_server_and_verify_structures
 
-# Store information about the server after upgrade
+bb_log_info "Store information about the server after upgrade"
 collect_dependencies new rpm
 store_mariadb_server_info new
 
+bb_log_info "Check upgrade versions"
 check_upgraded_versions
 
 bb_log_ok "all done"
