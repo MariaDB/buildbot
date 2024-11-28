@@ -132,9 +132,9 @@ jobs:
             && ./generate-config.py --env=${BB_ENV,,}"
 
           # Define auto-generated masters
-          ssh -p $TPORT $USER@$TIP \ "cd $TPATH/ && ./define_masters.py"
+          ssh -p $TPORT $USER@$TIP "cd $TPATH/ && ./define_masters.py"
 
-          ssh -p $TPORT $USER@$TIP \ "cd $TPATH/docker-compose/ &&
+          ssh -p $TPORT $USER@$TIP "cd $TPATH/docker-compose/ &&
             ln -sf .. buildbot"
 
       - name: start stack
