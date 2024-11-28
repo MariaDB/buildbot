@@ -12,7 +12,7 @@ err() {
 
 usage() {
   echo "Usage: $0 -e <DEV|PROD>"
-  exit 1
+  exit 0
 }
 
 ENVIRONMENT=""
