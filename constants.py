@@ -28,7 +28,7 @@ github_status_builders = [
     "amd64-debian-12-debug-embedded",
     "amd64-debian-12-deb-autobake",
     "amd64-debian-11-debug-ps-embedded",
-    "amd64-debian-11-msan",
+    "amd64-msan-clang",
     "amd64-debian-11-msan-clang-16",
     "amd64-fedora-40",
     "amd64-last-N-failed",
@@ -97,7 +97,11 @@ supportedPlatforms["10.5"] = [
     "amd64-centos-stream9",
     "amd64-debian-11",
     "amd64-debian-11-debug-ps-embedded",
+<<<<<<< HEAD
     "amd64-debian-11-msan",
+=======
+    "amd64-msan-clang",
+>>>>>>> cf7e615 (Remove clang-19 out of container name)
     "amd64-debian-11-msan-clang-16",
     "amd64-debian-12-asan-ubsan",
     "amd64-debian-12-rocksdb",
