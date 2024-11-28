@@ -34,15 +34,15 @@ RUN . /etc/os-release \
     && printf '#!/bin/sh\nunset LD_LIBRARY_PATH\nexec /usr/bin/ctest "$@"' > "$NO_MSAN_PATH"/ctest \
     && printf '#!/bin/sh\nunset LD_LIBRARY_PATH\nexec /bin/grep "$@"' > "$NO_MSAN_PATH"/grep \
     && curl -sL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor -o /usr/share/keyrings/llvm-snapshot.gpg \
+    && if [ $VERSION_CODENAME = trixie ]; then VERSION_CODENAME=unstable; LLVM_DEB=""; else LLVM_DEB=-$VERSION_CODENAME; fi \
     && if [ "${CLANG_VERSION}" -ge "${CLANG_DEV_VERSION}" ]; then \
-        export LLVM_PKG="llvm-toolchain-snapshot" ; \
-        export LLVM_DEB="${VERSION_CODENAME}" ; \
+        LLVM_PKG="llvm-toolchain-snapshot" ; \
        else \
-        export LLVM_PKG="llvm-toolchain-${CLANG_VERSION}" ; \
-        export LLVM_DEB="${VERSION_CODENAME}-${CLANG_VERSION}"; fi \
-    && export LLVM_DIR="${LLVM_PKG}-${CLANG_VERSION}" \
+        LLVM_PKG="llvm-toolchain-${CLANG_VERSION}" ; \
+        LLVM_DEB="${LLVM_DEB}-${CLANG_VERSION}"; fi \
+    && LLVM_DIR="${LLVM_PKG}-${CLANG_VERSION}" \
     && for v in deb deb-src; do \
-         echo "$v [signed-by=/usr/share/keyrings/llvm-snapshot.gpg] http://apt.llvm.org/${VERSION_CODENAME}/ llvm-toolchain-${LLVM_DEB} main" >> /etc/apt/sources.list.d/llvm-toolchain.list; done \
+         echo "$v [signed-by=/usr/share/keyrings/llvm-snapshot.gpg] http://apt.llvm.org/${VERSION_CODENAME}/ llvm-toolchain${LLVM_DEB} main" >> /etc/apt/sources.list.d/llvm-toolchain.list; done \
     && apt-get update \
     && apt-get -y install --no-install-recommends \
        clang-${CLANG_VERSION} \
@@ -134,14 +134,16 @@ RUN . /etc/os-release \
     && make -j "$(nproc)" \
     && mv ./DriverManager/.libs/libodbc.so* $MSAN_LIBDIR \
     && cd $OLDPWD \
-    && if [ $VERSION_CODE != trixie ]; then \
-      apt-get source libfmt-dev \
+    && if [ $VERSION_CODE = trixie ]; then \
+      apt-get source -t experimental libfmt-dev ; \
+      else \
+      apt-get source libfmt-dev ; fi \
     && cd fmtlib-* \
     && mkdir build \
     && cmake -DFMT_DOC=OFF -DFMT_TEST=OFF  -DBUILD_SHARED_LIBS=on  -DFMT_PEDANTIC=on -S . -B build \
     && cmake --build build \
     && mv build/libfmt.so* $MSAN_LIBDIR \
-    && cd $OLDPWD ; fi \
+    && cd $OLDPWD \
     && apt-get source libssl-dev \
     && cd openssl-* \
     && ./Configure  shared no-idea no-mdc2 no-rc5 no-zlib no-ssl3 enable-unit-test no-ssl3-method enable-rfc3779 enable-cms no-capieng no-rdrand $(if [ "${CLANG_VERSION}" -ge 19 ]; then echo no-asm enable-msan; fi) $CFLAGS \
