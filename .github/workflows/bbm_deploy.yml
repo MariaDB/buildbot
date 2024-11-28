@@ -109,7 +109,7 @@ jobs:
           TPATH: ${{ env.DEPLOY_PATH }}
         if: ${{ env.DEPLOY == 'true' && env.BB_ENV == 'DEV' }}
         run: |
-          ssh -p $TPORT $TUSER@$TIP "cd $TPATH/docker-compose && 
+          ssh -p $TPORT $TUSER@$TIP "cd $TPATH/docker-compose &&
             docker-compose down"
 
       - name: deploy
@@ -121,20 +121,20 @@ jobs:
         if: ${{ env.DEPLOY == 'true' }}
         run: |
           # Copy files to remote server
-          rsync -a \ 
-            --progress \ 
-            --delete \ 
-            --exclude-from=rsync.exclude \ 
+          rsync -a \
+            --progress \
+            --delete \
+            --exclude-from=rsync.exclude \
             -e "ssh -p $TPORT" ./ $TUSER@$TIP:$TPATH/
 
           # Generate docker-compose
-          ssh -p $TPORT $USER@$TIP "cd $TPATH/docker-compose/ 
+          ssh -p $TPORT $USER@$TIP "cd $TPATH/docker-compose/
             && ./generate-config.py --env=${BB_ENV,,}"
 
           # Define auto-generated masters
           ssh -p $TPORT $USER@$TIP \ "cd $TPATH/ && ./define_masters.py"
 
-          ssh -p $TPORT $USER@$TIP \ "cd $TPATH/docker-compose/ && 
+          ssh -p $TPORT $USER@$TIP \ "cd $TPATH/docker-compose/ &&
             ln -sf .. buildbot"
 
       - name: start stack
@@ -146,7 +146,7 @@ jobs:
         if: ${{ env.DEPLOY == 'true' && env.BB_ENV == 'DEV' }}
         run: |
           ssh -p $TPORT $TUSER@$TIP "cd $TPATH/docker-compose &&
-             docker-compose pull && 
+             docker-compose pull &&
              docker-compose --env-file ${{ env.ENV_FILE }} up -d"
 
       - name: clean
