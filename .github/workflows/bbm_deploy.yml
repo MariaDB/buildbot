@@ -71,7 +71,8 @@ jobs:
           echo "GitHub Event Name is ${{ github.event_name }}"
 
           # DEV environment
-          if [[ ${{ github.repository }} == 'MariaDB/buildbot' ]] && [[ ${{ github.ref }} == 'refs/heads/dev' ]]; then
+          if [[ ${{ github.repository }} == 'MariaDB/buildbot' ]] && \
+             [[ ${{ github.ref }} == 'refs/heads/dev' ]]; then
             echo "DEPLOY=true" >>$GITHUB_ENV
             echo "BB_ENV=DEV" >>$GITHUB_ENV
             echo "DEPLOY_PATH=/srv/dev" >>$GITHUB_ENV
@@ -79,7 +80,9 @@ jobs:
           fi
 
           # PROD environment
-          if [[ ${{ github.repository }} == 'MariaDB/buildbot' ]] && [[ ${{ github.ref }} == 'refs/heads/main' ]] && [[ ${{ github.event_name }} == 'workflow_dispatch' ]]; then
+          if [[ ${{ github.repository }} == 'MariaDB/buildbot' ]] && \
+             [[ ${{ github.ref }} == 'refs/heads/main' ]] && \
+             [[ ${{ github.event_name }} == 'workflow_dispatch' ]]; then
             echo "DEPLOY=true" >>$GITHUB_ENV
             echo "BB_ENV=PROD" >>$GITHUB_ENV
             echo "DEPLOY_PATH=/srv/prod" >>$GITHUB_ENV
@@ -89,29 +92,62 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: prepare
+        env:
+          PKEY: ${{ secrets[format('BBM_{0}_SSH_PRIVATE_KEY', env.BB_ENV)] }}
+          THOST: ${{ secrets[format('BBM_{0}_SSH_KNOWN_HOSTS', env.BB_ENV)] }}
         run: |
           install -m 600 -D /dev/null ~/.ssh/id_ed25519
           install -m 600 -D /dev/null ~/.ssh/known_hosts
-          echo '${{ secrets[format('BBM_{0}_SSH_PRIVATE_KEY', env.BB_ENV)] }}' >~/.ssh/id_ed25519
-          echo '${{ secrets[format('BBM_{0}_SSH_KNOWN_HOSTS', env.BB_ENV)] }}' >~/.ssh/known_hosts
+          echo "$PKEY" >~/.ssh/id_ed25519
+          echo "$THOST" >~/.ssh/known_hosts
 
       - name: shutdown stack
+        env:
+          TUSER: ${{ secrets[format('BBM_{0}_USER', env.BB_ENV)] }}
+          TPORT: ${{ secrets[format('BBM_{0}_SERVER_PORT', env.BB_ENV)] }}
+          TIP: ${{ secrets[format('BBM_{0}_SERVER_IP', env.BB_ENV)] }}
+          TPATH: ${{ env.DEPLOY_PATH }}
         if: ${{ env.DEPLOY == 'true' && env.BB_ENV == 'DEV' }}
         run: |
-          ssh -p ${{ secrets[format('BBM_{0}_SERVER_PORT', env.BB_ENV)] }} ${{ secrets[format('BBM_{0}_USER', env.BB_ENV)] }}@${{ secrets[format('BBM_{0}_SERVER_IP', env.BB_ENV)] }} "if [[ -f ${{ env.DEPLOY_PATH }}/docker-compose/docker-compose.yaml ]]; then docker-compose -f ${{ env.DEPLOY_PATH }}/docker-compose/docker-compose.yaml down; fi"
+          ssh -p $TPORT $TUSER@$TIP "cd $TPATH/docker-compose && 
+            docker-compose down"
 
       - name: deploy
+        env:
+          TUSER: ${{ secrets[format('BBM_{0}_USER', env.BB_ENV)] }}
+          TPORT: ${{ secrets[format('BBM_{0}_SERVER_PORT', env.BB_ENV)] }}
+          TIP: ${{ secrets[format('BBM_{0}_SERVER_IP', env.BB_ENV)] }}
+          TPATH: ${{ env.DEPLOY_PATH }}
         if: ${{ env.DEPLOY == 'true' }}
         run: |
-          rsync -a --progress --delete --exclude-from=rsync.exclude -e "ssh -p ${{ secrets[format('BBM_{0}_SERVER_PORT', env.BB_ENV)] }}" ./ ${{ secrets[format('BBM_{0}_USER', env.BB_ENV)] }}@${{ secrets[format('BBM_{0}_SERVER_IP', env.BB_ENV)] }}:${{ env.DEPLOY_PATH }}/
-          ssh -p ${{ secrets[format('BBM_{0}_SERVER_PORT', env.BB_ENV)] }} ${{ secrets[format('BBM_{0}_USER', env.BB_ENV)] }}@${{ secrets[format('BBM_{0}_SERVER_IP', env.BB_ENV)] }} "cd ${{ env.DEPLOY_PATH }}/docker-compose/ && ./generate-config.py --env=${BB_ENV,,}"
-          ssh -p ${{ secrets[format('BBM_{0}_SERVER_PORT', env.BB_ENV)] }} ${{ secrets[format('BBM_{0}_USER', env.BB_ENV)] }}@${{ secrets[format('BBM_{0}_SERVER_IP', env.BB_ENV)] }} "cd ${{ env.DEPLOY_PATH }}/ && ./define_masters.py"
-          ssh -p ${{ secrets[format('BBM_{0}_SERVER_PORT', env.BB_ENV)] }} ${{ secrets[format('BBM_{0}_USER', env.BB_ENV)] }}@${{ secrets[format('BBM_{0}_SERVER_IP', env.BB_ENV)] }} "cd ${{ env.DEPLOY_PATH }}/docker-compose/ && ln -sf .. buildbot"
+          # Copy files to remote server
+          rsync -a \ 
+            --progress \ 
+            --delete \ 
+            --exclude-from=rsync.exclude \ 
+            -e "ssh -p $TPORT" ./ $TUSER@$TIP:$TPATH/
+
+          # Generate docker-compose
+          ssh -p $TPORT $USER@$TIP "cd $TPATH/docker-compose/ 
+            && ./generate-config.py --env=${BB_ENV,,}"
+
+          # Define auto-generated masters
+          ssh -p $TPORT $USER@$TIP \ "cd $TPATH/ && ./define_masters.py"
+
+          ssh -p $TPORT $USER@$TIP \ "cd $TPATH/docker-compose/ && 
+            ln -sf .. buildbot"
 
       - name: start stack
+        env:
+          TUSER: ${{ secrets[format('BBM_{0}_USER', env.BB_ENV)] }}
+          TPORT: ${{ secrets[format('BBM_{0}_SERVER_PORT', env.BB_ENV)] }}
+          TIP: ${{ secrets[format('BBM_{0}_SERVER_IP', env.BB_ENV)] }}
+          TPATH: ${{ env.DEPLOY_PATH }}
         if: ${{ env.DEPLOY == 'true' && env.BB_ENV == 'DEV' }}
         run: |
-          ssh -p ${{ secrets[format('BBM_{0}_SERVER_PORT', env.BB_ENV)] }} ${{ secrets[format('BBM_{0}_USER', env.BB_ENV)] }}@${{ secrets[format('BBM_{0}_SERVER_IP', env.BB_ENV)] }} "cd ${{ env.DEPLOY_PATH }}/docker-compose && docker-compose pull && docker-compose --env-file ${{ env.ENV_FILE }} up -d"
+          ssh -p $TPORT $TUSER@$TIP "cd $TPATH/docker-compose &&
+             docker-compose pull && 
+             docker-compose --env-file ${{ env.ENV_FILE }} up -d"
 
       - name: clean
         run: |
