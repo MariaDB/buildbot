@@ -57,59 +57,62 @@ jobs:
           cd master-libvirt
           python get_ssh_cnx_num.py
 
-  development-deploy:
+  deploy:
     runs-on: ubuntu-22.04
     needs: check
-    if: >
-      github.ref == 'refs/heads/dev' &&
-      github.repository == 'MariaDB/buildbot'
     steps:
-      - uses: actions/checkout@v4
-      - name: prepare
+      - name: Set up env vars
         run: |
-          install -m 600 -D /dev/null ~/.ssh/id_ed25519
-          install -m 600 -D /dev/null ~/.ssh/known_hosts
-          echo "${{ secrets.BBM_DEV_SSH_PRIVATE_KEY }}" >~/.ssh/id_ed25519
-          echo "${{ secrets.BBM_DEV_SSH_KNOWN_HOSTS }}" >~/.ssh/known_hosts
-      - name: shutdown stack
-        run: |
-          ssh -p ${{ secrets.BBM_DEV_SERVER_PORT }} ${{ secrets.BBM_DEV_USER }}@${{ secrets.BBM_DEV_SERVER_IP }} "if [[ -f /srv/dev/docker-compose/docker-compose.yaml ]]; then docker-compose -f /srv/dev/docker-compose/docker-compose.yaml down; fi"
-      - name: deploy
-        run: |
-          # temporary fix of jade templating
-          sed -i 's#https://ci.mariadb.org#https://ci.dev.mariadb.org#g' master-web/templates/home.jade
-          rsync -a --progress --delete --exclude-from=rsync.exclude -e "ssh -p ${{ secrets.BBM_DEV_SERVER_PORT }}" ./ ${{ secrets.BBM_DEV_USER }}@${{ secrets.BBM_DEV_SERVER_IP }}:/srv/dev/
-          ssh -p ${{ secrets.BBM_DEV_SERVER_PORT }} ${{ secrets.BBM_DEV_USER }}@${{ secrets.BBM_DEV_SERVER_IP }} "cd /srv/dev/docker-compose/ && ./generate-config.py --env=dev"
-          ssh -p ${{ secrets.BBM_DEV_SERVER_PORT }} ${{ secrets.BBM_DEV_USER }}@${{ secrets.BBM_DEV_SERVER_IP }} "cd /srv/dev/ && ./define_masters.py"
-          ssh -p ${{ secrets.BBM_DEV_SERVER_PORT }} ${{ secrets.BBM_DEV_USER }}@${{ secrets.BBM_DEV_SERVER_IP }} "cd /srv/dev/docker-compose/ && ln -sf .. buildbot"
-      - name: start stack
-        run: |
-          ssh -p ${{ secrets.BBM_DEV_SERVER_PORT }} ${{ secrets.BBM_DEV_USER }}@${{ secrets.BBM_DEV_SERVER_IP }} "cd /srv/dev/docker-compose && docker-compose pull && docker-compose --env-file .env.dev up -d"
-      - name: clean
-        run: |
-          rm ~/.ssh/id_ed25519
+          echo "DEPLOY=false" >>$GITHUB_ENV
 
-  production-deploy:
-    runs-on: ubuntu-22.04
-    needs: check
-    if: >
-      github.event_name == 'workflow_dispatch' &&
-      github.ref == 'refs/heads/main' &&
-      github.repository == 'MariaDB/buildbot'
-    steps:
+          # INFO
+          echo "GitHub Branch is ${{ github.ref }}"
+          echo "GitHub Repository is ${{ github.repository }}"
+          echo "GitHub Event Name is ${{ github.event_name }}"
+
+          # DEV environment
+          if [[ ${{ github.repository }} == 'MariaDB/buildbot' ]] && [[ ${{ github.ref }} == 'refs/heads/dev' ]]; then
+            echo "DEPLOY=true" >>$GITHUB_ENV
+            echo "BB_ENV=DEV" >>$GITHUB_ENV
+            echo "DEPLOY_PATH=/srv/dev" >>$GITHUB_ENV
+            echo "ENV_FILE=.env.dev" >>$GITHUB_ENV
+          fi
+
+          # PROD environment
+          if [[ ${{ github.repository }} == 'MariaDB/buildbot' ]] && [[ ${{ github.ref }} == 'refs/heads/main' ]] && [[ ${{ github.event_name }} == 'workflow_dispatch' ]]; then
+            echo "DEPLOY=true" >>$GITHUB_ENV
+            echo "BB_ENV=PROD" >>$GITHUB_ENV
+            echo "DEPLOY_PATH=/srv/prod" >>$GITHUB_ENV
+            echo "ENV_FILE=.env" >>$GITHUB_ENV
+          fi
+
       - uses: actions/checkout@v4
+
       - name: prepare
         run: |
           install -m 600 -D /dev/null ~/.ssh/id_ed25519
           install -m 600 -D /dev/null ~/.ssh/known_hosts
-          echo "${{ secrets.BBM_PROD_SSH_PRIVATE_KEY }}" >~/.ssh/id_ed25519
-          echo "${{ secrets.BBM_PROD_SSH_KNOWN_HOSTS }}" >~/.ssh/known_hosts
-      - name: deploy
+          echo '${{ secrets[format('BBM_{0}_SSH_PRIVATE_KEY', env.BB_ENV)] }}' >~/.ssh/id_ed25519
+          echo '${{ secrets[format('BBM_{0}_SSH_KNOWN_HOSTS', env.BB_ENV)] }}' >~/.ssh/known_hosts
+
+      - name: shutdown stack
+        if: ${{ env.DEPLOY == 'true' && env.BB_ENV == 'DEV' }}
         run: |
-          rsync -a --progress --delete --exclude-from=rsync.exclude -e "ssh -p ${{ secrets.BBM_PROD_SERVER_PORT }}" ./ ${{ secrets.BBM_PROD_USER }}@${{ secrets.BBM_PROD_SERVER_IP }}:/srv/prod/
-          ssh -p ${{ secrets.BBM_PROD_SERVER_PORT }} ${{ secrets.BBM_PROD_USER }}@${{ secrets.BBM_PROD_SERVER_IP }} "cd /srv/prod/docker-compose/ && ./generate-config.py --env=prod"
-          ssh -p ${{ secrets.BBM_PROD_SERVER_PORT }} ${{ secrets.BBM_PROD_USER }}@${{ secrets.BBM_PROD_SERVER_IP }} "cd /srv/prod/ && ./define_masters.py"
-          ssh -p ${{ secrets.BBM_PROD_SERVER_PORT }} ${{ secrets.BBM_PROD_USER }}@${{ secrets.BBM_PROD_SERVER_IP }} "cd /srv/prod/docker-compose/ && ln -sf .. buildbot"
+          ssh -p ${{ secrets[format('BBM_{0}_SERVER_PORT', env.BB_ENV)] }} ${{ secrets[format('BBM_{0}_USER', env.BB_ENV)] }}@${{ secrets[format('BBM_{0}_SERVER_IP', env.BB_ENV)] }} "if [[ -f ${{ env.DEPLOY_PATH }}/docker-compose/docker-compose.yaml ]]; then docker-compose -f ${{ env.DEPLOY_PATH }}/docker-compose/docker-compose.yaml down; fi"
+
+      - name: deploy
+        if: ${{ env.DEPLOY == 'true' }}
+        run: |
+          rsync -a --progress --delete --exclude-from=rsync.exclude -e "ssh -p ${{ secrets[format('BBM_{0}_SERVER_PORT', env.BB_ENV)] }}" ./ ${{ secrets[format('BBM_{0}_USER', env.BB_ENV)] }}@${{ secrets[format('BBM_{0}_SERVER_IP', env.BB_ENV)] }}:${{ env.DEPLOY_PATH }}/
+          ssh -p ${{ secrets[format('BBM_{0}_SERVER_PORT', env.BB_ENV)] }} ${{ secrets[format('BBM_{0}_USER', env.BB_ENV)] }}@${{ secrets[format('BBM_{0}_SERVER_IP', env.BB_ENV)] }} "cd ${{ env.DEPLOY_PATH }}/docker-compose/ && ./generate-config.py --env=${BB_ENV,,}"
+          ssh -p ${{ secrets[format('BBM_{0}_SERVER_PORT', env.BB_ENV)] }} ${{ secrets[format('BBM_{0}_USER', env.BB_ENV)] }}@${{ secrets[format('BBM_{0}_SERVER_IP', env.BB_ENV)] }} "cd ${{ env.DEPLOY_PATH }}/ && ./define_masters.py"
+          ssh -p ${{ secrets[format('BBM_{0}_SERVER_PORT', env.BB_ENV)] }} ${{ secrets[format('BBM_{0}_USER', env.BB_ENV)] }}@${{ secrets[format('BBM_{0}_SERVER_IP', env.BB_ENV)] }} "cd ${{ env.DEPLOY_PATH }}/docker-compose/ && ln -sf .. buildbot"
+
+      - name: start stack
+        if: ${{ env.DEPLOY == 'true' && env.BB_ENV == 'DEV' }}
+        run: |
+          ssh -p ${{ secrets[format('BBM_{0}_SERVER_PORT', env.BB_ENV)] }} ${{ secrets[format('BBM_{0}_USER', env.BB_ENV)] }}@${{ secrets[format('BBM_{0}_SERVER_IP', env.BB_ENV)] }} "cd ${{ env.DEPLOY_PATH }}/docker-compose && docker-compose pull && docker-compose --env-file ${{ env.ENV_FILE }} up -d"
+
       - name: clean
         run: |
           rm ~/.ssh/id_ed25519
