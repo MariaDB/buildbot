@@ -128,13 +128,13 @@ jobs:
             -e "ssh -p $TPORT" ./ $TUSER@$TIP:$TPATH/
 
           # Generate docker-compose
-          ssh -p $TPORT $USER@$TIP "cd $TPATH/docker-compose/ &&
+          ssh -p $TPORT $TUSER@$TIP "cd $TPATH/docker-compose/ &&
            ./generate-config.py --env=${BB_ENV,,}"
 
           # Define auto-generated masters
-          ssh -p $TPORT $USER@$TIP "cd $TPATH/ && ./define_masters.py"
+          ssh -p $TPORT $TUSER@$TIP "cd $TPATH/ && ./define_masters.py"
 
-          ssh -p $TPORT $USER@$TIP "cd $TPATH/docker-compose/ &&
+          ssh -p $TPORT $TUSER@$TIP "cd $TPATH/docker-compose/ &&
             ln -sf .. buildbot"
 
       - name: start stack
