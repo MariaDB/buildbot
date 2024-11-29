@@ -70,8 +70,18 @@ jobs:
           echo "GitHub Repository is ${{ github.repository }}"
           echo "GitHub Event Name is ${{ github.event_name }}"
 
+          # DEV environment
+          if [[ ${{ github.repository }} == 'MariaDB/buildbot' ]] && \
+             [[ ${{ github.ref }} == 'refs/heads/dev' ]]; then
+            echo "DEPLOY=true" >>$GITHUB_ENV
+            echo "BB_ENV=DEV" >>$GITHUB_ENV
+            echo "DEPLOY_PATH=/srv/dev" >>$GITHUB_ENV
+            echo "ENV_FILE=.env.dev" >>$GITHUB_ENV
+          fi
+
           # PROD environment
           if [[ ${{ github.repository }} == 'MariaDB/buildbot' ]] && \
+             [[ ${{ github.ref }} == 'refs/heads/main' ]] && \
              [[ ${{ github.event_name }} == 'workflow_dispatch' ]]; then
             echo "DEPLOY=true" >>$GITHUB_ENV
             echo "BB_ENV=PROD" >>$GITHUB_ENV
