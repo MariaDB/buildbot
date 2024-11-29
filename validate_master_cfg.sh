@@ -87,6 +87,6 @@ for dir in autogen/* \
   $RUNC run -i -v "$(pwd):/srv/buildbot/master" \
     -w /srv/buildbot/master \
     $IMAGE \
-    bash -c "cd $dir && buildbot checkconfig master.cfg"
+    bash -c "buildbot checkconfig $dir/master.cfg"
   echo -e "done\n"
 done
