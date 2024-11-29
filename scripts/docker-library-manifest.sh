@@ -51,12 +51,16 @@ devmanifest=$image
 #
 # PUSHIT - if the manifest if complete, i.e. all supported arches are there, we push
 #
+if [ -n "$ubi" ]; then
+  arches=( linux/amd64 )
+else
+  arches=( linux/amd64 linux/arm64/v8 linux/ppc64le linux/s390x )
+fi
 
 manifest_image_cleanup() {
   local manifest=$1
   buildah manifest rm "$manifest" || echo "already removed"
 
-  local arches=( linux/amd64 linux/arm64/v8 linux/ppc64le linux/s390x )
   for arch in "${arches[@]}"; do
     # -f will remove all tags of same, like wordpress
     buildah rmi -f "${manifest}-${arch}" || echo "already gone"
@@ -112,7 +116,20 @@ fi
 
 debugmanifest=${image}-debug
 
-buildah bud --all-platforms --jobs 4 --manifest "$debugmanifest" --build-arg BASE="$image" -f "mariadb-docker/Containerfile.debug$ubi"
+# --all-platforms incompatible with --build-arg
+# https://github.com/containers/buildah/issues/5850
+# buildah bud --all-platforms --jobs 4 --manifest "$debugmanifest" --build-arg BASE="$image" -f "mariadb-docker/Containerfile.debug$ubi"
+
+
+# Temp disable this as it also wasn't functioning
+manifest_image_cleanup "$devmanifest" "$t"
+if false; then
+## intentionally array to simple
+# shellcheck disable=SC2124
+archlist="${arches[@]}"
+# comma separated
+archlist=${archlist// /,}
+buildah bud --platform "${archlist}" --jobs 4 --manifest "$debugmanifest" --build-arg BASE="$image" -f "mariadb-docker/Containerfile.debug$ubi"
 
 # now $debugmanifest is build, we can cleanup $devmanifest
 manifest_image_cleanup "$devmanifest" "$t"
@@ -123,6 +140,9 @@ if [ "$prod_environment" = "True" ]; then
   buildah manifest push --all --rm "$debugmanifest" "docker://quay.io/mariadb-foundation/mariadb-debug:${container_tag}"
 else
   buildah manifest rm "$debugmanifest"
+fi
+
+# end of broken debug container build
 fi
 
 # all untagged images removed, and any containers that might be running on them
