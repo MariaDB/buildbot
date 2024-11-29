@@ -69,15 +69,6 @@ command -v python3 >/dev/null ||
   err "python3 command not found"
 
 python3 define_masters.py
-echo "Checking master.cfg"
-# Port is set by generate-config.py (docker-compose), not present in .env
-$RUNC run -i -v "$(pwd):/srv/buildbot/master" \
-  --env PORT=1234 \
-  --env-file <(sed "s/='\([^']*\)'/=\1/" $ENVFILE) \
-  -w /srv/buildbot/master \
-  $IMAGE \
-  buildbot checkconfig master.cfg
-echo -e "done\n"
 # not checking libvirt config file (//TEMP we need to find a solution
 # to not check ssh connection)
 for dir in autogen/* \
@@ -92,8 +83,8 @@ for dir in autogen/* \
   $RUNC run -i -v "$(pwd):/srv/buildbot/master" \
     --env PORT=1234 \
     --env-file <(sed "s/='\([^']*\)'/=\1/" $ENVFILE) \
-    -w "/srv/buildbot/master/$dir" \
+    -w "/srv/buildbot/master/" \
     $IMAGE \
-    buildbot checkconfig master.cfg
+    bash -c "buildbot checkconfig $dir/master.cfg"
   echo -e "done\n"
 done
