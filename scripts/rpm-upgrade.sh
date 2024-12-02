@@ -194,6 +194,12 @@ fi
 
 rpm_setup_bb_galera_artifacts_mirror
 rpm_setup_bb_artifacts_mirror
+
+# Any of the below steps could fail
+# This is where the new packages are processed from
+trap save_failure_logs ERR
+set -e
+
 if [[ $test_type == "major" ]]; then
   # major upgrade (remove then install)
   echo "$package_list" | xargs sudo "$pkg_cmd" "$pkg_cmd_options" install

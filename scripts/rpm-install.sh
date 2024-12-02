@@ -58,6 +58,10 @@ set -u
 
 sh -c 'g=/usr/lib*/galera*/libgalera_smm.so; echo -e "[galera]\nwsrep_provider=$g"' |
   sudo tee /etc/my.cnf.d/galera.cnf
+
+# Any of the below steps could fail
+trap save_failure_logs ERR
+set -e
 case "$systemdCapability" in
   yes)
     if ! sudo systemctl start mariadb; then

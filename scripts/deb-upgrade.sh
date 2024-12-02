@@ -130,12 +130,8 @@ fi
 # To avoid confusing errors in further logic, do an explicit check
 # whether the service is up and running
 if [[ $systemdCapability == "yes" ]]; then
-  if ! sudo systemctl status mariadb --no-pager; then
-    sudo journalctl -xe --no-pager
-    get_columnstore_logs
-    bb_log_err "mariadb service didn't start properly after installation"
-    exit 1
-  fi
+  bb_log_info "Ensure mariadb.service is running"
+  sudo systemctl status mariadb --no-pager
 fi
 
 if [[ $test_mode == "all" ]]; then
@@ -164,6 +160,9 @@ deb_setup_bb_galera_artifacts_mirror
 deb_setup_bb_artifacts_mirror
 apt_get_update
 
+# now we upgrade, this is what we should save
+trap save_failure_logs ERR
+set -e
 # Install the new packages
 if ! sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 \
   apt-get -o Dpkg::Options::=--force-confnew install --allow-unauthenticated -y $package_list"; then

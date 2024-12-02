@@ -69,6 +69,9 @@ fi
 # apt get update may be running in the background (Ubuntu start).
 apt_get_update
 
+# set -e already set at start of script
+trap save_failure_logs ERR
+
 sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 \
   apt-get install -y $package_list $columnstore_package_list"
 
@@ -81,22 +84,6 @@ if [[ $systemdCapability == "yes" ]]; then
   if ! sudo systemctl status mariadb --no-pager; then
     sudo journalctl -xe --no-pager
     bb_log_warn "mariadb service isn't running properly after installation"
-    if echo "$package_list" | grep -q columnstore; then
-      bb_log_info "It is likely to be caused by ColumnStore"
-      bb_log_info "problems upon installation, getting the logs"
-      set +e
-      # It is done in such a weird way, because Columnstore currently makes its
-      # logs hard to read
-      for f in $(sudo ls /var/log/mariadb/columnstore | xargs); do
-        f=/var/log/mariadb/columnstore/$f
-        echo "----------- $f -----------"
-        sudo cat "$f"
-      done
-      for f in /tmp/columnstore_tmp_files/*; do
-        echo "----------- $f -----------"
-        sudo cat "$f"
-      done
-    fi
     bb_log_err "mariadb service didn't start properly after installation"
     exit 1
   fi
@@ -120,6 +107,8 @@ sudo mariadb --verbose -e "create database test; \
   grant all on *.* to galera;"
 sudo mariadb -e "select @@version"
 bb_log_info "test for MDEV-18563, MDEV-18526"
+
+# disabling -e so save_failure_logs won't have an effect while having setting up for next test
 set +e
 
 control_mariadb_server stop
@@ -134,6 +123,7 @@ for p in /bin /sbin /usr/bin /usr/sbin /usr/local/bin /usr/local/sbin; do
   fi
 done
 sudo mariadb-install-db --no-defaults --user=mysql --plugin-maturity=unknown
+
 set +e
 ## Install mariadb-test for further use
 # sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 apt-get install -y mariadb-test"
