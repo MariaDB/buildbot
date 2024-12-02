@@ -48,8 +48,4 @@ server {
 	autoindex on;
 
 	error_page 404 /older_builds$request_uri;
-
-	# logging
-	access_log /var/log/nginx/${NGINX_ARTIFACTS_VHOST}.access.log;
-	error_log /var/log/nginx/${NGINX_ARTIFACTS_VHOST}.error.log;
 }
