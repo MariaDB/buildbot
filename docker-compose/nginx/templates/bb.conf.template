@@ -61,9 +61,9 @@ server {
 		alias   /srv/cr/static;
 	}
 
-	# logging
-	access_log /var/log/nginx/${NGINX_BUILDBOT_VHOST}.access.log;
-	error_log /var/log/nginx/${NGINX_BUILDBOT_VHOST}.error.log;
+	location /cr/ {
+		proxy_pass http://${NGINX_CR_HOST_WG_ADDR};
+	}
 
 	# disable logging for wsgi_dashboards/styles.css since it's generated
 	# somewhere and mess with fail2ban //TEMP find the root cause!

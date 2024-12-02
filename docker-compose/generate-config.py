@@ -73,12 +73,12 @@ services:
       - /srv/buildbot/packages:/srv/buildbot/packages:ro
       - /srv/buildbot/galera_packages:/srv/buildbot/galera_packages:ro
       - /srv/buildbot/helper_files:/srv/buildbot/helper_files:ro
-      - ./logs/nginx:/var/log/nginx
       - ./certbot/www/:/var/www/certbot/:ro
       - ./certbot/ssl/:/etc/nginx/ssl/:ro
     environment:
       - NGINX_ARTIFACTS_VHOST
       - NGINX_BUILDBOT_VHOST
+      - NGINX_CR_HOST_WG_ADDR
     network_mode: host
     logging:
       driver: journald
@@ -193,7 +193,6 @@ def main(args):
         file.write(
             start_template.format(
                 port=master_web_port,
-                cr_host_wg_addr=env_vars["CR_HOST_WG_ADDR"],
                 environment="" if args.env == "prod" else "dev_",
             )
         )

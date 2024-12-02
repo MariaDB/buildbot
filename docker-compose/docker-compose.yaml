@@ -47,12 +47,12 @@ services:
       - /srv/buildbot/packages:/srv/buildbot/packages:ro
       - /srv/buildbot/galera_packages:/srv/buildbot/galera_packages:ro
       - /srv/buildbot/helper_files:/srv/buildbot/helper_files:ro
-      - ./logs/nginx:/var/log/nginx
       - ./certbot/www/:/var/www/certbot/:ro
       - ./certbot/ssl/:/etc/nginx/ssl/:ro
     environment:
       - NGINX_ARTIFACTS_VHOST
       - NGINX_BUILDBOT_VHOST
+      - NGINX_CR_HOST_WG_ADDR
     network_mode: host
     logging:
       driver: journald
@@ -69,7 +69,6 @@ services:
       - BUILDMASTER_URL
       - BUILDMASTER_WG_IP
       - CONTAINER_REGISTRY_URL
-      - CR_HOST_WG_ADDR
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
@@ -105,7 +104,6 @@ services:
       - BUILDMASTER_URL
       - BUILDMASTER_WG_IP
       - CONTAINER_REGISTRY_URL
-      - CR_HOST_WG_ADDR
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
@@ -145,7 +143,6 @@ services:
       - BUILDMASTER_URL
       - BUILDMASTER_WG_IP
       - CONTAINER_REGISTRY_URL
-      - CR_HOST_WG_ADDR
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
@@ -184,7 +181,6 @@ services:
       - BUILDMASTER_URL
       - BUILDMASTER_WG_IP
       - CONTAINER_REGISTRY_URL
-      - CR_HOST_WG_ADDR
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
@@ -223,7 +219,6 @@ services:
       - BUILDMASTER_URL
       - BUILDMASTER_WG_IP
       - CONTAINER_REGISTRY_URL
-      - CR_HOST_WG_ADDR
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
@@ -262,7 +257,6 @@ services:
       - BUILDMASTER_URL
       - BUILDMASTER_WG_IP
       - CONTAINER_REGISTRY_URL
-      - CR_HOST_WG_ADDR
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
@@ -301,7 +295,6 @@ services:
       - BUILDMASTER_URL
       - BUILDMASTER_WG_IP
       - CONTAINER_REGISTRY_URL
-      - CR_HOST_WG_ADDR
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
@@ -340,7 +333,6 @@ services:
       - BUILDMASTER_URL
       - BUILDMASTER_WG_IP
       - CONTAINER_REGISTRY_URL
-      - CR_HOST_WG_ADDR
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
@@ -379,7 +371,6 @@ services:
       - BUILDMASTER_URL
       - BUILDMASTER_WG_IP
       - CONTAINER_REGISTRY_URL
-      - CR_HOST_WG_ADDR
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
@@ -418,7 +409,6 @@ services:
       - BUILDMASTER_URL
       - BUILDMASTER_WG_IP
       - CONTAINER_REGISTRY_URL
-      - CR_HOST_WG_ADDR
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
@@ -457,7 +447,6 @@ services:
       - BUILDMASTER_URL
       - BUILDMASTER_WG_IP
       - CONTAINER_REGISTRY_URL
-      - CR_HOST_WG_ADDR
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
@@ -496,7 +485,6 @@ services:
       - BUILDMASTER_URL
       - BUILDMASTER_WG_IP
       - CONTAINER_REGISTRY_URL
-      - CR_HOST_WG_ADDR
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
@@ -535,7 +523,6 @@ services:
       - BUILDMASTER_URL
       - BUILDMASTER_WG_IP
       - CONTAINER_REGISTRY_URL
-      - CR_HOST_WG_ADDR
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
@@ -574,7 +561,6 @@ services:
       - BUILDMASTER_URL
       - BUILDMASTER_WG_IP
       - CONTAINER_REGISTRY_URL
-      - CR_HOST_WG_ADDR
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
