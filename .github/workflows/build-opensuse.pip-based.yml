@@ -30,7 +30,7 @@ jobs:
           - image: opensuse/leap:15.5
             platforms: linux/amd64
             tag: opensuse1505
-            nogalera: true
+            nogalera: false
 
           - image: opensuse/leap:15.6
             platforms: linux/amd64
