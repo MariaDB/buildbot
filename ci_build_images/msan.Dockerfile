@@ -124,6 +124,8 @@ RUN . /etc/os-release \
     && make -j "$(nproc)" \
     && cp -aL .libs/libxml2.so* $MSAN_LIBDIR \
     && cd $OLDPWD \
+    && if [ "${VERSION_CODENAME}" = trixie ]; then \
+       apt-get install -y libltdl-dev ; fi \
     && apt-get source unixodbc-dev \
     && cd unixodbc-* \
     && libtoolize --force \
@@ -135,7 +137,7 @@ RUN . /etc/os-release \
     && make -j "$(nproc)" \
     && mv ./DriverManager/.libs/libodbc.so* $MSAN_LIBDIR \
     && cd $OLDPWD \
-    && if [ $VERSION_CODE = trixie ]; then \
+    && if [ "${VERSION_CODENAME}" = trixie ]; then \
       apt-get source -t experimental libfmt-dev ; \
       else \
       apt-get source libfmt-dev ; fi \
