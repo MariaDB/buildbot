@@ -213,7 +213,8 @@ def createDebRepo() -> steps.ShellCommand:
 """
             ),
         ],
-        doStepIf=lambda step: hasFiles(step) and savePackage(step),
+        doStepIf=lambda step: hasFiles(step)
+        and savePackage(step, SAVED_PACKAGE_BRANCHES),
     )
 
 
@@ -252,7 +253,8 @@ EOF
     """
             ),
         ],
-        doStepIf=lambda step: hasFiles(step) and savePackage(step),
+        doStepIf=lambda step: hasFiles(step)
+        and savePackage(step, SAVED_PACKAGE_BRANCHES),
         descriptionDone=util.Interpolate(
             """
             Use """
@@ -497,7 +499,7 @@ def hasCompat(step: BuildStep) -> bool:
 
 def hasDockerLibrary(step: BuildStep) -> bool:
     # Can only build with a saved package
-    if not savePackage(step):
+    if not savePackage(step, SAVED_PACKAGE_BRANCHES):
         return False
 
     branch = step.getProperty("master_branch")

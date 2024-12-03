@@ -10,7 +10,7 @@ from buildbot.process.properties import Property
 from buildbot.steps.mtrlogobserver import MTR
 
 # Local
-from constants import MTR_ENV, test_type_to_mtr_arg
+from constants import MTR_ENV, SAVED_PACKAGE_BRANCHES, test_type_to_mtr_arg
 from utils import (
     createVar,
     dockerfile,
@@ -140,7 +140,7 @@ def addPostTests(factory):
         steps.SetPropertyFromCommand(
             command="basename mariadb-*-linux-*.tar.gz",
             property="mariadb_binary",
-            doStepIf=savePackage,
+            doStepIf=lambda step: savePackage(step, SAVED_PACKAGE_BRANCHES),
         )
     )
     factory.addStep(
@@ -156,7 +156,7 @@ def addPostTests(factory):
         && sync /packages/%(prop:tarbuildnum)s
         """
             ),
-            doStepIf=savePackage,
+            doStepIf=lambda step: savePackage(step, SAVED_PACKAGE_BRANCHES),
         )
     )
     factory.addStep(
@@ -166,7 +166,8 @@ def addPostTests(factory):
             waitForFinish=False,
             updateSourceStamp=False,
             set_properties=properties,
-            doStepIf=lambda step: savePackage(step) and hasEco(step),
+            doStepIf=lambda step: savePackage(step, SAVED_PACKAGE_BRANCHES)
+            and hasEco(step),
         )
     )
     factory.addStep(
@@ -737,7 +738,8 @@ EOF
                 sync /packages/%(prop:tarbuildnum)s
 """
             ),
-            doStepIf=lambda step: hasFiles(step) and savePackage(step),
+            doStepIf=lambda step: hasFiles(step)
+            and savePackage(step, SAVED_PACKAGE_BRANCHES),
             descriptionDone=util.Interpolate(
                 """
 Repository available with: curl %(kw:url)s/%(prop:tarbuildnum)s/%(prop:buildername)s/MariaDB.repo -o /etc/yum.repos.d/MariaDB.repo""",
@@ -775,7 +777,7 @@ Repository available with: curl %(kw:url)s/%(prop:tarbuildnum)s/%(prop:builderna
                 "parentbuildername": Property("buildername"),
             },
             doStepIf=lambda step: hasInstall(step)
-            and savePackage(step)
+            and savePackage(step, SAVED_PACKAGE_BRANCHES)
             and hasFiles(step),
         )
     )
@@ -792,7 +794,7 @@ Repository available with: curl %(kw:url)s/%(prop:tarbuildnum)s/%(prop:builderna
                 "parentbuildername": Property("buildername"),
             },
             doStepIf=lambda step: hasUpgrade(step)
-            and savePackage(step)
+            and savePackage(step, SAVED_PACKAGE_BRANCHES)
             and hasFiles(step),
         )
     )
