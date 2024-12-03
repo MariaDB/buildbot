@@ -12,7 +12,6 @@ WORKDIR /msan-build
 ENV CC=clang
 ENV CXX=clang++
 ENV NO_MSAN_PATH=/msan-libs/bin
-ENV GDB_PATH=$NO_MSAN_PATH/gdb
 ENV MSAN_LIBDIR=/msan-libs
 ENV MSAN_SYMBOLIZER_PATH=$NO_MSAN_PATH/llvm-symbolizer-msan
 
@@ -30,9 +29,11 @@ RUN . /etc/os-release \
     && mkdir $MSAN_LIBDIR \
     && mkdir $MSAN_LIBDIR/bin \
     && printf "#!/bin/sh\nunset LD_LIBRARY_PATH\nexec llvm-symbolizer-%s \"\$@\"" "${CLANG_VERSION}" > $MSAN_SYMBOLIZER_PATH \
-    && printf '#!/bin/sh\nunset LD_LIBRARY_PATH\nexec /usr/bin/gdb "$@"' > $GDB_PATH \
-    && printf '#!/bin/sh\nunset LD_LIBRARY_PATH\nexec /usr/bin/ctest "$@"' > "$NO_MSAN_PATH"/ctest \
-    && printf '#!/bin/sh\nunset LD_LIBRARY_PATH\nexec /bin/grep "$@"' > "$NO_MSAN_PATH"/grep \
+    && set +H \
+    && for nonmsanexec in gdb ctest grep sed; do \
+         printf "#!/bin/sh\nunset LD_LIBRARY_PATH\nexec /usr/bin/${nonmsanexec} \"\$@\"" > "${NO_MSAN_PATH}/${nomasanexec}"; \
+       done \
+    && set -H \
     && curl -sL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor -o /usr/share/keyrings/llvm-snapshot.gpg \
     && if [ $VERSION_CODENAME = trixie ]; then VERSION_CODENAME=unstable; LLVM_DEB=""; else LLVM_DEB=-$VERSION_CODENAME; fi \
     && if [ "${CLANG_VERSION}" -ge "${CLANG_DEV_VERSION}" ]; then \
