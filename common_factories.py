@@ -106,6 +106,14 @@ class FetchTestData(MTR):
 def addPostTests(factory):
     factory.addStep(saveLogs())
 
+    properties = {
+        "tarbuildnum": Property("tarbuildnum"),
+        "mariadb_binary": Property("mariadb_binary"),
+        "mariadb_version": Property("mariadb_version"),
+        "master_branch": Property("master_branch"),
+        "parentbuildername": Property("buildername"),
+    }
+
     # trigger packages
     factory.addStep(
         steps.Trigger(
@@ -113,12 +121,7 @@ def addPostTests(factory):
             waitForFinish=False,
             updateSourceStamp=False,
             alwaysRun=True,
-            set_properties={
-                "parentbuildername": Property("buildername"),
-                "tarbuildnum": Property("tarbuildnum"),
-                "mariadb_version": Property("mariadb_version"),
-                "master_branch": Property("master_branch"),
-            },
+            set_properties=properties,
             doStepIf=hasAutobake,
         )
     )
@@ -128,12 +131,7 @@ def addPostTests(factory):
             schedulerNames=["s_bigtest"],
             waitForFinish=False,
             updateSourceStamp=False,
-            set_properties={
-                "parentbuildername": Property("buildername"),
-                "tarbuildnum": Property("tarbuildnum"),
-                "mariadb_version": Property("mariadb_version"),
-                "master_branch": Property("master_branch"),
-            },
+            set_properties=properties,
             doStepIf=hasBigtest,
         )
     )
@@ -167,13 +165,7 @@ def addPostTests(factory):
             schedulerNames=["s_eco"],
             waitForFinish=False,
             updateSourceStamp=False,
-            set_properties={
-                "tarbuildnum": Property("tarbuildnum"),
-                "mariadb_binary": Property("mariadb_binary"),
-                "mariadb_version": Property("mariadb_version"),
-                "master_branch": Property("master_branch"),
-                "parentbuildername": Property("buildername"),
-            },
+            set_properties=properties,
             doStepIf=lambda step: savePackage(step) and hasEco(step),
         )
     )
