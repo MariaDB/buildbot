@@ -79,25 +79,22 @@ def createWorker(
         "/srv/buildbot/packages:/mnt/packages",
         MASTER_PACKAGES + "/:/packages",
     ],
-) -> Tuple[str, worker.DockerLatentWorker]:
+) -> Tuple[str, str, worker.DockerLatentWorker]:
     worker_name = f"{worker_name_prefix}{worker_id}-docker"
-    name = f"{worker_name}{worker_type}"
+    name = f"{worker_name}{worker_type}{worker_name_suffix}"
 
-    if worker_name_prefix.startswith("hz"):
-        b_name = "x64-bbw"
-    elif worker_name_prefix.startswith("intel"):
-        b_name = "x64-bbw"
-    elif worker_name_prefix.startswith("ppc64le"):
-        b_name = "ppc64le-bbw"
-    elif worker_name_prefix.startswith("amd"):
-        b_name = "x64-bbw"
-    elif worker_name_prefix.startswith("apexis"):
-        b_name = "x64-bbw"
-    elif worker_name_prefix.startswith("ns"):
-        b_name = "x64-bbw"
-    else:
-        b_name = worker_name_prefix
-    base_name = b_name + "-docker" + worker_type
+    # TODO(cvicentiu) Remove this list when refactoring YAML.
+    b_name = worker_name_prefix
+    X64_BUILDER_PREFIXES = ["hz", "intel", "amd", "apexis", "ns"]
+    PPC64LE_BUILDER_PREFIXES = ["ppc64le"]
+    for x64_prefix in X64_BUILDER_PREFIXES:
+        if worker_name_prefix.startswith(x64_prefix):
+            b_name = "x64-bbw"
+    for ppc_prefix in PPC64LE_BUILDER_PREFIXES:
+        if worker_name_prefix.startswith(ppc_prefix):
+            b_name = "ppc64le-bbw"
+
+    base_name = f"{b_name}-docker-{worker_type}"
 
     # Set master FQDN - default to wireguard interface
     fqdn = os.environ["BUILDMASTER_WG_IP"]
@@ -113,7 +110,7 @@ def createWorker(
         need_pull = False
 
     worker_instance = worker.DockerLatentWorker(
-        name + worker_name_suffix,
+        name,
         None,
         docker_host=private_config["private"]["docker_workers"][worker_name],
         image=image_str,
@@ -135,7 +132,7 @@ def createWorker(
         volumes=volumes,
         properties={"jobs": jobs, "save_packages": save_packages},
     )
-    return ((base_name, name + worker_name_suffix), worker_instance)
+    return (base_name, name, worker_instance)
 
 
 def printEnv() -> steps.ShellCommand:
