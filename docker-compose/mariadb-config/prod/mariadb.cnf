@@ -1,0 +1,44 @@
+[mariadb]
+
+# Fine tuning
+max_connections         = 300
+wait_timeout            = 600
+max_allowed_packet      = 32M
+thread_cache_size       = 128
+sort_buffer_size        = 128M
+bulk_insert_buffer_size = 128M
+tmp_table_size          = 32M
+max_heap_table_size     = 32M
+innodb_log_file_size    = 2G
+
+# Logging
+# warning log-basename is defined later for replication
+# some log option may be ignored.
+# see: https://mariadb.com/kb/en/mysqld-options/#-log-basename
+# log_error = /var/log/mysql/error.log
+log_slow_query
+log_slow_query_file    = mariadb-slow.log
+log_slow_query_time    = 2
+log_slow_verbosity     = full
+
+# Character sets
+character-set-server = utf8mb4
+collation-server     = utf8mb4_uca1400_ai_ci
+old_mode = ''
+
+# InnoDB
+# InnoDB is enabled by default with a 10MB datafile in /var/lib/mysql/.
+# Read the manual for more InnoDB related options. There are many!
+innodb_buffer_pool_size = 40G
+
+# Replication
+server-id = 1
+log-basename = mariadb
+
+log_bin
+expire_logs_days = 5
+max_binlog_size = 100M
+binlog_format = MIXED
+# the following permits to simplify the process of moving a replica to a
+# primary node role by ensuring that replication is not started on primary node
+

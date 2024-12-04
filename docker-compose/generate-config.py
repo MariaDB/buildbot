@@ -29,7 +29,7 @@ START_TEMPLATE = """
 ---
 services:
   mariadb:
-    image: mariadb:10.11
+    image: mariadb:10.11.10
     restart: unless-stopped
     container_name: mariadb
     hostname: mariadb
@@ -41,10 +41,10 @@ services:
       - MARIADB_AUTO_UPGRADE=1
     network_mode: host
     healthcheck:
-      test: ['CMD', "mariadb-admin", "--password=password", "--protocol", "tcp", "ping"]
+      test: ['CMD', "healthcheck.sh", "--connect", "--innodb_initialized"]
     volumes:
-      - ./mariadb:/var/lib/mysql:rw
-      - ./mariadb.cnf:/etc/mysql/conf.d/mariadb.cnf:ro
+      - /srv/mariadb:/var/lib/mysql:rw
+      - ./mariadb-config/{config_path}/mariadb.cnf:/etc/mysql/conf.d/mariadb.cnf:ro
     logging:
       driver: journald
       options:
@@ -194,6 +194,7 @@ def main(args):
             start_template.format(
                 port=master_web_port,
                 environment="" if args.env == "prod" else "dev_",
+                config_path=args.env,
             )
         )
         port = starting_port
