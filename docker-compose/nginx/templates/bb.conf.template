@@ -57,10 +57,6 @@ server {
 
 	#FIXME: CrossReference not in DEV.
 	# Cross-reference
-	location /cr/static {
-		alias   /srv/cr/static;
-	}
-
 	location /cr/ {
 		proxy_pass http://${NGINX_CR_HOST_WG_ADDR};
 	}
