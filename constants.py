@@ -21,6 +21,23 @@ BRANCHES_MAIN = [
     "main",
 ]
 
+# Branches with special prefixes that invoke a BB run.
+BB_TEST_BRANCHES = [
+    "bb-*",
+    "st-*",
+    "prot-*",
+    "refs/pull/*",
+    "preview-1[0-9].*",
+    "jpsn-*",
+]
+
+# A list of all branches that invoke a buildbot run.
+ALL_BB_TEST_BRANCHES = BRANCHES_MAIN + BB_TEST_BRANCHES
+
+STAGING_PROT_TEST_BRANCHES = [
+    "prot-st-*",
+]
+
 # Defines what builders report status to GitHub
 GITHUB_STATUS_BUILDERS = [
     "aarch64-macos-compile-only",
