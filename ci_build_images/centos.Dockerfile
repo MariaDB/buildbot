@@ -13,6 +13,8 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     && source /etc/os-release \
     && ARCH=$(rpm --query --queryformat='%{ARCH}' rpm) \
     && case "$PLATFORM_ID" in \
+        "platform:el10") \
+           ;& \
         "platform:el9") \
           # centosstream9/almalinux9/rockylinux9 \
           dnf -y install epel-release; \
@@ -59,7 +61,6 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     # not sure if needed \
     # perl \
     ${extra} \
-    asio-devel \
     bzip2 \
     bzip2-devel \
     ccache \
@@ -70,9 +71,6 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     eigen3-devel \
     flex \
     galera-4 \
-    java-1.8.0-openjdk-devel \
-    java-1.8.0-openjdk \
-    jemalloc-devel \
     libcurl-devel \
     libevent-devel \
     libffi-devel \
@@ -91,6 +89,16 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     wget \
     which \
     xz-devel \
+    && if [ "$PLATFORM_ID" = "platform:el10" ]; then \
+         dnf -y install liburing-devel \
+           java-21-openjdk-devel \
+           java-21-openjdk ; \
+       else \
+         dnf -y install asio-devel \
+           java-1.8.0-openjdk-devel \
+           java-1.8.0-openjdk \
+           jemalloc-devel; \
+       fi \
     && if [ "$ID" != "openeuler" ]; then dnf -y install yum-utils; fi \
     && if [ "$(uname -m)" = "x86_64" ]; then dnf -y install libpmem-devel; fi \
     && dnf clean all \

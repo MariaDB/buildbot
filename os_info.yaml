@@ -20,6 +20,13 @@ centos-stream9:
     - aarch64
     - ppc64le
   type: rpm
+centos-stream10:
+  version_name: 10
+  arch:
+    - amd64
+    - aarch64
+    - ppc64le
+  type: rpm
 debian-11:
   version_name: bullseye
   arch:
