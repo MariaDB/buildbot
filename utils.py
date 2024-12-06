@@ -17,6 +17,7 @@ from buildbot.process.results import FAILURE
 from buildbot.process.workerforbuilder import AbstractWorkerForBuilder
 from buildbot.worker import AbstractWorker
 from constants import (
+    ALL_BB_TEST_BRANCHES,
     BUILDERS_AUTOBAKE,
     BUILDERS_BIG,
     BUILDERS_ECO,
@@ -28,6 +29,7 @@ from constants import (
     MTR_ENV,
     RELEASE_BRANCHES,
     SAVED_PACKAGE_BRANCHES,
+    STAGING_PROT_TEST_BRANCHES,
 )
 
 private_config = {"private": {}}
@@ -259,12 +261,16 @@ EOF
     )
 
 
-def staging_branch_fn(branch: str) -> bool:
-    return fnmatch.fnmatch(branch, "prot-st-*")
-
-
 def fnmatch_any(branch: str, patterns: list[str]) -> bool:
     return any(fnmatch.fnmatch(branch, pattern) for pattern in patterns)
+
+
+def upstream_branch_fn(branch):
+    return fnmatch_any(branch, ALL_BB_TEST_BRANCHES)
+
+
+def staging_branch_fn(branch: str) -> bool:
+    return fnmatch_any(branch, STAGING_PROT_TEST_BRANCHES)
 
 
 # Priority filter based on saved package branches
