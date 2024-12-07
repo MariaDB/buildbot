@@ -7,11 +7,16 @@ buildername=${2}
 
 builderarch=${buildername%%-*}
 
-image=mariadb-${tarbuildnum}-${builderarch}
+image=mariadb-${tarbuildnum}
+
 if [[ "$buildername" = *-rhel-9-rpm-autobake ]]; then
   image=${image}-ubi
 fi
 
+if ! buildah manifest exists "$image"; then
+	echo "No manifest we can't test"
+	exit
+fi
 #
 # TEST Image
 #
