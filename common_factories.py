@@ -457,6 +457,7 @@ def addS3Tests(factory, mtrDbPool):
     factory.addStep(
         steps.MasterShellCommand(
             name="Create minio S3 bucket",
+            alwaysRun=True,
             command=[
                 "mc",
                 "mb",
