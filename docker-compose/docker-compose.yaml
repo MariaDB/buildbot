@@ -426,6 +426,7 @@ services:
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
+      - /srv/buildbot/packages:/srv/buildbot/packages
     entrypoint:
       - /bin/bash
       - -c
@@ -540,6 +541,7 @@ services:
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
+      - /srv/buildbot/packages:/srv/buildbot/packages
     entrypoint:
       - /bin/bash
       - -c
