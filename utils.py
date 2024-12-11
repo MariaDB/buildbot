@@ -571,7 +571,7 @@ def hasS3(props):
     builderName = str(props.getProperty("buildername"))
 
     for b in builders_s3_mtr:
-        if builderName in b:
+        if builderName == b:
             return True
     return False
 
