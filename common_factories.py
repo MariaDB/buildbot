@@ -454,6 +454,11 @@ def addGaleraTests(factory, mtrDbPool):
 
 
 def addS3Tests(factory, mtrDbPool):
+    runS3 = (
+        lambda props: hasS3(props)
+        and props.hasProperty("compile_step_completed")
+        and "10.5" not in str(props.getProperty("master_branch"))
+    )
     factory.addStep(
         steps.MasterShellCommand(
             name="Create minio S3 bucket",
@@ -463,8 +468,7 @@ def addS3Tests(factory, mtrDbPool):
                 "mb",
                 util.Interpolate("minio/%(prop:buildername)s-%(prop:buildnumber)s"),
             ],
-            doStepIf=lambda props: hasS3(props)
-            and props.hasProperty("compile_step_completed"),
+            doStepIf=runS3,
         )
     )
     factory.addStep(
@@ -502,8 +506,7 @@ def addS3Tests(factory, mtrDbPool):
                 "S3_USE_HTTP": "OFF",
                 "S3_SSL_NO_VERIFY": "ON",
             },
-            doStepIf=lambda props: hasS3(props)
-            and props.hasProperty("compile_step_completed"),
+            doStepIf=runS3,
         )
     )
 
@@ -517,8 +520,7 @@ def addS3Tests(factory, mtrDbPool):
                 "--force",
                 util.Interpolate("minio/%(prop:buildername)s-%(prop:buildnumber)s"),
             ],
-            doStepIf=lambda props: hasS3(props)
-            and props.hasProperty("compile_step_completed"),
+            doStepIf=runS3,
         )
     )
 
@@ -534,8 +536,7 @@ def addS3Tests(factory, mtrDbPool):
                     jobs=util.Property("jobs", default="$(getconf _NPROCESSORS_ONLN)"),
                 ),
             ],
-            doStepIf=lambda props: hasS3(props)
-            and props.hasProperty("compile_step_completed"),
+            doStepIf=runS3,
         )
     )
     return factory
