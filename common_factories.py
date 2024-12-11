@@ -496,7 +496,7 @@ def addS3Tests(factory, mtrDbPool):
             dbpool=mtrDbPool,
             autoCreateTables=True,
             env={
-                "S3_HOST_NAME": "135.181.42.57",
+                "S3_HOST_NAME": "minio.mariadb.org",
                 "S3_PORT": "443",
                 "S3_ACCESS_KEY": util.Interpolate("%(secret:minio_access_key)s"),
                 "S3_SECRET_KEY": util.Interpolate("%(secret:minio_secret_key)s"),
@@ -504,7 +504,7 @@ def addS3Tests(factory, mtrDbPool):
                     "%(prop:buildername)s-%(prop:buildnumber)s"
                 ),
                 "S3_USE_HTTP": "OFF",
-                "S3_SSL_NO_VERIFY": "ON",
+                "S3_PROTOCOL_VERSION": "Path",
             },
             doStepIf=runS3,
         )
