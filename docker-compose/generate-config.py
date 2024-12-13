@@ -56,6 +56,8 @@ services:
     container_name: crossbar
     hostname: crossbar
     network_mode: host
+    volumes:
+      - ./crossbar/{config_path}/config.json:/node/.crossbar/config.json
     logging:
       driver: journald
       options:
