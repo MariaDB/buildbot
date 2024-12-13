@@ -106,7 +106,7 @@ jobs:
 
       - name: ghcr.io - backup Production tag
         if: ${{ env.DEPLOY_IMAGES == 'true' && env.MAIN_BRANCH =='true' }}
-        run:
+        run: |
           for image in master master-web; do
             msg="Create backup for ${image} on ghcr.io"
             line="${msg//?/=}"
@@ -140,7 +140,7 @@ jobs:
 
       - name: quay.io - backup Production tag
         if: ${{ env.DEPLOY_IMAGES == 'true' && env.MAIN_BRANCH =='true' }}
-        run:
+        run: |
           for image in master master-web; do
             msg="Create backup for ${image} on quay.io"
             line="${msg//?/=}"
