@@ -50,7 +50,7 @@
                                 "auto_ping_timeout": 80000
                             }
                         }
-                        
+
                     },
                     "web": {
                         "paths": {
