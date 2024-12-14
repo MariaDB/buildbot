@@ -68,6 +68,7 @@ fi
 command -v python3 >/dev/null ||
   err "python3 command not found"
 
+. ./docker-compose/.env
 python3 define_masters.py
 # not checking libvirt config file (//TEMP we need to find a solution
 # to not check ssh connection)

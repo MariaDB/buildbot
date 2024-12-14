@@ -1,14 +1,76 @@
 builders:
-- aarch64-centos-stream9
-- aarch64-debian-11
-- aarch64-debian-12
-- aarch64-debian-sid
-- aarch64-rhel-8
-- aarch64-rhel-9
-- aarch64-ubuntu-2004
-- aarch64-ubuntu-2204
+  aarch64:
+    centos-stream9:
+      image_tag: centos-stream9
+      tags:
+      - release_packages
+      - autobake
+    debian-11:
+      image_tag: debian-11
+      tags:
+      - release_packages
+      - autobake
+    debian-12:
+      image_tag: debian-12
+      tags:
+      - release_packages
+      - autobake
+    debian-sid:
+      image_tag: debian-sid
+      tags:
+      - autobake
+      - bleeding_edge
+    fedora-39:
+      image_tag: fedora-39
+      tags:
+      - autobake
+      - bleeding_edge
+    fedora-40:
+      image_tag: fedora-40
+      tags:
+      - autobake
+      - bleeding_edge
+    fedora-41:
+      image_tag: fedora-41
+      tags:
+      - autobake
+      - bleeding_edge
+    openeuler-2403:
+      image_tag: openeuler-2403
+      tags:
+      - autobake
+      - bleeding_edge
+    rhel-8:
+      image_tag: rhel-8
+      tags:
+      - autobake
+      - bleeding_edge
+    rhel-9:
+      image_tag: rhel-9
+      tags:
+      - autobake
+      - bleeding_edge
+    ubuntu-2004:
+      image_tag: ubuntu-2004
+      tags:
+      - autobake
+      - bleeding_edge
+    ubuntu-2204:
+      image_tag: ubuntu-2204
+      tags:
+      - autobake
+      - bleeding_edge
+    ubuntu-2404:
+      image_tag: ubuntu-2404
+      tags:
+      - autobake
+      - bleeding_edge
+    ubuntu-2410:
+      image_tag: ubuntu-2410
+      tags:
+      - autobake
+      - bleeding_edge
 log_name: master-docker-aarch64-0.log
-port: 9998
 workers:
 - aarch64-bbw1
 - aarch64-bbw2

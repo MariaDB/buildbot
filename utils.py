@@ -7,6 +7,9 @@ from typing import Any, Tuple
 import docker
 from pyzabbix import ZabbixAPI
 
+# TODO(cvicentiu) remove
+# from builder import DockerBuilder, WorkerMachine
+
 from buildbot.buildrequest import BuildRequest
 from buildbot.interfaces import IProperties
 from buildbot.master import BuildMaster
@@ -83,7 +86,7 @@ def createWorker(
     ],
 ) -> Tuple[str, str, worker.DockerLatentWorker]:
     worker_name = f"{worker_name_prefix}{worker_id}-docker"
-    name = f"{worker_name}{worker_type}{worker_name_suffix}"
+    name = f"{worker_name}-{worker_type}{worker_name_suffix}"
 
     # TODO(cvicentiu) Remove this list when refactoring YAML.
     b_name = worker_name_prefix
@@ -668,3 +671,17 @@ def mtrEnv(props: IProperties) -> dict:
                 mtr_add_env[key] = value
         return mtr_add_env
     return MTR_ENV
+
+
+# TODO(cvicentiu) remove
+# def create_latent_workers(machine: WorkerMachine,
+#                           builders: list[DockerBuilder]
+#                           ) -> list[worker.DockerLatentWorker]:
+#     result = []
+#     for builder in builders:
+#         worker = createWorker(machine.name,
+#                               '',
+#                               builder.distro_name,
+#                               builder.image)
+#         result.append(worker)
+#     return result
