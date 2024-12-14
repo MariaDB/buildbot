@@ -1,12 +1,39 @@
 builders:
-- aarch64-centos-stream9
-- aarch64-debian-11
-- aarch64-debian-12
-- aarch64-debian-sid
-- aarch64-rhel-8
-- aarch64-rhel-9
-- aarch64-ubuntu-2004
-- aarch64-ubuntu-2204
+  aarch64:
+    centos-stream9:
+      tags:
+        - release_packages
+        - autobake
+        - bleeding-edge
+    debian-11:
+      tags:
+        - release_packages
+        - autobake
+    debian-12:
+      tags:
+        - release_packages
+        - autobake
+    debian-sid:
+      tags:
+        - release_packages
+        - autobake
+        - bleeding-edge
+    rhel-8:
+      tags:
+        - release_packages
+        - autobake
+    rhel-9:
+      tags:
+        - release_packages
+        - autobake
+    ubuntu-2004:
+      tags:
+        - release_packages
+        - autobake
+    ubuntu-2204:
+      tags:
+        - release_packages
+        - autobake
 log_name: master-docker-aarch64-0.log
 port: 9998
 workers:

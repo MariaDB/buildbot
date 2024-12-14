@@ -66,9 +66,11 @@ fi
 command -v python3 >/dev/null ||
   err "python3 command not found"
 
+. ./docker-compose/.env
 python3 define_masters.py
 echo "Checking master.cfg"
 $RUNC run -i -v "$(pwd):/srv/buildbot/master" \
+  --env-file ./docker-compose/.env \
   -w /srv/buildbot/master \
   $IMAGE \
   buildbot checkconfig master.cfg
@@ -85,6 +87,7 @@ for dir in autogen/* \
   master-web; do
   echo "Checking $dir/master.cfg"
   $RUNC run -i -v "$(pwd):/srv/buildbot/master" \
+    --env-file ./docker-compose/.env
     -w /srv/buildbot/master \
     $IMAGE \
     bash -c "buildbot checkconfig $dir/master.cfg"
