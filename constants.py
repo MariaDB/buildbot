@@ -66,6 +66,7 @@ builders_galera_mtr = [
     "ppc64le-ubuntu-2204",
     "ppc64le-ubuntu-2404",
     "ppc64le-rhel-9",
+    "x86-debian-12",
 ]
 builders_s3_mtr = [
     "aarch64-ubuntu-2004-debug",
