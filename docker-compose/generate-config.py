@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 config = {"private": {}}
 exec(open("../master-private.cfg").read(), config, {})
 
+BUILDBOT_STOP_GRACE_PERIOD = "5m"
+
 MASTER_DIRECTORIES = [
     "master-nonlatent",
     "master-libvirt",
@@ -91,6 +93,7 @@ services:
     image: quay.io/mariadb-foundation/bb-master:{environment}master-web
     restart: unless-stopped
     container_name: master-web
+    stop_grace_period: {buildbot_stop_grace_period}
     hostname: master-web
     volumes:
       - ./logs:/var/log/buildbot
@@ -110,6 +113,7 @@ DOCKER_COMPOSE_TEMPLATE = """
     image: quay.io/mariadb-foundation/bb-master:{environment}master
     restart: unless-stopped
     container_name: {master_name}
+    stop_grace_period: {buildbot_stop_grace_period}
     hostname: {master_name}
     {volumes}
     entrypoint:
@@ -202,6 +206,7 @@ def main(args):
                 port=master_web_port,
                 environment="" if args.env == "prod" else "dev_",
                 config_path=args.env,
+                buildbot_stop_grace_period=BUILDBOT_STOP_GRACE_PERIOD,
             )
         )
         port = starting_port
@@ -216,6 +221,7 @@ def main(args):
                 mc_host=mc_host,
                 volumes=generate_volumes(master_volumes[master_name]),
                 environment="" if args.env == "prod" else "dev_",
+                buildbot_stop_grace_period=BUILDBOT_STOP_GRACE_PERIOD,
             )
             port += 1
 

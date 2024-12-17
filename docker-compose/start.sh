@@ -41,4 +41,4 @@ fi
 # loop for debug
 # while true; do date && sleep 30; done
 
-buildbot start --nodaemon
+exec buildbot start --nodaemon
