@@ -49,6 +49,7 @@ services:
       - /srv/buildbot/packages:/srv/buildbot/packages:ro
       - /srv/buildbot/galera_packages:/srv/buildbot/galera_packages:ro
       - /srv/buildbot/helper_files:/srv/buildbot/helper_files:ro
+      - /srv/buildbot/cloud-init:/srv/buildbot/cloud-init:ro
       - ./certbot/www/:/var/www/certbot/:ro
       - ./certbot/ssl/:/etc/nginx/ssl/:ro
     environment:

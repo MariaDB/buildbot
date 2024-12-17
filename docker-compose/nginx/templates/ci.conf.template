@@ -28,6 +28,12 @@ server {
 	location /galera {
 		alias /srv/buildbot/galera_packages;
 	}
+
+	location /cloud-init {
+		alias /srv/buildbot/cloud-init;
+		autoindex off;
+	}
+
 	location = /favicon.ico {
 		access_log off;
 	}
