@@ -30,4 +30,4 @@ while ! nc -z 127.0.0.1 8080; do
 done
 echo "Crossbar started"
 buildbot upgrade-master /srv/buildbot/master/master-web
-buildbot start --nodaemon
+exec buildbot start --nodaemon

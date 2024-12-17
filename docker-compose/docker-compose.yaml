@@ -83,6 +83,7 @@ services:
       - PORT=8010
       - TITLE
       - TITLE_URL
+    stop_grace_period: 5m
     hostname: master-web
     volumes:
       - ./logs:/var/log/buildbot
@@ -119,6 +120,7 @@ services:
       - PORT=9996
       - TITLE
       - TITLE_URL
+    stop_grace_period: 5m
     hostname: master-nonlatent
     volumes:
       - ./logs:/var/log/buildbot
@@ -158,6 +160,7 @@ services:
       - PORT=9997
       - TITLE
       - TITLE_URL
+    stop_grace_period: 5m
     hostname: master-libvirt
     volumes:
       - ./logs:/var/log/buildbot
@@ -196,6 +199,7 @@ services:
       - PORT=9998
       - TITLE
       - TITLE_URL
+    stop_grace_period: 5m
     hostname: autogen_aarch64-master-0
     volumes:
       - ./logs:/var/log/buildbot
@@ -234,6 +238,7 @@ services:
       - PORT=9999
       - TITLE
       - TITLE_URL
+    stop_grace_period: 5m
     hostname: autogen_amd64-master-0
     volumes:
       - ./logs:/var/log/buildbot
@@ -272,6 +277,7 @@ services:
       - PORT=10000
       - TITLE
       - TITLE_URL
+    stop_grace_period: 5m
     hostname: autogen_amd64-master-1
     volumes:
       - ./logs:/var/log/buildbot
@@ -310,6 +316,7 @@ services:
       - PORT=10001
       - TITLE
       - TITLE_URL
+    stop_grace_period: 5m
     hostname: autogen_ppc64le-master-0
     volumes:
       - ./logs:/var/log/buildbot
@@ -348,6 +355,7 @@ services:
       - PORT=10002
       - TITLE
       - TITLE_URL
+    stop_grace_period: 5m
     hostname: autogen_s390x-master-0
     volumes:
       - ./logs:/var/log/buildbot
@@ -386,6 +394,7 @@ services:
       - PORT=10003
       - TITLE
       - TITLE_URL
+    stop_grace_period: 5m
     hostname: autogen_x86-master-0
     volumes:
       - ./logs:/var/log/buildbot
@@ -424,6 +433,7 @@ services:
       - PORT=10004
       - TITLE
       - TITLE_URL
+    stop_grace_period: 5m
     hostname: master-docker-nonstandard
     volumes:
       - ./logs:/var/log/buildbot
@@ -463,6 +473,7 @@ services:
       - PORT=10005
       - TITLE
       - TITLE_URL
+    stop_grace_period: 5m
     hostname: master-galera
     volumes:
       - ./logs:/var/log/buildbot
@@ -501,6 +512,7 @@ services:
       - PORT=10006
       - TITLE
       - TITLE_URL
+    stop_grace_period: 5m
     hostname: master-protected-branches
     volumes:
       - ./logs:/var/log/buildbot
@@ -539,6 +551,7 @@ services:
       - PORT=10007
       - TITLE
       - TITLE_URL
+    stop_grace_period: 5m
     hostname: master-docker-nonstandard-2
     volumes:
       - ./logs:/var/log/buildbot
@@ -578,6 +591,7 @@ services:
       - PORT=10008
       - TITLE
       - TITLE_URL
+    stop_grace_period: 5m
     hostname: master-bintars
     volumes:
       - ./logs:/var/log/buildbot
