@@ -472,28 +472,6 @@ def hasEco(props):
     return False
 
 
-def hasCompat(step):
-    builderName = str(step.getProperty("buildername"))
-
-    # For s390x and the listed distros there are no compat files
-    if any(
-        builderName.find(sub) != -1
-        for sub in {
-            "s390x",
-            "fedora",
-            "alma",
-            "rocky",
-            "openeuler",
-            "suse-15",
-            "sles-15",
-        }
-    ):
-        return False
-    if "rhel" in builderName or "centos" in builderName:
-        return step.getProperty("rpm_type")[-1] in ["7", "8"]
-    return True
-
-
 def hasDockerLibrary(step):
     # Can only build with a saved package
     if not savePackage(step):
