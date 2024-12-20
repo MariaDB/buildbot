@@ -510,7 +510,7 @@ def waitIfStaging(step: BuildStep) -> bool:
 def hasAutobake(step: BuildStep) -> bool:
     builder_name = step.getProperty("buildername")
     for b in BUILDERS_AUTOBAKE:
-        if builder_name in b:
+        if builder_name == b:
             return True
     return False
 
@@ -518,7 +518,7 @@ def hasAutobake(step: BuildStep) -> bool:
 def hasGalera(step: BuildStep) -> bool:
     builder_name = step.getProperty("buildername")
     for b in BUILDERS_GALERA_MTR:
-        if builder_name in b:
+        if builder_name == b:
             return True
     return False
 
