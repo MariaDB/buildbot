@@ -562,7 +562,7 @@ def hasGalera(props):
     builderName = str(props.getProperty("buildername"))
 
     for b in builders_galera_mtr:
-        if builderName in b:
+        if builderName == b:
             return True
     return False
 
