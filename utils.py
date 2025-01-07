@@ -553,7 +553,7 @@ def waitIfStaging(step):
 def hasAutobake(props):
     builderName = props.getProperty("buildername")
     for b in builders_autobake:
-        if builderName in b:
+        if builderName == b:
             return True
     return False
 
@@ -580,7 +580,7 @@ def hasBigtest(props):
     builderName = str(props.getProperty("buildername"))
 
     for b in builders_big:
-        if builderName in b:
+        if builderName == b:
             return True
     return False
 
