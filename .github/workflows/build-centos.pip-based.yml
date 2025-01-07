@@ -2,6 +2,9 @@ name: Build CentOS:pip based images
 
 on:
   push:
+    branches:
+      - 'main'
+      - 'dev'
     paths:
       - 'ci_build_images/centos.Dockerfile'
       - 'ci_build_images/pip.Dockerfile'
