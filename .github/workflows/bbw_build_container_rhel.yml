@@ -3,6 +3,9 @@ name: bbw-build-container-rhel
 
 on:
   push:
+    branches:
+      - 'main'
+      - 'dev'
     paths:
       - 'ci_build_images/buildbot-worker.Dockerfile'
       - .github/workflows/bbw_build_container_rhel.yml

@@ -2,6 +2,9 @@ name: Build Debian:aocc based images
 
 on:
   push:
+    branches:
+      - 'main'
+      - 'dev'
     paths:
       - 'ci_build_images/debian.Dockerfile'
       - 'ci_build_images/aocc.Dockerfile'
