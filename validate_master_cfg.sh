@@ -38,9 +38,11 @@ fi
 case $ENVIRONMENT in
   DEV)
     IMAGE="quay.io/mariadb-foundation/bb-master:dev_master"
+    ENVFILE="docker-compose/.env.dev"
     ;;
   PROD)
     IMAGE="quay.io/mariadb-foundation/bb-master:master"
+    ENVFILE="docker-compose/.env"
     ;;
   *)
     err "Unknown environment: $ENVIRONMENT. Use DEV or PROD."
@@ -69,6 +71,7 @@ command -v python3 >/dev/null ||
 python3 define_masters.py
 echo "Checking master.cfg"
 $RUNC run -i -v "$(pwd):/srv/buildbot/master" \
+  --env-file <(sed "s/='\([^']*\)'/=\1/" $ENVFILE) \
   -w /srv/buildbot/master \
   $IMAGE \
   buildbot checkconfig master.cfg
@@ -85,6 +88,7 @@ for dir in autogen/* \
   master-web; do
   echo "Checking $dir/master.cfg"
   $RUNC run -i -v "$(pwd):/srv/buildbot/master" \
+    --env-file <(sed "s/='\([^']*\)'/=\1/" $ENVFILE) \
     -w /srv/buildbot/master \
     $IMAGE \
     bash -c "cd $dir && buildbot checkconfig master.cfg"

@@ -1,5 +1,5 @@
-private["db_url"] = "mysql://buildmaster:password@localhost/buildbot?max_idle=300&storage_engine=InnoDB"
-private["db_host"] = "localhost"
+private["db_url"] = "mysql://buildmaster:password@127.0.0.1/buildbot?max_idle=300&storage_engine=InnoDB"
+private["db_host"] = "127.0.0.1"
 private["db_user"] = "buildmaster"
 private["db_password"] = "password"
 private["db_mtr_db"] = "buildbot"
@@ -52,6 +52,7 @@ private["worker_pass"]= {
     "bbw1-windows":"1234",
     "bbw2-windows":"1234",
     "bb-rhel8-docker":"1234",
+    "bb-rhel9-docker":"1234",
     "ro-apexis-bbw03-x64": "1234",
     "monty-bbw1-x64": "1234",
     "s390x-rhel8":"1234",
