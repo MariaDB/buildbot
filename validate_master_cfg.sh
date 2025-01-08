@@ -85,5 +85,5 @@ for dir in autogen/* \
     -w "/srv/buildbot/master/" \
     $IMAGE \
     bash -c "buildbot checkconfig $dir/master.cfg"
-  echo -e "done\n"
+  echo "done"
 done
