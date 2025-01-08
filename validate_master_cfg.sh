@@ -70,7 +70,9 @@ command -v python3 >/dev/null ||
 
 python3 define_masters.py
 echo "Checking master.cfg"
+# Port is set by generate-config.py (docker-compose), not present in .env
 $RUNC run -i -v "$(pwd):/srv/buildbot/master" \
+  --env PORT=1234 \
   --env-file <(sed "s/='\([^']*\)'/=\1/" $ENVFILE) \
   -w /srv/buildbot/master \
   $IMAGE \
@@ -88,9 +90,10 @@ for dir in autogen/* \
   master-web; do
   echo "Checking $dir/master.cfg"
   $RUNC run -i -v "$(pwd):/srv/buildbot/master" \
+    --env PORT=1234 \
     --env-file <(sed "s/='\([^']*\)'/=\1/" $ENVFILE) \
-    -w /srv/buildbot/master \
+    -w "/srv/buildbot/master/$dir" \
     $IMAGE \
-    bash -c "cd $dir && buildbot checkconfig master.cfg"
+    buildbot checkconfig master.cfg
   echo -e "done\n"
 done

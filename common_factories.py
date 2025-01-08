@@ -648,7 +648,7 @@ def getRpmAutobakeFactory(mtrDbPool):
                 util.Interpolate(
                     'wget --no-check-certificate -cO ../MariaDB-shared-5.3.%(kw:arch)s.rpm "%(kw:url)s/helper_files/mariadb-shared-5.3-%(kw:arch)s.rpm" && wget -cO ../MariaDB-shared-10.1.%(kw:arch)s.rpm "%(kw:url)s/helper_files/mariadb-shared-10.1-kvm-rpm-%(kw:rpm_type)s-%(kw:arch)s.rpm"',
                     arch=getArch,
-                    url=os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org"),
+                    url=os.environ["ARTIFACTS_URL"],
                     rpm_type=util.Property("rpm_type"),
                 ),
             ],
@@ -736,7 +736,7 @@ EOF
                 echo "module_hotfixes = 1" >> MariaDB.repo
             fi
         """,
-                    url=os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org"),
+                    url=os.environ["ARTIFACTS_URL"],
                 ),
             ]
         )
@@ -761,7 +761,7 @@ EOF
             descriptionDone=util.Interpolate(
                 """
 Repository available with: curl %(kw:url)s/%(prop:tarbuildnum)s/%(prop:buildername)s/MariaDB.repo -o /etc/yum.repos.d/MariaDB.repo""",
-                url=os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org"),
+                url=os.environ["ARTIFACTS_URL"],
             ),
         )
     )
