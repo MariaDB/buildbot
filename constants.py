@@ -45,7 +45,7 @@ BUILDERS_ECO = [
     "amd64-ubuntu-2004-eco-php",
 ]
 
-if os.getenv("ENVIRON") == "DEV":
+if os.environ["ENVIRON"] == "DEV":
     BUILDERS_WORDPRESS = ["amd64-rhel9-wordpress"]
     BUILDERS_DOCKERLIBRARY = ["amd64-rhel9-dockerlibrary"]
 else:

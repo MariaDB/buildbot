@@ -44,7 +44,7 @@ def envFromProperties(envlist: list[str]) -> dict[str, str]:
 
 
 def getScript(scriptname: str) -> steps.ShellCommand:
-    branch = os.getenv("BRANCH", default="main")
+    branch = os.environ["BRANCH"]
     return steps.ShellCommand(
         name=f"fetch_{scriptname}",
         command=[
@@ -61,9 +61,7 @@ def getScript(scriptname: str) -> steps.ShellCommand:
 
 
 # BUILD HELPERS
-MASTER_PACKAGES = os.getenv(
-    "MASTER_PACKAGES_DIR", default="/mnt/autofs/master_packages"
-)
+MASTER_PACKAGES = os.environ["MASTER_PACKAGES_DIR"]
 
 
 # Helper function that creates a worker instance.
@@ -102,7 +100,7 @@ def createWorker(
     base_name = b_name + "-docker" + worker_type
 
     # Set master FQDN - default to wireguard interface
-    fqdn = os.getenv("BUILDMASTER_WG_IP", default="100.64.100.1")
+    fqdn = os.environ["BUILDMASTER_WG_IP"]
     if re.match("aarch64-bbw[1-4]", worker_name):
         fqdn = "buildbot.mariadb.org"
     if "vladbogo" in dockerfile or "quay" in dockerfile:
@@ -165,11 +163,7 @@ def getSourceTarball() -> steps.ShellCommand:
         description="get source tarball",
         descriptionDone="get source tarball...done",
         haltOnFailure=True,
-        env={
-            "ARTIFACTS_URL": os.getenv(
-                "ARTIFACTS_URL", default="https://ci.mariadb.org"
-            )
-        },
+        env={"ARTIFACTS_URL": os.environ["ARTIFACTS_URL"]},
         command=[
             "bash",
             "-ec",
@@ -185,11 +179,7 @@ def saveLogs() -> steps.ShellCommand:
         descriptionDone="save logs...done",
         alwaysRun=True,
         haltOnFailure=True,
-        env={
-            "ARTIFACTS_URL": os.getenv(
-                "ARTIFACTS_URL", default="https://ci.mariadb.org"
-            )
-        },
+        env={"ARTIFACTS_URL": os.environ["ARTIFACTS_URL"]},
         command=[
             "bash",
             "-ec",
@@ -234,7 +224,7 @@ def uploadDebArtifacts() -> steps.ShellCommand:
             util.Interpolate(
                 """
     artifacts_url="""
-                + os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org")
+                + os.environ["ARTIFACTS_URL"]
                 + """
     . /etc/os-release
     if [[ $ID == "debian" ]]; then
@@ -265,7 +255,7 @@ EOF
         descriptionDone=util.Interpolate(
             """
             Use """
-            + os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org")
+            + os.environ["ARTIFACTS_URL"]
             + """/%(prop:tarbuildnum)s/%(prop:buildername)s/mariadb.sources for testing.
             """
         ),
@@ -364,7 +354,7 @@ echo '<!DOCTYPE html>
 <html>
 <body>' >> {base_path}/mysql_logs.html
 
-echo '<a href=" {os.getenv('ARTIFACTS_URL', default='https://ci.mariadb.org')}/%(prop:tarbuildnum)s/logs/%(prop:buildername)s/">logs (mariadbd.gz + var.tar.gz)</a><br>' >> {base_path}/mysql_logs.html
+echo '<a href="{os.environ['ARTIFACTS_URL']}/%(prop:tarbuildnum)s/logs/%(prop:buildername)s/">logs (mariadbd.gz + var.tar.gz)</a><br>' >> {base_path}/mysql_logs.html
 
 echo '</body>
 </html>' >> {base_path}/mysql_logs.html"""
