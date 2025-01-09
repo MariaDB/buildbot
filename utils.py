@@ -283,6 +283,8 @@ def nextBuild(builder: Builder, requests: list[BuildRequest]) -> str:
             request.getSubmitTime(),
         )
 
+    return sorted(requests, build_request_sort_key)[0]
+
 
 def canStartBuild(
     builder: Builder, wfb: AbstractWorkerForBuilder, request: BuildRequest
