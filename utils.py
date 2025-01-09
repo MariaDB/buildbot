@@ -271,7 +271,7 @@ def fnmatch_any(branch: str, patterns: list[str]) -> bool:
 
 
 # Priority filter based on saved package branches
-def nextBuild(builder: Builder, requests: list[BuildRequest]) -> str:
+def nextBuild(builder: Builder, requests: list[BuildRequest]) -> BuildRequest:
     def build_request_sort_key(request: BuildRequest):
         branch = request.sources[""].branch
         # Booleans are sorted False first.
@@ -283,7 +283,7 @@ def nextBuild(builder: Builder, requests: list[BuildRequest]) -> str:
             request.getSubmitTime(),
         )
 
-    return sorted(requests, build_request_sort_key)[0]
+    return min(requests, key=build_request_sort_key)
 
 
 def canStartBuild(
