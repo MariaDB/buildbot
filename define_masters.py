@@ -27,7 +27,6 @@ for os_name in OS_INFO:
 if os.path.exists(BASE_PATH):
     shutil.rmtree(BASE_PATH)
 
-IDX = 0
 for arch in platforms:
     # Create the directory for the architecture that is handled by each master
     # If for a given architecture there are more than "max_builds" builds,
@@ -47,13 +46,6 @@ for arch in platforms:
         master_config["workers"] = config["private"]["master-variables"]["workers"][
             arch
         ]
-
-        starting_port = int(
-            os.getenv(
-                "PORT", default=config["private"]["master-variables"]["starting_port"]
-            )
-        )
-        master_config["port"] = starting_port + IDX
         master_config["log_name"] = (
             "master-docker-" + arch + "-" + str(master_id) + ".log"
         )
@@ -69,5 +61,4 @@ for arch in platforms:
         )
         with open(dir_path + "/buildbot.tac", mode="w", encoding="utf-8") as f:
             f.write(buildbot_tac)
-        IDX += 1
     print(arch, len(master_config["builders"]))
