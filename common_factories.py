@@ -23,9 +23,9 @@ from utils import (
     hasDockerLibrary,
     hasEco,
     hasFailed,
-    hasFiles,
     hasGalera,
     hasInstall,
+    hasPackagesGenerated,
     hasRpmLint,
     hasS3,
     hasUpgrade,
@@ -755,7 +755,7 @@ EOF
 """
             ),
             doStepIf=(
-                lambda step: hasFiles(step)
+                lambda step: hasPackagesGenerated(step)
                 and savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
             ),
             descriptionDone=util.Interpolate(
@@ -797,7 +797,7 @@ Repository available with: curl %(kw:url)s/%(prop:tarbuildnum)s/%(prop:builderna
             doStepIf=(
                 lambda step: hasInstall(step)
                 and savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
-                and hasFiles(step)
+                and hasPackagesGenerated(step)
             ),
         )
     )
@@ -816,7 +816,7 @@ Repository available with: curl %(kw:url)s/%(prop:tarbuildnum)s/%(prop:builderna
             doStepIf=(
                 lambda step: hasUpgrade(step)
                 and savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
-                and hasFiles(step)
+                and hasPackagesGenerated(step)
             ),
         )
     )

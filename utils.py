@@ -207,7 +207,7 @@ def createDebRepo() -> steps.ShellCommand:
             ),
         ],
         doStepIf=(
-            lambda step: hasFiles(step)
+            lambda step: hasPackagesGenerated(step)
             and savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
         ),
     )
@@ -249,7 +249,7 @@ EOF
             ),
         ],
         doStepIf=(
-            lambda step: hasFiles(step)
+            lambda step: hasPackagesGenerated(step)
             and savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
         ),
         descriptionDone=util.Interpolate(
@@ -444,7 +444,7 @@ def dockerfile(props: IProperties) -> str:
 
 
 # checks if the list of files is empty
-def hasFiles(step: BuildStep) -> bool:
+def hasPackagesGenerated(step: BuildStep) -> bool:
     return len(step.getProperty("packages")) >= 1
 
 
