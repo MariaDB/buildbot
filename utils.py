@@ -322,7 +322,7 @@ def ls2string(rc: int, stdout: str, stderr: str) -> dict[str, str]:
     ls_filenames = []
     for line in stdout.strip().split("\n"):
         line = line.strip()
-        if not line:
+        if line:
             ls_filenames.append(line)
 
     return {"packages": " ".join(ls_filenames)}
