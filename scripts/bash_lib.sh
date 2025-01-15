@@ -679,6 +679,11 @@ collect_dependencies() {
   # Spider_package_list variable does not exist for RPM upgrades.
   set +u
   for p in ${package_list} ${spider_package_list} ; do
+    # TEMP: Skip debuginfo packages as ldd is not reliable. See MDBF-887
+    if [[ "$p" =~ -debuginfo$ ]]; then
+      continue
+    fi
+
     if [[ "$p" =~ columnstore ]] ; then
       suffix="columnstore"
     else
