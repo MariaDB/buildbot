@@ -56,30 +56,32 @@ def bigtestBuilders(props: IProperties) -> list[str]:
     return []
 
 
-@util.renderer
-def installBuilders(props: IProperties) -> list[str]:
-    builder_name = props.getProperty("parentbuildername")
-    for b in BUILDERS_INSTALL:
-        if builder_name in b:
-            builders = [b]
-            if "rhel" in builder_name:
+def getBuilderNames(builderName: str, builders_list: list[str]) -> list[str]:
+    builders = []
+    for b in builders_list:
+        if builderName in b:
+            builders.append(b)
+            if "rhel" in builderName:
                 builders.append(b.replace("rhel", "almalinux"))
                 builders.append(b.replace("rhel", "rockylinux"))
-            return builders
-    return []
+            if "sles-1505" in builderName or "opensuse-1505" in builderName:
+                builders.append(b.replace("1505", "1506"))
+            break
+    return builders
+
+
+@util.renderer
+def installBuilders(props: IProperties) -> list[str]:
+    builderName = str(props.getProperty("parentbuildername"))
+
+    return getBuilderNames(builderName, builders_install)
 
 
 @util.renderer
 def upgradeBuilders(props: IProperties) -> list[str]:
-    builder_name = props.getProperty("parentbuildername")
-    builders = []
-    for b in BUILDERS_UPGRADE:
-        if builder_name in b:
-            if "rhel" in builder_name:
-                builders.append(b.replace("rhel", "almalinux"))
-                builders.append(b.replace("rhel", "rockylinux"))
-            builders.append(b)
-    return builders
+    builderName = str(props.getProperty("parentbuildername"))
+
+    return getBuilderNames(builderName, builders_upgrade)
 
 
 @util.renderer

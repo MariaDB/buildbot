@@ -167,14 +167,15 @@ SUPPORTED_PLATFORMS["10.11"] = [
     "amd64-debian-12-debug-embedded",
     "amd64-fedora-40",
     "amd64-fedora-41",
-    "amd64-opensuse-1506",
-    "amd64-sles-1506",
     "amd64-ubuntu-2404",
     "ppc64le-ubuntu-2404",
-    "s390x-sles-1506",
     "s390x-ubuntu-2404",
     "ppc64le-debian-12",
 ]
+# For 10.11 when 1505 goes EOL
+#   "amd64-opensuse-1506",
+#   "amd64-sles-1506",
+#   "s390x-sles-1506",
 SUPPORTED_PLATFORMS["10.11"] += SUPPORTED_PLATFORMS["10.10"]
 
 SUPPORTED_PLATFORMS["11.0"] = SUPPORTED_PLATFORMS["10.11"].copy()
