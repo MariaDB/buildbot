@@ -50,6 +50,7 @@ RUN zypper -n update \
     liblz4-devel \
     libopenssl-3-devel \
     liburing2-devel \
+    libxml2-devel \
     pam-devel \
     pcre2-devel \
     perl-Net-SSLeay \
