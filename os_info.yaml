@@ -104,12 +104,6 @@ rockylinux-9:
     - amd64
   type: rpm
   install_only: True
-sles-1505:
-  version_name: 15.5
-  arch:
-    - amd64
-# TEMP - currently short on hardware - s390x
-  type: rpm
 sles-1506:
   version_name: 15.6
   arch:
