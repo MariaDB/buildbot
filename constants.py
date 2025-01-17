@@ -143,11 +143,9 @@ SUPPORTED_PLATFORMS["10.5"] += [
 SUPPORTED_PLATFORMS["10.6"] += [
     "aarch64-ubuntu-2204",
     "amd64-opensuse-1505",
-    "amd64-sles-1505",
     "amd64-ubuntu-2204",
     "ppc64le-ubuntu-2204",
     "s390x-ubuntu-2204",
-    "s390x-sles-1505",
     "x86-debian-12",
 ]
 
