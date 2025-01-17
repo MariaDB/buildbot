@@ -66,11 +66,6 @@ openeuler-2403:
     - amd64
     - aarch64
   type: rpm
-opensuse-1505:
-  version_name: 155
-  arch:
-    - amd64
-  type: rpm
 opensuse-1506:
   version_name: 156
   arch:
