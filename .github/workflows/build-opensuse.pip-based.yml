@@ -30,11 +30,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - image: opensuse/leap:15.5
-            platforms: linux/amd64
-            tag: opensuse1505
-            nogalera: false
-
           - image: opensuse/leap:15.6
             platforms: linux/amd64
             tag: opensuse1506
