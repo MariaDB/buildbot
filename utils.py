@@ -335,7 +335,7 @@ def ls2list(rc: int, stdout: str, stderr: str) -> dict[str, list[str]]:
 
     for line in stdout.strip().split("\n"):
         line = line.strip()
-        if not line:
+        if line:
             ls_filenames.append(line)
 
     return {"packages": ls_filenames}
