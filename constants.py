@@ -253,8 +253,8 @@ for os_i in OS_INFO:
         if not ("install_only" in OS_INFO[os_i] and OS_INFO[os_i]["install_only"]):
             ALL_PLATFORMS.add(arch)
             BUILDERS_AUTOBAKE.append(builder_name_autobake)
-        # Currently there are no VMs for x86 and s390x and OpenSUSE and SLES
-        if arch not in ["s390x", "x86"] and "sles" not in os_i:
+        # Currently there are no VMs for x86 and s390x
+        if arch not in ["s390x", "x86"]:
             BUILDERS_INSTALL.append(builder_name_autobake + "-install")
             BUILDERS_UPGRADE.append(builder_name_autobake + "-minor-upgrade-all")
             BUILDERS_UPGRADE.append(
