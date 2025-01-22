@@ -3,6 +3,7 @@
 # Provides a bintar image based on AlmaLinux with build dependencies
 # and statically compiled libraries
 
+# hadolint global ignore=DL3059
 ARG BASE_IMAGE
 FROM "$BASE_IMAGE" AS buildeps
 LABEL maintainer="MariaDB Buildbot maintainers"
@@ -35,7 +36,6 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     eigen3-devel \
     flex \
     galera-4 \
-    gnutls-devel \
     java-1.8.0-openjdk-devel \
     java-1.8.0-openjdk \
     jemalloc-devel \
@@ -73,19 +73,21 @@ WORKDIR /scripts
 RUN chmod +x ./*.sh && ls -l
 
 # Build static libraries
-RUN mkdir -p ./local/lib/ \
-    && ./libaio.sh \
-    && ./liblz4.sh \
-    && ./xz.sh \
-    && ./ncurses.sh \
-    && ./libpmem.sh \
-    && ./libzstd.sh \
-    && ./gnutls.sh
+RUN mkdir -p ./local/lib/
+RUN ./libaio.sh
+RUN ./liblz4.sh
+RUN ./xz.sh
+RUN ./ncurses.sh
+RUN ./libpmem.sh
+RUN ./libzstd.sh
+RUN ./gnutls.sh
 
 FROM buildeps AS bintar
 COPY --from=staticlibs /scripts/local/lib /scripts/local/lib
+COPY --from=staticlibs /root/gnutlsa.tar.bz2 /scripts/
+
+WORKDIR /scripts
+RUN tar -xvf gnutlsa.tar.bz2 -C / && ldconfig
+
 
 ### Other .Dockerfiles will be concatenated here (worker, qpress, etc)
-
-
-
