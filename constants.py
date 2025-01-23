@@ -83,7 +83,6 @@ RELEASE_BRANCHES = ["bb-*-release", "preview-*"]
 SUPPORTED_PLATFORMS = {}
 SUPPORTED_PLATFORMS["10.5"] = [
     "aarch64-centos-stream9",
-    "aarch64-debian-10-bintar",
     "aarch64-debian-11",
     "aarch64-fedora-39",
     "aarch64-macos",
