@@ -516,18 +516,18 @@ control_mariadb_server() {
 }
 
 store_mariadb_server_info() {
-# We need sudo here because the mariadb local root configured this way, not because we want special write permissions for the resulting file.
-# pre-commit check has an issue with it, so instead of adding an exception before each line, we add a piped sort, which should be bogus,
+  # We need sudo here because the mariadb local root configured this way, not because we want special write permissions for the resulting file.
+  # pre-commit check has an issue with it, so instead of adding an exception before each line, we add a piped sort, which should be bogus,
   sudo mariadb --skip-column-names -e "select @@version" | awk -F'-' '{ print $1 }' >"/tmp/version.$1"
-  sudo mariadb --skip-column-names -e "select engine, support, transactions, savepoints from information_schema.engines order by engine" | sort > "./engines.$1"
+  sudo mariadb --skip-column-names -e "select engine, support, transactions, savepoints from information_schema.engines order by engine" | sort >"./engines.$1"
   sudo mariadb --skip-column-names -e "select plugin_name, plugin_status, plugin_type, plugin_library, plugin_license \
-                                       from information_schema.all_plugins order by plugin_name" | sort > "./plugins.$1"
+                                       from information_schema.all_plugins order by plugin_name" | sort >"./plugins.$1"
   sudo mariadb --skip-column-names -e "select 'Stat' t, variable_name name, variable_value val
                                        from information_schema.global_status where variable_name like '%have%' \
                                        union \
                                        select 'Vars' t, variable_name name, variable_value val \
                                        from information_schema.global_variables where variable_name like '%have%' \
-                                       order by t, name" | sort > "./capabilities.$1"
+                                       order by t, name" | sort >"./capabilities.$1"
 }
 
 check_upgraded_versions() {
@@ -582,7 +582,7 @@ check_upgraded_versions() {
     # some adjustments to them to avoid false positives, but we want original files
     # to be stored by buildbot
     for f in ldd-main ldd-columnstore reqs-main reqs-columnstore plugins capabilities; do
-      if [ -e "./${f}.old" ] ; then
+      if [ -e "./${f}.old" ]; then
         cp "./${f}.old" "./${f}.old.cmp"
         cp "./${f}.new" "./${f}.new.cmp"
       fi
@@ -616,7 +616,7 @@ check_upgraded_versions() {
     set -o pipefail
     bb_log_info "Comparing old and new ldd output for installed binaries"
     # We are not currently comparing it for Columnstore, too much trouble for nothing
-    if ! diff -U1000 ./ldd-main.old.cmp ./ldd-main.new.cmp | (grep -E '^[-+]|^ =' || true) ; then
+    if ! diff -U1000 ./ldd-main.old.cmp ./ldd-main.new.cmp | (grep -E '^[-+]|^ =' || true); then
       bb_log_err "Found changes in ldd output, see above"
       errors="$errors ldd,"
       res=1
@@ -626,7 +626,7 @@ check_upgraded_versions() {
 
     bb_log_info "Comparing old and new package requirements"
     # We are not currently comparing it for Columnstore, but we may need to in the future
-    if ! diff -U150 ./reqs-main.old.cmp ./reqs-main.new.cmp | (grep -E '^ [^ ]|^[-+]' || true) ; then
+    if ! diff -U150 ./reqs-main.old.cmp ./reqs-main.new.cmp | (grep -E '^ [^ ]|^[-+]' || true); then
       bb_log_err "Found changes in package requirements, see above"
       errors="$errors requirements,"
       res=1
@@ -635,7 +635,7 @@ check_upgraded_versions() {
     fi
 
     bb_log_info "Comparing old and new server capabilities ('%have%' variables)"
-    if ! diff -u ./capabilities.old.cmp ./capabilities.new.cmp ; then
+    if ! diff -u ./capabilities.old.cmp ./capabilities.new.cmp; then
       bb_log_err "Found changes in server capabilities, see above"
       errors="$errors capabilities,"
       res=1
@@ -645,14 +645,14 @@ check_upgraded_versions() {
 
     echo "Comparing old and new plugins"
     # Columnstore version changes often, we'll ignore it
-    grep -i columnstore ./plugins.old.cmp > /tmp/columnstore.old
-    grep -i columnstore ./plugins.new.cmp > /tmp/columnstore.new
-    if ! diff -u /tmp/columnstore.old /tmp/columnstore.new ; then
+    grep -i columnstore ./plugins.old.cmp >/tmp/columnstore.old
+    grep -i columnstore ./plugins.new.cmp >/tmp/columnstore.new
+    if ! diff -u /tmp/columnstore.old /tmp/columnstore.new; then
       bb_log_warn "Columnstore version changed. Downgraded to a warning as it is usually intentional"
       sed -i '/COLUMNSTORE/d;/Columnstore/d' ./plugins.*.cmp
     fi
 
-    if ! diff -u ./plugins.old.cmp ./plugins.new.cmp ; then
+    if ! diff -u ./plugins.old.cmp ./plugins.new.cmp; then
       bb_log_err "Found changes in available plugins, see above"
       errors="$errors plugins,"
       res=1
@@ -660,7 +660,7 @@ check_upgraded_versions() {
       bb_log_info "Plugins OK"
     fi
   fi
-  if [ -n "$errors" ] ; then
+  if [ -n "$errors" ]; then
     bb_log_err "Problems were found with:$errors see above output for details"
   fi
   exit $res
@@ -675,51 +675,51 @@ collect_dependencies() {
   old_or_new=$1
   pkgtype=$2
   bb_log_info "Collecting dependencies for the ${old_or_new} server"
- set +x
+  set +x
   # Spider_package_list variable does not exist for RPM upgrades.
   set +u
-  for p in ${package_list} ${spider_package_list} ; do
+  for p in ${package_list} ${spider_package_list}; do
     # TEMP: Skip debuginfo packages as ldd is not reliable. See MDBF-887
     if [[ "$p" =~ -debuginfo$ ]]; then
       continue
     fi
 
-    if [[ "$p" =~ columnstore ]] ; then
+    if [[ "$p" =~ columnstore ]]; then
       suffix="columnstore"
     else
       suffix="main"
     fi
-  set -u
+    set -u
 
-    echo "-----------------"  >> "./reqs-${suffix}.${old_or_new}"
-    echo "$p:" >> "./reqs-${suffix}.${old_or_new}"
-    if [ "$pkgtype" == "rpm" ] ; then
-      rpm -q -R "$p" | awk '{print $1}' | sort | grep -vE '/usr/bin/env|/usr/bin/bash' >> "./reqs-${suffix}.${old_or_new}"
+    echo "-----------------" >>"./reqs-${suffix}.${old_or_new}"
+    echo "$p:" >>"./reqs-${suffix}.${old_or_new}"
+    if [ "$pkgtype" == "rpm" ]; then
+      rpm -q -R "$p" | awk '{print $1}' | sort | grep -vE '/usr/bin/env|/usr/bin/bash' >>"./reqs-${suffix}.${old_or_new}"
     else
       # We need sudo here for the apt-cache command, not for redirection
       # shellcheck disable=SC2024
-      sudo apt-cache depends "$p" --no-suggests --no-conflicts --no-breaks --no-replaces --no-enhances | sort >> "./reqs-${suffix}.${old_or_new}"
+      sudo apt-cache depends "$p" --no-suggests --no-conflicts --no-breaks --no-replaces --no-enhances | sort >>"./reqs-${suffix}.${old_or_new}"
     fi
 
     # Collect LDD output for files installed by the package on the system
     if [[ ${p,,} != "mariadb-test"* ]]; then
-      if [ "$pkgtype" == "rpm" ] ; then
+      if [ "$pkgtype" == "rpm" ]; then
         filelist=$(rpm -ql "$p" | sort)
       else
         filelist=$(dpkg-query -L "$p" | sort)
       fi
-      echo "====== Package $p" >> "./ldd-${suffix}.${old_or_new}"
-      for f in $filelist ; do
+      echo "====== Package $p" >>"./ldd-${suffix}.${old_or_new}"
+      for f in $filelist; do
         # We do want to match literally here, not as regex
         # shellcheck disable=SC2076
-        if [[ "$f" =~ "/.build-id/" ]] ; then
+        if [[ "$f" =~ "/.build-id/" ]]; then
           continue
         fi
-        sudo ldd "$f" > /dev/null 2>&1 || continue
-        echo "=== $f" >> "./ldd-${suffix}.${old_or_new}"
-        sudo ldd "$f" | sort | sed 's/(.*)//' >> "./ldd-${suffix}.${old_or_new}"
+        sudo ldd "$f" >/dev/null 2>&1 || continue
+        echo "=== $f" >>"./ldd-${suffix}.${old_or_new}"
+        sudo ldd "$f" | sort | sed 's/(.*)//' >>"./ldd-${suffix}.${old_or_new}"
       done
     fi
   done
- set -x
+  set -x
 }
