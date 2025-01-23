@@ -91,10 +91,6 @@ bb_print_env() {
   if [[ $test_type == "major" ]]; then
     echo "MariaDB previous major version: $prev_major_version"
   fi
-  echo -e "\nKernel:"
-  uname -a
-  echo -e "\nUlimits:"
-  ulimit -a
   echo -e "\nDisk usage:"
   df -kT
 
