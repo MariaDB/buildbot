@@ -33,7 +33,6 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     cracklib-devel \
     createrepo \
     curl-devel \
-    eigen3-devel \
     flex \
     galera-4 \
     java-1.8.0-openjdk-devel \
