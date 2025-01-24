@@ -67,6 +67,7 @@ private["docker_workers"]= {
     "hz-bbw4-docker":"tcp://IP_address:port",
     "hz-bbw5-docker":"tcp://IP_address:port",
     "hz-bbw6-docker":"tcp://IP_address:port",
+    "hz-bbw7-docker":"tcp://IP_address:port",
     "gsk-bbw1-docker":"tcp://IP_address:port",
     "bm-bbw1-docker":"tcp://IP_address:port",
     "ppc64le-db-bbw1-docker":"tcp://IP_address:port",
