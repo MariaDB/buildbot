@@ -131,14 +131,6 @@ SUPPORTED_PLATFORMS["10.5"] = [
 
 SUPPORTED_PLATFORMS["10.6"] = SUPPORTED_PLATFORMS["10.5"].copy()
 
-# Add only 10.5 supported platforms
-SUPPORTED_PLATFORMS["10.5"] += [
-    "amd64-kvm-centos-6-bintar",
-    "amd64-kvm-ubuntu-1604-bintar",
-    "x86-kvm-centos-6-bintar",
-    "x86-kvm-ubuntu-1604-bintar",
-]
-
 SUPPORTED_PLATFORMS["10.6"] += [
     "aarch64-ubuntu-2204",
     "amd64-ubuntu-2204",
