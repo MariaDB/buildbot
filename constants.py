@@ -63,6 +63,7 @@ BUILDERS_GALERA_MTR = [
 ]
 BUILDERS_S3_MTR = [
     "aarch64-ubuntu-2004-debug",
+    "amd64-ubuntu-2004-debug",
     "s390x-sles-1506",
 ]
 
