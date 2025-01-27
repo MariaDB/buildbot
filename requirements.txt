@@ -13,3 +13,4 @@ python-dotenv
 pyzabbix
 sqlalchemy==1.3.23
 treq
+python-magic
