@@ -53,11 +53,9 @@ private["worker_pass"]= {
     "bbw2-windows":"1234",
     "bb-rhel8-docker":"1234",
     "bb-rhel9-docker":"1234",
-    "ro-apexis-bbw03-x64": "1234",
     "monty-bbw1-x64": "1234",
     "s390x-rhel8":"1234",
     "libvirt": "1234",
-    "bg-bbw1-x64": "1234", # non-latent worker for master-bintars
 }
 private["docker_workers"]= {
     "amd-bbw1-docker":"tcp://IP_address:port",

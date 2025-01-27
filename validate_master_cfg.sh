@@ -81,7 +81,6 @@ echo -e "done\n"
 # not checking libvirt config file (//TEMP we need to find a solution
 # to not check ssh connection)
 for dir in autogen/* \
-  master-bintars \
   master-docker-nonstandard \
   master-docker-nonstandard-2 \
   master-galera \
