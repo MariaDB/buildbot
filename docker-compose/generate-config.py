@@ -115,7 +115,7 @@ DOCKER_COMPOSE_TEMPLATE = """
     restart: unless-stopped
     container_name: {master_name}
     stop_grace_period: {buildbot_stop_grace_period}
-    hostname: {master_name}
+    hostname: {master_hostname}
     {volumes}
     entrypoint:
       - /bin/bash
@@ -213,10 +213,14 @@ def main(args):
         port = starting_port
         for master_directory in MASTER_DIRECTORIES:
             master_name = master_directory.replace("/", "_")
-
+            if args.env == "dev":
+                master_hostname = "dev_" + master_name
+            else:
+                master_hostname = master_name
             # Generate Docker Compose piece
             docker_compose_piece = docker_compose_template.format(
                 master_name=master_name,
+                master_hostname=master_hostname,
                 master_directory=master_directory,
                 port=port,
                 mc_host=mc_host,
