@@ -82,7 +82,7 @@ RUN ./libzstd.sh
 RUN ./gnutls.sh
 
 FROM buildeps AS bintar
-COPY --from=staticlibs /scripts/local/lib /scripts/local/lib
+COPY --from=staticlibs /scripts/local /scripts/local
 COPY --from=staticlibs /root/gnutlsa.tar.bz2 /scripts/
 
 WORKDIR /scripts
