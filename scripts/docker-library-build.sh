@@ -85,7 +85,8 @@ sort -u "$reffile" -o "$reffile"
 entries=$(wc -l < "$reffile")
 if [ "$entries" -lt ${#arches[@]} ]; then
 	echo "Only $entries architectures so far"
-	exit
+	# so we're not going to do anything until we have a full list.
+	exit 0
 fi
 
 # Don't remove file here. Leave a manual retrigger of
@@ -106,13 +107,6 @@ declare -a annotations=(
   "--annotation" "org.opencontainers.image.description=This is not a Release.\nBuild of the MariaDB Server from CI as of commit $commit"
   "--annotation" "org.opencontainers.image.version=$mariadb_version+$commit"
   "--annotation" "org.opencontainers.image.revision=$commit")
-
-annotate() {
-  for item in "${annotations[@]}"; do
-    echo " --annotation" \""$item"\"
-  done
-}
-
 
 #
 # BUILD Image

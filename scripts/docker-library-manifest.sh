@@ -38,7 +38,9 @@ image=mariadb-${tarbuildnum}${ubi}
 
 if ! buildah manifest exists "$image"; then
 	echo "No manifest we can't push"
-	exit
+	# Not fatal, but this means logic can stay
+	# here rather than in bb steps.
+	exit 0
 fi
 
 #

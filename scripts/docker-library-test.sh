@@ -15,7 +15,7 @@ fi
 
 if ! buildah manifest exists "$image"; then
 	echo "No manifest we can't test"
-	exit
+	exit 0
 fi
 #
 # TEST Image
@@ -24,7 +24,7 @@ fi
 if [ "${builderarch}" != amd64 ]; then
   export DOCKER_LIBRARY_START_TIMEOUT=350
   echo "Temporarily disable non-amd64 testing"
-  exit
+  exit 0
 else
   export DOCKER_LIBRARY_START_TIMEOUT=150
 fi
