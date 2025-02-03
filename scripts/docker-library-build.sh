@@ -181,7 +181,7 @@ buildah manifest create "$image"
 for arch in "${arches[@]}"; do
   build "$arch"
   buildah manifest add "$image" "$image-$arch"
-  if [ "$arch" = amd64 ]; then
+  if [ "$arch" = linux/amd64 ]; then
     buildah tag "${image}-${arch}" "${image}-wordpress"
   fi
 done
