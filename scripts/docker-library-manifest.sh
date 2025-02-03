@@ -108,10 +108,9 @@ trap 'manifest_image_cleanup "$devmanifest" "$t"' EXIT
 
 if [ "$prod_environment" = "True" ]; then
   buildah manifest push --all "$devmanifest" "docker://quay.io/mariadb-foundation/mariadb-devel:${container_tag}"
-  echo "${container_tag}" > last_tag
-else
-  rm -f last_tag
 fi
+# Still want last_tag in dev environment to trigger wordpress build.
+echo "${container_tag}" > last_tag
 
 #
 # MAKE Debug manifest
