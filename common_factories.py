@@ -777,7 +777,7 @@ Repository available with: curl %(kw:url)s/%(prop:tarbuildnum)s/%(prop:builderna
                 "master_branch": Property("master_branch"),
                 "parentbuildername": Property("buildername"),
                 "ubi": "-ubi",
-                "GH_WORKFLOW": "test-image-ent.yml",
+                "GH_WORKFLOW": "test-image-ubi.yml",
             },
             doStepIf=lambda step: hasDockerLibrary(step),
         )
