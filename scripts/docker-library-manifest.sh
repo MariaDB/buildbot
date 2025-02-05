@@ -40,7 +40,7 @@ if ! buildah manifest exists "$image"; then
 	echo "No manifest we can't push"
 	# Not fatal, but this means logic can stay
 	# here rather than in bb steps.
-	exit 0
+	exit 2
 fi
 
 #

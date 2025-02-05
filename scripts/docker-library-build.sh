@@ -86,7 +86,7 @@ entries=$(wc -l < "$reffile")
 if [ "$entries" -lt ${#arches[@]} ]; then
 	echo "Only $entries architectures so far"
 	# so we're not going to do anything until we have a full list.
-	exit 0
+	exit 2
 fi
 
 # Don't remove file here. Leave a manual retrigger of
