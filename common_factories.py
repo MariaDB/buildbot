@@ -626,7 +626,7 @@ def getLastNFailedBuildsFactory(test_type, mtrDbPool):
     return addPostTests(f)
 
 
-def getRpmAutobakeFactory(mtrDbPool):
+def getRpmAutobakeFactory():
     f_rpm_autobake = util.BuildFactory()
     f_rpm_autobake.addStep(printEnv())
     f_rpm_autobake.addStep(
