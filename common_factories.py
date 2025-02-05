@@ -12,6 +12,7 @@ from buildbot.steps.mtrlogobserver import MTR
 # Local
 from constants import MTR_ENV, SAVED_PACKAGE_BRANCHES, test_type_to_mtr_arg
 from utils import (
+    createDebRepo,
     createVar,
     dockerfile,
     getArch,
@@ -36,6 +37,7 @@ from utils import (
     printEnv,
     saveLogs,
     savePackageIfBranchMatch,
+    uploadDebArtifacts,
 )
 
 
@@ -826,3 +828,117 @@ Repository available with: curl %(kw:url)s/%(prop:tarbuildnum)s/%(prop:builderna
         )
     )
     return f_rpm_autobake
+
+
+def getDebAutobakeFactory() -> util.BuildFactory:
+    f_deb_autobake = util.BuildFactory()
+    f_deb_autobake.addStep(printEnv())
+    f_deb_autobake.addStep(
+        steps.SetProperty(
+            property="dockerfile",
+            value=util.Interpolate("%(kw:url)s", url=dockerfile),
+            description="dockerfile",
+        )
+    )
+    f_deb_autobake.addStep(getSourceTarball())
+    # build steps
+    f_deb_autobake.addStep(
+        steps.Compile(
+            logfiles={"CMakeCache.txt": "./builddir/CMakeCache.txt"},
+            command=["debian/autobake-deb.sh"],
+            env={
+                "CCACHE_DIR": "/mnt/ccache",
+                "DEB_BUILD_OPTIONS": util.Interpolate(
+                    "parallel=%(kw:jobs)s",
+                    jobs=util.Property("jobs", default="$(getconf _NPROCESSORS_ONLN)"),
+                ),
+            },
+            description="autobake-deb.sh",
+        )
+    )
+    # upload artifacts
+    f_deb_autobake.addStep(
+        steps.SetPropertyFromCommand(
+            command="find .. -maxdepth 1 -type f", extract_fn=ls2string
+        )
+    )
+    f_deb_autobake.addStep(createDebRepo())
+    f_deb_autobake.addStep(uploadDebArtifacts())
+
+    f_deb_autobake.addStep(
+        steps.Trigger(
+            name="dockerlibrary",
+            schedulerNames=["s_dockerlibrary"],
+            waitForFinish=False,
+            updateSourceStamp=False,
+            set_properties={
+                "tarbuildnum": Property("tarbuildnum"),
+                "mariadb_version": Property("mariadb_version"),
+                "master_branch": Property("master_branch"),
+                "parentbuildername": Property("buildername"),
+            },
+            doStepIf=lambda step: hasDockerLibrary(step),
+        )
+    )
+    f_deb_autobake.addStep(
+        steps.Trigger(
+            name="release preparation",
+            schedulerNames=["s_release_prep"],
+            waitForFinish=True,
+            updateSourceStamp=False,
+            set_properties={
+                "tarbuildnum": Property("tarbuildnum"),
+                "mariadb_version": Property("mariadb_version"),
+                "master_branch": Property("master_branch"),
+                "parentbuildername": Property("buildername"),
+            },
+            doStepIf=(
+                lambda step: savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
+            ),
+        )
+    )
+    f_deb_autobake.addStep(
+        steps.Trigger(
+            name="install",
+            schedulerNames=["s_install"],
+            waitForFinish=False,
+            updateSourceStamp=False,
+            set_properties={
+                "tarbuildnum": Property("tarbuildnum"),
+                "mariadb_version": Property("mariadb_version"),
+                "master_branch": Property("master_branch"),
+                "parentbuildername": Property("buildername"),
+            },
+            doStepIf=(
+                lambda step: hasInstall(step)
+                and savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
+                and hasPackagesGenerated(step)
+            ),
+        )
+    )
+    f_deb_autobake.addStep(
+        steps.Trigger(
+            name="major-minor-upgrade",
+            schedulerNames=["s_upgrade"],
+            waitForFinish=False,
+            updateSourceStamp=False,
+            set_properties={
+                "tarbuildnum": Property("tarbuildnum"),
+                "mariadb_version": Property("mariadb_version"),
+                "master_branch": Property("master_branch"),
+                "parentbuildername": Property("buildername"),
+            },
+            doStepIf=(
+                lambda step: hasUpgrade(step)
+                and savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
+                and hasPackagesGenerated(step)
+            ),
+        )
+    )
+    f_deb_autobake.addStep(
+        steps.ShellCommand(
+            name="cleanup", command="rm -r * .* 2> /dev/null || true", alwaysRun=True
+        )
+    )
+
+    return f_deb_autobake
