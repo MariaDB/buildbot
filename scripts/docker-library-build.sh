@@ -66,7 +66,7 @@ case "${buildername#*ubuntu-}" in
     ;;
   *)
     echo "unknown base buildername $buildername"
-    exit 0
+    exit 1
     ;;
 esac
 
