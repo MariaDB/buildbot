@@ -4,7 +4,6 @@ almalinux-8:
   version_name: 8
   tags:
     - release_packages
-    - autobake
   arch:
     - amd64
     - aarch64
@@ -15,7 +14,6 @@ almalinux-9:
   version_name: 9
   tags:
     - release_packages
-    - autobake
   arch:
     - amd64
     - aarch64
@@ -26,7 +24,6 @@ centos-stream9:
   version_name: 9
   tags:
     - release_packages
-    - autobake
   arch:
     - amd64
     - aarch64
@@ -37,7 +34,6 @@ debian-11:
   version_name: bullseye
   tags:
     - release_packages
-    - autobake
   arch:
     - amd64
     - aarch64
@@ -47,7 +43,6 @@ debian-12:
   version_name: bookworm
   tags:
     - release_packages
-    - autobake
   arch:
     - amd64
     - aarch64
@@ -59,7 +54,6 @@ debian-sid:
   version_name: sid
   tags:
     - release_packages
-    - autobake
     - bleeding_edge
   arch:
     - amd64
@@ -75,13 +69,11 @@ fedora-39:
     - aarch64
   type: rpm
   tags:
-    - autobake
     - bleeding_edge
 fedora-40:
   image_tag: fedora-40
   tags:
     - release_packages
-    - autobake
   version_name: 40
   arch:
     - amd64
@@ -91,7 +83,6 @@ fedora-41:
   image_tag: fedora-41
   tags:
     - release_packages
-    - autobake
     - bleeding_edge
   version_name: 41
   arch:
@@ -102,7 +93,6 @@ openeuler-2403:
   image_tag: openeuler-2403
   tags:
     - release_packages
-    - autobake
     - bleeding_edge
   version_name: 24.03
   arch:
@@ -113,7 +103,6 @@ opensuse-1506:
   image_tag: opensuse-1506
   tags:
     - release_packages
-    - autobake
     - bleeding_edge
   version_name: 156
   arch:
@@ -123,7 +112,6 @@ rhel-8:
   image_tag: rhel-8
   tags:
     - release_packages
-    - autobake
   version_name: 8
   arch:
     - amd64
@@ -135,7 +123,6 @@ rhel-9:
   image_tag: rhel-9
   tags:
     - release_packages
-    - autobake
   version_name: 9
   arch:
     - amd64
@@ -145,8 +132,7 @@ rhel-9:
   type: rpm
 rockylinux-8:
   image_tag: rockylinux-8
-  tags:
-    - autobake
+  tags: []
   version_name: 8
   arch:
     - amd64
@@ -154,8 +140,7 @@ rockylinux-8:
   install_only: True
 rockylinux-9:
   image_tag: rockylinux-9
-  tags:
-    - autobake
+  tags: []
   version_name: 9
   arch:
     - amd64
@@ -165,7 +150,6 @@ sles-1506:
   image_tag: sles-1506
   tags:
     - release_packages
-    - autobake
   version_name: 15
   arch:
     - amd64
@@ -175,7 +159,6 @@ ubuntu-2004:
   image_tag: ubuntu20.04
   tags:
     - release_packages
-    - autobake
   version_name: focal
   arch:
     - amd64
@@ -187,7 +170,6 @@ ubuntu-2204:
   image_tag: ubuntu22.04
   tags:
     - release_packages
-    - autobake
   version_name: jammy
   arch:
     - amd64
@@ -199,7 +181,6 @@ ubuntu-2404:
   image_tag: ubuntu24.04
   tags:
     - release_packages
-    - autobake
   version_name: noble
   arch:
     - amd64
@@ -211,7 +192,6 @@ ubuntu-2410:
   image_tag: ubuntu24.10
   tags:
     - release_packages
-    - autobake
   version_name: oracular
   arch:
     - amd64
