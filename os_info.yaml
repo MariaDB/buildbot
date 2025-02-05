@@ -104,7 +104,7 @@ opensuse-1506:
   tags:
     - release_packages
     - bleeding_edge
-  version_name: 156
+  version_name: 15
   arch:
     - amd64
   type: rpm
