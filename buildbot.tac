@@ -1,6 +1,6 @@
 # -*- python -*-
 # ex: set filetype=python:
-import os
+from pathlib import Path
 
 from twisted.application import service
 from twisted.python.log import FileLogObserver, ILogObserver
@@ -18,39 +18,40 @@ from buildbot.master import BuildMaster
 #     ├── master-config.yaml
 #     └── master-private.cfg
 #
-# Thus basedir is two levels below this file"s position.
-buildbot_tac_dir = os.path.abspath(os.path.dirname(__file__))
-basedir = os.path.abspath(f"{buildbot_tac_dir}/../../")
+# Thus basedir is two levels below this file's position.
+buildbot_tac_dir = Path(__file__).resolve().parent
+basedir = buildbot_tac_dir.parent.parent
 
 # Hard coded as it runs in containers.
 # TODO(cvicentiu) this should come as an environment variable.
-log_basedir = "/var/log/buildbot"
+log_basedir_path = Path("/var/log/buildbot/")
+log_basedir = log_basedir_path.as_posix()  # Kept in case buildbot uses it.
 
-rotateLength = 20000000
+rotateLength = 10000000
 maxRotatedFiles = 30
 
-last_two_dirs = os.path.normpath(buildbot_tac_dir).split(os.sep)[-2:]
-master_name = last_two_dirs[-1]
+master_name = buildbot_tac_dir.name
 # Last two directories. autogen and <master-name>
-cfg_from_basedir = last_two_dirs + ["master.cfg"]
+cfg_from_basedir = (buildbot_tac_dir / "master.cfg").relative_to(basedir)
 
-configfile = os.path.join(*cfg_from_basedir)
+configfile = cfg_from_basedir.as_posix()
+
 # Default umask for server
 umask = None
 
 # note: this line is matched against to check that this is a buildmaster
 # directory; do not edit it.
-application = service.Application("buildmaster")  # fmt: skip
+application = service.Application('buildmaster')  # fmt: skip
 
 # This logfile is monitored. It must end in .log.
 logfile = LogFile.fromFullPath(
-    os.path.join(log_basedir, f"{master_name}.log"),
+    str(log_basedir_path / f"{master_name}.log"),
     rotateLength=rotateLength,
     maxRotatedFiles=maxRotatedFiles,
 )
 application.setComponent(ILogObserver, FileLogObserver(logfile).emit)
 
-m = BuildMaster(basedir, configfile, umask)
+m = BuildMaster(str(basedir), configfile, umask)
 m.setServiceParent(application)
 m.log_rotation.rotateLength = rotateLength
 m.log_rotation.maxRotatedFiles = maxRotatedFiles
