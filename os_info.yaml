@@ -1,6 +1,6 @@
 ---
 almalinux-8:
-  image_tag: almalinux-8
+  image_tag: almalinux8
   version_name: 8
   tags:
     - release_packages
@@ -10,7 +10,7 @@ almalinux-8:
   type: rpm
   install_only: True
 almalinux-9:
-  image_tag: almalinux-9
+  image_tag: almalinux9
   version_name: 9
   tags:
     - release_packages
@@ -20,7 +20,7 @@ almalinux-9:
   type: rpm
   install_only: True
 centos-stream9:
-  image_tag: centos-stream9
+  image_tag: centosstream9
   version_name: 9
   tags:
     - release_packages
@@ -30,7 +30,7 @@ centos-stream9:
     - ppc64le
   type: rpm
 debian-11:
-  image_tag: debian-11
+  image_tag: debian11
   version_name: bullseye
   tags:
     - release_packages
@@ -39,7 +39,7 @@ debian-11:
     - aarch64
   type: deb
 debian-12:
-  image_tag: debian-12
+  image_tag: debian12
   version_name: bookworm
   tags:
     - release_packages
@@ -50,7 +50,7 @@ debian-12:
     - x86
   type: deb
 debian-sid:
-  image_tag: debian-sid
+  image_tag: debiansid
   version_name: sid
   tags:
     - release_packages
@@ -62,7 +62,7 @@ debian-sid:
     - x86
   type: deb
 fedora-39:
-  image_tag: fedora-39
+  image_tag: fedora39
   version_name: 39
   arch:
     - amd64
@@ -71,7 +71,7 @@ fedora-39:
   tags:
     - bleeding_edge
 fedora-40:
-  image_tag: fedora-40
+  image_tag: fedora40
   tags:
     - release_packages
   version_name: 40
@@ -80,7 +80,7 @@ fedora-40:
     - aarch64
   type: rpm
 fedora-41:
-  image_tag: fedora-41
+  image_tag: fedora41
   tags:
     - release_packages
     - bleeding_edge
@@ -90,7 +90,7 @@ fedora-41:
     - aarch64
   type: rpm
 openeuler-2403:
-  image_tag: openeuler-2403
+  image_tag: openeuler2403
   tags:
     - release_packages
     - bleeding_edge
@@ -100,7 +100,7 @@ openeuler-2403:
     - aarch64
   type: rpm
 opensuse-1506:
-  image_tag: opensuse-1506
+  image_tag: opensuse1506
   tags:
     - release_packages
     - bleeding_edge
@@ -109,7 +109,7 @@ opensuse-1506:
     - amd64
   type: rpm
 rhel-8:
-  image_tag: rhel-8
+  image_tag: rhel8
   tags:
     - release_packages
   version_name: 8
@@ -120,7 +120,7 @@ rhel-8:
     - s390x
   type: rpm
 rhel-9:
-  image_tag: rhel-9
+  image_tag: rhel9
   tags:
     - release_packages
   version_name: 9
@@ -131,7 +131,7 @@ rhel-9:
     - s390x
   type: rpm
 rockylinux-8:
-  image_tag: rockylinux-8
+  image_tag: rockylinux8
   tags: []
   version_name: 8
   arch:
@@ -139,7 +139,7 @@ rockylinux-8:
   type: rpm
   install_only: True
 rockylinux-9:
-  image_tag: rockylinux-9
+  image_tag: rockylinux9
   tags: []
   version_name: 9
   arch:
@@ -147,7 +147,7 @@ rockylinux-9:
   type: rpm
   install_only: True
 sles-1506:
-  image_tag: sles-1506
+  image_tag: sles1506
   tags:
     - release_packages
   version_name: 15
