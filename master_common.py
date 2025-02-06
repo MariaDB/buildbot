@@ -16,7 +16,7 @@ def base_master_config(
 ):
     # TODO(cvicentiu) either move this to environ or all other params to config
     # file.
-    github_access_token = (config["private"]["gh_mdbci"]["access_token"],)
+    github_access_token = config["private"]["gh_mdbci"]["access_token"]
     db_url = config["private"]["db_url"]
 
     return {
