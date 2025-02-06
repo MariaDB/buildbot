@@ -28,6 +28,7 @@ for os_name in OS_INFO:
         platforms[arch][os_name] = {
             "image_tag": OS_INFO[os_name]["image_tag"],
             "tags": OS_INFO[os_name]["tags"],
+            "type": OS_INFO[os_name]["type"],
         }
 
 # Clear old configurations
