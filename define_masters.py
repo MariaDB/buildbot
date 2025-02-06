@@ -59,4 +59,9 @@ for arch in platforms:
         shutil.copyfile("master-private.cfg", dir_path + "/master-private.cfg")
         shutil.copyfile("buildbot.tac", dir_path + "/buildbot.tac")
 
-    print(arch, len(master_config["builders"]))
+        print(
+            "{:<20} {}".format(
+                f"Master {master_id} {arch}",
+                f'{len(master_config["builders"][arch])} builders',
+            )
+        )

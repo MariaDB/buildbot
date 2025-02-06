@@ -54,7 +54,7 @@ def base_master_config(
         # 'port' must match the value configured into the workers (with their
         # --master option)
         "protocols": {
-            "pb": {"port": master_port},
+            "pb": {"port": int(master_port)},  # master_port must be int
         },
         # This specifies what database buildbot uses to store its state.
         "db": {
