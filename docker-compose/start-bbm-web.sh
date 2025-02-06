@@ -10,7 +10,7 @@ err() {
   exit 1
 }
 
-cd /srv/buildbot/master/master-web || err "cd /srv/buildbot/master/master-web"
+cd /srv/buildbot/master/ || err "cd /srv/buildbot/master/"
 
 # # loop for debug
 # while true; do date && sleep 30; done
@@ -29,5 +29,4 @@ while ! nc -z 127.0.0.1 8080; do
   sleep 0.1
 done
 echo "Crossbar started"
-buildbot upgrade-master /srv/buildbot/master/master-web
-exec buildbot start --nodaemon
+exec buildbot start --nodaemon master-web
