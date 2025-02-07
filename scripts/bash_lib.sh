@@ -143,6 +143,68 @@ rpm_repo_dir() {
   set -u
 }
 
+_rpm_get_base_mirror_url() {
+  local branch=$1
+  echo "https://rpm.mariadb.org/$branch"
+}
+
+_rpm_get_base_archive_url() {
+  local branch=$1
+  echo "https://archive.mariadb.org/mariadb-$branch/yum"
+}
+
+_rpm_get_repo_path() {
+  # Construct a distro repo URL path based on the file hierarchy set up
+  # by buildbot / release scripts.
+  local dist_name=$1
+  local version_number=$2
+  local arch=$3
+  local path="${dist_name}${version_number}-${arch}"
+
+  # Special handling for centos 9
+  # This uses the previous hierarchy in release scripts instead of a flattened
+  # path.
+  if [[ "$dist_name" == "centos" && "$version_number" -ge 9 ]]; then
+      # Check if architecture is amd64 and convert to x86_64
+      if [[ "$arch" == "amd64" ]]; then
+          arch="x86_64"
+      fi
+      path="$dist_name/$version_number/$arch"
+  fi
+
+  echo "$path"
+}
+
+rpm_get_mirror_url() {
+  # Return full URL to corresponding distro repo on the mariadb mirror.
+  local branch=$1
+  local dist_name=$2
+  local version_number=$3
+  local arch=$4
+  local base
+  local path
+
+  base=$(_rpm_get_base_mirror_url "$branch")
+  path=$(_rpm_get_repo_path "$dist_name" "$version_number" "$arch")
+  # Print the final constructed URL
+  echo "${base}/${path}"
+}
+
+rpm_get_archive_url() {
+  # Return full URL to corresponding distro repo on the archive.
+  local branch=$1
+  local dist_name=$2
+  local version_number=$3
+  local arch=$4
+  local base
+  local path
+
+  base=$(_rpm_get_base_archive_url "$branch")
+  path=$(_rpm_get_repo_path "$dist_name" "$version_number" "$arch")
+  # Print the final constructed URL
+  echo "${base}/${path}"
+}
+
 rpm_pkg() {
   # ID_LIKE may not exist
   set +u
@@ -279,15 +341,25 @@ rpm_setup_mariadb_mirror() {
     bb_log_err "missing the branch variable"
     exit 1
   }
-  branch=$1
+  [[ -n $2 ]] || {
+    bb_log_err "missing the mirror_url variable"
+    exit 1
+  }
+  [[ -n $3 ]] || {
+    bb_log_err "missing the archive_url variable"
+    exit 1
+  }
+  local branch=$1
+  local mirror_url=$2
+  local archive_url=$3
+
   bb_log_info "setup MariaDB repository for $branch branch"
   command -v wget >/dev/null || {
     bb_log_err "wget command not found"
     exit 1
   }
-  #//TEMP it's probably better to install the last stable release here...?
-  mirror_url="https://rpm.mariadb.org/$branch/$arch"
-  archive_url="https://archive.mariadb.org/mariadb-$branch/yum/$arch"
+
+  local baseurl
   if wget -q --spider "$mirror_url"; then
     baseurl="$mirror_url"
   elif wget -q --spider "$archive_url"; then
@@ -297,7 +369,7 @@ rpm_setup_mariadb_mirror() {
     # since we know it will always fail. But apparently, it's not going to
     # happen soon in BB. Once done though, replace the warning with an error
     # and use a non-zero exit code.
-    bb_log_warn "rpm_setup_mariadb_mirror: $branch packages for $dist_name $version_name does not exist on https://rpm.mariadb.org/"
+    bb_log_warn "rpm_setup_mariadb_mirror: $branch packages do not exist on either $mirror_url or $archive_url"
     exit 0
   fi
   cat <<EOF | sudo tee "$(rpm_repo_dir)/MariaDB.repo"
