@@ -33,8 +33,8 @@ echo "Crossbar started"
 if [[ $1 == "master-libvirt" ]]; then
   [[ -d /root/.ssh ]] || {
     mkdir /root/.ssh
-    cp id_ed25519 /root/.ssh
-    cp known_hosts /root/.ssh
+    cp ./master-libvirt/id_ed25519 /root/.ssh
+    cp ./master-libvirt/known_hosts /root/.ssh
   }
 fi
 
