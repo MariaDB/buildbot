@@ -70,7 +70,7 @@ rpm -ivh ncurses-*.src.rpm
 rpmbuild -bp $HOME/rpmbuild/SPECS/ncurses.spec
 cd $HOME/rpmbuild/BUILD/ncurses-*/
 
-CFLAGS="-fpic -fPIC" CXXFLAGS=${CFLAGS} ./configure --without-manpages --without-tests --without-progs --prefix=/scripts/local/
+CFLAGS="-fpic -fPIC" CXXFLAGS=${CFLAGS} ./configure --without-manpages --without-tests --without-progs --with-terminfo-dirs="/etc/terminfo:/lib/terminfo:/usr/share/terminfo" --with-xterm-kbs=del --disable-termcap --prefix=/scripts/local/
 make -j"$(nproc)" install
 mv /scripts/local/include/ncurses/* /scripts/local/include/
 # Snippet from spec file %INSTALL
