@@ -102,6 +102,8 @@ make install
 ### Install GnuTLS library under /usr/local/lib
 cd ${HOME}
 mkdir -v gmp gnutls nettle hogweed
+cp -v ~/a/lib/lib{gmp,nettle,hogweed}.a /usr/local/lib/
+cp -r -v ~/a/include/* /usr/local/include/
 (set -x;cd gmp && ar x ~/a/lib/libgmp.a)
 (set -x;cd nettle && ar x ~/a/lib/libnettle.a)
 (set -x;cd hogweed && ar x ~/a/lib/libhogweed.a)
