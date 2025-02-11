@@ -146,6 +146,7 @@ SUPPORTED_PLATFORMS["10.5"] = [
     "s390x-ubuntu-2004",
     "s390x-ubuntu-2004-debug",
     "x86-debian-12-fulltest",
+    "x86-debian-12-fulltest-debug",
 ]
 
 SUPPORTED_PLATFORMS["10.6"] = SUPPORTED_PLATFORMS["10.5"].copy()
@@ -228,7 +229,10 @@ test_type_to_mtr_arg = {
     "connect": "--suite=connect",
     "emb": "--embedded",
     "emb-ps": "--embedded --ps-protocol",
+    "s3": "--suite=s3",
+    "vault": "--suite=vault --big",
     "view": "--view-protocol",
+    "optimizer_trace": "--suite=main --mysqld=--optimizer_trace=enabled=on",
     "asan": "",
     "msan": "",
     "ubsan": "",
