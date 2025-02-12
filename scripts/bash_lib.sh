@@ -415,9 +415,11 @@ upgrade_test_type() {
       minor=${major_version##*.}
       # with the earliest supported 11.X version
       # and make this the upgrade from 10.11
-      if [ "$minor" -le 1 ]; then
+      if [ "$minor" -eq 0 ]; then
         if ((major == 11)); then
           prev_major_version="10.11"
+        elif ((major == 12)); then
+          prev_major_version="11.8"
         else
           bb_log_err "Unknown previous branch for $branch_tmp, please update this script"
           exit 1
