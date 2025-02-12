@@ -18,6 +18,7 @@ BRANCHES_MAIN = [
     "11.6",
     "11.7",
     "11.8",
+    "12.0",
     "main",
 ]
 
@@ -203,7 +204,8 @@ SUPPORTED_PLATFORMS["11.6"] = SUPPORTED_PLATFORMS["11.5"].copy()
 SUPPORTED_PLATFORMS["11.7"] = SUPPORTED_PLATFORMS["11.6"].copy()
 SUPPORTED_PLATFORMS["11.7"] += ["amd64-almalinux-8-bintar"]
 SUPPORTED_PLATFORMS["11.8"] = SUPPORTED_PLATFORMS["11.7"].copy()
-SUPPORTED_PLATFORMS["main"] = SUPPORTED_PLATFORMS["11.8"].copy()
+SUPPORTED_PLATFORMS["12.0"] = SUPPORTED_PLATFORMS["11.8"].copy()
+SUPPORTED_PLATFORMS["main"] = SUPPORTED_PLATFORMS["12.0"].copy()
 
 # Define environment variables for MTR step
 MTR_ENV = {
