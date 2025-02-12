@@ -204,9 +204,6 @@ RUN . /etc/os-release \
 # For convenience of human users of msan image
 ENV MSAN_OPTIONS=abort_on_error=1:poison_in_dtor=0
 
-ENV CFLAGS="-fno-omit-frame-pointer -O2 -g -fsanitize=memory"
-ENV CXXFLAGS="$CFLAGS"
-
 ENV CMAKE_GENERATOR=Ninja
 # rr installation + ninja
 RUN . /etc/os-release \
