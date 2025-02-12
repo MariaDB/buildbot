@@ -137,10 +137,7 @@ RUN . /etc/os-release \
     && make -j "$(nproc)" \
     && mv ./DriverManager/.libs/libodbc.so* $MSAN_LIBDIR \
     && cd $OLDPWD \
-    && if [ "${VERSION_CODENAME}" = trixie ]; then \
-      apt-get source -t experimental libfmt-dev ; \
-      else \
-      apt-get source libfmt-dev ; fi \
+    && apt-get source libfmt-dev \
     && cd fmtlib-* \
     && mkdir build \
     && cmake -DFMT_DOC=OFF -DFMT_TEST=OFF  -DBUILD_SHARED_LIBS=on  -DFMT_PEDANTIC=on -S . -B build \
