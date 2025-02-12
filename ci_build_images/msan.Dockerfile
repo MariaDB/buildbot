@@ -5,7 +5,7 @@ ARG CLANG_VERSION=15
 # Marker to make it possible to build a dev msan builder
 # from the nightly clang versions as they are in a differently
 # name repo
-ENV CLANG_DEV_VERSION=20
+ENV CLANG_DEV_VERSION=21
 
 WORKDIR /msan-build
 
