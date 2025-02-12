@@ -27,13 +27,13 @@ RUN . /etc/os-release \
     else \
         export LLVM_ENABLE_RUNTIMES="libcxx;libcxxabi"; fi \
     && mkdir $MSAN_LIBDIR \
-    && mkdir $MSAN_LIBDIR/bin \
+    && mkdir $NO_MSAN_PATH \
     && printf "#!/bin/sh\nunset LD_LIBRARY_PATH\nexec llvm-symbolizer-%s \"\$@\"" "${CLANG_VERSION}" > $MSAN_SYMBOLIZER_PATH \
-    && set +H \
+    && printf "#!/bin/sh\nunset LD_LIBRARY_PATH\nexec \"/usr/bin/\${0##*/}\" \"\$@\"" > $NO_MSAN_PATH/generic \
+    && chmod a+x $NO_MSAN_PATH/generic \
     && for nonmsanexec in gdb ctest grep sed; do \
-         printf "#!/bin/sh\nunset LD_LIBRARY_PATH\nexec /usr/bin/${nonmsanexec} \"\$@\"" > "${NO_MSAN_PATH}/${nomasanexec}"; \
+         ln -s $NO_MSAN_PATH/generic $NO_MSAN_PATH/$nonmsanexec ; \
        done \
-    && set -H \
     && curl -sL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor -o /usr/share/keyrings/llvm-snapshot.gpg \
     && if [ $VERSION_CODENAME = trixie ]; then VERSION_CODENAME=unstable; LLVM_DEB=""; else LLVM_DEB=-$VERSION_CODENAME; fi \
     && if [ "${CLANG_VERSION}" -ge "${CLANG_DEV_VERSION}" ]; then \
