@@ -43,7 +43,7 @@ RUN . /etc/os-release \
         LLVM_DEB="${LLVM_DEB}-${CLANG_VERSION}"; fi \
     && LLVM_DIR="${LLVM_PKG}-${CLANG_VERSION}" \
     && for v in deb deb-src; do \
-         echo "$v [signed-by=/usr/share/keyrings/llvm-snapshot.gpg] http://apt.llvm.org/${VERSION_CODENAME}/ llvm-toolchain${LLVM_DEB} main" >> /etc/apt/sources.list.d/llvm-toolchain.list; done \
+         echo "$v [signed-by=/usr/share/keyrings/llvm-snapshot.gpg] https://apt.llvm.org/${VERSION_CODENAME}/ llvm-toolchain${LLVM_DEB} main" >> /etc/apt/sources.list.d/llvm-toolchain.list; done \
     && apt-get update \
     && apt-get -y install --no-install-recommends \
        clang-${CLANG_VERSION} \
