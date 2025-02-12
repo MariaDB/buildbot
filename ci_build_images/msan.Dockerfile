@@ -1,6 +1,6 @@
 # msan.Dockerfile
 # this is to create images with MSAN for BB workers
-ARG CLANG_VERSION=15
+ARG CLANG_VERSION=19
 
 # Marker to make it possible to build a dev msan builder
 # from the nightly clang versions as they are in a differently
