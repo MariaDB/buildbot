@@ -20,12 +20,10 @@ ENV PATH=$NO_MSAN_PATH:$PATH
 ENV CFLAGS="-fno-omit-frame-pointer -O2 -g"
 ENV CXXFLAGS="$CFLAGS"
 
+# Don't include libunwind in LLVM_ENABLE_RUNTIMES - causes crashing on thread exit
 # hadolint ignore=SC2046
 RUN . /etc/os-release \
-    && if [ "${CLANG_VERSION}" -gt 17 ]; then \
-        export LLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind"; \
-    else \
-        export LLVM_ENABLE_RUNTIMES="libcxx;libcxxabi"; fi \
+    && export LLVM_ENABLE_RUNTIMES="libcxx;libcxxabi" \
     && mkdir $MSAN_LIBDIR \
     && mkdir $NO_MSAN_PATH \
     && printf "#!/bin/sh\nunset LD_LIBRARY_PATH\nexec llvm-symbolizer-%s \"\$@\"" "${CLANG_VERSION}" > $MSAN_SYMBOLIZER_PATH \
