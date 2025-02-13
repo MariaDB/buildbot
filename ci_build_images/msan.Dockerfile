@@ -69,7 +69,9 @@ RUN . /etc/os-release \
     && cmake --build . --target cxx --target cxxabi --parallel "$(nproc)" \
     && cp -aL lib/lib*.so* "$MSAN_LIBDIR" \
     && rm "$MSAN_LIBDIR"/libunwrap* \
-    && cp -a include/c++/v1 "$MSAN_LIBDIR/include"
+    && cp -a include/c++/v1 "$MSAN_LIBDIR/include" \
+    && cd .. \
+    && rm -rf -- *
 
 # libunwrap removal because of https://github.com/llvm/llvm-project/issues/119437
 
