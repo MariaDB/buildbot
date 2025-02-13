@@ -122,7 +122,7 @@ RUN . /etc/os-release \
     && cp -aL .libs/libgmp.so* $MSAN_LIBDIR \
     && rm -rf -- * \
     && apt-get source libxml2 \
-    && mv libxml2-* . \
+    && mv libxml2-*/* . \
     && aclocal \
     && automake --add-missing \
     && ./configure  --without-python --without-docbook --with-icu \
@@ -132,7 +132,7 @@ RUN . /etc/os-release \
     && if [ "${VERSION_CODENAME}" = trixie ]; then \
        apt-get install -y libltdl-dev ; fi \
     && apt-get source unixodbc-dev \
-    && mv unixodbc-* . \
+    && mv unixodbc-*/* . \
     && libtoolize --force \
     && aclocal \
     && autoheader \
@@ -143,40 +143,40 @@ RUN . /etc/os-release \
     && mv ./DriverManager/.libs/libodbc.so* $MSAN_LIBDIR \
     && rm -rf -- * \
     && apt-get source libfmt-dev \
-    && mv fmtlib-* . \
+    && mv fmtlib-*/* . \
     && mkdir build \
     && cmake -DFMT_DOC=OFF -DFMT_TEST=OFF  -DBUILD_SHARED_LIBS=on  -DFMT_PEDANTIC=on -S . -B build \
     && cmake --build build \
     && mv build/libfmt.so* $MSAN_LIBDIR \
     && rm -rf -- * \
     && apt-get source libssl-dev \
-    && mv openssl-* . \
+    && mv openssl-*/* . \
     && ./Configure  shared no-idea no-mdc2 no-rc5 no-zlib no-ssl3 enable-unit-test no-ssl3-method enable-rfc3779 enable-cms no-capieng no-rdrand $(if [ "${CLANG_VERSION}" -ge 19 ]; then echo no-asm enable-msan; fi) $CFLAGS \
     && make -j "$(nproc)" build_libs \
     && mv ./*.so* $MSAN_LIBDIR \
     && rm -rf -- * \
     && apt-get source  libpcre2-dev \
-    && mv pcre2-* . \
+    && mv pcre2-*/* . \
     && cmake -S . -B build/ -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -DPCRE2_BUILD_TESTS=OFF -DPCRE2_SUPPORT_JIT=ON  -DCMAKE_C_FLAGS="${CFLAGS} -Dregcomp=PCRE2regcomp -Dregexec=PCRE2regexec -Dregerror=PCRE2regerror -Dregfree=PCRE2regfree" \
     && cmake --build build/ \
     && mv ./build/libpcre2*so* $MSAN_LIBDIR \
     && rm -rf -- * \
     && apt-get source cppunit \
-    && mv cppunit-* . \
+    && mv cppunit-*/* . \
     && ./configure \
     && make -j "$(nproc)" \
     && mv ./src/cppunit/.libs/libcppunit.so* $MSAN_LIBDIR \
     && rm -rf -- * \
     && apt-get install -y libcppunit-dev \
     && apt-get source subunit \
-    && mv subunit-* . \
+    && mv subunit-*/* . \
     && autoreconf  -vi \
     && ./configure \
     && make libsubunit.la \
     && mv .libs/libsubunit.so* $MSAN_LIBDIR \
     && rm -rf -- * \
     && apt-get source cracklib2 \
-    && mv cracklib2-* . \
+    && mv cracklib2-*/* . \
     && mk-build-deps -it 'apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' \
     && aclocal \
     && libtoolize \
