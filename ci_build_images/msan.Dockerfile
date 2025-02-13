@@ -68,8 +68,10 @@ RUN . /etc/os-release \
         -DLLVM_USE_SANITIZER=MemoryWithOrigins \
     && cmake --build . --target cxx --target cxxabi --parallel "$(nproc)" \
     && cp -aL lib/lib*.so* "$MSAN_LIBDIR" \
+    && rm "$MSAN_LIBDIR"/libunwrap* \
     && cp -a include/c++/v1 "$MSAN_LIBDIR/include"
 
+# libunwrap removal because of https://github.com/llvm/llvm-project/issues/119437
 
 RUN . /etc/os-release \
     && export CFLAGS="-fno-omit-frame-pointer -O2 -g -fsanitize=memory" \
