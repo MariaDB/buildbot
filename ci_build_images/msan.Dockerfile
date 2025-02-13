@@ -68,7 +68,7 @@ RUN . /etc/os-release \
         -DLLVM_USE_SANITIZER=MemoryWithOrigins \
     && cmake --build . --target cxx --target cxxabi --parallel "$(nproc)" \
     && cp -aL lib/lib*.so* "$MSAN_LIBDIR" \
-    && rm "$MSAN_LIBDIR"/libunwrap* \
+    && rm "$MSAN_LIBDIR"/libunwind* \
     && cp -a include/c++/v1 "$MSAN_LIBDIR/include" \
     && cd .. \
     && rm -rf -- *
