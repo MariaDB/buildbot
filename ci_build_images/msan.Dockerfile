@@ -29,7 +29,7 @@ RUN . /etc/os-release \
     && printf "#!/bin/sh\nunset LD_LIBRARY_PATH\nexec llvm-symbolizer-%s \"\$@\"" "${CLANG_VERSION}" > $MSAN_SYMBOLIZER_PATH \
     && printf "#!/bin/sh\nunset LD_LIBRARY_PATH\nexec \"/usr/bin/\${0##*/}\" \"\$@\"" > $NO_MSAN_PATH/generic \
     && chmod a+x $NO_MSAN_PATH/generic \
-    && for nonmsanexec in gdb ctest grep sed; do \
+    && for nonmsanexec in gdb ctest grep sed mkdir ls; do \
          ln -s $NO_MSAN_PATH/generic $NO_MSAN_PATH/$nonmsanexec ; \
        done \
     && curl -sL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor -o /usr/share/keyrings/llvm-snapshot.gpg \
