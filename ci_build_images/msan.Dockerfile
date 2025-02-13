@@ -68,11 +68,11 @@ RUN . /etc/os-release \
     && cp -aL lib/lib*.so* "$MSAN_LIBDIR" \
     && cp -a include/c++/v1 "$MSAN_LIBDIR/include"
 
-ENV CFLAGS="-fno-omit-frame-pointer -O2 -g -fsanitize=memory"
-ENV CXXFLAGS="$CFLAGS"
-ENV LDFLAGS="-fsanitize=memory"
 
 RUN . /etc/os-release \
+    && export CFLAGS="-fno-omit-frame-pointer -O2 -g -fsanitize=memory" \
+    && export CXXFLAGS="$CFLAGS" \
+    && export LDFLAGS="-fsanitize=memory" \
     && apt-get source gnutls28 \
     && cd gnutls28-* \
     && mk-build-deps -it 'apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' \
