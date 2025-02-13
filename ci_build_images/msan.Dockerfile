@@ -76,7 +76,7 @@ RUN . /etc/os-release \
     && export CXXFLAGS="$CFLAGS" \
     && export LDFLAGS="-fsanitize=memory" \
     && apt-get source gnutls28 \
-    && cd gnutls28-* \
+    && mv gnutls28-*/* . \
     && mk-build-deps -it 'apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' \
     && aclocal \
     && automake --add-missing \
@@ -88,26 +88,27 @@ RUN . /etc/os-release \
         --disable-guile \
     && make -j "$(nproc)" \
     && cp -aL lib/.libs/libgnutls.so* $MSAN_LIBDIR \
-    && cd $OLDPWD \
-    \
+    && rm -rf -- * \
     && apt-get source nettle \
-    && cd nettle-* \
+    && mv nettle-*/* . \
     && mk-build-deps -it 'apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' \
     && ./configure \
         --disable-assembler \
     && make -j "$(nproc)" \
     && cp -aL .lib/lib*.so* $MSAN_LIBDIR \
-    && cd $OLDPWD \
+    && rm -rf -- * \
+    \
     && apt-get source libidn2 \
-    && cd libidn2-* \
+    && mv libidn2-*/* . \
     && mk-build-deps -it 'apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' \
     && ./configure \
         --enable-valgrind-tests=no \
     && make -j "$(nproc)" \
     && cp -aL lib/.libs/libidn2.so* $MSAN_LIBDIR \
-    && cd $OLDPWD \
+    && rm -rf -- * \
+    \
     && apt-get source gmp \
-    && cd gmp-* \
+    && mv gmp-*/* . \
     && mk-build-deps -it 'apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' \
     && sed -e '/^.*"doc\/Makefile".*/d;s/doc\/Makefile //;' -i.bak configure \
     && sed -e 's/^\(SUBDIRS = .*\) doc$/\1/;' -i.bak Makefile.in \
@@ -115,19 +116,19 @@ RUN . /etc/os-release \
         --disable-assembly \
     && make -j "$(nproc)" \
     && cp -aL .libs/libgmp.so* $MSAN_LIBDIR \
-    && cd $OLDPWD \
+    && rm -rf -- * \
     && apt-get source libxml2 \
-    && cd libxml2-* . \
+    && mv libxml2-* . \
     && aclocal \
     && automake --add-missing \
     && ./configure  --without-python --without-docbook --with-icu \
     && make -j "$(nproc)" \
     && cp -aL .libs/libxml2.so* $MSAN_LIBDIR \
-    && cd $OLDPWD \
+    && rm -rf -- * \
     && if [ "${VERSION_CODENAME}" = trixie ]; then \
        apt-get install -y libltdl-dev ; fi \
     && apt-get source unixodbc-dev \
-    && cd unixodbc-* \
+    && mv unixodbc-* . \
     && libtoolize --force \
     && aclocal \
     && autoheader \
@@ -136,42 +137,42 @@ RUN . /etc/os-release \
     &&  ./configure --enable-fastvalidate  --with-pth=no --with-included-ltdl=no \
     && make -j "$(nproc)" \
     && mv ./DriverManager/.libs/libodbc.so* $MSAN_LIBDIR \
-    && cd $OLDPWD \
+    && rm -rf -- * \
     && apt-get source libfmt-dev \
-    && cd fmtlib-* \
+    && mv fmtlib-* . \
     && mkdir build \
     && cmake -DFMT_DOC=OFF -DFMT_TEST=OFF  -DBUILD_SHARED_LIBS=on  -DFMT_PEDANTIC=on -S . -B build \
     && cmake --build build \
     && mv build/libfmt.so* $MSAN_LIBDIR \
-    && cd $OLDPWD \
+    && rm -rf -- * \
     && apt-get source libssl-dev \
-    && cd openssl-* \
+    && mv openssl-* . \
     && ./Configure  shared no-idea no-mdc2 no-rc5 no-zlib no-ssl3 enable-unit-test no-ssl3-method enable-rfc3779 enable-cms no-capieng no-rdrand $(if [ "${CLANG_VERSION}" -ge 19 ]; then echo no-asm enable-msan; fi) $CFLAGS \
     && make -j "$(nproc)" build_libs \
     && mv ./*.so* $MSAN_LIBDIR \
-    && cd $OLDPWD \
+    && rm -rf -- * \
     && apt-get source  libpcre2-dev \
-    && cd pcre2-* \
+    && mv pcre2-* . \
     && cmake -S . -B build/ -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -DPCRE2_BUILD_TESTS=OFF -DPCRE2_SUPPORT_JIT=ON  -DCMAKE_C_FLAGS="${CFLAGS} -Dregcomp=PCRE2regcomp -Dregexec=PCRE2regexec -Dregerror=PCRE2regerror -Dregfree=PCRE2regfree" \
     && cmake --build build/ \
     && mv ./build/libpcre2*so* $MSAN_LIBDIR \
-    && cd $OLDPWD \
+    && rm -rf -- * \
     && apt-get source cppunit \
-    && cd cppunit-* \
+    && mv cppunit-* . \
     && ./configure \
     && make -j "$(nproc)" \
     && mv ./src/cppunit/.libs/libcppunit.so* $MSAN_LIBDIR \
-    && cd $OLDPWD \
+    && rm -rf -- * \
     && apt-get install -y libcppunit-dev \
     && apt-get source subunit \
-    && cd subunit-* \
+    && mv subunit-* . \
     && autoreconf  -vi \
     && ./configure \
     && make libsubunit.la \
     && mv .libs/libsubunit.so* $MSAN_LIBDIR \
-    && cd $OLDPWD \
+    && rm -rf -- * \
     && apt-get source cracklib2 \
-    && cd cracklib2-* \
+    && mv cracklib2-* . \
     && mk-build-deps -it 'apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes' \
     && aclocal \
     && libtoolize \
@@ -181,8 +182,7 @@ RUN . /etc/os-release \
         --with-default-dict=/usr/share/dict/cracklib-small \
     && make -j "$(nproc)" \
     && cp -aL lib/.libs/*.so* $MSAN_LIBDIR \
-    && cd $OLDPWD \
-    && rm -rf * \
+    && rm -rf -- * \
     && apt-get clean \
     && apt-get -y purge \
        bzip2 \
@@ -191,16 +191,7 @@ RUN . /etc/os-release \
        liblzma-dev \
        liblzo2-dev \
        libsnappy-dev \
-    && chmod -R a+x $MSAN_LIBDIR/bin/* \
-    && find $MSAN_LIBDIR -ls
-
-#RUN apt-get source libxcrypt \
-#    && mv libxcrypt-*/* . \
-#    && ./autogen.sh \
-#    && ./configure --disable-xcrypt-compat-files --enable-obsolete-api=glibc \
-#    && make -j "$(nproc)" libcrypt.la \
-#    && mv .libs/libcrypt.so.* $MSAN_LIBDIR \
-#    && rm -rf -- *
+    && chmod -R a+x $MSAN_LIBDIR/bin/*
 
 # For convenience of human users of msan image
 ENV MSAN_OPTIONS=abort_on_error=1:poison_in_dtor=0
