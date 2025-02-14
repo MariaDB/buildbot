@@ -16,9 +16,9 @@ with open(
     encoding="utf-8",
 ) as file:
     locks = yaml.safe_load(file)
-    for worker_name in locks:
-        LOCKS[worker_name] = util.MasterLock(
-            f"{worker_name}_lock", maxCount=locks[worker_name]
+    for worker_base_name in locks:
+        LOCKS[worker_base_name] = util.MasterLock(
+            f"{worker_base_name}_lock", maxCount=locks[worker_base_name]
         )
 
 
@@ -36,6 +36,7 @@ def getLocks(props):
     ):
         return []
 
-    if worker_name not in LOCKS:
-        return []
-    return [LOCKS[worker_name].access("counting")]
+    for worker_base_name in LOCKS:
+        if worker_base_name in worker_name:
+            return [LOCKS[worker_base_name].access("counting")]
+    return []
