@@ -200,6 +200,9 @@ RUN . /etc/os-release \
 # For convenience of human users of msan image
 ENV MSAN_OPTIONS=abort_on_error=1:poison_in_dtor=0
 
+# Clear from base image
+ENV CFLAGS= CXXFLAGS=
+
 ENV CMAKE_GENERATOR=Ninja
 # rr installation + ninja
 RUN . /etc/os-release \
