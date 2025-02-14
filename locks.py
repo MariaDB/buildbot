@@ -37,6 +37,6 @@ def getLocks(props):
         return []
 
     for worker_base_name in LOCKS:
-        if worker_base_name in worker_name:
+        if worker_name.startswith(worker_base_name):
             return [LOCKS[worker_base_name].access("counting")]
     return []
