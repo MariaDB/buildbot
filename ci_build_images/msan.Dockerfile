@@ -13,7 +13,7 @@ ENV CC=clang
 ENV CXX=clang++
 ENV NO_MSAN_PATH=/msan-libs/bin
 ENV MSAN_LIBDIR=/msan-libs
-ENV MSAN_SYMBOLIZER_PATH=$NO_MSAN_PATH/llvm-symbolizer-msan
+ENV MSAN_SYMBOLIZER_PATH=/usr/bin/llvm-symbolizer-${CLANG_VERSION}
 
 ENV PATH=$NO_MSAN_PATH:$PATH
 
@@ -28,7 +28,6 @@ RUN . /etc/os-release \
         export LLVM_ENABLE_RUNTIMES="libcxx;libcxxabi"; fi \
     && mkdir $MSAN_LIBDIR \
     && mkdir $NO_MSAN_PATH \
-    && printf "#!/bin/sh\nunset LD_LIBRARY_PATH\nexec llvm-symbolizer-%s \"\$@\"" "${CLANG_VERSION}" > $MSAN_SYMBOLIZER_PATH \
     && printf "#!/bin/sh\nunset LD_LIBRARY_PATH\nexec \"/usr/bin/\${0##*/}\" \"\$@\"" > $NO_MSAN_PATH/generic \
     && chmod a+x $NO_MSAN_PATH/generic \
     && for nonmsanexec in gdb ctest grep sed mkdir ls; do \
