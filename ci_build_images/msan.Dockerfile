@@ -187,6 +187,7 @@ RUN . /etc/os-release \
     && make -j "$(nproc)" \
     && cp -aL lib/.libs/*.so* $MSAN_LIBDIR \
     && rm -rf -- * \
+    && /usr/sbin/cracklib-packer /usr/share/dict/cracklib-small < /usr/share/dict/cracklib-small \
     && apt-get clean \
     && apt-get -y purge \
        bzip2 \
