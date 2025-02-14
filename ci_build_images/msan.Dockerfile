@@ -11,11 +11,8 @@ WORKDIR /msan-build
 
 ENV CC=clang
 ENV CXX=clang++
-ENV NO_MSAN_PATH=/msan-libs/bin
 ENV MSAN_LIBDIR=/msan-libs
 ENV MSAN_SYMBOLIZER_PATH=/usr/bin/llvm-symbolizer-${CLANG_VERSION}
-
-ENV PATH=$NO_MSAN_PATH:$PATH
 
 ENV CFLAGS="-fno-omit-frame-pointer -O2 -g"
 ENV CXXFLAGS="$CFLAGS"
@@ -27,12 +24,6 @@ RUN . /etc/os-release \
     else \
         export LLVM_ENABLE_RUNTIMES="libcxx;libcxxabi"; fi \
     && mkdir $MSAN_LIBDIR \
-    && mkdir $NO_MSAN_PATH \
-    && printf "#!/bin/sh\nunset LD_LIBRARY_PATH\nexec \"/usr/bin/\${0##*/}\" \"\$@\"" > $NO_MSAN_PATH/generic \
-    && chmod a+x $NO_MSAN_PATH/generic \
-    && for nonmsanexec in gdb ctest grep sed mkdir ls; do \
-         ln -s $NO_MSAN_PATH/generic $NO_MSAN_PATH/$nonmsanexec ; \
-       done \
     && curl -sL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor -o /usr/share/keyrings/llvm-snapshot.gpg \
     && if [ $VERSION_CODENAME = trixie ]; then VERSION_CODENAME=unstable; LLVM_DEB=""; else LLVM_DEB=-$VERSION_CODENAME; fi \
     && if [ "${CLANG_VERSION}" -ge "${CLANG_DEV_VERSION}" ]; then \
@@ -194,8 +185,7 @@ RUN . /etc/os-release \
        liblz4-dev \
        liblzma-dev \
        liblzo2-dev \
-       libsnappy-dev \
-    && chmod -R a+x $MSAN_LIBDIR/bin/*
+       libsnappy-dev
 
 # For convenience of human users of msan image
 ENV MSAN_OPTIONS=abort_on_error=1:poison_in_dtor=0
