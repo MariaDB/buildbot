@@ -222,29 +222,29 @@ MTR_ENV = {
 #   when a test is run by name as in `./mtr testname`
 # * debug/asan/msan/ubsan tests need a type, because it's not enough to
 #   run `./mtr testname`, they need a special build
-test_type_to_mtr_arg = {
-    "nm": "",
-    "cursor": "--cursor-protocol",
-    "ps": "--ps-protocol",
-    "connect": "--suite=connect",
-    "emb": "--embedded",
-    "emb-ps": "--embedded --ps-protocol",
-    "s3": "--suite=s3",
-    "vault": "--suite=vault --big",
-    "view": "--view-protocol",
-    "optimizer_trace": "--suite=main --mysqld=--optimizer_trace=enabled=on",
+TEST_TYPE_TO_MTR_ARG = {
     "asan": "",
-    "msan": "",
-    "ubsan": "",
-    "valgrind": "",
+    "connect": "--suite=connect",
+    "cursor": "--cursor-protocol",
     "debug": "",
     "debug-cursor": "--cursor-protocol",
-    "debug-ps": "--ps-protocol",
     "debug-emb": "--embedded",
     "debug-emb-ps": "--embedded --ps-protocol",
+    "debug-ps": "--ps-protocol",
     "debug-view": "--view-protocol",
-    "nm_func_1_2": "--suite=funcs_1,funcs_2,stress,jp --big --mysqld=--open-files-limit=0 --mysqld=--log-warnings=1",
+    "emb": "--embedded",
+    "emb-ps": "--embedded --ps-protocol",
+    "msan": "",
+    "nm": "",
     "nm_engines": "--suite=spider,spider/bg,engines/funcs,engines/iuds --big --mysqld=--open-files-limit=0 --mysqld=--log-warnings=1",
+    "nm_func_1_2": "--suite=funcs_1,funcs_2,stress,jp --big --mysqld=--open-files-limit=0 --mysqld=--log-warnings=1",
+    "optimizer_trace": "--suite=main --mysqld=--optimizer_trace=enabled=on",
+    "ps": "--ps-protocol",
+    "s3": "--suite=s3",
+    "ubsan": "",
+    "valgrind": "",
+    "vault": "--suite=vault --big",
+    "view": "--view-protocol",
 }
 
 # =============================================================================

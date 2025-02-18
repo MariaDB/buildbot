@@ -10,7 +10,7 @@ from buildbot.process.properties import Property
 from buildbot.steps.mtrlogobserver import MTR
 
 # Local
-from constants import MTR_ENV, SAVED_PACKAGE_BRANCHES, test_type_to_mtr_arg
+from constants import MTR_ENV, SAVED_PACKAGE_BRANCHES, TEST_TYPE_TO_MTR_ARG
 from utils import (
     createDebRepo,
     createVar,
@@ -352,7 +352,7 @@ def addTests(
     mtr_step_db_pool: str,
     mtr_additional_args: str,
     *,
-    mtr_args: dict[str, str] = test_type_to_mtr_arg,
+    mtr_args: dict[str, str] = TEST_TYPE_TO_MTR_ARG,
     mtr_feedback_plugin: int = 0,
     mtr_retry: int = 3,
     mtr_max_save_core: int = 2,

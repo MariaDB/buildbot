@@ -1,3 +1,4 @@
+## This is a fragment file, do not execute it directly!
 
 # INSTALL HASHICORP VAULT
 # USAGE: vault server -dev > /dev/null 2>&1 &

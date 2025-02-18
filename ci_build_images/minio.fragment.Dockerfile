@@ -1,3 +1,5 @@
+## This is a fragment file, do not execute it directly!
+
 # INSTALL MINIO
 # All configured values are defaults for MTR
 # USAGE: minio server /tmp/minio > /dev/null 2>&1 &
