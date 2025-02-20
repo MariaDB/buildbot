@@ -548,6 +548,12 @@ check_upgraded_versions() {
         diff -u /tmp/version.old /tmp/version.new
         exit 1
       fi
+    elif ((old_branch_digit == 11)) && ((old_major_digit == 8)); then
+      if ((new_branch_digit == 12)) && ((new_major_digit != 0)); then
+        bb_log_err "This does not look like a major upgrade from 11.8 to 12.0:"
+        diff -u /tmp/version.old /tmp/version.new
+        exit 1
+      fi
     else
       old_major_digit_incr=$((old_major_digit + 1))
       ((old_major_digit_incr == new_major_digit)) || {
