@@ -58,12 +58,12 @@ RUN . /etc/os-release \
         -DLLVM_USE_SANITIZER=MemoryWithOrigins \
     && cmake --build . --target cxx --target cxxabi --parallel "$(nproc)" \
     && cp -aL lib/lib*.so* "$MSAN_LIBDIR" \
-    && rm "$MSAN_LIBDIR"/libunwind* \
     && cp -a include/c++/v1 "$MSAN_LIBDIR/include" \
     && cd .. \
     && rm -rf -- *
 
-# libunwrap removal because of https://github.com/llvm/llvm-project/issues/119437
+RUN for f in "$MSAN_LIBDIR"/libunwind*; do mv $f $f-disable; done 
+# libunwrap move/disable because of https://github.com/llvm/llvm-project/issues/128621
 
 RUN . /etc/os-release \
     && export CFLAGS="-fno-omit-frame-pointer -O2 -g -fsanitize=memory" \
