@@ -185,7 +185,10 @@ RUN . /etc/os-release \
        liblz4-dev \
        liblzma-dev \
        liblzo2-dev \
-       libsnappy-dev
+       libsnappy-dev \
+    && rm -rf /msan-build
+
+WORKDIR /
 
 # For convenience of human users of msan image
 ENV MSAN_OPTIONS=abort_on_error=1:poison_in_dtor=0
