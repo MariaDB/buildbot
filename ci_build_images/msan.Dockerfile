@@ -17,7 +17,7 @@ ENV MSAN_SYMBOLIZER_PATH=/usr/bin/llvm-symbolizer-${CLANG_VERSION}
 ENV CFLAGS="-fno-omit-frame-pointer -O2 -g"
 ENV CXXFLAGS="$CFLAGS"
 
-# hadolint ignore=SC2046
+# hadolint ignore=SC2046,DL3003
 RUN . /etc/os-release \
     && if [ "${CLANG_VERSION}" -gt 17 ]; then \
         export LLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind"; \
