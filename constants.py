@@ -116,11 +116,6 @@ SUPPORTED_PLATFORMS["10.5"] = [
     "amd64-centos-stream9",
     "amd64-debian-11",
     "amd64-debian-11-debug-ps-embedded",
-<<<<<<< HEAD
-    "amd64-debian-11-msan",
-=======
-    "amd64-msan-clang",
->>>>>>> cf7e615 (Remove clang-19 out of container name)
     "amd64-debian-11-msan-clang-16",
     "amd64-debian-12-asan-ubsan",
     "amd64-debian-12-rocksdb",
@@ -131,6 +126,7 @@ SUPPORTED_PLATFORMS["10.5"] = [
     "amd64-rhel-8",
     "amd64-rhel-9",
     "amd64-last-N-failed",
+    "amd64-msan-clang",
     "amd64-ubuntu-2004",
     "amd64-ubuntu-2004-debug",
     "amd64-ubuntu-2004-fulltest",
