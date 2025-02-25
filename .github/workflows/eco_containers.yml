@@ -3,6 +3,9 @@ name: eco container build
 
 on:
   push:
+    branches:
+      - 'main'
+      - 'dev'
     paths:
       - .github/workflows/eco_containers.yml
       - "eco_build_images/**"

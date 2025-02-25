@@ -57,13 +57,9 @@ server {
 
 	#FIXME: CrossReference not in DEV.
 	# Cross-reference
-	location /cr/static {
-		alias   /srv/cr/static;
+	location /cr/ {
+		proxy_pass http://${NGINX_CR_HOST_WG_ADDR};
 	}
-
-	# logging
-	access_log /var/log/nginx/${NGINX_BUILDBOT_VHOST}.access.log;
-	error_log /var/log/nginx/${NGINX_BUILDBOT_VHOST}.error.log;
 
 	# disable logging for wsgi_dashboards/styles.css since it's generated
 	# somewhere and mess with fail2ban //TEMP find the root cause!

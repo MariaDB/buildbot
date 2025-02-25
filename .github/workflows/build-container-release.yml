@@ -2,6 +2,9 @@ name: Build container release
 
 on:
   push:
+    branches:
+      - 'main'
+      - 'dev'
     paths:
       - 'ci_build_images/debian-release.Dockerfile'
       - 'ci_build_images/buildbot-worker.Dockerfile'

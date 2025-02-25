@@ -33,6 +33,7 @@ commit=${4:-0}
 branch=${5:-${master_branch}}
 artifacts_url=${ARTIFACTS_URL:-https://ci.mariadb.org}
 
+
 # keep in sync with docker-cleanup script
 if [[ $branch =~ ^preview ]]; then
   container_tag=${branch#preview-}
@@ -45,6 +46,7 @@ fi
 # Container tags must be lower case.
 container_tag=${container_tag,,*}
 ubi=
+arches=( linux/amd64 linux/arm64/v8 linux/ppc64le linux/s390x  )
 
 case "${buildername#*ubuntu-}" in
   2404-deb-autobake)
@@ -58,16 +60,41 @@ case "${buildername#*ubuntu-}" in
     ;;
   *-rhel-9-rpm-autobake)
     ubi=-ubi
+    # first arch only
+    arches=( linux/amd64 )
     master_branch=${master_branch}-ubi
     ;;
   *)
     echo "unknown base buildername $buildername"
-    exit 0
+    exit 1
     ;;
 esac
 
-builderarch=${buildername%%-*}
+image=mariadb-${tarbuildnum}${ubi}
 
+# keep a count of architectures that have reached this step
+# and only build once they are all here.
+
+# UBI for the moment only triggers on one arch
+reffile="${container_tag}-${tarbuildnum}${ubi}-reference.txt"
+
+# ensure unique entries for each arch
+echo "$buildername" >> "$reffile"
+sort -u "$reffile" -o "$reffile"
+
+entries=$(wc -l < "$reffile")
+if [ "$entries" -lt ${#arches[@]} ]; then
+	echo "Only $entries architectures so far"
+	# so we're not going to do anything until we have a full list.
+	exit 2
+fi
+
+# Don't remove file here. Leave a manual retrigger of
+# any build of the same tarbuildnum / ubi there to redo
+# start the rebuild, without the server rebuild.
+# rm "$reffile"
+
+# Annotations - https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys
 declare -a annotations=(
   "--annotation" "org.opencontainers.image.authors=MariaDB Foundation"
   "--annotation" "org.opencontainers.image.documentation=https://hub.docker.com/_/mariadb"
@@ -81,55 +108,80 @@ declare -a annotations=(
   "--annotation" "org.opencontainers.image.version=$mariadb_version+$commit"
   "--annotation" "org.opencontainers.image.revision=$commit")
 
-annotate() {
-  for item in "${annotations[@]}"; do
-    echo " --annotation" \""$item"\"
-  done
-}
-
-image=mariadb-${tarbuildnum}-${builderarch}$ubi
-
-if [ -n "$ubi" ]
-then
-
-build() {
-  local repo="mariadb-docker/$master_branch"/MariaDB.repo
-  curl "$artifacts_url"/galera/mariadb-4.x-latest-gal-"${buildername%-rpm-autobake}".repo \
-    -o "$repo"
-  curl "$artifacts_url/$tarbuildnum/${buildername}"/MariaDB.repo \
-    >> "$repo"
-  buildah bud --tag "${image}" \
-    --layers \
-    --arch "$@" \
-    --build-arg MARIADB_VERSION="$mariadb_version" \
-    "${annotations[@]}" \
-    "mariadb-docker/$master_branch"
-}
-
-else
-# Annotations - https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys
-build() {
-  local galera_repo
-  galera_repo="deb [trusted=yes] $(curl "$artifacts_url"/galera/mariadb-4.x-latest-gal-"${buildername%-deb-autobake}".sources | sed '/URIs: /!d ; s///;q') ./"
-  buildah bud --tag "${image}" \
-    --layers \
-    --arch "$@" \
-    --build-arg REPOSITORY="[trusted=yes] $artifacts_url/$tarbuildnum/${buildername}/debs ./\n$galera_repo" \
-    --build-arg MARIADB_VERSION="1:$mariadb_version+maria~$pkgver" \
-    "${annotations[@]}" \
-    "mariadb-docker/$master_branch"
-}
-fi
-
 #
 # BUILD Image
+#
+builder_noarch=${buildername#*-}
 
-if [ "${builderarch}" = aarch64 ]; then
-  build arm64 --variant v8
-else
-  build "${builderarch}"
-fi
+galera_distro=${buildername%-*-autobake}
+galera_distro_noarch=${galera_distro#*-}
 
-if [ "${builderarch}" = amd64 ]; then
-  podman tag "${image}" "${image}-wordpress"
-fi
+build() {
+  local arch=$1
+  declare -a args
+  local bbarch=${arch#*/}
+  if [ "$bbarch" = arm64/v8 ]; then
+    bbarch=aarch64;
+  fi
+  if [ -n "$ubi" ]
+  then
+    local repo="mariadb-docker/$master_branch"/MariaDB.repo
+    curl "${artifacts_url}/galera/mariadb-4.x-latest-gal-${bbarch}-${galera_distro_noarch}".repo \
+      -o "$repo"
+    curl "${artifacts_url}/$tarbuildnum/${bbarch}-${builder_noarch}"/MariaDB.repo \
+      >> "$repo"
+    args=( --build-arg MARIADB_VERSION="$mariadb_version" )
+  else
+    local galera_repo
+    galera_repo="deb [trusted=yes] $(curl "${artifacts_url}/galera/mariadb-4.x-latest-gal-${bbarch}-${galera_distro_noarch}.sources" | sed '/URIs: /!d ; s///;q') ./"
+    args=(
+      --build-arg REPOSITORY="[trusted=yes] ${artifacts_url}/${tarbuildnum}/${bbarch}-${builder_noarch}/debs ./\n$galera_repo" \
+      --build-arg MARIADB_VERSION="1:$mariadb_version+maria~$pkgver" )
+  fi
+  buildah bud --tag "${image}-${arch}" \
+    --layers \
+    --platform "$arch" \
+    "${args[@]}" \
+    "${annotations[@]}" \
+   "mariadb-docker/$master_branch"
+}
+
+## Because our repos aren't multiarch, or paramitizable by $TARGET_ARCH, we do it separately
+##
+## intentionally array to simple
+## shellcheck disable=SC2124
+#archlist="${arches[@]}"
+#
+## comma separated
+#archlist=${archlist// /,}
+#buildah bud --manifest "${image}" \
+#  --jobs 4 \
+#  --layers \
+#  --platform "${archlist}" \
+#  "${args[@]}" \
+#  "${annotations[@]}" \
+#  "mariadb-docker/$master_branch"
+
+buildah manifest rm "$image" || echo "already not there"
+
+cleanup()
+{
+  buildah manifest rm "$image" || echo "already gone"
+  for arch in "${arches[@]}"; do
+    # -f will remove all tags of same, like wordpress
+    buildah rmi -f "${image}-${arch}" || echo "already gone"
+  done
+  buildah rmi --prune --force
+}
+
+trap cleanup ERR
+
+buildah manifest create "$image"
+
+for arch in "${arches[@]}"; do
+  build "$arch"
+  buildah manifest add "$image" "$image-$arch"
+  if [ "$arch" = linux/amd64 ]; then
+    buildah tag "${image}-${arch}" "${image}-wordpress"
+  fi
+done

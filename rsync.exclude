@@ -6,7 +6,6 @@ autogen
 ci_build_images
 docker-compose/logs
 docker-compose/certbot
-docker-compose/mariadb
 docker-compose/nginx/conf.d/bb.conf
 docker-compose/nginx/conf.d/ci.conf
 master-libvirt/id_ed25519

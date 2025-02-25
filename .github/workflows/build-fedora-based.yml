@@ -2,6 +2,9 @@ name: Build Fedora based images
 
 on:
   push:
+    branches:
+      - 'main'
+      - 'dev'
     paths:
       - 'ci_build_images/fedora.Dockerfile'
       - 'ci_build_images/qpress.Dockerfile'

@@ -84,6 +84,10 @@ RUN . /etc/os-release \
     sudo  \
     wget \
     && if [ "$(getconf LONG_BIT)" = 64 ]; then apt-get -y install --no-install-recommends galera-4; fi \
+    && if [ "${VERSION_ID}" != 20.04 ] && [ "${VERSION_ID}" != 11 ]; then \
+      # Bootstrap MDEV-32686 so only temporary until https://github.com/MariaDB/server/pull/3692 merged up \
+      DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends dh-package-notes; \
+    fi \
     && if [ "${VERSION_ID}" != 18.04 ]; then \
       apt-get -y install --no-install-recommends flex; \
     fi \

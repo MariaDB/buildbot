@@ -56,6 +56,10 @@ checkconfig: ## Validate master.cfg files
 	$(info --> validate master.cfg files with docker)
 	./validate_master_cfg.sh
 
+test: ## Run unittests
+	$(info --> run unittests)
+	python -m unittest discover -s tests -p "test*.py"
+
 clean: ## Clean venv
 	[[ ! -d $(VENV_DIR) ]] || rm -rf $(VENV_DIR)
 	[[ ! -d $(VENDOR_DIR) ]] || rm -rf $(VENDOR_DIR)

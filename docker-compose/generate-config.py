@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 config = {"private": {}}
 exec(open("../master-private.cfg").read(), config, {})
 
+BUILDBOT_STOP_GRACE_PERIOD = "5m"
+
 MASTER_DIRECTORIES = [
     "master-nonlatent",
     "master-libvirt",
@@ -20,7 +22,6 @@ MASTER_DIRECTORIES = [
     "master-galera",
     "master-protected-branches",
     "master-docker-nonstandard-2",
-    "master-bintars",
 ]
 
 VOLUMES = ["./logs:/var/log/buildbot", "./buildbot/:/srv/buildbot/master"]
@@ -29,7 +30,7 @@ START_TEMPLATE = """
 ---
 services:
   mariadb:
-    image: mariadb:10.11
+    image: mariadb:10.11.10
     restart: unless-stopped
     container_name: mariadb
     hostname: mariadb
@@ -41,10 +42,10 @@ services:
       - MARIADB_AUTO_UPGRADE=1
     network_mode: host
     healthcheck:
-      test: ['CMD', "mariadb-admin", "--password=password", "--protocol", "tcp", "ping"]
+      test: ['CMD', "healthcheck.sh", "--connect", "--innodb_initialized"]
     volumes:
-      - ./mariadb:/var/lib/mysql:rw
-      - ./mariadb.cnf:/etc/mysql/conf.d/mariadb.cnf:ro
+      - /srv/mariadb:/var/lib/mysql:rw
+      - ./mariadb-config/{config_path}/mariadb.cnf:/etc/mysql/conf.d/mariadb.cnf:ro
     logging:
       driver: journald
       options:
@@ -56,6 +57,8 @@ services:
     container_name: crossbar
     hostname: crossbar
     network_mode: host
+    volumes:
+      - ./crossbar/{config_path}/config.json:/node/.crossbar/config.json
     logging:
       driver: journald
       options:
@@ -73,12 +76,13 @@ services:
       - /srv/buildbot/packages:/srv/buildbot/packages:ro
       - /srv/buildbot/galera_packages:/srv/buildbot/galera_packages:ro
       - /srv/buildbot/helper_files:/srv/buildbot/helper_files:ro
-      - ./logs/nginx:/var/log/nginx
+      - /srv/buildbot/cloud-init:/srv/buildbot/cloud-init:ro
       - ./certbot/www/:/var/www/certbot/:ro
       - ./certbot/ssl/:/etc/nginx/ssl/:ro
     environment:
       - NGINX_ARTIFACTS_VHOST
       - NGINX_BUILDBOT_VHOST
+      - NGINX_CR_HOST_WG_ADDR
     network_mode: host
     logging:
       driver: journald
@@ -86,9 +90,10 @@ services:
         tag: "bb-nginx"
 
   master-web:
-    image: quay.io/mariadb-foundation/bb-master:master-web
+    image: quay.io/mariadb-foundation/bb-master:{environment}master-web
     restart: unless-stopped
     container_name: master-web
+    stop_grace_period: {buildbot_stop_grace_period}
     hostname: master-web
     volumes:
       - ./logs:/var/log/buildbot
@@ -105,10 +110,11 @@ services:
 
 DOCKER_COMPOSE_TEMPLATE = """
   {master_name}:
-    image: quay.io/mariadb-foundation/bb-master:master
+    image: quay.io/mariadb-foundation/bb-master:{environment}master
     restart: unless-stopped
     container_name: {master_name}
-    hostname: {master_name}
+    stop_grace_period: {buildbot_stop_grace_period}
+    hostname: {master_hostname}
     {volumes}
     entrypoint:
       - /bin/bash
@@ -150,9 +156,14 @@ def main(args):
         key: VOLUMES[:]
         for key in [element.replace("/", "_") for element in MASTER_DIRECTORIES]
     }
-    master_volumes["master-nonlatent"].append(
-        "/srv/buildbot/packages:/srv/buildbot/packages"
-    )  # Using FileUpload step
+    for master in [
+        "master-nonlatent",
+        "master-docker-nonstandard",
+        "master-docker-nonstandard-2",
+    ]:
+        master_volumes[master].append(
+            "/srv/buildbot/packages:/srv/buildbot/packages"
+        )  # Using FileUpload step
 
     # Capture the current environment variables' keys
     current_env_keys = set(os.environ.keys())
@@ -192,20 +203,29 @@ def main(args):
         )
         file.write(
             start_template.format(
-                port=master_web_port, cr_host_wg_addr=env_vars["CR_HOST_WG_ADDR"]
+                port=master_web_port,
+                environment="" if args.env == "prod" else "dev_",
+                config_path=args.env,
+                buildbot_stop_grace_period=BUILDBOT_STOP_GRACE_PERIOD,
             )
         )
         port = starting_port
         for master_directory in MASTER_DIRECTORIES:
             master_name = master_directory.replace("/", "_")
-
+            if args.env == "dev":
+                master_hostname = "dev_" + master_name
+            else:
+                master_hostname = master_name
             # Generate Docker Compose piece
             docker_compose_piece = docker_compose_template.format(
                 master_name=master_name,
+                master_hostname=master_hostname,
                 master_directory=master_directory,
                 port=port,
                 mc_host=mc_host,
                 volumes=generate_volumes(master_volumes[master_name]),
+                environment="" if args.env == "prod" else "dev_",
+                buildbot_stop_grace_period=BUILDBOT_STOP_GRACE_PERIOD,
             )
             port += 1
 

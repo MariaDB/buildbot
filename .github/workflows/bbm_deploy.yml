@@ -19,6 +19,7 @@ on:
       - "script_templates/**"
       - "utils.py"
       - "validate_master_cfg.sh"
+      - "worker_locks.yaml"
   pull_request:
     paths:
       - ".github/workflows/bbm_deploy.yml"
@@ -31,18 +32,29 @@ on:
       - "locks.py"
       - "master-**"
       - "master.cfg"
+      - "master_common.py"
       - "os_info.yaml"
       - "script_templates/**"
       - "utils.py"
       - "validate_master_cfg.sh"
+      - "worker_locks.yaml"
 
 jobs:
   check:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-      - name: Check master.cfg files
-        run: ./validate_master_cfg.sh
+
+      - name: Check master.cfg files for DEV container
+        run: ./validate_master_cfg.sh -e DEV
+
+      # When master container is under development we must ensure
+      # that configuration changes are valid on both buildbot master
+      # versions, PROD/DEV. Let's say one will bring a new feature
+      # to Production independently of a master upgrade.
+      - name: Check master.cfg files for PROD container
+        run: ./validate_master_cfg.sh -e PROD
+
       - name: Check get_ssh_cnx_num.py
         run: |
           cd master-libvirt
@@ -51,31 +63,95 @@ jobs:
   deploy:
     runs-on: ubuntu-22.04
     needs: check
-    if: >
-      github.ref == 'refs/heads/dev' &&
-      github.repository == 'MariaDB/buildbot'
     steps:
+      - name: Set up env vars
+        run: |
+          echo "DEPLOY=false" >>$GITHUB_ENV
+
+          # INFO
+          echo "GitHub Branch is ${{ github.ref }}"
+          echo "GitHub Repository is ${{ github.repository }}"
+          echo "GitHub Event Name is ${{ github.event_name }}"
+
+          # DEV environment
+          if [[ ${{ github.repository }} == 'MariaDB/buildbot' ]] && \
+             [[ ${{ github.ref }} == 'refs/heads/dev' ]]; then
+            echo "DEPLOY=true" >>$GITHUB_ENV
+            echo "BB_ENV=DEV" >>$GITHUB_ENV
+            echo "DEPLOY_PATH=/srv/dev" >>$GITHUB_ENV
+            echo "ENV_FILE=.env.dev" >>$GITHUB_ENV
+          fi
+
+          # PROD environment
+          if [[ ${{ github.repository }} == 'MariaDB/buildbot' ]] && \
+             [[ ${{ github.ref }} == 'refs/heads/main' ]] && \
+             [[ ${{ github.event_name }} == 'workflow_dispatch' ]]; then
+            echo "DEPLOY=true" >>$GITHUB_ENV
+            echo "BB_ENV=PROD" >>$GITHUB_ENV
+            echo "DEPLOY_PATH=/srv/prod" >>$GITHUB_ENV
+            echo "ENV_FILE=.env" >>$GITHUB_ENV
+          fi
+
       - uses: actions/checkout@v4
+
       - name: prepare
+        env:
+          PKEY: ${{ secrets[format('BBM_{0}_SSH_PRIVATE_KEY', env.BB_ENV)] }}
+          THOST: ${{ secrets[format('BBM_{0}_SSH_KNOWN_HOSTS', env.BB_ENV)] }}
         run: |
           install -m 600 -D /dev/null ~/.ssh/id_ed25519
           install -m 600 -D /dev/null ~/.ssh/known_hosts
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" >~/.ssh/id_ed25519
-          echo "${{ secrets.SSH_KNOWN_HOSTS }}" >~/.ssh/known_hosts
+          echo "$PKEY" >~/.ssh/id_ed25519
+          echo "$THOST" >~/.ssh/known_hosts
+
       - name: shutdown stack
+        env:
+          TUSER: ${{ secrets[format('BBM_{0}_USER', env.BB_ENV)] }}
+          TPORT: ${{ secrets[format('BBM_{0}_SERVER_PORT', env.BB_ENV)] }}
+          TIP: ${{ secrets[format('BBM_{0}_SERVER_IP', env.BB_ENV)] }}
+          TPATH: ${{ env.DEPLOY_PATH }}
+        if: ${{ env.DEPLOY == 'true' && env.BB_ENV == 'DEV' }}
         run: |
-          ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} "if [[ -f /srv/dev/docker-compose/docker-compose.yaml ]]; then docker-compose -f /srv/dev/docker-compose/docker-compose.yaml down; fi"
+          ssh -p $TPORT $TUSER@$TIP "cd $TPATH/docker-compose &&
+            docker-compose down"
+
       - name: deploy
+        env:
+          TUSER: ${{ secrets[format('BBM_{0}_USER', env.BB_ENV)] }}
+          TPORT: ${{ secrets[format('BBM_{0}_SERVER_PORT', env.BB_ENV)] }}
+          TIP: ${{ secrets[format('BBM_{0}_SERVER_IP', env.BB_ENV)] }}
+          TPATH: ${{ env.DEPLOY_PATH }}
+        if: ${{ env.DEPLOY == 'true' }}
         run: |
-          # temporary fix of jade templating
-          sed -i 's#https://ci.mariadb.org#https://ci.dev.mariadb.org#g' master-web/templates/home.jade
-          rsync -a --progress --delete --exclude-from=rsync.exclude -e "ssh -p ${{ secrets.SERVER_PORT }}" ./ ${{ secrets.USER }}@${{ secrets.SERVER_IP }}:/srv/dev/
-          ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} "cd /srv/dev/docker-compose/ && ./generate-config.py --env=dev"
-          ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} "cd /srv/dev/ && ./define_masters.py"
-          ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} "cd /srv/dev/docker-compose/ && ln -sf .. buildbot"
+          # Copy files to remote server
+          rsync -a \
+            --progress \
+            --delete \
+            --exclude-from=rsync.exclude \
+            -e "ssh -p $TPORT" ./ $TUSER@$TIP:$TPATH/
+
+          # Generate docker-compose
+          ssh -p $TPORT $TUSER@$TIP "cd $TPATH/docker-compose/ &&
+           ./generate-config.py --env=${BB_ENV,,}"
+
+          # Define auto-generated masters
+          ssh -p $TPORT $TUSER@$TIP "cd $TPATH/ && ./define_masters.py"
+
+          ssh -p $TPORT $TUSER@$TIP "cd $TPATH/docker-compose/ &&
+            ln -sf .. buildbot"
+
       - name: start stack
+        env:
+          TUSER: ${{ secrets[format('BBM_{0}_USER', env.BB_ENV)] }}
+          TPORT: ${{ secrets[format('BBM_{0}_SERVER_PORT', env.BB_ENV)] }}
+          TIP: ${{ secrets[format('BBM_{0}_SERVER_IP', env.BB_ENV)] }}
+          TPATH: ${{ env.DEPLOY_PATH }}
+        if: ${{ env.DEPLOY == 'true' && env.BB_ENV == 'DEV' }}
         run: |
-          ssh -p ${{ secrets.SERVER_PORT }} ${{ secrets.USER }}@${{ secrets.SERVER_IP }} "cd /srv/dev/docker-compose && docker-compose pull && docker-compose --env-file .env.dev up -d"
+          ssh -p $TPORT $TUSER@$TIP "cd $TPATH/docker-compose &&
+             docker-compose pull &&
+             docker-compose --env-file ${{ env.ENV_FILE }} up -d"
+
       - name: clean
         run: |
           rm ~/.ssh/id_ed25519

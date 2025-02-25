@@ -3,7 +3,7 @@
 ---
 services:
   mariadb:
-    image: mariadb:10.11
+    image: mariadb:10.11.10
     restart: unless-stopped
     container_name: mariadb
     hostname: mariadb
@@ -15,10 +15,10 @@ services:
       - MARIADB_AUTO_UPGRADE=1
     network_mode: host
     healthcheck:
-      test: ['CMD', "mariadb-admin", "--password=password", "--protocol", "tcp", "ping"]
+      test: ['CMD', "healthcheck.sh", "--connect", "--innodb_initialized"]
     volumes:
-      - ./mariadb:/var/lib/mysql:rw
-      - ./mariadb.cnf:/etc/mysql/conf.d/mariadb.cnf:ro
+      - /srv/mariadb:/var/lib/mysql:rw
+      - ./mariadb-config/dev/mariadb.cnf:/etc/mysql/conf.d/mariadb.cnf:ro
     logging:
       driver: journald
       options:
@@ -30,6 +30,8 @@ services:
     container_name: crossbar
     hostname: crossbar
     network_mode: host
+    volumes:
+      - ./crossbar/dev/config.json:/node/.crossbar/config.json
     logging:
       driver: journald
       options:
@@ -47,12 +49,13 @@ services:
       - /srv/buildbot/packages:/srv/buildbot/packages:ro
       - /srv/buildbot/galera_packages:/srv/buildbot/galera_packages:ro
       - /srv/buildbot/helper_files:/srv/buildbot/helper_files:ro
-      - ./logs/nginx:/var/log/nginx
+      - /srv/buildbot/cloud-init:/srv/buildbot/cloud-init:ro
       - ./certbot/www/:/var/www/certbot/:ro
       - ./certbot/ssl/:/etc/nginx/ssl/:ro
     environment:
       - NGINX_ARTIFACTS_VHOST
       - NGINX_BUILDBOT_VHOST
+      - NGINX_CR_HOST_WG_ADDR
     network_mode: host
     logging:
       driver: journald
@@ -60,7 +63,7 @@ services:
         tag: "bb-nginx"
 
   master-web:
-    image: quay.io/mariadb-foundation/bb-master:master-web
+    image: quay.io/mariadb-foundation/bb-master:dev_master-web
     restart: unless-stopped
     container_name: master-web
     environment:
@@ -69,19 +72,16 @@ services:
       - BUILDMASTER_URL
       - BUILDMASTER_WG_IP
       - CONTAINER_REGISTRY_URL
-      - CR_HOST_WG_ADDR
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_BINTARS_VM_PORT
-      - MASTER_NONLATENT_BINTARS_WORKERS
-      - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MQ_ROUTER_URL
       - PORT=8010
       - TITLE
       - TITLE_URL
+    stop_grace_period: 5m
     hostname: master-web
     volumes:
       - ./logs:/var/log/buildbot
@@ -96,7 +96,7 @@ services:
         condition: service_started
 
   master-nonlatent:
-    image: quay.io/mariadb-foundation/bb-master:master
+    image: quay.io/mariadb-foundation/bb-master:dev_master
     restart: unless-stopped
     container_name: master-nonlatent
     environment:
@@ -105,13 +105,9 @@ services:
       - BUILDMASTER_URL
       - BUILDMASTER_WG_IP
       - CONTAINER_REGISTRY_URL
-      - CR_HOST_WG_ADDR
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_BINTARS_VM_PORT
-      - MASTER_NONLATENT_BINTARS_WORKERS
-      - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
@@ -119,7 +115,8 @@ services:
       - PORT=9996
       - TITLE
       - TITLE_URL
-    hostname: master-nonlatent
+    stop_grace_period: 5m
+    hostname: dev_master-nonlatent
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -136,7 +133,7 @@ services:
         condition: service_started
 
   master-libvirt:
-    image: quay.io/mariadb-foundation/bb-master:master
+    image: quay.io/mariadb-foundation/bb-master:dev_master
     restart: unless-stopped
     container_name: master-libvirt
     environment:
@@ -145,13 +142,9 @@ services:
       - BUILDMASTER_URL
       - BUILDMASTER_WG_IP
       - CONTAINER_REGISTRY_URL
-      - CR_HOST_WG_ADDR
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_BINTARS_VM_PORT
-      - MASTER_NONLATENT_BINTARS_WORKERS
-      - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
@@ -159,7 +152,8 @@ services:
       - PORT=9997
       - TITLE
       - TITLE_URL
-    hostname: master-libvirt
+    stop_grace_period: 5m
+    hostname: dev_master-libvirt
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -175,7 +169,7 @@ services:
         condition: service_started
 
   autogen_aarch64-master-0:
-    image: quay.io/mariadb-foundation/bb-master:master
+    image: quay.io/mariadb-foundation/bb-master:dev_master
     restart: unless-stopped
     container_name: autogen_aarch64-master-0
     environment:
@@ -184,13 +178,9 @@ services:
       - BUILDMASTER_URL
       - BUILDMASTER_WG_IP
       - CONTAINER_REGISTRY_URL
-      - CR_HOST_WG_ADDR
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_BINTARS_VM_PORT
-      - MASTER_NONLATENT_BINTARS_WORKERS
-      - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
@@ -198,7 +188,8 @@ services:
       - PORT=9998
       - TITLE
       - TITLE_URL
-    hostname: autogen_aarch64-master-0
+    stop_grace_period: 5m
+    hostname: dev_autogen_aarch64-master-0
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -214,7 +205,7 @@ services:
         condition: service_started
 
   autogen_amd64-master-0:
-    image: quay.io/mariadb-foundation/bb-master:master
+    image: quay.io/mariadb-foundation/bb-master:dev_master
     restart: unless-stopped
     container_name: autogen_amd64-master-0
     environment:
@@ -223,13 +214,9 @@ services:
       - BUILDMASTER_URL
       - BUILDMASTER_WG_IP
       - CONTAINER_REGISTRY_URL
-      - CR_HOST_WG_ADDR
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_BINTARS_VM_PORT
-      - MASTER_NONLATENT_BINTARS_WORKERS
-      - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
@@ -237,7 +224,8 @@ services:
       - PORT=9999
       - TITLE
       - TITLE_URL
-    hostname: autogen_amd64-master-0
+    stop_grace_period: 5m
+    hostname: dev_autogen_amd64-master-0
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -253,7 +241,7 @@ services:
         condition: service_started
 
   autogen_amd64-master-1:
-    image: quay.io/mariadb-foundation/bb-master:master
+    image: quay.io/mariadb-foundation/bb-master:dev_master
     restart: unless-stopped
     container_name: autogen_amd64-master-1
     environment:
@@ -262,13 +250,9 @@ services:
       - BUILDMASTER_URL
       - BUILDMASTER_WG_IP
       - CONTAINER_REGISTRY_URL
-      - CR_HOST_WG_ADDR
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_BINTARS_VM_PORT
-      - MASTER_NONLATENT_BINTARS_WORKERS
-      - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
@@ -276,7 +260,8 @@ services:
       - PORT=10000
       - TITLE
       - TITLE_URL
-    hostname: autogen_amd64-master-1
+    stop_grace_period: 5m
+    hostname: dev_autogen_amd64-master-1
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -292,7 +277,7 @@ services:
         condition: service_started
 
   autogen_ppc64le-master-0:
-    image: quay.io/mariadb-foundation/bb-master:master
+    image: quay.io/mariadb-foundation/bb-master:dev_master
     restart: unless-stopped
     container_name: autogen_ppc64le-master-0
     environment:
@@ -301,13 +286,9 @@ services:
       - BUILDMASTER_URL
       - BUILDMASTER_WG_IP
       - CONTAINER_REGISTRY_URL
-      - CR_HOST_WG_ADDR
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_BINTARS_VM_PORT
-      - MASTER_NONLATENT_BINTARS_WORKERS
-      - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
@@ -315,7 +296,8 @@ services:
       - PORT=10001
       - TITLE
       - TITLE_URL
-    hostname: autogen_ppc64le-master-0
+    stop_grace_period: 5m
+    hostname: dev_autogen_ppc64le-master-0
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -331,7 +313,7 @@ services:
         condition: service_started
 
   autogen_s390x-master-0:
-    image: quay.io/mariadb-foundation/bb-master:master
+    image: quay.io/mariadb-foundation/bb-master:dev_master
     restart: unless-stopped
     container_name: autogen_s390x-master-0
     environment:
@@ -340,13 +322,9 @@ services:
       - BUILDMASTER_URL
       - BUILDMASTER_WG_IP
       - CONTAINER_REGISTRY_URL
-      - CR_HOST_WG_ADDR
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_BINTARS_VM_PORT
-      - MASTER_NONLATENT_BINTARS_WORKERS
-      - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
@@ -354,7 +332,8 @@ services:
       - PORT=10002
       - TITLE
       - TITLE_URL
-    hostname: autogen_s390x-master-0
+    stop_grace_period: 5m
+    hostname: dev_autogen_s390x-master-0
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -370,7 +349,7 @@ services:
         condition: service_started
 
   autogen_x86-master-0:
-    image: quay.io/mariadb-foundation/bb-master:master
+    image: quay.io/mariadb-foundation/bb-master:dev_master
     restart: unless-stopped
     container_name: autogen_x86-master-0
     environment:
@@ -379,13 +358,9 @@ services:
       - BUILDMASTER_URL
       - BUILDMASTER_WG_IP
       - CONTAINER_REGISTRY_URL
-      - CR_HOST_WG_ADDR
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_BINTARS_VM_PORT
-      - MASTER_NONLATENT_BINTARS_WORKERS
-      - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
@@ -393,7 +368,8 @@ services:
       - PORT=10003
       - TITLE
       - TITLE_URL
-    hostname: autogen_x86-master-0
+    stop_grace_period: 5m
+    hostname: dev_autogen_x86-master-0
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -409,7 +385,7 @@ services:
         condition: service_started
 
   master-docker-nonstandard:
-    image: quay.io/mariadb-foundation/bb-master:master
+    image: quay.io/mariadb-foundation/bb-master:dev_master
     restart: unless-stopped
     container_name: master-docker-nonstandard
     environment:
@@ -418,13 +394,9 @@ services:
       - BUILDMASTER_URL
       - BUILDMASTER_WG_IP
       - CONTAINER_REGISTRY_URL
-      - CR_HOST_WG_ADDR
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_BINTARS_VM_PORT
-      - MASTER_NONLATENT_BINTARS_WORKERS
-      - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
@@ -432,10 +404,12 @@ services:
       - PORT=10004
       - TITLE
       - TITLE_URL
-    hostname: master-docker-nonstandard
+    stop_grace_period: 5m
+    hostname: dev_master-docker-nonstandard
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
+      - /srv/buildbot/packages:/srv/buildbot/packages
     entrypoint:
       - /bin/bash
       - -c
@@ -448,7 +422,7 @@ services:
         condition: service_started
 
   master-galera:
-    image: quay.io/mariadb-foundation/bb-master:master
+    image: quay.io/mariadb-foundation/bb-master:dev_master
     restart: unless-stopped
     container_name: master-galera
     environment:
@@ -457,13 +431,9 @@ services:
       - BUILDMASTER_URL
       - BUILDMASTER_WG_IP
       - CONTAINER_REGISTRY_URL
-      - CR_HOST_WG_ADDR
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_BINTARS_VM_PORT
-      - MASTER_NONLATENT_BINTARS_WORKERS
-      - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
@@ -471,7 +441,8 @@ services:
       - PORT=10005
       - TITLE
       - TITLE_URL
-    hostname: master-galera
+    stop_grace_period: 5m
+    hostname: dev_master-galera
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -487,7 +458,7 @@ services:
         condition: service_started
 
   master-protected-branches:
-    image: quay.io/mariadb-foundation/bb-master:master
+    image: quay.io/mariadb-foundation/bb-master:dev_master
     restart: unless-stopped
     container_name: master-protected-branches
     environment:
@@ -496,13 +467,9 @@ services:
       - BUILDMASTER_URL
       - BUILDMASTER_WG_IP
       - CONTAINER_REGISTRY_URL
-      - CR_HOST_WG_ADDR
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_BINTARS_VM_PORT
-      - MASTER_NONLATENT_BINTARS_WORKERS
-      - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
@@ -510,7 +477,8 @@ services:
       - PORT=10006
       - TITLE
       - TITLE_URL
-    hostname: master-protected-branches
+    stop_grace_period: 5m
+    hostname: dev_master-protected-branches
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -526,7 +494,7 @@ services:
         condition: service_started
 
   master-docker-nonstandard-2:
-    image: quay.io/mariadb-foundation/bb-master:master
+    image: quay.io/mariadb-foundation/bb-master:dev_master
     restart: unless-stopped
     container_name: master-docker-nonstandard-2
     environment:
@@ -535,13 +503,9 @@ services:
       - BUILDMASTER_URL
       - BUILDMASTER_WG_IP
       - CONTAINER_REGISTRY_URL
-      - CR_HOST_WG_ADDR
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_BINTARS_VM_PORT
-      - MASTER_NONLATENT_BINTARS_WORKERS
-      - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
@@ -549,53 +513,16 @@ services:
       - PORT=10007
       - TITLE
       - TITLE_URL
-    hostname: master-docker-nonstandard-2
+    stop_grace_period: 5m
+    hostname: dev_master-docker-nonstandard-2
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
+      - /srv/buildbot/packages:/srv/buildbot/packages
     entrypoint:
       - /bin/bash
       - -c
       - "/srv/buildbot/master/docker-compose/start.sh master-docker-nonstandard-2"
-    network_mode: host
-    depends_on:
-      mariadb:
-        condition: service_healthy
-      crossbar:
-        condition: service_started
-
-  master-bintars:
-    image: quay.io/mariadb-foundation/bb-master:master
-    restart: unless-stopped
-    container_name: master-bintars
-    environment:
-      - ARTIFACTS_URL
-      - BRANCH
-      - BUILDMASTER_URL
-      - BUILDMASTER_WG_IP
-      - CONTAINER_REGISTRY_URL
-      - CR_HOST_WG_ADDR
-      - ENVIRON
-      - GALERA_PACKAGES_DIR
-      - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_BINTARS_VM_PORT
-      - MASTER_NONLATENT_BINTARS_WORKERS
-      - MASTER_NONLATENT_BINTARS_WORKER_PORT
-      - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
-      - MASTER_PACKAGES_DIR
-      - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
-      - MQ_ROUTER_URL
-      - PORT=10008
-      - TITLE
-      - TITLE_URL
-    hostname: master-bintars
-    volumes:
-      - ./logs:/var/log/buildbot
-      - ./buildbot/:/srv/buildbot/master
-    entrypoint:
-      - /bin/bash
-      - -c
-      - "/srv/buildbot/master/docker-compose/start.sh master-bintars"
     network_mode: host
     depends_on:
       mariadb:
