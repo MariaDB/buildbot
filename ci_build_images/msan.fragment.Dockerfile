@@ -1,4 +1,6 @@
-# msan.Dockerfile
+## This is a fragment file, do not execute it directly!
+
+# msan.fragment.Dockerfile
 # this is to create images with MSAN for BB workers
 ARG CLANG_VERSION=19
 
