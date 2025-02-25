@@ -62,7 +62,7 @@ RUN . /etc/os-release \
     && cd .. \
     && rm -rf -- *
 
-RUN for f in "$MSAN_LIBDIR"/libunwind*; do mv $f $f-disable; done 
+RUN for f in "$MSAN_LIBDIR"/libunwind*; do mv "$f" "$f"-disable; done
 # libunwrap move/disable because of https://github.com/llvm/llvm-project/issues/128621
 
 RUN . /etc/os-release \
