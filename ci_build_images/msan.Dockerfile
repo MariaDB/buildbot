@@ -120,7 +120,7 @@ RUN . /etc/os-release \
     && cp -aL .libs/libxml2.so* $MSAN_LIBDIR \
     && rm -rf -- * \
     && if [ "${VERSION_CODENAME}" = trixie ]; then \
-       apt-get install -y libltdl-dev ; fi \
+       apt-get install --no-install-recommends -y libltdl-dev ; fi \
     && apt-get source unixodbc-dev \
     && mv unixodbc-*/* . \
     && libtoolize --force \
@@ -157,7 +157,7 @@ RUN . /etc/os-release \
     && make -j "$(nproc)" \
     && mv ./src/cppunit/.libs/libcppunit.so* $MSAN_LIBDIR \
     && rm -rf -- * \
-    && apt-get install -y libcppunit-dev \
+    && apt-get install --no-install-recommends -y libcppunit-dev \
     && apt-get source subunit \
     && mv subunit-*/* . \
     && autoreconf  -vi \
