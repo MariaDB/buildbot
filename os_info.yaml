@@ -105,6 +105,14 @@ opensuse-1506:
   arch:
     - amd64
   type: rpm
+rhel-7:
+  image_tag: rhel7
+  tags:
+    - release_packages
+  version_name: 7
+  arch:
+    - amd64
+  type: rpm
 rhel-8:
   image_tag: rhel8
   tags:
