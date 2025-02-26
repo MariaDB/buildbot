@@ -3,7 +3,7 @@
 
 # The general principle here is:
 # 0. for all runtime dependencies of MariaDB
-# 1. take the debian source file (for consistent library ABI compatiblity)
+# 1. take the debian source file (for consistent library ABI compatibility)
 # 2. install the build dependencies of that source library
 # 3. Use the CFLAGS/CXXFLAGS/LDFLAGS from the environment to perform the msan instrumentation
 # 4. roughly follow what's in the debian/rules, but minimize to just produce the shared library
@@ -189,5 +189,5 @@ apt-get -y purge \
        liblzo2-dev \
        libsnappy-dev
 
-# all libaries have been saved - the builddir contents aren't needed
+# all libraries have been saved - the builddir contents aren't needed
 rm -rf /msan-build
