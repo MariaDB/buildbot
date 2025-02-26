@@ -24,9 +24,9 @@ ENV CXXFLAGS="$CFLAGS"
 # hadolint ignore=SC2046,DL3003
 RUN . /etc/os-release \
     && export LLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind" \
-    && mkdir $MSAN_LIBDIR \
+    && mkdir "$MSAN_LIBDIR" \
     && curl -sL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor -o /usr/share/keyrings/llvm-snapshot.gpg \
-    && if [ $VERSION_CODENAME = trixie ]; then VERSION_CODENAME=unstable; LLVM_DEB=""; else LLVM_DEB=-$VERSION_CODENAME; fi \
+    && if [ "$VERSION_CODENAME" = trixie ]; then VERSION_CODENAME=unstable; LLVM_DEB=""; else LLVM_DEB="-$VERSION_CODENAME"; fi \
     && if [ "${CLANG_VERSION}" -ge "${CLANG_DEV_VERSION}" ]; then \
         LLVM_PKG="llvm-toolchain-snapshot" ; \
        else \
