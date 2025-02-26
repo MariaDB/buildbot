@@ -2,7 +2,9 @@
 
 # msan.fragment.Dockerfile
 # this is to create images with MSAN for BB workers
-ARG CLANG_VERSION=19
+ARG CLANG_VERSION=20
+
+# earliest tested version known to work - 19
 
 # Marker to make it possible to build a dev msan builder
 # from the nightly clang versions as they are in a differently
@@ -21,10 +23,7 @@ ENV CXXFLAGS="$CFLAGS"
 
 # hadolint ignore=SC2046,DL3003
 RUN . /etc/os-release \
-    && if [ "${CLANG_VERSION}" -gt 17 ]; then \
-        export LLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind"; \
-    else \
-        export LLVM_ENABLE_RUNTIMES="libcxx;libcxxabi"; fi \
+    && export LLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind" \
     && mkdir $MSAN_LIBDIR \
     && curl -sL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor -o /usr/share/keyrings/llvm-snapshot.gpg \
     && if [ $VERSION_CODENAME = trixie ]; then VERSION_CODENAME=unstable; LLVM_DEB=""; else LLVM_DEB=-$VERSION_CODENAME; fi \
@@ -44,8 +43,7 @@ RUN . /etc/os-release \
        libc++-${CLANG_VERSION}-dev \
        llvm-${CLANG_VERSION} \
        automake \
-    && if [ "${CLANG_VERSION}" -ge 19 ]; then \
-        apt-get -y install --no-install-recommends libclang-${CLANG_VERSION}-dev libllvmlibc-${CLANG_VERSION}-dev; fi \
+    && apt-get -y install --no-install-recommends libclang-${CLANG_VERSION}-dev libllvmlibc-${CLANG_VERSION}-dev \
     && update-alternatives \
         --verbose \
         --install /usr/bin/clang   clang   /usr/bin/clang-"${CLANG_VERSION}" 20 \
@@ -56,7 +54,7 @@ RUN . /etc/os-release \
     && cmake -S ../"$LLVM_DIR"*/runtimes \
         -DCMAKE_BUILD_TYPE=Release \
         -DLLVM_ENABLE_RUNTIMES="${LLVM_ENABLE_RUNTIMES}" \
-        $(if [ "${CLANG_VERSION}" -ge 19 ]; then echo "-DLLVM_INCLUDE_TESTS=OFF -DLLVM_INCLUDE_DOCS=OFF -DLLVM_ENABLE_SPHINX=OFF"; fi) \
+        -DLLVM_INCLUDE_TESTS=OFF -DLLVM_INCLUDE_DOCS=OFF -DLLVM_ENABLE_SPHINX=OFF \
         -DLLVM_USE_SANITIZER=MemoryWithOrigins \
     && cmake --build . --target cxx --target cxxabi --parallel "$(nproc)" \
     && cp -aL lib/lib*.so* "$MSAN_LIBDIR" \
