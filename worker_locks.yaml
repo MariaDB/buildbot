@@ -4,10 +4,11 @@
 # The keys are worker names, as used in locks.py.
 # TODO: There should be a single place where these keys are defined, currently
 # there are more places.
-hz-bbw1-docker: 9
+hz-bbw1-docker: 6
 hz-bbw2-docker: 1
-hz-bbw4-docker: 9
+hz-bbw4-docker: 6
 hz-bbw5-docker: 9
+hz-bbw7-docker: 6
 amd-bbw1-docker: 4
 amd-bbw2-docker: 6
 intel-bbw1-docker: 5
