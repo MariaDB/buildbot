@@ -118,6 +118,7 @@ SUPPORTED_PLATFORMS["10.5"] = [
     "amd64-fedora-40-valgrind",
     "amd64-freebsd-14",
     "amd64-openeuler-2403",
+    "amd64-rhel-7",
     "amd64-rhel-8",
     "amd64-rhel-9",
     "amd64-last-N-failed",
@@ -185,6 +186,7 @@ SUPPORTED_PLATFORMS["10.11"] = [
 SUPPORTED_PLATFORMS["10.11"] += SUPPORTED_PLATFORMS["10.10"]
 
 SUPPORTED_PLATFORMS["11.0"] = SUPPORTED_PLATFORMS["10.11"].copy()
+SUPPORTED_PLATFORMS["11.0"].remove("amd64-rhel-7")
 SUPPORTED_PLATFORMS["11.1"] = SUPPORTED_PLATFORMS["11.0"].copy()
 SUPPORTED_PLATFORMS["11.2"] = SUPPORTED_PLATFORMS["11.1"].copy()
 SUPPORTED_PLATFORMS["11.3"] = SUPPORTED_PLATFORMS["11.2"].copy()
