@@ -8,6 +8,7 @@ on:
     paths:
       - 'ci_build_images/debian.Dockerfile'
       - 'ci_build_images/msan.fragment.Dockerfile'
+      - 'ci_build_images/msan.instrumentedlibs.sh'
       - 'ci_build_images/qpress.Dockerfile'
       - 'ci_build_images/buildbot-worker.Dockerfile'
       - .github/workflows/build-debian.msan-based.yml
@@ -16,6 +17,7 @@ on:
     paths:
       - 'ci_build_images/debian.Dockerfile'
       - 'ci_build_images/msan.fragment.Dockerfile'
+      - 'ci_build_images/msan.instrumentedlibs.sh'
       - 'ci_build_images/qpress.Dockerfile'
       - 'ci_build_images/buildbot-worker.Dockerfile'
       - .github/workflows/build-debian.msan-based.yml
@@ -44,4 +46,8 @@ jobs:
       branch: ${{ matrix.branch }}
       clang_version: ${{ matrix.clang_version }}
       nogalera: ${{ matrix.nogalera }}
+      files:
+        '[
+          {"name": "msan.instrumentedlibs.sh", "source": "''$WORKDIR/msan.instrumentedlibs.sh''", "target": "''$GITHUB_WORKSPACE''"}
+        ]'
     secrets: inherit
