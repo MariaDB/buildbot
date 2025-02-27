@@ -1,235 +1,83 @@
 #!/usr/bin/env python3
 import argparse
-import os
+from pathlib import Path
 
-from dotenv import load_dotenv
+from dataclasses import dataclass
 
-config = {"private": {}}
-exec(open("../master-private.cfg").read(), config, {})
+MASTER_TEMPLATE = """
+  {name}:
+    extends:
+      file: buildbot-master-template.yaml
+      service: master-template
 
-BUILDBOT_STOP_GRACE_PERIOD = "5m"
-
-MASTER_DIRECTORIES = [
-    "master-nonlatent",
-    "master-libvirt",
-    "autogen/aarch64-master-0",
-    "autogen/amd64-master-0",
-    "autogen/amd64-master-1",
-    "autogen/ppc64le-master-0",
-    "autogen/s390x-master-0",
-    "autogen/x86-master-0",
-    "master-docker-nonstandard",
-    "master-galera",
-    "master-protected-branches",
-    "master-docker-nonstandard-2",
-]
-
-VOLUMES = ["./logs:/var/log/buildbot", "./buildbot/:/srv/buildbot/master"]
-
-START_TEMPLATE = """
----
-services:
-  mariadb:
-    image: mariadb:10.11.10
-    restart: unless-stopped
-    container_name: mariadb
-    hostname: mariadb
-    environment:
-      - MARIADB_ROOT_PASSWORD=password
-      - MARIADB_DATABASE=buildbot
-      - MARIADB_USER=buildmaster
-      - MARIADB_PASSWORD=password
-      - MARIADB_AUTO_UPGRADE=1
-    network_mode: host
-    healthcheck:
-      test: ['CMD', "healthcheck.sh", "--connect", "--innodb_initialized"]
-    volumes:
-      - /srv/mariadb:/var/lib/mysql:rw
-      - ./mariadb-config/{config_path}/mariadb.cnf:/etc/mysql/conf.d/mariadb.cnf:ro
-    logging:
-      driver: journald
-      options:
-        tag: "bb-mariadb"
-
-  crossbar:
-    image: crossbario/crossbar
-    restart: unless-stopped
-    container_name: crossbar
-    hostname: crossbar
-    network_mode: host
-    volumes:
-      - ./crossbar/{config_path}/config.json:/node/.crossbar/config.json
-    logging:
-      driver: journald
-      options:
-        tag: "bb-crossbar"
-
-  nginx:
-    image: nginx:latest
-    restart: unless-stopped
-    container_name: nginx
-    hostname: nginx
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/conf.d/:/etc/nginx/conf.d/
-      - ./nginx/templates/:/etc/nginx/templates/:ro
-      - /srv/buildbot/packages:/srv/buildbot/packages:ro
-      - /srv/buildbot/galera_packages:/srv/buildbot/galera_packages:ro
-      - /srv/buildbot/helper_files:/srv/buildbot/helper_files:ro
-      - /srv/buildbot/cloud-init:/srv/buildbot/cloud-init:ro
-      - ./certbot/www/:/var/www/certbot/:ro
-      - ./certbot/ssl/:/etc/nginx/ssl/:ro
-    environment:
-      - NGINX_ARTIFACTS_VHOST
-      - NGINX_BUILDBOT_VHOST
-      - NGINX_CR_HOST_WG_ADDR
-    network_mode: host
-    logging:
-      driver: journald
-      options:
-        tag: "bb-nginx"
-
-  master-web:
-    image: quay.io/mariadb-foundation/bb-master:{environment}master-web
-    restart: unless-stopped
-    container_name: master-web
-    stop_grace_period: {buildbot_stop_grace_period}
-    hostname: master-web
-    volumes:
-      - ./logs:/var/log/buildbot
-      - ./buildbot/:/srv/buildbot/master
-    entrypoint:
-      - /srv/buildbot/master/docker-compose/start-bbm-web.sh
-    network_mode: host
-    depends_on:
-      mariadb:
-        condition: service_healthy
-      crossbar:
-        condition: service_started
-"""
-
-DOCKER_COMPOSE_TEMPLATE = """
-  {master_name}:
-    image: quay.io/mariadb-foundation/bb-master:{environment}master
-    restart: unless-stopped
-    container_name: {master_name}
-    stop_grace_period: {buildbot_stop_grace_period}
-    hostname: {master_hostname}
-    {volumes}
+    hostname: {hostname}
+    container_name: {name}
     entrypoint:
       - /bin/bash
       - -c
-      - "/srv/buildbot/master/docker-compose/start.sh {master_directory}"
-    network_mode: host
-    depends_on:
-      mariadb:
-        condition: service_healthy
-      crossbar:
-        condition: service_started
+      - "/srv/buildbot/master/docker-compose/start.sh {directory}"
+    environment:
+      - PORT={port}
 """
 
 
-# Function to generate volumes section for Docker Compose
-def generate_volumes(volumes, indent_level=2):
-    indent = "   " * indent_level
-    volume_lines = [f"{indent}- {volume}" for volume in volumes]
-    return "volumes:\n{}".format("\n".join(volume_lines))
+@dataclass
+class MasterSpec:
+    name: str
+    hostname: str
+    directory: str
+    port: int
 
 
-# Function to construct environment section for Docker Compose
-def construct_env_section(env_vars):
-    env_section = "    environment:\n"
-    for key, value in sorted(env_vars.items()):
-        if key.startswith("NGINX_"):
+# Generator for all the masters that need to be appended to docker-compose.
+def get_masters(name_prefix='dev_', starting_port=9995):
+    base_path = Path('../')
+    port = starting_port
+    for path in base_path.glob("master-*/"):
+        rel_path = path.relative_to('../')
+        # Master web is hardcoded to 8010.
+        if 'master-web' in rel_path.name:
             continue
-        elif key not in ["PORT", "MC_HOST_minio"]:
-            env_section += f"      - {key}\n"
-        else:
-            env_section += f"      - {key}={value}\n"
+        yield MasterSpec(name=f'{rel_path.name}',
+                         directory=f'{rel_path}',
+                         hostname=f'{name_prefix}{rel_path.name}',
+                         port=port)
+        port += 1
 
-    return env_section.rstrip("\n")
+    for path in base_path.glob("autogen/*/"):
+        rel_path = path.relative_to('../')
+        directory = rel_path.as_posix()
+        name = rel_path.as_posix().replace('/', '_')
+        yield MasterSpec(name=name,
+                         directory=directory,
+                         hostname=f'{name_prefix}{name}',
+                         port=port)
+        port += 1
 
 
 def main(args):
-    # Load Volumes
-    master_volumes = {
-        key: VOLUMES[:]
-        for key in [element.replace("/", "_") for element in MASTER_DIRECTORIES]
-    }
-    for master in [
-        "master-nonlatent",
-        "master-docker-nonstandard",
-        "master-docker-nonstandard-2",
-    ]:
-        master_volumes[master].append(
-            "/srv/buildbot/packages:/srv/buildbot/packages"
-        )  # Using FileUpload step
+    name_prefix = '' if args.env == 'prod' else f'{args.env}_'
 
-    # Capture the current environment variables' keys
-    current_env_keys = set(os.environ.keys())
+    with open("docker-compose-base.yaml", mode="r") as file:
+        base_file = file.read()
 
-    # Load environment variables from the corresponding .env file
-    env_file = ".env" if args.env == "prod" else ".env.dev"
-    load_dotenv(env_file)
-
-    # Determine the keys that were added by the .env file
-    new_keys = set(os.environ.keys()) - current_env_keys
-
-    # Extract only the variables from the .env file
-    env_vars = {key: os.getenv(key) for key in new_keys}
-    env_vars["PORT"] = "{port}"
-
-    # Modify the start_template to include the environment variables for master-web
-    start_template = START_TEMPLATE.replace(
-        "container_name: master-web",
-        f"container_name: master-web\n{construct_env_section(env_vars)}",
-    )
-
-    env_vars["MC_HOST_minio"] = "{mc_host}"
-    # Modify the docker_compose_template to include the environment variables
-    docker_compose_template = DOCKER_COMPOSE_TEMPLATE.replace(
-        "container_name: {master_name}",
-        f"container_name: {{master_name}}\n{construct_env_section(env_vars)}",
-    )
-
-    mc_host = config["private"]["minio_url"]
-    starting_port = config["private"]["master-variables"]["starting_port"]
-    master_web_port = 8010
     # Generate startup scripts and Docker Compose pieces for each master directory
     with open("docker-compose.yaml", mode="w", encoding="utf-8") as file:
         file.write(
-            "# This is an autogenerated file. Do not edit it manually.\n\
-# Use `python generate-config.py` instead."
+            "# This is an autogenerated file. Do not edit it manually.\n"
+            "# Use `python generate-config.py` instead.\n"
         )
-        file.write(
-            start_template.format(
-                port=master_web_port,
-                environment="" if args.env == "prod" else "dev_",
-                config_path=args.env,
-                buildbot_stop_grace_period=BUILDBOT_STOP_GRACE_PERIOD,
+        file.write(base_file)
+        for master in get_masters(name_prefix=name_prefix,
+                                  starting_port=args.starting_port):
+            file.write(
+                MASTER_TEMPLATE.format(
+                    port=master.port,
+                    name=master.name,
+                    hostname=master.hostname,
+                    directory=master.directory,
+                )
             )
-        )
-        port = starting_port
-        for master_directory in MASTER_DIRECTORIES:
-            master_name = master_directory.replace("/", "_")
-            if args.env == "dev":
-                master_hostname = "dev_" + master_name
-            else:
-                master_hostname = master_name
-            # Generate Docker Compose piece
-            docker_compose_piece = docker_compose_template.format(
-                master_name=master_name,
-                master_hostname=master_hostname,
-                master_directory=master_directory,
-                port=port,
-                mc_host=mc_host,
-                volumes=generate_volumes(master_volumes[master_name]),
-                environment="" if args.env == "prod" else "dev_",
-                buildbot_stop_grace_period=BUILDBOT_STOP_GRACE_PERIOD,
-            )
-            port += 1
-
-            file.write(docker_compose_piece)
 
 
 if __name__ == "__main__":
@@ -238,10 +86,15 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--env",
-        choices=["prod", "dev"],
-        default="dev",
+        choices=["prod", "dev", "local"],
+        default="local",
         help="Choose the environment (prod/dev). Default is dev.",
     )
+    parser.add_argument(
+        "--starting-port",
+        type=int,
+        default=9995,
+        help="Which port number to start from for masters to listen on.")
 
     args = parser.parse_args()
     main(args)

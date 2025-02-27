@@ -1,0 +1,72 @@
+---
+services:
+  mariadb:
+    image: mariadb:10.11.10
+    restart: unless-stopped
+    container_name: mariadb
+    hostname: mariadb
+    environment:
+      - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
+      - MARIADB_DATABASE=${MARIADB_DATABASE}
+      - MARIADB_USER=${MARIADB_USER}
+      - MARIADB_PASSWORD=${MARIADB_PASSWORD}
+      - MARIADB_AUTO_UPGRADE=1
+    network_mode: host
+    healthcheck:
+      test: ['CMD', "healthcheck.sh", "--connect", "--innodb_initialized"]
+    volumes:
+      - "${HOST_MARIADB_DATADIR_PATH}:/var/lib/mysql:rw"
+      - "${HOST_MARIADB_CNF_PATH}:/etc/mysql/conf.d/mariadb.cnf:ro"
+    logging:
+      driver: journald
+      options:
+        tag: "bb-mariadb"
+
+  crossbar:
+    image: crossbario/crossbar
+    restart: unless-stopped
+    container_name: crossbar
+    hostname: crossbar
+    network_mode: host
+    volumes:
+      - "${HOST_CROSSBAR_CONFIG_JSON_PATH}:/node/.crossbar/config.json:ro"
+    logging:
+      driver: journald
+      options:
+        tag: "bb-crossbar"
+
+  nginx:
+    image: nginx:latest
+    restart: unless-stopped
+    container_name: nginx
+    hostname: nginx
+    volumes:
+      - "${HOST_NGINX_CONF_PATH}:/etc/nginx/nginx.conf:ro"
+      - "${HOST_NGINX_TEMPLATES_PATH}:/etc/nginx/templates/:ro"
+      - "${HOST_NGINX_PACKAGES_PATH}:/srv/buildbot/packages:ro"
+      - "${HOST_NGINX_GALERA_PACKAGES_PATH}:/srv/buildbot/galera_packages:ro"
+      - "${HOST_NGINX_HELPER_FILES_PATH}:/srv/buildbot/helper_files:ro"
+      - "${HOST_NGINX_CLOUD_INIT_PATH}:/srv/buildbot/cloud-init:ro"
+      - "${HOST_NGINX_CERTBOT_WWW_PATH}:/var/www/certbot/:ro"
+      - "${HOST_NGINX_CERTBOT_SSL_PATH}:/etc/nginx/ssl/:ro"
+    environment:
+      - NGINX_ARTIFACTS_VHOST
+      - NGINX_BUILDBOT_VHOST
+      - NGINX_CR_HOST_WG_ADDR
+    network_mode: host
+    logging:
+      driver: journald
+      options:
+        tag: "bb-nginx"
+
+  master-web:
+    extends:
+      file: buildbot-master-template.yaml
+      service: master-template
+
+    image: "${MASTER_WEB_IMAGE}"
+    container_name: master-web
+    entrypoint:
+      - /srv/buildbot/master/docker-compose/start-bbm-web.sh
+    environment:
+      - PORT=8010

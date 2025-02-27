@@ -1,0 +1,31 @@
+services:
+  master-template:
+    image: "${MASTER_IMAGE}"
+    restart: unless-stopped
+    environment:
+      - ARTIFACTS_URL
+      - BRANCH
+      - BUILDMASTER_URL
+      - BUILDMASTER_WG_IP
+      - CONTAINER_REGISTRY_URL
+      - ENVIRON
+      - GALERA_PACKAGES_DIR
+      - MASTER_CREDENTIALS_DIR
+      - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
+      - MASTER_PACKAGES_DIR
+      - MC_HOST_minio
+      - MQ_ROUTER_URL
+      - TITLE
+      - TITLE_URL
+    stop_grace_period: "${MASTER_STOP_GRACE_PERIOD}"
+    volumes:
+      - "${HOST_BUILDBOT_LOGS_PATH}:/var/log/buildbot"
+      - "${HOST_BUILDBOT_SRC_PATH}:/srv/buildbot/master"
+      - "${HOST_NGINX_PACKAGES_PATH}:/srv/buildbot/packages:ro"
+      - "${HOST_MASTER_CREDENTIALS_DIR}:/srv/buildbot/master/master-credential-provider"
+    network_mode: host
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      crossbar:
+        condition: service_started

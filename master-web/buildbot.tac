@@ -55,3 +55,6 @@ m = BuildMaster(str(basedir), configfile, umask)
 m.setServiceParent(application)
 m.log_rotation.rotateLength = rotateLength
 m.log_rotation.maxRotatedFiles = maxRotatedFiles
+# This is needed due to a buildbot bug not respecting the basedir, as passed
+# to BuildMaster object.
+configfile = 'master.cfg'

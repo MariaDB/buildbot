@@ -29,4 +29,6 @@ while ! nc -z 127.0.0.1 8080; do
   sleep 0.1
 done
 echo "Crossbar started"
+# Ensure the database is up-to-date
+buildbot upgrade-master master-web
 exec buildbot start --nodaemon master-web
