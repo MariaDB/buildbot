@@ -5,8 +5,6 @@ from datetime import datetime
 from typing import Any, Tuple
 
 import docker
-from pyzabbix import ZabbixAPI
-
 from buildbot.buildrequest import BuildRequest
 from buildbot.interfaces import IProperties
 from buildbot.master import BuildMaster
@@ -16,6 +14,8 @@ from buildbot.process.buildstep import BuildStep
 from buildbot.process.results import FAILURE
 from buildbot.process.workerforbuilder import AbstractWorkerForBuilder
 from buildbot.worker import AbstractWorker
+from pyzabbix import ZabbixAPI
+
 from constants import (
     ALL_BB_TEST_BRANCHES,
     BUILDERS_AUTOBAKE,
@@ -24,6 +24,7 @@ from constants import (
     BUILDERS_GALERA_MTR,
     BUILDERS_INSTALL,
     BUILDERS_S3_MTR,
+    BUILDERS_SRPMS,
     BUILDERS_UPGRADE,
     DEVELOPMENT_BRANCH,
     MTR_ENV,
@@ -561,6 +562,14 @@ def hasS3(props):
     builder_name = props.getProperty("buildername")
     for b in BUILDERS_S3_MTR:
         if builder_name == b:
+            return True
+    return False
+
+
+def hasSRPM(step: BuildStep) -> bool:
+    builder_name = step.getProperty("buildername")
+    for b in BUILDERS_SRPMS:
+        if builder_name in b.builder_name:
             return True
     return False
 

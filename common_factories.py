@@ -1,13 +1,12 @@
 import os
 import re
 
-from twisted.internet import defer
-
 from buildbot.plugins import steps, util
 from buildbot.process import results
 from buildbot.process.factory import BuildFactory
 from buildbot.process.properties import Property
 from buildbot.steps.mtrlogobserver import MTR
+from twisted.internet import defer
 
 # Local
 from constants import MTR_ENV, SAVED_PACKAGE_BRANCHES, TEST_TYPE_TO_MTR_ARG
@@ -29,6 +28,7 @@ from utils import (
     hasPackagesGenerated,
     hasRpmLint,
     hasS3,
+    hasSRPM,
     hasUpgrade,
     ls2string,
     moveMTRLogs,
@@ -817,6 +817,26 @@ Repository available with: curl %(kw:url)s/%(prop:tarbuildnum)s/%(prop:builderna
             },
             doStepIf=(
                 lambda step: hasUpgrade(step)
+                and savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
+                and hasPackagesGenerated(step)
+            ),
+        )
+    )
+
+    # trigger rebuild from SRPM
+    f_rpm_autobake.addStep(
+        steps.Trigger(
+            schedulerNames=["s_srpms"],
+            waitForFinish=False,
+            updateSourceStamp=False,
+            set_properties={
+                "parentbuildername": Property("buildername"),
+                "tarbuildnum": Property("tarbuildnum"),
+                "mariadb_version": Property("mariadb_version"),
+                "master_branch": Property("master_branch"),
+            },
+            doStepIf=(
+                lambda step: hasSRPM(step)
                 and savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
                 and hasPackagesGenerated(step)
             ),
