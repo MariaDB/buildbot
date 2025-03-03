@@ -1,7 +1,8 @@
 import unittest
 
+from steps.base.exceptions import DuplicateFlagException
 from steps.cmake.compilers import CompilerCommand
-from steps.cmake.generator import CMakeGenerator, DuplicateFlagException
+from steps.cmake.generator import CMakeGenerator
 from steps.cmake.options import CMAKE, PLUGIN, WITH, BuildConfig, BuildType, CMakeOption
 
 

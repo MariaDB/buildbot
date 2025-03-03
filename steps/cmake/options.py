@@ -1,5 +1,7 @@
 from enum import StrEnum
 
+from ..base.generator import Option
+
 
 # Flag names use UPPER_CASE
 class CMAKE(StrEnum):
@@ -84,36 +86,15 @@ class BuildConfig(StrEnum):
     MYSQL_RELEASE = "mysql_release"
 
 
-class CMakeOption:
+class CMakeOption(Option):
     """
     Represents a CMake option in the form `-D<name>=<value>`.
     """
 
-    @staticmethod
-    def _quote_value(value: str):
-        """
-        Quote the value if it contains spaces or special characters.
-        """
-        if " " in value or '"' in value:
-            return f'"{value.replace('"', '\\\"')}"'
-        return value
-
     def __init__(self, name: StrEnum, value: str | bool):
-        assert isinstance(name, StrEnum)
-        assert isinstance(value, str) or isinstance(value, bool)
-        self.name = str(name)
         if isinstance(value, bool):
-            self.value = "ON" if value else "OFF"
-        elif isinstance(value, str):
-            self.value = value
-        # Quote if necessary.
-        self.value = self._quote_value(self.value)
+            value = "ON" if value else "OFF"
+        super().__init__(name, value)
 
     def as_cmd_arg(self) -> str:
         return f"-D{self.name}={self.value}"
-
-    def __str__(self) -> str:
-        return self.as_cmd_arg()
-
-    def __repr__(self) -> str:
-        return f"CMakeOption({self.name}, {self.value})"

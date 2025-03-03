@@ -1,19 +1,11 @@
 from typing import Iterable
 
+from ..base.generator import BaseGenerator
 from .compilers import CompilerCommand
 from .options import CMAKE, OTHER, BuildConfig, CMakeOption
 
 
-class DuplicateFlagException(Exception):
-    def __init__(self, flag_name: str, existing_value: str, new_value: str):
-        super().__init__(
-            f"Duplicate flag detected: {flag_name}"
-            f"(existing: {existing_value}, new: {new_value})"
-        )
-        super().__init__(f"Duplicate flag detected: {flag_name}")
-
-
-class CMakeGenerator:
+class CMakeGenerator(BaseGenerator):
     """
     Generates a CMake command with specified flags.
     """
@@ -27,9 +19,7 @@ class CMakeGenerator:
             source_path: The source path to the base CMakeLists.txt file.
                          Default path is "in source build".
         """
-        self.flags: dict[str, CMakeOption] = {}
-        self.source_path = source_path
-        self.append_flags(flags)
+        super().__init__(base_cmd=["cmake", source_path], flags=flags)
 
     def set_compiler(self, compiler: CompilerCommand):
         """
@@ -64,29 +54,3 @@ class CMakeGenerator:
         "one-off" special flag.
         """
         self.append_flags([CMakeOption(OTHER.BUILD_CONFIG, config)])
-
-    def append_flags(self, flags: Iterable[CMakeOption]):
-        """
-        Appends new flags to the generator.
-
-        Raises:
-            DuplicateFlagException: If a flag with the same name already
-                                    exists.
-        """
-        for flag in flags:
-            # Do not allow duplicate flags being set.
-            # Flags should only be set once to avoid confusion about them
-            # being overwritten.
-            if flag.name in self.flags:
-                existing_flag = self.flags[flag.name]
-                raise DuplicateFlagException(flag.name, existing_flag.value, flag.value)
-            self.flags[flag.name] = flag
-
-    def generate(self) -> list[str]:
-        """
-        Generates the CMake command as a list of strings.
-        """
-        result = ["cmake", self.source_path]
-        for flag in sorted(list(self.flags.values()), key=lambda x: x.name):
-            result.append(flag.as_cmd_arg())
-        return result
