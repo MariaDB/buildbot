@@ -50,7 +50,6 @@ GITHUB_STATUS_BUILDERS = [
     "amd64-debian-11-msan",
     "amd64-debian-11-msan-clang-16",
     "amd64-fedora-40",
-    "amd64-last-N-failed",
     "amd64-ubuntu-2004-debug",
     "amd64-ubuntu-2204-debug-ps",
     "amd64-windows",
