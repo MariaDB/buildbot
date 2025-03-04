@@ -5,6 +5,8 @@ from datetime import datetime
 from typing import Any, Tuple
 
 import docker
+from pyzabbix import ZabbixAPI
+
 from buildbot.buildrequest import BuildRequest
 from buildbot.interfaces import IProperties
 from buildbot.master import BuildMaster
@@ -14,8 +16,6 @@ from buildbot.process.buildstep import BuildStep
 from buildbot.process.results import FAILURE
 from buildbot.process.workerforbuilder import AbstractWorkerForBuilder
 from buildbot.worker import AbstractWorker
-from pyzabbix import ZabbixAPI
-
 from constants import (
     ALL_BB_TEST_BRANCHES,
     BUILDERS_AUTOBAKE,

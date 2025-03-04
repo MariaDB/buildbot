@@ -1,12 +1,13 @@
 import os
 import re
 
+from twisted.internet import defer
+
 from buildbot.plugins import steps, util
 from buildbot.process import results
 from buildbot.process.factory import BuildFactory
 from buildbot.process.properties import Property
 from buildbot.steps.mtrlogobserver import MTR
-from twisted.internet import defer
 
 # Local
 from constants import MTR_ENV, SAVED_PACKAGE_BRANCHES, TEST_TYPE_TO_MTR_ARG
