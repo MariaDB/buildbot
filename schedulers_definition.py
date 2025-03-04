@@ -1,6 +1,5 @@
 from buildbot.interfaces import IProperties
 from buildbot.plugins import schedulers, util
-
 from constants import (
     BUILDERS_AUTOBAKE,
     BUILDERS_BIG,

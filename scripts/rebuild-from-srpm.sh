@@ -4,7 +4,7 @@ set -eu
 
 if [ $# -ne 4 ]; then
     echo "Usage: $0 <ci_base_url> <tarball_number> <autobake_builder> <<no_of_jobs>>"
-    echo "Example: $0 ci.mariadb.org 54438 amd64-fedora-39-rpm-autobake 7"
+    echo "Example: $0 https://ci.mariadb.org 54438 amd64-fedora-39-rpm-autobake 7"
     exit 1
 fi
 
@@ -24,6 +24,9 @@ wget -r -l1 -H -nd -A "*.rpm" "$base_url/rpms/" -P rpms/
 echo "Downloading SRPM files to 'srpms/' directory..."
 wget -r -l1 -H -nd -A "*.rpm" "$base_url/srpms/" -P srpms/
 
+# Load OS related information
+source /etc/os-release
+
 # MariaDB-compat cannot be built from srpm, so remove it and all
 # dependencies on it.
 rm -fv rpms/MariaDB-compat-*rpm
@@ -36,15 +39,13 @@ case $ID in
     ;;
 esac
 
-# Load OS related information
-source /etc/os-release
-
 # Install build dependencies
 # SUSE doesn't have $PLATFORM_ID
 case ${PLATFORM_ID:-NO_PLATFORM_ID} in
     "platform:el8"|"platform:el9"|"platform:f39"|"platform:f40"|"platform:f41")
         case $ID in \
             "rhel") \
+                # shellcheck disable=SC2086,SC2046
                 sudo dnf config-manager --enable codeready-builder-for-rhel-${VERSION%%.*}-$(uname -m)-rpms; \
                 ;; \
         esac; \
