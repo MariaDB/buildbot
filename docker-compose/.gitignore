@@ -4,4 +4,5 @@ buildbot/
 buildbot
 logs/
 mariadb/
+mariadb-datadir/
 config/master-private.cfg
