@@ -10,6 +10,7 @@ disable=
     W0122, # exec-used
     W1514, # unspecified-encoding
     E0611, # no-name-in-module
+    E0402, # relative-beyond-top-level
     E0606, # possibly-used-before-assignment
 
 # Analyse import fallback blocks. This can be used to support both Python 2 and
