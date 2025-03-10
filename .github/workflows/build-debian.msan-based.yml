@@ -7,6 +7,7 @@ on:
       - 'dev'
     paths:
       - 'ci_build_images/debian.Dockerfile'
+      - 'ci_build_images/rr.Dockerfile'
       - 'ci_build_images/msan.fragment.Dockerfile'
       - 'ci_build_images/msan.instrumentedlibs.sh'
       - 'ci_build_images/qpress.Dockerfile'
@@ -16,6 +17,7 @@ on:
   pull_request:
     paths:
       - 'ci_build_images/debian.Dockerfile'
+      - 'ci_build_images/rr.Dockerfile'
       - 'ci_build_images/msan.fragment.Dockerfile'
       - 'ci_build_images/msan.instrumentedlibs.sh'
       - 'ci_build_images/qpress.Dockerfile'
@@ -39,7 +41,7 @@ jobs:
 
     uses: ./.github/workflows/bbw_build_container_template.yml
     with:
-      dockerfile: debian.Dockerfile msan.fragment.Dockerfile
+      dockerfile: rr.Dockerfile debian.Dockerfile msan.fragment.Dockerfile
       image: ${{ matrix.image }}
       platforms: ${{ matrix.platforms }}
       tag: ${{ matrix.tag }}

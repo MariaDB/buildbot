@@ -77,6 +77,17 @@ ENV MSAN_OPTIONS=abort_on_error=1:poison_in_dtor=0
 ENV CFLAGS= CXXFLAGS=
 
 ENV CMAKE_GENERATOR=Ninja
+# rr installation and its libcapnp version + ninja
 RUN . /etc/os-release \
-    apt-get install --no-install-recommends -y ninja-build; \
+    && if [ "${VERSION_CODENAME}" = "trixie" ]; then \
+         apt-get install --no-install-recommends -y libcapnp-1.1.0 ninja-build; \
+       elif [ "${VERSION_CODENAME}" = "bullseye" ]; then \
+         apt-get install --no-install-recommends -y libcapnp-0.7.0 ninja-build; \
+       else \
+         apt-get install --no-install-recommends -y libcapnp-0.9.2 ninja-build; \
+    fi \
     && apt-get clean
+
+# unknown rr
+# hadolint ignore=DL3022
+COPY --from=rr /tmp/install/usr/ /usr/
