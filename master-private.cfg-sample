@@ -122,7 +122,7 @@ private["rhel_sub"]= {
 }
 
 private["libvirt_workers"] = {
-    "amd64": ("bb-hz-bbw5", "qemu+ssh://user@IP_address/system"),
-    "aarch64": ("bb-eq-arm1", "qemu+ssh://user@IP_addres/system"),
-    "ppc64le": ("bb-db-p9-bbw1", "qemu+ssh://user@IP_adress/system"),
+    "amd64": ("bb-hz-bbw5", "test:///default"),
+    "aarch64": ("bb-eq-arm1", "test:///default"),
+    "ppc64le": ("bb-db-p9-bbw1", "test:///default"),
 }
