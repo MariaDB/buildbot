@@ -47,7 +47,6 @@ GITHUB_STATUS_BUILDERS = [
     "amd64-debian-12-debug-embedded",
     "amd64-debian-12-deb-autobake",
     "amd64-debian-11-debug-ps-embedded",
-    "amd64-debian-11-msan",
     "amd64-debian-11-msan-clang-16",
     "amd64-fedora-40",
     "amd64-ubuntu-2004-debug",
