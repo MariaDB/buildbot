@@ -65,6 +65,9 @@ RUN . /etc/os-release \
 RUN for f in "$MSAN_LIBDIR"/libunwind*; do mv "$f" "$f"-disable; done
 # libunwrap move/disable because of https://github.com/llvm/llvm-project/issues/128621
 
+COPY msan.instrumentedlibs.sh /msan-build
+RUN ./msan.instrumentedlibs.sh
+
 WORKDIR /
 
 # For convenience of human users of msan image
