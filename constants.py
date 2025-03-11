@@ -114,7 +114,6 @@ SUPPORTED_PLATFORMS["10.5"] = [
     "amd64-centos-stream9",
     "amd64-debian-11",
     "amd64-debian-11-debug-ps-embedded",
-    "amd64-debian-11-msan",
     "amd64-debian-11-msan-clang-16",
     "amd64-debian-12-asan-ubsan",
     "amd64-debian-12-rocksdb",
