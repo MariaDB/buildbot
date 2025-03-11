@@ -65,4 +65,6 @@ class BaseBuilder:
             workernames=[worker.name for worker in workers],
             tags=tags,
             nextBuild=next_build,
-            canStartBuild=can_start_build)
+            canStartBuild=can_start_build,
+            factory=self.get_factory()
+        )
