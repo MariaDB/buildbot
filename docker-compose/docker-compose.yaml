@@ -8,17 +8,17 @@ services:
     container_name: mariadb
     hostname: mariadb
     environment:
-      - MARIADB_ROOT_PASSWORD=password
-      - MARIADB_DATABASE=buildbot
-      - MARIADB_USER=buildmaster
-      - MARIADB_PASSWORD=password
+      - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
+      - MARIADB_DATABASE=${MARIADB_DATABASE}
+      - MARIADB_USER=${MARIADB_USER}
+      - MARIADB_PASSWORD=${MARIADB_PASSWORD}
       - MARIADB_AUTO_UPGRADE=1
     network_mode: host
     healthcheck:
       test: ['CMD', "healthcheck.sh", "--connect", "--innodb_initialized"]
     volumes:
-      - /srv/mariadb:/var/lib/mysql:rw
-      - ./mariadb-config/dev/mariadb.cnf:/etc/mysql/conf.d/mariadb.cnf:ro
+      - "${HOST_MARIADB_DATADIR_PATH}:/var/lib/mysql:rw"
+      - "${HOST_MARIADB_CNF_PATH}:/etc/mysql/conf.d/mariadb.cnf:ro"
     logging:
       driver: journald
       options:
@@ -31,7 +31,7 @@ services:
     hostname: crossbar
     network_mode: host
     volumes:
-      - ./crossbar/dev/config.json:/node/.crossbar/config.json
+      - "${HOST_CROSSBAR_CONFIG_JSON_PATH}:/node/.crossbar/config.json:ro"
     logging:
       driver: journald
       options:
@@ -43,15 +43,14 @@ services:
     container_name: nginx
     hostname: nginx
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/conf.d/:/etc/nginx/conf.d/
-      - ./nginx/templates/:/etc/nginx/templates/:ro
-      - /srv/buildbot/packages:/srv/buildbot/packages:ro
-      - /srv/buildbot/galera_packages:/srv/buildbot/galera_packages:ro
-      - /srv/buildbot/helper_files:/srv/buildbot/helper_files:ro
-      - /srv/buildbot/cloud-init:/srv/buildbot/cloud-init:ro
-      - ./certbot/www/:/var/www/certbot/:ro
-      - ./certbot/ssl/:/etc/nginx/ssl/:ro
+      - "${HOST_NGINX_CONF_PATH}:/etc/nginx/nginx.conf:ro"
+      - "${HOST_NGINX_TEMPLATES_PATH}:/etc/nginx/templates/:ro"
+      - "${HOST_NGINX_PACKAGES_PATH}:/srv/buildbot/packages:ro"
+      - "${HOST_NGINX_GALERA_PACKAGES_PATH}:/srv/buildbot/galera_packages:ro"
+      - "${HOST_NGINX_HELPER_FILES_PATH}:/srv/buildbot/helper_files:ro"
+      - "${HOST_NGINX_CLOUD_INIT_PATH}:/srv/buildbot/cloud-init:ro"
+      - "${HOST_NGINX_CERTBOT_WWW_PATH}:/var/www/certbot/:ro"
+      - "${HOST_NGINX_CERTBOT_SSL_PATH}:/etc/nginx/ssl/:ro"
     environment:
       - NGINX_ARTIFACTS_VHOST
       - NGINX_BUILDBOT_VHOST
@@ -63,469 +62,181 @@ services:
         tag: "bb-nginx"
 
   master-web:
-    image: quay.io/mariadb-foundation/bb-master:dev_master-web
-    restart: unless-stopped
+    extends:
+      file: buildbot-master-template.yaml
+      service: master-template
+
+    image: "${MASTER_WEB_IMAGE}"
     container_name: master-web
-    environment:
-      - ARTIFACTS_URL
-      - BRANCH
-      - BUILDMASTER_URL
-      - BUILDMASTER_WG_IP
-      - CONTAINER_REGISTRY_URL
-      - ENVIRON
-      - GALERA_PACKAGES_DIR
-      - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
-      - MASTER_PACKAGES_DIR
-      - MQ_ROUTER_URL
-      - PORT=8010
-      - TITLE
-      - TITLE_URL
-    stop_grace_period: 5m
-    hostname: master-web
-    volumes:
-      - ./logs:/var/log/buildbot
-      - ./buildbot/:/srv/buildbot/master
     entrypoint:
       - /srv/buildbot/master/docker-compose/start-bbm-web.sh
-    network_mode: host
-    depends_on:
-      mariadb:
-        condition: service_healthy
-      crossbar:
-        condition: service_started
-
-  master-nonlatent:
-    image: quay.io/mariadb-foundation/bb-master:dev_master
-    restart: unless-stopped
-    container_name: master-nonlatent
     environment:
-      - ARTIFACTS_URL
-      - BRANCH
-      - BUILDMASTER_URL
-      - BUILDMASTER_WG_IP
-      - CONTAINER_REGISTRY_URL
-      - ENVIRON
-      - GALERA_PACKAGES_DIR
-      - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
-      - MASTER_PACKAGES_DIR
-      - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
-      - MQ_ROUTER_URL
-      - PORT=9996
-      - TITLE
-      - TITLE_URL
-    stop_grace_period: 5m
-    hostname: dev_master-nonlatent
-    volumes:
-      - ./logs:/var/log/buildbot
-      - ./buildbot/:/srv/buildbot/master
-      - /srv/buildbot/packages:/srv/buildbot/packages
-    entrypoint:
-      - /bin/bash
-      - -c
-      - "/srv/buildbot/master/docker-compose/start.sh master-nonlatent"
-    network_mode: host
-    depends_on:
-      mariadb:
-        condition: service_healthy
-      crossbar:
-        condition: service_started
-
-  master-libvirt:
-    image: quay.io/mariadb-foundation/bb-master:dev_master
-    restart: unless-stopped
-    container_name: master-libvirt
-    environment:
-      - ARTIFACTS_URL
-      - BRANCH
-      - BUILDMASTER_URL
-      - BUILDMASTER_WG_IP
-      - CONTAINER_REGISTRY_URL
-      - ENVIRON
-      - GALERA_PACKAGES_DIR
-      - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
-      - MASTER_PACKAGES_DIR
-      - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
-      - MQ_ROUTER_URL
-      - PORT=9997
-      - TITLE
-      - TITLE_URL
-    stop_grace_period: 5m
-    hostname: dev_master-libvirt
-    volumes:
-      - ./logs:/var/log/buildbot
-      - ./buildbot/:/srv/buildbot/master
-    entrypoint:
-      - /bin/bash
-      - -c
-      - "/srv/buildbot/master/docker-compose/start.sh master-libvirt"
-    network_mode: host
-    depends_on:
-      mariadb:
-        condition: service_healthy
-      crossbar:
-        condition: service_started
-
-  autogen_aarch64-master-0:
-    image: quay.io/mariadb-foundation/bb-master:dev_master
-    restart: unless-stopped
-    container_name: autogen_aarch64-master-0
-    environment:
-      - ARTIFACTS_URL
-      - BRANCH
-      - BUILDMASTER_URL
-      - BUILDMASTER_WG_IP
-      - CONTAINER_REGISTRY_URL
-      - ENVIRON
-      - GALERA_PACKAGES_DIR
-      - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
-      - MASTER_PACKAGES_DIR
-      - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
-      - MQ_ROUTER_URL
-      - PORT=9998
-      - TITLE
-      - TITLE_URL
-    stop_grace_period: 5m
-    hostname: dev_autogen_aarch64-master-0
-    volumes:
-      - ./logs:/var/log/buildbot
-      - ./buildbot/:/srv/buildbot/master
-    entrypoint:
-      - /bin/bash
-      - -c
-      - "/srv/buildbot/master/docker-compose/start.sh autogen/aarch64-master-0"
-    network_mode: host
-    depends_on:
-      mariadb:
-        condition: service_healthy
-      crossbar:
-        condition: service_started
-
-  autogen_amd64-master-0:
-    image: quay.io/mariadb-foundation/bb-master:dev_master
-    restart: unless-stopped
-    container_name: autogen_amd64-master-0
-    environment:
-      - ARTIFACTS_URL
-      - BRANCH
-      - BUILDMASTER_URL
-      - BUILDMASTER_WG_IP
-      - CONTAINER_REGISTRY_URL
-      - ENVIRON
-      - GALERA_PACKAGES_DIR
-      - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
-      - MASTER_PACKAGES_DIR
-      - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
-      - MQ_ROUTER_URL
-      - PORT=9999
-      - TITLE
-      - TITLE_URL
-    stop_grace_period: 5m
-    hostname: dev_autogen_amd64-master-0
-    volumes:
-      - ./logs:/var/log/buildbot
-      - ./buildbot/:/srv/buildbot/master
-    entrypoint:
-      - /bin/bash
-      - -c
-      - "/srv/buildbot/master/docker-compose/start.sh autogen/amd64-master-0"
-    network_mode: host
-    depends_on:
-      mariadb:
-        condition: service_healthy
-      crossbar:
-        condition: service_started
-
-  autogen_amd64-master-1:
-    image: quay.io/mariadb-foundation/bb-master:dev_master
-    restart: unless-stopped
-    container_name: autogen_amd64-master-1
-    environment:
-      - ARTIFACTS_URL
-      - BRANCH
-      - BUILDMASTER_URL
-      - BUILDMASTER_WG_IP
-      - CONTAINER_REGISTRY_URL
-      - ENVIRON
-      - GALERA_PACKAGES_DIR
-      - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
-      - MASTER_PACKAGES_DIR
-      - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
-      - MQ_ROUTER_URL
-      - PORT=10000
-      - TITLE
-      - TITLE_URL
-    stop_grace_period: 5m
-    hostname: dev_autogen_amd64-master-1
-    volumes:
-      - ./logs:/var/log/buildbot
-      - ./buildbot/:/srv/buildbot/master
-    entrypoint:
-      - /bin/bash
-      - -c
-      - "/srv/buildbot/master/docker-compose/start.sh autogen/amd64-master-1"
-    network_mode: host
-    depends_on:
-      mariadb:
-        condition: service_healthy
-      crossbar:
-        condition: service_started
-
-  autogen_ppc64le-master-0:
-    image: quay.io/mariadb-foundation/bb-master:dev_master
-    restart: unless-stopped
-    container_name: autogen_ppc64le-master-0
-    environment:
-      - ARTIFACTS_URL
-      - BRANCH
-      - BUILDMASTER_URL
-      - BUILDMASTER_WG_IP
-      - CONTAINER_REGISTRY_URL
-      - ENVIRON
-      - GALERA_PACKAGES_DIR
-      - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
-      - MASTER_PACKAGES_DIR
-      - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
-      - MQ_ROUTER_URL
-      - PORT=10001
-      - TITLE
-      - TITLE_URL
-    stop_grace_period: 5m
-    hostname: dev_autogen_ppc64le-master-0
-    volumes:
-      - ./logs:/var/log/buildbot
-      - ./buildbot/:/srv/buildbot/master
-    entrypoint:
-      - /bin/bash
-      - -c
-      - "/srv/buildbot/master/docker-compose/start.sh autogen/ppc64le-master-0"
-    network_mode: host
-    depends_on:
-      mariadb:
-        condition: service_healthy
-      crossbar:
-        condition: service_started
-
-  autogen_s390x-master-0:
-    image: quay.io/mariadb-foundation/bb-master:dev_master
-    restart: unless-stopped
-    container_name: autogen_s390x-master-0
-    environment:
-      - ARTIFACTS_URL
-      - BRANCH
-      - BUILDMASTER_URL
-      - BUILDMASTER_WG_IP
-      - CONTAINER_REGISTRY_URL
-      - ENVIRON
-      - GALERA_PACKAGES_DIR
-      - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
-      - MASTER_PACKAGES_DIR
-      - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
-      - MQ_ROUTER_URL
-      - PORT=10002
-      - TITLE
-      - TITLE_URL
-    stop_grace_period: 5m
-    hostname: dev_autogen_s390x-master-0
-    volumes:
-      - ./logs:/var/log/buildbot
-      - ./buildbot/:/srv/buildbot/master
-    entrypoint:
-      - /bin/bash
-      - -c
-      - "/srv/buildbot/master/docker-compose/start.sh autogen/s390x-master-0"
-    network_mode: host
-    depends_on:
-      mariadb:
-        condition: service_healthy
-      crossbar:
-        condition: service_started
-
-  autogen_x86-master-0:
-    image: quay.io/mariadb-foundation/bb-master:dev_master
-    restart: unless-stopped
-    container_name: autogen_x86-master-0
-    environment:
-      - ARTIFACTS_URL
-      - BRANCH
-      - BUILDMASTER_URL
-      - BUILDMASTER_WG_IP
-      - CONTAINER_REGISTRY_URL
-      - ENVIRON
-      - GALERA_PACKAGES_DIR
-      - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
-      - MASTER_PACKAGES_DIR
-      - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
-      - MQ_ROUTER_URL
-      - PORT=10003
-      - TITLE
-      - TITLE_URL
-    stop_grace_period: 5m
-    hostname: dev_autogen_x86-master-0
-    volumes:
-      - ./logs:/var/log/buildbot
-      - ./buildbot/:/srv/buildbot/master
-    entrypoint:
-      - /bin/bash
-      - -c
-      - "/srv/buildbot/master/docker-compose/start.sh autogen/x86-master-0"
-    network_mode: host
-    depends_on:
-      mariadb:
-        condition: service_healthy
-      crossbar:
-        condition: service_started
+      - PORT=8010
 
   master-docker-nonstandard:
-    image: quay.io/mariadb-foundation/bb-master:dev_master
-    restart: unless-stopped
+    extends:
+      file: buildbot-master-template.yaml
+      service: master-template
+
+    hostname: local_master-docker-nonstandard
     container_name: master-docker-nonstandard
-    environment:
-      - ARTIFACTS_URL
-      - BRANCH
-      - BUILDMASTER_URL
-      - BUILDMASTER_WG_IP
-      - CONTAINER_REGISTRY_URL
-      - ENVIRON
-      - GALERA_PACKAGES_DIR
-      - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
-      - MASTER_PACKAGES_DIR
-      - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
-      - MQ_ROUTER_URL
-      - PORT=10004
-      - TITLE
-      - TITLE_URL
-    stop_grace_period: 5m
-    hostname: dev_master-docker-nonstandard
-    volumes:
-      - ./logs:/var/log/buildbot
-      - ./buildbot/:/srv/buildbot/master
-      - /srv/buildbot/packages:/srv/buildbot/packages
     entrypoint:
       - /bin/bash
       - -c
       - "/srv/buildbot/master/docker-compose/start.sh master-docker-nonstandard"
-    network_mode: host
-    depends_on:
-      mariadb:
-        condition: service_healthy
-      crossbar:
-        condition: service_started
-
-  master-galera:
-    image: quay.io/mariadb-foundation/bb-master:dev_master
-    restart: unless-stopped
-    container_name: master-galera
     environment:
-      - ARTIFACTS_URL
-      - BRANCH
-      - BUILDMASTER_URL
-      - BUILDMASTER_WG_IP
-      - CONTAINER_REGISTRY_URL
-      - ENVIRON
-      - GALERA_PACKAGES_DIR
-      - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
-      - MASTER_PACKAGES_DIR
-      - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
-      - MQ_ROUTER_URL
-      - PORT=10005
-      - TITLE
-      - TITLE_URL
-    stop_grace_period: 5m
-    hostname: dev_master-galera
-    volumes:
-      - ./logs:/var/log/buildbot
-      - ./buildbot/:/srv/buildbot/master
-    entrypoint:
-      - /bin/bash
-      - -c
-      - "/srv/buildbot/master/docker-compose/start.sh master-galera"
-    network_mode: host
-    depends_on:
-      mariadb:
-        condition: service_healthy
-      crossbar:
-        condition: service_started
+      - PORT=9995
 
   master-protected-branches:
-    image: quay.io/mariadb-foundation/bb-master:dev_master
-    restart: unless-stopped
+    extends:
+      file: buildbot-master-template.yaml
+      service: master-template
+
+    hostname: local_master-protected-branches
     container_name: master-protected-branches
-    environment:
-      - ARTIFACTS_URL
-      - BRANCH
-      - BUILDMASTER_URL
-      - BUILDMASTER_WG_IP
-      - CONTAINER_REGISTRY_URL
-      - ENVIRON
-      - GALERA_PACKAGES_DIR
-      - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
-      - MASTER_PACKAGES_DIR
-      - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
-      - MQ_ROUTER_URL
-      - PORT=10006
-      - TITLE
-      - TITLE_URL
-    stop_grace_period: 5m
-    hostname: dev_master-protected-branches
-    volumes:
-      - ./logs:/var/log/buildbot
-      - ./buildbot/:/srv/buildbot/master
     entrypoint:
       - /bin/bash
       - -c
       - "/srv/buildbot/master/docker-compose/start.sh master-protected-branches"
-    network_mode: host
-    depends_on:
-      mariadb:
-        condition: service_healthy
-      crossbar:
-        condition: service_started
+    environment:
+      - PORT=9996
+
+  master-nonlatent:
+    extends:
+      file: buildbot-master-template.yaml
+      service: master-template
+
+    hostname: local_master-nonlatent
+    container_name: master-nonlatent
+    entrypoint:
+      - /bin/bash
+      - -c
+      - "/srv/buildbot/master/docker-compose/start.sh master-nonlatent"
+    environment:
+      - PORT=9997
+
+  master-libvirt:
+    extends:
+      file: buildbot-master-template.yaml
+      service: master-template
+
+    hostname: local_master-libvirt
+    container_name: master-libvirt
+    entrypoint:
+      - /bin/bash
+      - -c
+      - "/srv/buildbot/master/docker-compose/start.sh master-libvirt"
+    environment:
+      - PORT=9998
 
   master-docker-nonstandard-2:
-    image: quay.io/mariadb-foundation/bb-master:dev_master
-    restart: unless-stopped
+    extends:
+      file: buildbot-master-template.yaml
+      service: master-template
+
+    hostname: local_master-docker-nonstandard-2
     container_name: master-docker-nonstandard-2
-    environment:
-      - ARTIFACTS_URL
-      - BRANCH
-      - BUILDMASTER_URL
-      - BUILDMASTER_WG_IP
-      - CONTAINER_REGISTRY_URL
-      - ENVIRON
-      - GALERA_PACKAGES_DIR
-      - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
-      - MASTER_PACKAGES_DIR
-      - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
-      - MQ_ROUTER_URL
-      - PORT=10007
-      - TITLE
-      - TITLE_URL
-    stop_grace_period: 5m
-    hostname: dev_master-docker-nonstandard-2
-    volumes:
-      - ./logs:/var/log/buildbot
-      - ./buildbot/:/srv/buildbot/master
-      - /srv/buildbot/packages:/srv/buildbot/packages
     entrypoint:
       - /bin/bash
       - -c
       - "/srv/buildbot/master/docker-compose/start.sh master-docker-nonstandard-2"
-    network_mode: host
-    depends_on:
-      mariadb:
-        condition: service_healthy
-      crossbar:
-        condition: service_started
+    environment:
+      - PORT=9999
+
+  master-galera:
+    extends:
+      file: buildbot-master-template.yaml
+      service: master-template
+
+    hostname: local_master-galera
+    container_name: master-galera
+    entrypoint:
+      - /bin/bash
+      - -c
+      - "/srv/buildbot/master/docker-compose/start.sh master-galera"
+    environment:
+      - PORT=10000
+
+  autogen_ppc64le-master-0:
+    extends:
+      file: buildbot-master-template.yaml
+      service: master-template
+
+    hostname: local_autogen_ppc64le-master-0
+    container_name: autogen_ppc64le-master-0
+    entrypoint:
+      - /bin/bash
+      - -c
+      - "/srv/buildbot/master/docker-compose/start.sh autogen/ppc64le-master-0"
+    environment:
+      - PORT=10001
+
+  autogen_aarch64-master-0:
+    extends:
+      file: buildbot-master-template.yaml
+      service: master-template
+
+    hostname: local_autogen_aarch64-master-0
+    container_name: autogen_aarch64-master-0
+    entrypoint:
+      - /bin/bash
+      - -c
+      - "/srv/buildbot/master/docker-compose/start.sh autogen/aarch64-master-0"
+    environment:
+      - PORT=10002
+
+  autogen_s390x-master-0:
+    extends:
+      file: buildbot-master-template.yaml
+      service: master-template
+
+    hostname: local_autogen_s390x-master-0
+    container_name: autogen_s390x-master-0
+    entrypoint:
+      - /bin/bash
+      - -c
+      - "/srv/buildbot/master/docker-compose/start.sh autogen/s390x-master-0"
+    environment:
+      - PORT=10003
+
+  autogen_amd64-master-1:
+    extends:
+      file: buildbot-master-template.yaml
+      service: master-template
+
+    hostname: local_autogen_amd64-master-1
+    container_name: autogen_amd64-master-1
+    entrypoint:
+      - /bin/bash
+      - -c
+      - "/srv/buildbot/master/docker-compose/start.sh autogen/amd64-master-1"
+    environment:
+      - PORT=10004
+
+  autogen_amd64-master-0:
+    extends:
+      file: buildbot-master-template.yaml
+      service: master-template
+
+    hostname: local_autogen_amd64-master-0
+    container_name: autogen_amd64-master-0
+    entrypoint:
+      - /bin/bash
+      - -c
+      - "/srv/buildbot/master/docker-compose/start.sh autogen/amd64-master-0"
+    environment:
+      - PORT=10005
+
+  autogen_x86-master-0:
+    extends:
+      file: buildbot-master-template.yaml
+      service: master-template
+
+    hostname: local_autogen_x86-master-0
+    container_name: autogen_x86-master-0
+    entrypoint:
+      - /bin/bash
+      - -c
+      - "/srv/buildbot/master/docker-compose/start.sh autogen/x86-master-0"
+    environment:
+      - PORT=10006

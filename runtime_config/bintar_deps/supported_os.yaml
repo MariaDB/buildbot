@@ -1,0 +1,31 @@
+---
+# re_version_filter matches major_minor (10.11, 11.4, etc.)_
+# Execute the test for that distro if re_version_filter matches.
+- tag: ubuntu:20.04
+  re_version_filter: '.*'
+- tag: ubuntu:22.04
+  re_version_filter: '.*'
+- tag: ubuntu:24.04
+  re_version_filter: '.*'
+- tag: debian:10
+  re_version_filter: '.*'
+- tag: debian:11
+  re_version_filter: '.*'
+- tag: debian:12
+  re_version_filter: '.*'
+- tag: almalinux:8
+  re_version_filter: '.*'
+- tag: almalinux:9
+  re_version_filter: '.*'
+- tag: rockylinux:8
+  re_version_filter: '.*'
+- tag: rockylinux:9
+  re_version_filter: '.*'
+- tag: fedora:39
+  re_version_filter: '.*'
+- tag: fedora:40
+  re_version_filter: '.*'
+- tag: fedora:41
+  re_version_filter: '.*'
+- tag: opensuse/leap:15
+  re_version_filter: '.*'
