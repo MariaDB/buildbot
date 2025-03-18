@@ -1,0 +1,627 @@
+files:
+    bin/aria_chk:
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    bin/aria_dump_log:
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    bin/aria_ftdump:
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    bin/aria_pack:
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    bin/aria_read_log:
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    bin/aria_s3_copy:
+    - libc.so.6
+    - libcurl.so.4
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    bin/garbd:
+    - ld-linux-x86-64.so.2
+    - libboost_program_options.so.1.52.0
+    - libc.so.6
+    - libcrypto.so.1.0.0
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - librt.so.1
+    - libssl.so.1.0.0
+    - libstdc++.so.6
+    bin/innochecksum:
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    bin/mariadb:
+    - ld-linux-x86-64.so.2
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    bin/mariadb-admin:
+    - ld-linux-x86-64.so.2
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    bin/mariadb-backup:
+    - ld-linux-x86-64.so.2
+    - libc.so.6
+    - libcrypt.so.1
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    - libsystemd.so.0
+    bin/mariadb-binlog:
+    - ld-linux-x86-64.so.2
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    bin/mariadb-check:
+    - ld-linux-x86-64.so.2
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    bin/mariadb-client-test:
+    - ld-linux-x86-64.so.2
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    bin/mariadb-conv:
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    bin/mariadb-dump:
+    - ld-linux-x86-64.so.2
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    bin/mariadb-import:
+    - ld-linux-x86-64.so.2
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    bin/mariadb-ldb:
+    - ld-linux-x86-64.so.2
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - librt.so.1
+    - libsnappy.so.1
+    - libstdc++.so.6
+    bin/mariadb-plugin:
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    bin/mariadb-show:
+    - ld-linux-x86-64.so.2
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    bin/mariadb-slap:
+    - ld-linux-x86-64.so.2
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    bin/mariadb-test:
+    - ld-linux-x86-64.so.2
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    bin/mariadb-tzinfo-to-sql:
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    bin/mariadb-upgrade:
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    bin/mariadb-waitpid:
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    bin/mariadb_config:
+    - libc.so.6
+    - libpthread.so.0
+    bin/mariadbd:
+    - ld-linux-x86-64.so.2
+    - libc.so.6
+    - libcrypt.so.1
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    - libsystemd.so.0
+    bin/mariadbd-safe-helper:
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    bin/mbstream:
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    bin/my_print_defaults:
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    bin/myisam_ftdump:
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    bin/myisamchk:
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    bin/myisamlog:
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    bin/myisampack:
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    bin/perror:
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    bin/replace:
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    bin/resolve_stack_dump:
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    bin/resolveip:
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    bin/sst_dump:
+    - ld-linux-x86-64.so.2
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libsnappy.so.1
+    - libstdc++.so.6
+    lib/libgalera_smm.so:
+    - ld-linux-x86-64.so.2
+    - libc.so.6
+    - libcrypto.so.1.0.0
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - librt.so.1
+    - libssl.so.1.0.0
+    - libstdc++.so.6
+    lib/libmariadb.so.3:
+    - ld-linux-x86-64.so.2
+    - libc.so.6
+    - libdl.so.2
+    - libm.so.6
+    - libpthread.so.0
+    lib/plugin/adt_null.so:
+    - libc.so.6
+    - libpthread.so.0
+    lib/plugin/auth_0x0100.so:
+    - libc.so.6
+    - libpthread.so.0
+    lib/plugin/auth_ed25519.so:
+    - libc.so.6
+    - libpthread.so.0
+    lib/plugin/auth_gssapi.so:
+    - libc.so.6
+    - libgssapi_krb5.so.2
+    - libkrb5.so.3
+    - libpthread.so.0
+    lib/plugin/auth_gssapi_client.so:
+    - libc.so.6
+    - libcom_err.so.2
+    - libgssapi_krb5.so.2
+    - libk5crypto.so.3
+    - libkrb5.so.3
+    - libpthread.so.0
+    lib/plugin/auth_pam.so:
+    - libc.so.6
+    - libdl.so.2
+    - libpam.so.0
+    - libpthread.so.0
+    lib/plugin/auth_pam_tool_dir/auth_pam_tool:
+    - libc.so.6
+    - libpam.so.0
+    - libpthread.so.0
+    lib/plugin/auth_pam_v1.so:
+    - libc.so.6
+    - libpam.so.0
+    - libpthread.so.0
+    lib/plugin/auth_test_plugin.so:
+    - libc.so.6
+    - libpthread.so.0
+    lib/plugin/caching_sha2_password.so:
+    - libc.so.6
+    - libpthread.so.0
+    lib/plugin/client_ed25519.so:
+    - libc.so.6
+    - libpthread.so.0
+    lib/plugin/cracklib_password_check.so:
+    - libc.so.6
+    - libcrack.so.2
+    - libpthread.so.0
+    lib/plugin/debug_key_management.so:
+    - libc.so.6
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    lib/plugin/dialog.so:
+    - libc.so.6
+    - libpthread.so.0
+    lib/plugin/dialog_examples.so:
+    - libc.so.6
+    - libpthread.so.0
+    lib/plugin/disks.so:
+    - libc.so.6
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    lib/plugin/example_key_management.so:
+    - libc.so.6
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    lib/plugin/file_key_management.so:
+    - libc.so.6
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    lib/plugin/func_test.so:
+    - libc.so.6
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    lib/plugin/ha_archive.so:
+    - libc.so.6
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    lib/plugin/ha_blackhole.so:
+    - libc.so.6
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    lib/plugin/ha_connect.so:
+    - libc.so.6
+    - libgcc_s.so.1
+    - libm.so.6
+    - libodbc.so.2
+    - libpthread.so.0
+    - libstdc++.so.6
+    - libxml2.so.2
+    lib/plugin/ha_example.so:
+    - libc.so.6
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    lib/plugin/ha_federated.so:
+    - libc.so.6
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    lib/plugin/ha_federatedx.so:
+    - libc.so.6
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    lib/plugin/ha_mroonga.so:
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - librt.so.1
+    - libstdc++.so.6
+    - libz.so.1
+    lib/plugin/ha_oqgraph.so:
+    - libJudy.so.1
+    - libc.so.6
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    lib/plugin/ha_rocksdb.so:
+    - ld-linux-x86-64.so.2
+    - libc.so.6
+    - libdl.so.2
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - librt.so.1
+    - libsnappy.so.1
+    - libstdc++.so.6
+    lib/plugin/ha_s3.so:
+    - libc.so.6
+    - libcurl.so.4
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    lib/plugin/ha_sphinx.so:
+    - libc.so.6
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    lib/plugin/ha_spider.so:
+    - libc.so.6
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    lib/plugin/ha_test_sql_discovery.so:
+    - libc.so.6
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    lib/plugin/handlersocket.so:
+    - libc.so.6
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    lib/plugin/hashicorp_key_management.so:
+    - libc.so.6
+    - libcurl.so.4
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    lib/plugin/libdaemon_example.so:
+    - libc.so.6
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    lib/plugin/locales.so:
+    - libc.so.6
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    lib/plugin/metadata_lock_info.so:
+    - libc.so.6
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    lib/plugin/mypluglib.so:
+    - libc.so.6
+    - libpthread.so.0
+    lib/plugin/mysql_clear_password.so:
+    - libc.so.6
+    - libpthread.so.0
+    lib/plugin/password_reuse_check.so:
+    - libc.so.6
+    - libpthread.so.0
+    lib/plugin/provider_bzip2.so:
+    - libbz2.so.1
+    - libc.so.6
+    - libpthread.so.0
+    lib/plugin/provider_lz4.so:
+    - libc.so.6
+    - libpthread.so.0
+    lib/plugin/provider_lzma.so:
+    - libc.so.6
+    - libpthread.so.0
+    lib/plugin/provider_lzo.so:
+    - libc.so.6
+    - liblzo2.so.2
+    - libpthread.so.0
+    lib/plugin/provider_snappy.so:
+    - libc.so.6
+    - libpthread.so.0
+    - libsnappy.so.1
+    lib/plugin/qa_auth_client.so:
+    - libc.so.6
+    - libpthread.so.0
+    lib/plugin/qa_auth_interface.so:
+    - libc.so.6
+    - libpthread.so.0
+    lib/plugin/qa_auth_server.so:
+    - libc.so.6
+    - libpthread.so.0
+    lib/plugin/query_cache_info.so:
+    - libc.so.6
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    lib/plugin/query_response_time.so:
+    - libc.so.6
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    lib/plugin/server_audit.so:
+    - libc.so.6
+    - libpthread.so.0
+    lib/plugin/simple_password_check.so:
+    - libc.so.6
+    - libpthread.so.0
+    lib/plugin/sql_errlog.so:
+    - libc.so.6
+    - libpthread.so.0
+    lib/plugin/test_sql_service.so:
+    - libc.so.6
+    - libpthread.so.0
+    lib/plugin/test_versioning.so:
+    - libc.so.6
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    lib/plugin/type_mysql_json.so:
+    - libc.so.6
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    lib/plugin/type_mysql_timestamp.so:
+    - libc.so.6
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    lib/plugin/type_test.so:
+    - libc.so.6
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    lib/plugin/wsrep_info.so:
+    - libc.so.6
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    lib/plugin/zstd.so:
+    - libc.so.6
+    - libpthread.so.0
+    mysql-test/lib/My/SafeProcess/my_safe_process:
+    - libc.so.6
+    - libgcc_s.so.1
+    - libm.so.6
+    - libpthread.so.0
+    - libstdc++.so.6
+    mysql-test/lib/My/SafeProcess/wsrep_check_version:
+    - libc.so.6
+    - libdl.so.2
+    - libpthread.so.0
+    mysql-test/suite/plugins/pam/pam_mariadb_mtr.so:
+    - libc.so.6
+    - libpam.so.0
+    - libpthread.so.0
+    share/pam_user_map.so:
+    - libc.so.6
+    - libpam.so.0
+    - libpthread.so.0
+version: '10.11'
