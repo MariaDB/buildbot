@@ -91,6 +91,16 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     wget \
     which \
     xz-devel \
+    # things otherwise handled in pip, zabbix missing
+    && if [ "$PLATFORM_ID" = "platform:el9" ]; then \
+         dnf -y install \
+           buildbot-worker \
+           python3-flask \
+           python3-mysqlclient \
+	   python3-twisted \
+           python3-sqlalchemy \
+           ; \
+       fi \
     && if [ "$PLATFORM_ID" = "platform:el10" ]; then \
          dnf -y install \
            java-21-openjdk-devel \
