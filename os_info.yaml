@@ -30,6 +30,7 @@ centos-stream9:
     - ppc64le
   type: rpm
 centos-stream10:
+  image_tag: centosstream10
   version_name: 10
   tags:
     - release_packages
