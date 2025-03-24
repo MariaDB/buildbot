@@ -106,7 +106,6 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     && dnf clean all \
     # dumb-init rpm is not available on centos (official repo) \
     && curl -sL "https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_$(uname -m)" >/usr/local/bin/dumb-init \
-    && chmod +x /usr/local/bin/dumb-init \
-    && if [ "$ARCH" = "ppc64le" ] && [ "$ID" = "centos-stream" ] && [ "$PLATFORM_ID" = "platform:el9" ]; then pip3 install --no-cache-dir setuptools==69.5.1; fi
+    && chmod +x /usr/local/bin/dumb-init
 
 ENV WSREP_PROVIDER=/usr/lib64/galera-4/libgalera_smm.so
