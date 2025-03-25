@@ -1,0 +1,34 @@
+# This file keeps a maximum count of concurrent builds per worker.
+# Later, this should be refactored to have this information as part of
+# other worker metadata, such as IP, connection string, etc.
+# The keys are worker names, as used in locks.py.
+# TODO: There should be a single place where these keys are defined, currently
+# there are more places.
+hz-bbw1-docker: 6
+hz-bbw2-docker: 1
+hz-bbw4-docker: 6
+hz-bbw5-docker: 9
+hz-bbw7-docker: 6
+amd-bbw1-docker: 4
+amd-bbw2-docker: 6
+intel-bbw1-docker: 5
+ppc64le-rhel8-docker: 6
+ppc64le-db-docker: 8
+ppc64le-raptor-docker: 6
+aarch64-bbw1-docker: 2
+aarch64-bbw2-docker: 2
+aarch64-bbw3-docker: 2
+aarch64-bbw4-docker: 2
+aarch64-bbw5-docker: 15
+aarch64-bbw6-docker: 15
+aarch64-bbw7-docker: 15
+apexis-bbw3-docker: 6
+ns-x64-bbw1-docker: 3
+ns-x64-bbw2-docker: 2
+ns-x64-bbw3-docker: 2
+ns-x64-bbw4-docker: 2
+s390x-bbw1-docker: 1
+s390x-bbw2-docker: 1
+s390x-bbw3-docker: 1
+s390x-bbw4-docker: 1
+s390x-bbw5-docker: 1

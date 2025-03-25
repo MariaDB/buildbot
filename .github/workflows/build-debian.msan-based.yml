@@ -2,9 +2,14 @@ name: Build Debian:msan based images
 
 on:
   push:
+    branches:
+      - 'main'
+      - 'dev'
     paths:
       - 'ci_build_images/debian.Dockerfile'
-      - 'ci_build_images/msan.Dockerfile'
+      - 'ci_build_images/rr.Dockerfile'
+      - 'ci_build_images/msan.fragment.Dockerfile'
+      - 'ci_build_images/msan.instrumentedlibs.sh'
       - 'ci_build_images/qpress.Dockerfile'
       - 'ci_build_images/buildbot-worker.Dockerfile'
       - .github/workflows/build-debian.msan-based.yml
@@ -12,7 +17,9 @@ on:
   pull_request:
     paths:
       - 'ci_build_images/debian.Dockerfile'
-      - 'ci_build_images/msan.Dockerfile'
+      - 'ci_build_images/rr.Dockerfile'
+      - 'ci_build_images/msan.fragment.Dockerfile'
+      - 'ci_build_images/msan.instrumentedlibs.sh'
       - 'ci_build_images/qpress.Dockerfile'
       - 'ci_build_images/buildbot-worker.Dockerfile'
       - .github/workflows/build-debian.msan-based.yml
@@ -25,27 +32,24 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - image: debian:11
+          - image: debian:12
             platforms: linux/amd64
             branch: 10.11
-            tag: debian11-msan
-            clang_version: 15
-            nogalera: false
-
-          - image: debian:11
-            platforms: linux/amd64
-            branch: 10.11
-            tag: debian11-msan-clang-16
-            clang_version: 16
+            tag: debian12-msan-clang-20
+            clang_version: 20
             nogalera: false
 
     uses: ./.github/workflows/bbw_build_container_template.yml
     with:
-      dockerfile: debian.Dockerfile msan.Dockerfile
+      dockerfile: rr.Dockerfile debian.Dockerfile msan.fragment.Dockerfile
       image: ${{ matrix.image }}
       platforms: ${{ matrix.platforms }}
       tag: ${{ matrix.tag }}
       branch: ${{ matrix.branch }}
       clang_version: ${{ matrix.clang_version }}
       nogalera: ${{ matrix.nogalera }}
+      files:
+        '[
+          {"name": "msan.instrumentedlibs.sh", "source": "''$WORKDIR/msan.instrumentedlibs.sh''", "target": "''$GITHUB_WORKSPACE''"}
+        ]'
     secrets: inherit

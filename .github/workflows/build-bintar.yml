@@ -1,0 +1,43 @@
+name: Build Bintar image
+
+on:
+  push:
+    branches:
+      - 'main'
+      - 'dev'
+    paths:
+      - 'ci_build_images/bintar.Dockerfile'
+      - 'ci_build_images/qpress.Dockerfile'
+      - 'ci_build_images/buildbot-worker.Dockerfile'
+      - 'ci_build_images/scripts/**'
+      - .github/workflows/build-bintar.yml
+      - .github/workflows/bbw_build_container_template.yml
+  pull_request:
+    paths:
+      - 'ci_build_images/bintar.Dockerfile'
+      - 'ci_build_images/qpress.Dockerfile'
+      - 'ci_build_images/buildbot-worker.Dockerfile'
+      - 'ci_build_images/scripts/**'
+      - .github/workflows/build-bintar.yml
+      - .github/workflows/bbw_build_container_template.yml
+  workflow_call:
+
+jobs:
+  build-images:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: almalinux:8
+            platforms: linux/amd64
+            tag: almalinux8-bintar
+            nogalera: false
+
+    uses: ./.github/workflows/bbw_build_container_template.yml
+    with:
+      dockerfile: bintar.Dockerfile
+      image: ${{ matrix.image }}
+      platforms: ${{ matrix.platforms }}
+      tag: ${{ matrix.tag }}
+      nogalera: ${{ matrix.nogalera }}
+    secrets: inherit

@@ -1,5 +1,5 @@
-private["db_url"] = "mysql://buildmaster:password@localhost/buildbot?max_idle=300&storage_engine=InnoDB"
-private["db_host"] = "localhost"
+private["db_url"] = "mysql://buildmaster:password@127.0.0.1/buildbot?max_idle=300&storage_engine=InnoDB"
+private["db_host"] = "127.0.0.1"
 private["db_user"] = "buildmaster"
 private["db_password"] = "password"
 private["db_mtr_db"] = "buildbot"
@@ -52,11 +52,10 @@ private["worker_pass"]= {
     "bbw1-windows":"1234",
     "bbw2-windows":"1234",
     "bb-rhel8-docker":"1234",
-    "ro-apexis-bbw03-x64": "1234",
+    "bb-rhel9-docker":"1234",
     "monty-bbw1-x64": "1234",
     "s390x-rhel8":"1234",
     "libvirt": "1234",
-    "bg-bbw1-x64": "1234", # non-latent worker for master-bintars
 }
 private["docker_workers"]= {
     "amd-bbw1-docker":"tcp://IP_address:port",
@@ -66,6 +65,7 @@ private["docker_workers"]= {
     "hz-bbw4-docker":"tcp://IP_address:port",
     "hz-bbw5-docker":"tcp://IP_address:port",
     "hz-bbw6-docker":"tcp://IP_address:port",
+    "hz-bbw7-docker":"tcp://IP_address:port",
     "gsk-bbw1-docker":"tcp://IP_address:port",
     "bm-bbw1-docker":"tcp://IP_address:port",
     "ppc64le-db-bbw1-docker":"tcp://IP_address:port",
@@ -122,7 +122,7 @@ private["rhel_sub"]= {
 }
 
 private["libvirt_workers"] = {
-    "amd64": ("bb-hz-bbw5", "qemu+ssh://user@IP_address/system"),
-    "aarch64": ("bb-eq-arm1", "qemu+ssh://user@IP_addres/system"),
-    "ppc64le": ("bb-db-p9-bbw1", "qemu+ssh://user@IP_adress/system"),
+    "amd64": ("bb-hz-bbw5", "test:///default"),
+    "aarch64": ("bb-eq-arm1", "test:///default"),
+    "ppc64le": ("bb-db-p9-bbw1", "test:///default"),
 }

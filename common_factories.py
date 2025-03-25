@@ -1,16 +1,44 @@
+import os
+import re
+
 from twisted.internet import defer
 
-from buildbot.plugins import *
+from buildbot.plugins import steps, util
 from buildbot.process import results
 from buildbot.process.factory import BuildFactory
-from buildbot.process.properties import Properties, Property
-from buildbot.process.remotecommand import RemoteCommand
-from buildbot.steps.mtrlogobserver import MTR, MtrLogObserver
-from buildbot.steps.package.rpm.rpmlint import RpmLint
-from buildbot.steps.shell import Compile, SetPropertyFromCommand, ShellCommand, Test
-from buildbot.steps.source.github import GitHub
-from constants import *
-from utils import *
+from buildbot.process.properties import Property
+from buildbot.steps.mtrlogobserver import MTR
+
+# Local
+from constants import MTR_ENV, SAVED_PACKAGE_BRANCHES, TEST_TYPE_TO_MTR_ARG
+from utils import (
+    createDebRepo,
+    createVar,
+    dockerfile,
+    getArch,
+    getHTMLLogString,
+    getSourceTarball,
+    hasAutobake,
+    hasBigtest,
+    hasCompat,
+    hasDockerLibrary,
+    hasEco,
+    hasFailed,
+    hasGalera,
+    hasInstall,
+    hasPackagesGenerated,
+    hasRpmLint,
+    hasS3,
+    hasUpgrade,
+    ls2string,
+    moveMTRLogs,
+    mtrEnv,
+    mtrJobsMultiplier,
+    printEnv,
+    saveLogs,
+    savePackageIfBranchMatch,
+    uploadDebArtifacts,
+)
 
 
 # TODO for FetchTestData/getLastNFailedBuildsFactory
@@ -80,7 +108,7 @@ class FetchTestData(MTR):
 def addPostTests(factory):
     factory.addStep(saveLogs())
 
-    ## trigger packages
+    # trigger packages
     factory.addStep(
         steps.Trigger(
             schedulerNames=["s_packages"],
@@ -96,7 +124,7 @@ def addPostTests(factory):
             doStepIf=hasAutobake,
         )
     )
-    ## trigger bigtest
+    # trigger bigtest
     factory.addStep(
         steps.Trigger(
             schedulerNames=["s_bigtest"],
@@ -116,7 +144,9 @@ def addPostTests(factory):
         steps.SetPropertyFromCommand(
             command="basename mariadb-*-linux-*.tar.gz",
             property="mariadb_binary",
-            doStepIf=savePackage,
+            doStepIf=(
+                lambda step: savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
+            ),
         )
     )
     factory.addStep(
@@ -132,7 +162,9 @@ def addPostTests(factory):
         && sync /packages/%(prop:tarbuildnum)s
         """
             ),
-            doStepIf=savePackage,
+            doStepIf=(
+                lambda step: savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
+            ),
         )
     )
     factory.addStep(
@@ -142,14 +174,16 @@ def addPostTests(factory):
             waitForFinish=False,
             updateSourceStamp=False,
             set_properties={
-                "parentbuildername": Property("buildername"),
                 "tarbuildnum": Property("tarbuildnum"),
                 "mariadb_binary": Property("mariadb_binary"),
                 "mariadb_version": Property("mariadb_version"),
                 "master_branch": Property("master_branch"),
                 "parentbuildername": Property("buildername"),
             },
-            doStepIf=lambda step: savePackage(step) and hasEco(step),
+            doStepIf=(
+                lambda step: savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
+                and hasEco(step)
+            ),
         )
     )
     factory.addStep(
@@ -219,7 +253,8 @@ def getBuildFactoryPreTest(build_type="RelWithDebInfo", additional_args=""):
     return f_quick_build
 
 
-# TODO single function or class object to handle adding tests for different platforms
+# TODO single function or class object to handle adding tests for different
+# platforms
 def addWinTests(
     factory: BuildFactory,
     mtr_test_type: str,
@@ -229,9 +264,8 @@ def addWinTests(
     mtr_suites: list[str],
     create_scripts: bool = False,
 ) -> BuildFactory:
-
     if "default" in mtr_suites:
-        cmd = f"..\\mysql-test\\collections\\buildbot_suites.bat && cd .."
+        cmd = "..\\mysql-test\\collections\\buildbot_suites.bat && cd .."
     else:
         suites = ",".join(mtr_suites)
         cmd = (
@@ -274,7 +308,7 @@ def addWinTests(
                 "dojob",
                 '"',
                 util.Interpolate(
-                    f'"C:\Program Files (x86)\Microsoft Visual Studio\\2022\BuildTools\Common7\Tools\VsDevCmd.bat" -arch=%(kw:arch)s && cd mysql-test && {cmd}',
+                    f'"C:\\Program Files (x86)\\Microsoft Visual Studio\\2022\\BuildTools\\Common7\\Tools\\VsDevCmd.bat" -arch=%(kw:arch)s && cd mysql-test && {cmd}',
                     mtr_additional_args=mtr_additional_args,
                     jobs=util.Property("jobs", default=4),
                     arch=util.Property("arch", default="x64"),
@@ -318,7 +352,7 @@ def addTests(
     mtr_step_db_pool: str,
     mtr_additional_args: str,
     *,
-    mtr_args: dict[str, str] = test_type_to_mtr_arg,
+    mtr_args: dict[str, str] = TEST_TYPE_TO_MTR_ARG,
     mtr_feedback_plugin: int = 0,
     mtr_retry: int = 3,
     mtr_max_save_core: int = 2,
@@ -594,8 +628,7 @@ def getLastNFailedBuildsFactory(test_type, mtrDbPool):
     return addPostTests(f)
 
 
-def getRpmAutobakeFactory(mtrDbPool):
-    ## f_rpm_autobake
+def getRpmAutobakeFactory():
     f_rpm_autobake = util.BuildFactory()
     f_rpm_autobake.addStep(printEnv())
     f_rpm_autobake.addStep(
@@ -617,7 +650,7 @@ def getRpmAutobakeFactory(mtrDbPool):
                 util.Interpolate(
                     'wget --no-check-certificate -cO ../MariaDB-shared-5.3.%(kw:arch)s.rpm "%(kw:url)s/helper_files/mariadb-shared-5.3-%(kw:arch)s.rpm" && wget -cO ../MariaDB-shared-10.1.%(kw:arch)s.rpm "%(kw:url)s/helper_files/mariadb-shared-10.1-kvm-rpm-%(kw:rpm_type)s-%(kw:arch)s.rpm"',
                     arch=getArch,
-                    url=os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org"),
+                    url=os.environ["ARTIFACTS_URL"],
                     rpm_type=util.Property("rpm_type"),
                 ),
             ],
@@ -705,7 +738,7 @@ EOF
                 echo "module_hotfixes = 1" >> MariaDB.repo
             fi
         """,
-                    url=os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org"),
+                    url=os.environ["ARTIFACTS_URL"],
                 ),
             ]
         )
@@ -723,11 +756,14 @@ EOF
                 sync /packages/%(prop:tarbuildnum)s
 """
             ),
-            doStepIf=lambda step: hasFiles(step) and savePackage(step),
+            doStepIf=(
+                lambda step: hasPackagesGenerated(step)
+                and savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
+            ),
             descriptionDone=util.Interpolate(
                 """
 Repository available with: curl %(kw:url)s/%(prop:tarbuildnum)s/%(prop:buildername)s/MariaDB.repo -o /etc/yum.repos.d/MariaDB.repo""",
-                url=os.getenv("ARTIFACTS_URL", default="https://ci.mariadb.org"),
+                url=os.environ["ARTIFACTS_URL"],
             ),
         )
     )
@@ -743,7 +779,7 @@ Repository available with: curl %(kw:url)s/%(prop:tarbuildnum)s/%(prop:builderna
                 "master_branch": Property("master_branch"),
                 "parentbuildername": Property("buildername"),
                 "ubi": "-ubi",
-                "GH_WORKFLOW": "test-image-ent.yml",
+                "GH_WORKFLOW": "test-image-ubi.yml",
             },
             doStepIf=lambda step: hasDockerLibrary(step),
         )
@@ -760,9 +796,11 @@ Repository available with: curl %(kw:url)s/%(prop:tarbuildnum)s/%(prop:builderna
                 "master_branch": Property("master_branch"),
                 "parentbuildername": Property("buildername"),
             },
-            doStepIf=lambda step: hasInstall(step)
-            and savePackage(step)
-            and hasFiles(step),
+            doStepIf=(
+                lambda step: hasInstall(step)
+                and savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
+                and hasPackagesGenerated(step)
+            ),
         )
     )
     f_rpm_autobake.addStep(
@@ -777,9 +815,11 @@ Repository available with: curl %(kw:url)s/%(prop:tarbuildnum)s/%(prop:builderna
                 "master_branch": Property("master_branch"),
                 "parentbuildername": Property("buildername"),
             },
-            doStepIf=lambda step: hasUpgrade(step)
-            and savePackage(step)
-            and hasFiles(step),
+            doStepIf=(
+                lambda step: hasUpgrade(step)
+                and savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
+                and hasPackagesGenerated(step)
+            ),
         )
     )
     f_rpm_autobake.addStep(
@@ -788,3 +828,117 @@ Repository available with: curl %(kw:url)s/%(prop:tarbuildnum)s/%(prop:builderna
         )
     )
     return f_rpm_autobake
+
+
+def getDebAutobakeFactory() -> util.BuildFactory:
+    f_deb_autobake = util.BuildFactory()
+    f_deb_autobake.addStep(printEnv())
+    f_deb_autobake.addStep(
+        steps.SetProperty(
+            property="dockerfile",
+            value=util.Interpolate("%(kw:url)s", url=dockerfile),
+            description="dockerfile",
+        )
+    )
+    f_deb_autobake.addStep(getSourceTarball())
+    # build steps
+    f_deb_autobake.addStep(
+        steps.Compile(
+            logfiles={"CMakeCache.txt": "./builddir/CMakeCache.txt"},
+            command=["debian/autobake-deb.sh"],
+            env={
+                "CCACHE_DIR": "/mnt/ccache",
+                "DEB_BUILD_OPTIONS": util.Interpolate(
+                    "parallel=%(kw:jobs)s",
+                    jobs=util.Property("jobs", default="$(getconf _NPROCESSORS_ONLN)"),
+                ),
+            },
+            description="autobake-deb.sh",
+        )
+    )
+    # upload artifacts
+    f_deb_autobake.addStep(
+        steps.SetPropertyFromCommand(
+            command="find .. -maxdepth 1 -type f", extract_fn=ls2string
+        )
+    )
+    f_deb_autobake.addStep(createDebRepo())
+    f_deb_autobake.addStep(uploadDebArtifacts())
+
+    f_deb_autobake.addStep(
+        steps.Trigger(
+            name="dockerlibrary",
+            schedulerNames=["s_dockerlibrary"],
+            waitForFinish=False,
+            updateSourceStamp=False,
+            set_properties={
+                "tarbuildnum": Property("tarbuildnum"),
+                "mariadb_version": Property("mariadb_version"),
+                "master_branch": Property("master_branch"),
+                "parentbuildername": Property("buildername"),
+            },
+            doStepIf=lambda step: hasDockerLibrary(step),
+        )
+    )
+    f_deb_autobake.addStep(
+        steps.Trigger(
+            name="release preparation",
+            schedulerNames=["s_release_prep"],
+            waitForFinish=True,
+            updateSourceStamp=False,
+            set_properties={
+                "tarbuildnum": Property("tarbuildnum"),
+                "mariadb_version": Property("mariadb_version"),
+                "master_branch": Property("master_branch"),
+                "parentbuildername": Property("buildername"),
+            },
+            doStepIf=(
+                lambda step: savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
+            ),
+        )
+    )
+    f_deb_autobake.addStep(
+        steps.Trigger(
+            name="install",
+            schedulerNames=["s_install"],
+            waitForFinish=False,
+            updateSourceStamp=False,
+            set_properties={
+                "tarbuildnum": Property("tarbuildnum"),
+                "mariadb_version": Property("mariadb_version"),
+                "master_branch": Property("master_branch"),
+                "parentbuildername": Property("buildername"),
+            },
+            doStepIf=(
+                lambda step: hasInstall(step)
+                and savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
+                and hasPackagesGenerated(step)
+            ),
+        )
+    )
+    f_deb_autobake.addStep(
+        steps.Trigger(
+            name="major-minor-upgrade",
+            schedulerNames=["s_upgrade"],
+            waitForFinish=False,
+            updateSourceStamp=False,
+            set_properties={
+                "tarbuildnum": Property("tarbuildnum"),
+                "mariadb_version": Property("mariadb_version"),
+                "master_branch": Property("master_branch"),
+                "parentbuildername": Property("buildername"),
+            },
+            doStepIf=(
+                lambda step: hasUpgrade(step)
+                and savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
+                and hasPackagesGenerated(step)
+            ),
+        )
+    )
+    f_deb_autobake.addStep(
+        steps.ShellCommand(
+            name="cleanup", command="rm -r * .* 2> /dev/null || true", alwaysRun=True
+        )
+    )
+
+    return f_deb_autobake

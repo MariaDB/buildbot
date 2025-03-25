@@ -38,9 +38,11 @@ fi
 case $ENVIRONMENT in
   DEV)
     IMAGE="quay.io/mariadb-foundation/bb-master:dev_master"
+    ENVFILE="docker-compose/.env.dev"
     ;;
   PROD)
     IMAGE="quay.io/mariadb-foundation/bb-master:master"
+    ENVFILE="docker-compose/.env"
     ;;
   *)
     err "Unknown environment: $ENVIRONMENT. Use DEV or PROD."
@@ -67,26 +69,20 @@ command -v python3 >/dev/null ||
   err "python3 command not found"
 
 python3 define_masters.py
-echo "Checking master.cfg"
-$RUNC run -i -v "$(pwd):/srv/buildbot/master" \
-  -w /srv/buildbot/master \
-  $IMAGE \
-  buildbot checkconfig master.cfg
-echo -e "done\n"
-# not checking libvirt config file (//TEMP we need to find a solution
-# to not check ssh connection)
 for dir in autogen/* \
-  master-bintars \
   master-docker-nonstandard \
   master-docker-nonstandard-2 \
   master-galera \
   master-nonlatent \
+  master-libvirt \
   master-protected-branches \
   master-web; do
   echo "Checking $dir/master.cfg"
   $RUNC run -i -v "$(pwd):/srv/buildbot/master" \
-    -w /srv/buildbot/master \
+    --env PORT=1234 \
+    --env-file <(sed "s/='\([^']*\)'/=\1/" $ENVFILE) \
+    -w "/srv/buildbot/master/" \
     $IMAGE \
-    bash -c "cd $dir && buildbot checkconfig master.cfg"
-  echo -e "done\n"
+    bash -c "buildbot checkconfig $dir/master.cfg"
+  echo "done"
 done

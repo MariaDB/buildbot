@@ -19,6 +19,7 @@ on:
       - "script_templates/**"
       - "utils.py"
       - "validate_master_cfg.sh"
+      - "worker_locks.yaml"
   pull_request:
     paths:
       - ".github/workflows/bbm_deploy.yml"
@@ -31,10 +32,12 @@ on:
       - "locks.py"
       - "master-**"
       - "master.cfg"
+      - "master_common.py"
       - "os_info.yaml"
       - "script_templates/**"
       - "utils.py"
       - "validate_master_cfg.sh"
+      - "worker_locks.yaml"
 
 jobs:
   check:

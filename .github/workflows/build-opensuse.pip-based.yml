@@ -2,6 +2,9 @@ name: Build OpenSUSE:pip based images
 
 on:
   push:
+    branches:
+      - 'main'
+      - 'dev'
     paths:
       - 'ci_build_images/opensuse.Dockerfile'
       - 'ci_build_images/pip.Dockerfile'
@@ -27,11 +30,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - image: opensuse/leap:15.5
-            platforms: linux/amd64
-            tag: opensuse1505
-            nogalera: false
-
           - image: opensuse/leap:15.6
             platforms: linux/amd64
             tag: opensuse1506

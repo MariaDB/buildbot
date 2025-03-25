@@ -1,5 +1,5 @@
 [codespell]
-ignore-words-list = crossreference,ro
+ignore-words-list = crossreference,ro,assertin
 # following contains a typo in an INNODB test
 exclude = scripts/aix-build-and-test.sh
 skip = cross-reference/crossreference/cr/static/*

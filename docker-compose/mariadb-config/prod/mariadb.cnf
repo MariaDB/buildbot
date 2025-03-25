@@ -9,7 +9,7 @@ sort_buffer_size        = 128M
 bulk_insert_buffer_size = 128M
 tmp_table_size          = 32M
 max_heap_table_size     = 32M
-innodb_log_file_size    = 2G
+innodb_log_file_size    = 4G
 
 # Logging
 # warning log-basename is defined later for replication
@@ -36,7 +36,7 @@ server-id = 1
 log-basename = mariadb
 
 log_bin
-expire_logs_days = 5
+expire_logs_days = 14
 max_binlog_size = 100M
 binlog_format = MIXED
 # the following permits to simplify the process of moving a replica to a

@@ -11,7 +11,7 @@ err() {
 }
 
 # Make sure to pass the master name as the first argument
-cd "/srv/buildbot/master/$1" || err "cd /srv/buildbot/master/$1"
+cd "/srv/buildbot/master/" || err "cd /srv/buildbot/master/"
 
 # shellcheck disable=SC2226
 [[ -f master-private.cfg ]] || ln -s ../master-private.cfg
@@ -33,12 +33,12 @@ echo "Crossbar started"
 if [[ $1 == "master-libvirt" ]]; then
   [[ -d /root/.ssh ]] || {
     mkdir /root/.ssh
-    cp id_ed25519 /root/.ssh
-    cp known_hosts /root/.ssh
+    cp ./master-libvirt/id_ed25519 /root/.ssh
+    cp ./master-libvirt/known_hosts /root/.ssh
   }
 fi
 
 # loop for debug
 # while true; do date && sleep 30; done
 
-exec buildbot start --nodaemon
+exec buildbot start --nodaemon "$1"

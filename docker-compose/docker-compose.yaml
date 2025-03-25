@@ -75,9 +75,6 @@ services:
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_BINTARS_VM_PORT
-      - MASTER_NONLATENT_BINTARS_WORKERS
-      - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MQ_ROUTER_URL
@@ -111,9 +108,6 @@ services:
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_BINTARS_VM_PORT
-      - MASTER_NONLATENT_BINTARS_WORKERS
-      - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
@@ -122,7 +116,7 @@ services:
       - TITLE
       - TITLE_URL
     stop_grace_period: 5m
-    hostname: master-nonlatent
+    hostname: dev_master-nonlatent
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -151,9 +145,6 @@ services:
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_BINTARS_VM_PORT
-      - MASTER_NONLATENT_BINTARS_WORKERS
-      - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
@@ -162,7 +153,7 @@ services:
       - TITLE
       - TITLE_URL
     stop_grace_period: 5m
-    hostname: master-libvirt
+    hostname: dev_master-libvirt
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -190,9 +181,6 @@ services:
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_BINTARS_VM_PORT
-      - MASTER_NONLATENT_BINTARS_WORKERS
-      - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
@@ -201,7 +189,7 @@ services:
       - TITLE
       - TITLE_URL
     stop_grace_period: 5m
-    hostname: autogen_aarch64-master-0
+    hostname: dev_autogen_aarch64-master-0
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -229,9 +217,6 @@ services:
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_BINTARS_VM_PORT
-      - MASTER_NONLATENT_BINTARS_WORKERS
-      - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
@@ -240,7 +225,7 @@ services:
       - TITLE
       - TITLE_URL
     stop_grace_period: 5m
-    hostname: autogen_amd64-master-0
+    hostname: dev_autogen_amd64-master-0
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -268,9 +253,6 @@ services:
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_BINTARS_VM_PORT
-      - MASTER_NONLATENT_BINTARS_WORKERS
-      - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
@@ -279,7 +261,7 @@ services:
       - TITLE
       - TITLE_URL
     stop_grace_period: 5m
-    hostname: autogen_amd64-master-1
+    hostname: dev_autogen_amd64-master-1
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -307,9 +289,6 @@ services:
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_BINTARS_VM_PORT
-      - MASTER_NONLATENT_BINTARS_WORKERS
-      - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
@@ -318,7 +297,7 @@ services:
       - TITLE
       - TITLE_URL
     stop_grace_period: 5m
-    hostname: autogen_ppc64le-master-0
+    hostname: dev_autogen_ppc64le-master-0
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -346,9 +325,6 @@ services:
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_BINTARS_VM_PORT
-      - MASTER_NONLATENT_BINTARS_WORKERS
-      - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
@@ -357,7 +333,7 @@ services:
       - TITLE
       - TITLE_URL
     stop_grace_period: 5m
-    hostname: autogen_s390x-master-0
+    hostname: dev_autogen_s390x-master-0
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -385,9 +361,6 @@ services:
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_BINTARS_VM_PORT
-      - MASTER_NONLATENT_BINTARS_WORKERS
-      - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
@@ -396,7 +369,7 @@ services:
       - TITLE
       - TITLE_URL
     stop_grace_period: 5m
-    hostname: autogen_x86-master-0
+    hostname: dev_autogen_x86-master-0
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -424,9 +397,6 @@ services:
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_BINTARS_VM_PORT
-      - MASTER_NONLATENT_BINTARS_WORKERS
-      - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
@@ -435,7 +405,7 @@ services:
       - TITLE
       - TITLE_URL
     stop_grace_period: 5m
-    hostname: master-docker-nonstandard
+    hostname: dev_master-docker-nonstandard
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -464,9 +434,6 @@ services:
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_BINTARS_VM_PORT
-      - MASTER_NONLATENT_BINTARS_WORKERS
-      - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
@@ -475,7 +442,7 @@ services:
       - TITLE
       - TITLE_URL
     stop_grace_period: 5m
-    hostname: master-galera
+    hostname: dev_master-galera
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -503,9 +470,6 @@ services:
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_BINTARS_VM_PORT
-      - MASTER_NONLATENT_BINTARS_WORKERS
-      - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
@@ -514,7 +478,7 @@ services:
       - TITLE
       - TITLE_URL
     stop_grace_period: 5m
-    hostname: master-protected-branches
+    hostname: dev_master-protected-branches
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -542,9 +506,6 @@ services:
       - ENVIRON
       - GALERA_PACKAGES_DIR
       - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_BINTARS_VM_PORT
-      - MASTER_NONLATENT_BINTARS_WORKERS
-      - MASTER_NONLATENT_BINTARS_WORKER_PORT
       - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
@@ -553,7 +514,7 @@ services:
       - TITLE
       - TITLE_URL
     stop_grace_period: 5m
-    hostname: master-docker-nonstandard-2
+    hostname: dev_master-docker-nonstandard-2
     volumes:
       - ./logs:/var/log/buildbot
       - ./buildbot/:/srv/buildbot/master
@@ -562,45 +523,6 @@ services:
       - /bin/bash
       - -c
       - "/srv/buildbot/master/docker-compose/start.sh master-docker-nonstandard-2"
-    network_mode: host
-    depends_on:
-      mariadb:
-        condition: service_healthy
-      crossbar:
-        condition: service_started
-
-  master-bintars:
-    image: quay.io/mariadb-foundation/bb-master:dev_master
-    restart: unless-stopped
-    container_name: master-bintars
-    environment:
-      - ARTIFACTS_URL
-      - BRANCH
-      - BUILDMASTER_URL
-      - BUILDMASTER_WG_IP
-      - CONTAINER_REGISTRY_URL
-      - ENVIRON
-      - GALERA_PACKAGES_DIR
-      - MASTER_CREDENTIALS_DIR
-      - MASTER_NONLATENT_BINTARS_VM_PORT
-      - MASTER_NONLATENT_BINTARS_WORKERS
-      - MASTER_NONLATENT_BINTARS_WORKER_PORT
-      - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
-      - MASTER_PACKAGES_DIR
-      - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
-      - MQ_ROUTER_URL
-      - PORT=10008
-      - TITLE
-      - TITLE_URL
-    stop_grace_period: 5m
-    hostname: master-bintars
-    volumes:
-      - ./logs:/var/log/buildbot
-      - ./buildbot/:/srv/buildbot/master
-    entrypoint:
-      - /bin/bash
-      - -c
-      - "/srv/buildbot/master/docker-compose/start.sh master-bintars"
     network_mode: host
     depends_on:
       mariadb:
