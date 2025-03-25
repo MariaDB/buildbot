@@ -91,3 +91,15 @@ RUN . /etc/os-release \
 # unknown rr
 # hadolint ignore=DL3022
 COPY --from=rr /tmp/install/usr/ /usr/
+
+# ASAN/UBSAN
+# save a filter and etag so can bandwidth save and for use by end users
+RUN for san in ASAN UBSAN; do \
+        curl https://raw.githubusercontent.com/mariadb-corporation/mariadb-qa/refs/heads/master/"$san".filter -o /"$san".filter --etag-save /"$san".filter.etag ; \
+        done
+
+# https://github.com/google/sanitizers/wiki/AddressSanitizerFlags
+ENV ASAN_OPTIONS=suppressions=/ASAN.filter:quarantine_size_mb=512:atexit=0:detect_invalid_pointer_pairs=3:dump_instruction_bytes=1:allocator_may_return_null=1
+
+# https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
+ENV UBSAN_OPTIONS=suppressions=/UBSAN.filter:print_stacktrace=1:report_error_type=1
