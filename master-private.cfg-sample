@@ -12,7 +12,6 @@ private["user_pass"]= {
 }
 private["master-variables"] = {
     "max_builds": 16,
-    "starting_port": 9996,
     "workers": {
         "amd64": [
                 'amd-bbw1',
