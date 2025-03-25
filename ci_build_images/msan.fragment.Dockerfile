@@ -91,3 +91,53 @@ RUN . /etc/os-release \
 # unknown rr
 # hadolint ignore=DL3022
 COPY --from=rr /tmp/install/usr/ /usr/
+
+# ASAN/UBSAN
+RUN echo "cat /etc/motd" > ~buildbot/.bashrc ; \
+    printf "\
+This is a container for ASAN, UBSAN and MSAN building\n\
+\n\
+A basic MSAN build can be achieved with\n\
+\n\
+cmake -DWITH_EMBEDDED_SERVER=OFF \\ \n\
+      -DWITH_INNODB_{BZIP2,LZ4,LZMA,LZO,SNAPPY}=OFF \\ \n\
+      -DPLUGIN_{MROONGA,ROCKSDB,OQGRAPH,SPIDER}=NO  \\ \n\
+      -DWITH_ZLIB=bundled  \\ \n\
+      -DHAVE_LIBAIO_H=0    \\ \n\
+      -DCMAKE_DISABLE_FIND_PACKAGE_{URING,LIBAIO}=1  \\ \n\
+      -DWITH_NUMA=NO  \\ \n\
+      -DWITH_SYSTEMD=no \\ \n\
+      -DWITH_MSAN=ON  \\ \n\
+      -DHAVE_CXX_NEW=1  \\ \n\
+      -DCMAKE_{EXE,MODULE}_LINKER_FLAGS=\"-L\${MSAN_LIBDIR} -Wl,-rpath=\${MSAN_LIBDIR}\" \\ \n\
+      -DWITH_DBUG_TRACE=OFF \\ \n\
+      /source\n\
+\n\
+A basic combined UBSAN/ASAN build can be achieved with\n\
+\n\
+cmake -DWITH_ASAN=ON -DWITH_ASAN_SCOPED=ON -DWITH_UBSAN=ON -DPLUGIN_PERFSCHEMA=NO /source\n\
+\n\
+Build with:\n\
+\n\
+cmake --build .\n\
+\n\
+Test with:\n\
+\n\
+mysql-test/mtr --parallel=auto\n\
+\n\
+There are UBSAN filters covering currently unfixed bugs within\n\
+the server that can be used to direct your development, or validate if a\n\
+observed failure is known. Perform the following to download/inspect them.\n\
+\n\
+curl https://raw.githubusercontent.com/mariadb-corporation/mariadb-qa/refs/heads/master/UBSAN.filter -o /build/UBSAN.filter\n\
+\n\
+After this, add suppressions to UBSAN_OPTIONS with\n\
+\n\
+export UBSAN_OPTIONS=\$UBSAN_OPTIONS:suppressions=/build/UBSAN.filter\n\
+\n\
+ref sanitizer flags documents:\n\
+* https://github.com/google/sanitizers/wiki/AddressSanitizerFlags\n\
+* https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html\n\n" > /etc/motd
+
+ENV ASAN_OPTIONS=quarantine_size_mb=512:atexit=0:detect_invalid_pointer_pairs=3:dump_instruction_bytes=1:allocator_may_return_null=1
+ENV UBSAN_OPTIONS=print_stacktrace=1:report_error_type=1
