@@ -12,6 +12,7 @@ on:
       - 'ci_build_images/pip.Dockerfile'
       - 'ci_build_images/qpress.Dockerfile'
       - 'ci_build_images/rhel.Dockerfile'
+      - 'ci_build_images/rhel7.Dockerfile'
   pull_request:
     paths:
       - 'ci_build_images/buildbot-worker.Dockerfile'
@@ -19,6 +20,7 @@ on:
       - 'ci_build_images/pip.Dockerfile'
       - 'ci_build_images/qpress.Dockerfile'
       - 'ci_build_images/rhel.Dockerfile'
+      - 'ci_build_images/rhel7.Dockerfile'
   workflow_dispatch:
 
 jobs:
@@ -34,11 +36,18 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - dockerfile: rhel7.Dockerfile pip.Dockerfile
+            image: ubi7
+            tag: rhel7
+            platforms: linux/amd64
+            nogalera: false
+
           - dockerfile: rhel.Dockerfile
             image: ubi8
             tag: rhel8
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
             nogalera: false
+
           - dockerfile: rhel.Dockerfile
             image: ubi9
             tag: rhel9
