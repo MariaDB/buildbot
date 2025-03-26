@@ -95,10 +95,6 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     && if [ "$PLATFORM_ID" = "platform:el9" ]; then \
          dnf -y install \
            buildbot-worker \
-           python3-flask \
-           python3-mysqlclient \
-	   python3-twisted \
-           python3-sqlalchemy \
            ; \
        fi \
     && if [ "$PLATFORM_ID" = "platform:el10" ]; then \
