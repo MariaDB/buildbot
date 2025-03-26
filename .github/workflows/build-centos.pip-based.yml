@@ -30,6 +30,13 @@ jobs:
       matrix:
         include:
 
+          - image: quay.io/centos/centos:stream10
+            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
+            tag: centosstream10
+            runner: ubuntu-24.04
+            nogalera: true
+            extradockerfile: pip.Dockerfile
+
           - image: quay.io/centos/centos:stream9
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
             tag: centosstream9
@@ -40,10 +47,11 @@ jobs:
             platforms: linux/amd64, linux/arm64/v8
             tag: openeuler2403
             nogalera: false
+            extradockerfile: pip.Dockerfile
 
     uses: ./.github/workflows/bbw_build_container_template.yml
     with:
-      dockerfile: centos.Dockerfile pip.Dockerfile
+      dockerfile: centos.Dockerfile ${{ matrix.extradockerfile }}
       image: ${{ matrix.image }}
       platforms: ${{ matrix.platforms }}
       runner: ${{ matrix.runner }}

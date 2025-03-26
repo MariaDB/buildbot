@@ -13,7 +13,7 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     && source /etc/os-release \
     && ARCH=$(rpm --query --queryformat='%{ARCH}' rpm) \
     && case "$PLATFORM_ID" in \
-        "platform:el9") \
+        "platform:el9" | "platform:el10") \
           # centosstream9/almalinux9/rockylinux9 \
           dnf -y install epel-release; \
           dnf config-manager --set-enabled crb; \
@@ -72,12 +72,10 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     eigen3-devel \
     flex \
     galera-4 \
-    java-1.8.0-openjdk-devel \
-    java-1.8.0-openjdk \
-    jemalloc-devel \
     libcurl-devel \
     libevent-devel \
     libffi-devel \
+    liburing-devel \
     libxml2-devel \
     libzstd-devel \
     perl-autodie \
@@ -93,12 +91,27 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     wget \
     which \
     xz-devel \
+    # things otherwise handled in pip, zabbix missing
+    && if [ "$PLATFORM_ID" = "platform:el9" ]; then \
+         dnf -y install \
+           buildbot-worker \
+           ; \
+       fi \
+    && if [ "$PLATFORM_ID" = "platform:el10" ]; then \
+         dnf -y install \
+           java-21-openjdk-devel \
+           java-21-openjdk ; \
+       else \
+           dnf -y install \
+           java-1.8.0-openjdk-devel \
+           java-1.8.0-openjdk \
+           jemalloc-devel; \
+       fi \
     && if [ "$ID" != "openeuler" ]; then dnf -y install yum-utils; fi \
     && if [ "$(uname -m)" = "x86_64" ]; then dnf -y install libpmem-devel; fi \
     && dnf clean all \
     # dumb-init rpm is not available on centos (official repo) \
     && curl -sL "https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_$(uname -m)" >/usr/local/bin/dumb-init \
-    && chmod +x /usr/local/bin/dumb-init \
-    && if [ "$ARCH" = "ppc64le" ] && [ "$ID" = "centos-stream" ] && [ "$PLATFORM_ID" = "platform:el9" ]; then pip3 install --no-cache-dir setuptools==69.5.1; fi
+    && chmod +x /usr/local/bin/dumb-init
 
 ENV WSREP_PROVIDER=/usr/lib64/galera-4/libgalera_smm.so
