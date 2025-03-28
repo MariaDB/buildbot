@@ -7,14 +7,11 @@ ARG BASE_IMAGE
 FROM "$BASE_IMAGE"
 LABEL maintainer="MariaDB Buildbot maintainers"
 
-# This will make apt-get install without question
-ARG DEBIAN_FRONTEND=noninteractive
-
 # Install updates and required packages
 RUN . /etc/os-release; \
     apt-get update \
     && apt-get -y upgrade \
-    && apt-get -y install --no-install-recommends \
+    && DEBIAN_FRONTEND=noninteractive apt-get -y install --no-install-recommends \
     aptly \
     buildbot-worker \
     ca-certificates \
