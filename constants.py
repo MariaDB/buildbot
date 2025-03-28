@@ -210,6 +210,7 @@ SUPPORTED_PLATFORMS["main"] = SUPPORTED_PLATFORMS["12.0"].copy()
 # Define environment variables for MTR step
 MTR_ENV = {
     "MTR_PRINT_CORE": "detailed",
+    "USER": "buildbot",
 }
 
 # Define the mapping from MTR test types to mtr command line options
