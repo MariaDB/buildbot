@@ -29,6 +29,7 @@ from utils import (
     hasPackagesGenerated,
     hasRpmLint,
     hasS3,
+    hasSRPM,
     hasUpgrade,
     ls2string,
     moveMTRLogs,
@@ -817,6 +818,26 @@ Repository available with: curl %(kw:url)s/%(prop:tarbuildnum)s/%(prop:builderna
             },
             doStepIf=(
                 lambda step: hasUpgrade(step)
+                and savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
+                and hasPackagesGenerated(step)
+            ),
+        )
+    )
+
+    # trigger rebuild from SRPM
+    f_rpm_autobake.addStep(
+        steps.Trigger(
+            schedulerNames=["s_srpms"],
+            waitForFinish=False,
+            updateSourceStamp=False,
+            set_properties={
+                "parentbuildername": Property("buildername"),
+                "tarbuildnum": Property("tarbuildnum"),
+                "mariadb_version": Property("mariadb_version"),
+                "master_branch": Property("master_branch"),
+            },
+            doStepIf=(
+                lambda step: hasSRPM(step)
                 and savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
                 and hasPackagesGenerated(step)
             ),
