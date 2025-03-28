@@ -47,14 +47,14 @@ repos:
       - id: markdownlint
         name: check for markdown lint (mdl)
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.3.0
+    rev: v2.4.1
     hooks:
       - id: codespell
         name: check for common misspellings in text files
         entry: codespell
         language: python
   - repo: https://github.com/PyCQA/pylint.git
-    rev: v3.3.1
+    rev: v3.3.4
     hooks:
       - id: pylint
         name: check python syntax (pylint)
@@ -72,7 +72,7 @@ repos:
             "--disable=django-not-configured", # Silence django warning
           ]
   - repo: https://github.com/psf/black
-    rev: 24.10.0
+    rev: 25.1.0
     hooks:
       - id: black
         name: check python formating (black)
@@ -83,7 +83,7 @@ repos:
   #       name: check python syntax (pyupgrade)
   #       args: [--py38-plus]
   - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
+    rev: 6.0.0
     hooks:
       - id: isort
         name: check python imports order (isort)
