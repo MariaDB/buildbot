@@ -71,7 +71,6 @@ else:
 
 BUILDERS_GALERA_MTR = [
     "aarch64-debian-12",
-    "amd64-fedora-39",
     "s390x-ubuntu-2004",
     "s390x-ubuntu-2204",
     "ppc64le-ubuntu-2004",
@@ -102,7 +101,6 @@ SUPPORTED_PLATFORMS = {}
 SUPPORTED_PLATFORMS["10.5"] = [
     "aarch64-centos-stream9",
     "aarch64-debian-11",
-    "aarch64-fedora-39",
     "aarch64-macos",
     "aarch64-macos-compile-only",
     "aarch64-openeuler-2403",
@@ -117,7 +115,6 @@ SUPPORTED_PLATFORMS["10.5"] = [
     "amd64-debian-11-msan-clang-16",
     "amd64-debian-12-asan-ubsan",
     "amd64-debian-12-rocksdb",
-    "amd64-fedora-39",
     "amd64-fedora-40-valgrind",
     "amd64-freebsd-14",
     "amd64-openeuler-2403",

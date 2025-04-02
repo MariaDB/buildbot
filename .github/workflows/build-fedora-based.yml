@@ -26,10 +26,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - image: fedora:39
-            platforms: linux/amd64, linux/arm64/v8
-            nogalera: false
-
           - image: fedora:40
             platforms: linux/amd64, linux/arm64/v8
             nogalera: false
