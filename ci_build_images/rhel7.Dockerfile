@@ -59,6 +59,7 @@ RUN yum -y upgrade \
           perl-devel \
           perl-Net-SSLeay \
           pcre2-devel \
+          python3 \
           python3-devel \
           python3-pip \
           readline-devel \
