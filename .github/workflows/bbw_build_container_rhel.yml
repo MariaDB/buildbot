@@ -3,9 +3,6 @@ name: bbw-build-container-rhel
 
 on:
   push:
-    branches:
-      - 'main'
-      - 'dev'
     paths:
       - 'ci_build_images/buildbot-worker.Dockerfile'
       - .github/workflows/bbw_build_container_rhel.yml
@@ -25,7 +22,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     services:
       registry:
         image: registry:2
@@ -175,73 +172,73 @@ jobs:
             docker run -u root -i "$image" bash -c "touch /tmp/foo && qpress -r /tmp /root/qpress.qp"
           done
 
-      - name: Check for registry credentials
-        if: ${{ env.BUILD_RHEL == 'true' }}
-        run: |
-          missing=()
-          [[ -n "${{ secrets.QUAY_USER }}" ]] || missing+=(QUAY_USER)
-          [[ -n "${{ secrets.QUAY_TOKEN }}" ]] || missing+=(QUAY_TOKEN)
-          for i in "${missing[@]}"; do
-            echo "Missing github secret: $i"
-          done
-          if (( ${#missing[@]} == 0 )); then
-            echo "DEPLOY_IMAGES=true" >> $GITHUB_ENV
-          else
-            echo "Not pushing images to registry"
-          fi
+      # - name: Check for registry credentials
+      #   if: ${{ env.BUILD_RHEL == 'true' }}
+      #   run: |
+      #     missing=()
+      #     [[ -n "${{ secrets.QUAY_USER }}" ]] || missing+=(QUAY_USER)
+      #     [[ -n "${{ secrets.QUAY_TOKEN }}" ]] || missing+=(QUAY_TOKEN)
+      #     for i in "${missing[@]}"; do
+      #       echo "Missing github secret: $i"
+      #     done
+      #     if (( ${#missing[@]} == 0 )); then
+      #       echo "DEPLOY_IMAGES=true" >> $GITHUB_ENV
+      #     else
+      #       echo "Not pushing images to registry"
+      #     fi
 
-      - name: Login to ghcr.io
-        if: ${{ env.DEPLOY_IMAGES == 'true' }}
-        uses: docker/login-action@v2
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Login to ghcr.io
+      #   if: ${{ env.DEPLOY_IMAGES == 'true' }}
+      #   uses: docker/login-action@v2
+      #   with:
+      #     registry: ghcr.io
+      #     username: ${{ github.actor }}
+      #     password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: ghcr.io - push dev tag
-        if: ${{ env.DEPLOY_IMAGES == 'true' && env.MAIN_BRANCH == 'false' }}
-        run: |
-          msg="Push docker image to ghcr.io (dev_${{ env.IMG }})"
-          line="${msg//?/=}"
-          printf "\n${line}\n${msg}\n${line}\n"
-          skopeo copy --all --src-tls-verify=0 \
-            docker://localhost:5000/${{ env.REPO }}:${{ env.IMG }} \
-            docker://ghcr.io/${GITHUB_REPOSITORY,,}/${{ env.REPO }}:dev_${{ env.IMG }}
+      # - name: ghcr.io - push dev tag
+      #   if: ${{ env.DEPLOY_IMAGES == 'true' && env.MAIN_BRANCH == 'false' }}
+      #   run: |
+      #     msg="Push docker image to ghcr.io (dev_${{ env.IMG }})"
+      #     line="${msg//?/=}"
+      #     printf "\n${line}\n${msg}\n${line}\n"
+      #     skopeo copy --all --src-tls-verify=0 \
+      #       docker://localhost:5000/${{ env.REPO }}:${{ env.IMG }} \
+      #       docker://ghcr.io/${GITHUB_REPOSITORY,,}/${{ env.REPO }}:dev_${{ env.IMG }}
 
-      - name: ghcr.io - move tag to production
-        if: ${{ env.DEPLOY_IMAGES == 'true' && env.MAIN_BRANCH == 'true' }}
-        run: |
-          msg="Update tag (dev_${{ env.IMG }} --> ${{ env.IMG }})"
-          line="${msg//?/=}"
-          printf "\n${line}\n${msg}\n${line}\n"
-          skopeo copy --all --src-tls-verify=0 \
-            docker://ghcr.io/${GITHUB_REPOSITORY,,}/${{ env.REPO }}:dev_${{ env.IMG }} \
-            docker://ghcr.io/${GITHUB_REPOSITORY,,}/${{ env.REPO }}:${{ env.IMG }}
+      # - name: ghcr.io - move tag to production
+      #   if: ${{ env.DEPLOY_IMAGES == 'true' && env.MAIN_BRANCH == 'true' }}
+      #   run: |
+      #     msg="Update tag (dev_${{ env.IMG }} --> ${{ env.IMG }})"
+      #     line="${msg//?/=}"
+      #     printf "\n${line}\n${msg}\n${line}\n"
+      #     skopeo copy --all --src-tls-verify=0 \
+      #       docker://ghcr.io/${GITHUB_REPOSITORY,,}/${{ env.REPO }}:dev_${{ env.IMG }} \
+      #       docker://ghcr.io/${GITHUB_REPOSITORY,,}/${{ env.REPO }}:${{ env.IMG }}
 
-      - name: Login to registry
-        if: ${{ env.DEPLOY_IMAGES == 'true' }}
-        uses: docker/login-action@v2
-        with:
-          registry: quay.io
-          username: ${{ secrets.QUAY_USER }}
-          password: ${{ secrets.QUAY_TOKEN }}
+      # - name: Login to registry
+      #   if: ${{ env.DEPLOY_IMAGES == 'true' }}
+      #   uses: docker/login-action@v2
+      #   with:
+      #     registry: quay.io
+      #     username: ${{ secrets.QUAY_USER }}
+      #     password: ${{ secrets.QUAY_TOKEN }}
 
-      - name: quay.io - push dev tag
-        if: ${{ env.DEPLOY_IMAGES == 'true' && env.MAIN_BRANCH == 'false' }}
-        run: |
-          msg="Push docker image to quay.io (dev_${{ env.IMG }})"
-          line="${msg//?/=}"
-          printf "\n${line}\n${msg}\n${line}\n"
-          skopeo copy --all --src-tls-verify=0 \
-          docker://localhost:5000/${{ env.REPO }}:${{ env.IMG }} \
-          docker://quay.io/mariadb-foundation/${{ env.REPO }}:dev_${{ env.IMG }}
+      # - name: quay.io - push dev tag
+      #   if: ${{ env.DEPLOY_IMAGES == 'true' && env.MAIN_BRANCH == 'false' }}
+      #   run: |
+      #     msg="Push docker image to quay.io (dev_${{ env.IMG }})"
+      #     line="${msg//?/=}"
+      #     printf "\n${line}\n${msg}\n${line}\n"
+      #     skopeo copy --all --src-tls-verify=0 \
+      #     docker://localhost:5000/${{ env.REPO }}:${{ env.IMG }} \
+      #     docker://quay.io/mariadb-foundation/${{ env.REPO }}:dev_${{ env.IMG }}
 
-      - name: quay.io - move tag to production
-        if: ${{ env.DEPLOY_IMAGES == 'true' && env.MAIN_BRANCH == 'true' }}
-        run: |
-          msg="Update tag (dev_${{ env.IMG }} --> ${{ env.IMG }})"
-          line="${msg//?/=}"
-          printf "\n${line}\n${msg}\n${line}\n"
-          skopeo copy --all --src-tls-verify=0 \
-            docker://quay.io/mariadb-foundation/${{ env.REPO }}:dev_${{ env.IMG }} \
-            docker://quay.io/mariadb-foundation/${{ env.REPO }}:${{ env.IMG }}
+      # - name: quay.io - move tag to production
+      #   if: ${{ env.DEPLOY_IMAGES == 'true' && env.MAIN_BRANCH == 'true' }}
+      #   run: |
+      #     msg="Update tag (dev_${{ env.IMG }} --> ${{ env.IMG }})"
+      #     line="${msg//?/=}"
+      #     printf "\n${line}\n${msg}\n${line}\n"
+      #     skopeo copy --all --src-tls-verify=0 \
+      #       docker://quay.io/mariadb-foundation/${{ env.REPO }}:dev_${{ env.IMG }} \
+      #       docker://quay.io/mariadb-foundation/${{ env.REPO }}:${{ env.IMG }}
