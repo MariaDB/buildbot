@@ -85,8 +85,10 @@ RUN yum -y upgrade \
 ENV CRYPTOGRAPHY_ALLOW_OPENSSL_102=1
 ENV WSREP_PROVIDER=/usr/lib64/galera/libgalera_smm.so
 
+FROM buildeps as bbworker
+RUN pip3 install --no-cache-dir buildbot-worker==4.0.1
 
-FROM buildeps AS cleanup
+FROM bbworker AS cleanup
 RUN yum clean all \
      && subscription-manager unregister
 
