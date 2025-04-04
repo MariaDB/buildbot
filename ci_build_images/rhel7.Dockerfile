@@ -77,13 +77,18 @@ RUN yum -y upgrade \
      && yum -y remove cmake \
      && ln -sf /usr/bin/cmake3 /usr/bin/cmake \
      && curl -sL "https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_$(uname -m)" >/usr/local/bin/dumb-init \
-     && chmod +x /usr/local/bin/dumb-init
+     && chmod +x /usr/local/bin/dumb-init \
+     # Upgrade pip
+     && pip3 install --no-cache-dir -U pip
 
 ENV CRYPTOGRAPHY_ALLOW_OPENSSL_102=1
 ENV WSREP_PROVIDER=/usr/lib64/galera/libgalera_smm.so
 
+# Latest worker (4.2.x) doesn't work on Python 3.6
+FROM buildeps as bbworker
+RUN pip3 install --no-cache-dir buildbot-worker==4.0.1
 
-FROM buildeps AS cleanup
+FROM bbworker AS cleanup
 RUN yum clean all \
      && subscription-manager unregister
 
