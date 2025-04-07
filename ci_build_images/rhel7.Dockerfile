@@ -82,7 +82,7 @@ RUN yum -y upgrade \
      && pip3 install --no-cache-dir -U pip
 
 ENV CRYPTOGRAPHY_ALLOW_OPENSSL_102=1
-ENV WSREP_PROVIDER=/usr/lib64/galera/libgalera_smm.so
+ENV WSREP_PROVIDER=/usr/lib64/galera-4/libgalera_smm.so
 
 # Latest worker (4.2.x) doesn't work on Python 3.6
 FROM buildeps as bbworker
