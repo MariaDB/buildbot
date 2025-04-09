@@ -1,5 +1,15 @@
 from abc import ABC, abstractmethod
-from enum import StrEnum
+from typing import Union
+
+try:
+    # breaking change introduced in python 3.11
+    from enum import StrEnum
+except ImportError:  # pragma: no cover
+    from enum import Enum  # pragma: no cover
+
+    class StrEnum(str, Enum):  # pragma: no cover
+        def __str__(self):
+            return self.value
 
 
 class Option(ABC):
@@ -9,10 +19,10 @@ class Option(ABC):
         Quote the value if it contains spaces or special characters.
         """
         if " " in value or '"' in value:
-            return f'"{value.replace('"', '\\\"')}"'
+            return '"' + value.replace('"', '\\"') + '"'
         return value
 
-    def __init__(self, name: StrEnum, value: str | int | bool = True):
+    def __init__(self, name: StrEnum, value: Union[str, int, bool] = True):
         assert isinstance(name, StrEnum)
         assert (
             isinstance(value, str) or isinstance(value, bool) or isinstance(value, int)

@@ -1,7 +1,7 @@
 from typing import Iterable
 
-from .exceptions import DuplicateFlagException
-from .options import Option
+from configuration.steps.generators.base.exceptions import DuplicateFlagException
+from configuration.steps.generators.base.options import Option
 
 
 class BaseGenerator:

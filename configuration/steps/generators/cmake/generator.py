@@ -1,8 +1,13 @@
 from typing import Iterable
 
-from ..base.generator import BaseGenerator
-from .compilers import CompilerCommand
-from .options import CMAKE, OTHER, BuildConfig, CMakeOption
+from configuration.steps.generators.base.generator import BaseGenerator
+from configuration.steps.generators.cmake.compilers import CompilerCommand
+from configuration.steps.generators.cmake.options import (
+    CMAKE,
+    OTHER,
+    BuildConfig,
+    CMakeOption,
+)
 
 
 class CMakeGenerator(BaseGenerator):
@@ -10,18 +15,32 @@ class CMakeGenerator(BaseGenerator):
     Generates a CMake command with specified flags.
     """
 
-    def __init__(self, flags: Iterable[CMakeOption], source_path: str = "."):
+    def __init__(
+        self,
+        flags: Iterable[CMakeOption],
+        use_ccache: bool = False,
+        compiler: CompilerCommand = None,
+        source_path: str = ".",
+    ):
         """
         Initializes the CMakeGenerator with an optional list of flags.
 
         Args:
             flags: An iterable of CMakeFlag objects.
+            use_ccache: A boolean flag to enable ccache.
+            compiler: An instance of CompilerCommand if you want to set it explicitly.
             source_path: The source path to the base CMakeLists.txt file.
                          Default path is "in source build".
         """
         super().__init__(base_cmd=["cmake", source_path], flags=flags)
 
-    def set_compiler(self, compiler: CompilerCommand):
+        if use_ccache:
+            self._use_ccache()
+
+        if compiler:
+            self._set_compiler(compiler)
+
+    def _set_compiler(self, compiler: CompilerCommand):
         """
         Sets the compiler options for C and C++ compilers.
 
@@ -36,7 +55,7 @@ class CMakeGenerator(BaseGenerator):
             ]
         )
 
-    def use_ccache(self):
+    def _use_ccache(self):
         """
         Configures CMake to use ccache for faster builds.
         """
