@@ -141,3 +141,4 @@ ref sanitizer flags documents:\n\
 
 ENV ASAN_OPTIONS=quarantine_size_mb=512:atexit=0:detect_invalid_pointer_pairs=3:dump_instruction_bytes=1:allocator_may_return_null=1
 ENV UBSAN_OPTIONS=print_stacktrace=1:report_error_type=1
+ENV MTR_PARALLEL=auto
