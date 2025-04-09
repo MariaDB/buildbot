@@ -1,6 +1,12 @@
-from enum import StrEnum
+from typing import Union
 
-from ..base.generator import Option
+from configuration.steps.generators.base.generator import Option
+
+try:
+    # breaking change introduced in python 3.11
+    from enum import StrEnum
+except ImportError:  # pragma: no cover
+    from configuration.steps.generators.base.options import StrEnum
 
 
 # Flag names use UPPER_CASE
@@ -34,6 +40,11 @@ class PLUGIN(StrEnum):
     CONNECT_STORAGE_ENGINE = "CONNECT"
     ROCKSDB_STORAGE_ENGINE = "ROCKSDB"
     TOKUDB_STORAGE_ENGINE = "TOKUDB"
+    MROONGA_STORAGE_ENGINE = "MROONGA"
+    SPIDER_STORAGE_ENGINE = "SPIDER"
+    OQGRAPH_STORAGE_ENGINE = "OQGRAPH"
+    SPHINX_STORAGE_ENGINE = "SPHINX"
+    PERFSCHEMA_FEATURE = "PERFSCHEMA"
 
     def __str__(self):
         return f"PLUGIN_{self.value}"
@@ -64,6 +75,7 @@ class OTHER(StrEnum):
     """
 
     BUILD_CONFIG = "BUILD_CONFIG"
+    RPM = "RPM"
 
 
 # Flag values use CapitalCase
@@ -91,9 +103,12 @@ class CMakeOption(Option):
     Represents a CMake option in the form `-D<name>=<value>`.
     """
 
-    def __init__(self, name: StrEnum, value: str | bool):
+    def __init__(self, name: StrEnum, value: Union[str, bool]):
         if isinstance(value, bool):
-            value = "ON" if value else "OFF"
+            if isinstance(name, PLUGIN):
+                value = "YES" if value else "NO"
+            else:
+                value = "ON" if value else "OFF"
         super().__init__(name, value)
 
     def as_cmd_arg(self) -> str:
