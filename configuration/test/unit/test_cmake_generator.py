@@ -1,9 +1,16 @@
 import unittest
 
-from steps.base.exceptions import DuplicateFlagException
-from steps.cmake.compilers import CompilerCommand
-from steps.cmake.generator import CMakeGenerator
-from steps.cmake.options import CMAKE, PLUGIN, WITH, BuildConfig, BuildType, CMakeOption
+from configuration.steps.generators.base.exceptions import DuplicateFlagException
+from configuration.steps.generators.cmake.compilers import CompilerCommand
+from configuration.steps.generators.cmake.generator import CMakeGenerator
+from configuration.steps.generators.cmake.options import (
+    CMAKE,
+    PLUGIN,
+    WITH,
+    BuildConfig,
+    BuildType,
+    CMakeOption,
+)
 
 
 class TestCMakeGenerator(unittest.TestCase):
@@ -24,7 +31,7 @@ class TestCMakeGenerator(unittest.TestCase):
                 ".",
                 "-DCMAKE_BUILD_TYPE=RelWithDebInfo",
                 "-DCMAKE_INSTALL_PREFIX=/usr/local",
-                "-DPLUGIN_ARCHIVE=ON",
+                "-DPLUGIN_ARCHIVE=YES",
                 "-DWITH_ASAN=ON",
             ],
         )
@@ -65,9 +72,8 @@ class TestCMakeGenerator(unittest.TestCase):
         """
         Test that set_compiler adds the correct flags.
         """
-        generator = CMakeGenerator(flags=[])
         compiler = CompilerCommand(cc="gcc", cxx="g++")
-        generator.set_compiler(compiler)
+        generator = CMakeGenerator(flags=[], compiler=compiler)
         command = generator.generate()
         self.assertEqual(
             command,
@@ -83,8 +89,7 @@ class TestCMakeGenerator(unittest.TestCase):
         """
         Test that use_ccache sets the correct flags.
         """
-        generator = CMakeGenerator(flags=[])
-        generator.use_ccache()
+        generator = CMakeGenerator(flags=[], use_ccache=True)
         command = generator.generate()
         self.assertEqual(
             command,

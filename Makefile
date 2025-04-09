@@ -61,7 +61,7 @@ checkconfig: ## Validate master.cfg files
 
 test: ## Run unittests
 	$(info --> run unittests)
-	python -m unittest discover -s tests -p "test*.py"
+	python -m unittest discover -s configuration/test -p "test*.py"
 
 clean: ## Clean venv
 	[[ ! -d $(VENV_DIR) ]] || rm -rf $(VENV_DIR)
