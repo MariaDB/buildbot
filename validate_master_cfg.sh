@@ -74,6 +74,7 @@ for dir in autogen/* \
   master-docker-nonstandard-2 \
   master-galera \
   master-nonlatent \
+  master-migration \
   master-libvirt \
   master-protected-branches \
   master-web; do
