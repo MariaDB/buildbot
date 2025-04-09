@@ -13,4 +13,4 @@ master-libvirt/known_hosts
 master-private.cfg
 prof*
 venv
-workers
+/workers/
