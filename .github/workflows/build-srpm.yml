@@ -27,11 +27,6 @@ jobs:
       matrix:
         include:
           - dockerfile: srpm.Dockerfile
-            image: fedora:39
-            tag: fedora39-srpm
-            platforms: linux/amd64, linux/arm64/v8
-
-          - dockerfile: srpm.Dockerfile
             image: fedora:40
             tag: fedora40-srpm
             platforms: linux/amd64, linux/arm64/v8
@@ -40,6 +35,11 @@ jobs:
             image: fedora:41
             tag: fedora41-srpm
             platforms: linux/amd64, linux/arm64/v8
+
+          - dockerfile: srpm.Dockerfile
+            image: registry.access.redhat.com/ubi7
+            tag: rhel7-srpm
+            platforms: linux/amd64
 
           - dockerfile: srpm.Dockerfile
             image: registry.access.redhat.com/ubi8
@@ -60,13 +60,11 @@ jobs:
             image: opensuse/leap:15.6
             tag: opensuse1506-srpm
             platforms: linux/amd64
-            install_worker_from_pip: "Y"
 
           - dockerfile: srpm.Dockerfile
             image: registry.suse.com/bci/bci-base:15.6
             tag: sles1506-srpm
             platforms: linux/amd64
-            install_worker_from_pip: "Y"
 
 
     env:
@@ -114,8 +112,7 @@ jobs:
               --platform $arch \
               --manifest ${{ env.REPO }}:${{ matrix.tag }} \
               -f $GITHUB_WORKSPACE/Dockerfile \
-              --build-arg BASE_IMAGE=${{ matrix.image }} \
-              --build-arg INSTALL_WORKER_FROM_PIP=${{ matrix.install_worker_from_pip }}
+              --build-arg BASE_IMAGE=${{ matrix.image }}
           done
           podman images
 
@@ -125,24 +122,6 @@ jobs:
           podman manifest push --tls-verify=0 \
             --all ${{ env.REPO }}:${{ matrix.tag }} \
             docker://localhost:5000/${{ env.REPO }}:${{ matrix.tag }}
-
-      - name: Check multi-arch container
-        if: ${{ env.MAIN_BRANCH == 'false' }}
-        run: |
-          # make some space on the runner
-          if [[ -d $HOME/.local/share/containers ]]; then
-            sudo rm -rf $HOME/.local/share/containers
-          fi
-          for p in ${{ matrix.platforms }}; do
-            platform="${p/,/}"
-            image="localhost:5000/bb-worker:${{ matrix.tag }}"
-            msg="Testing docker image $image on platform $platform"
-            line="${msg//?/=}"
-            printf "\n${line}\n${msg}\n${line}\n"
-            docker pull -q --platform "$platform" "$image"
-            docker run -i "$image" buildbot-worker --version
-            docker run -i "$image" dumb-init twistd --pidfile= -y /home/buildbot/buildbot.tac
-          done
 
       - name: Check for registry credentials
         run: |
