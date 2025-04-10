@@ -6,7 +6,6 @@ from constants import (
     BUILDERS_DOCKERLIBRARY,
     BUILDERS_ECO,
     BUILDERS_INSTALL,
-    BUILDERS_SRPMS,
     BUILDERS_UPGRADE,
     BUILDERS_WORDPRESS,
     GITHUB_STATUS_BUILDERS,
@@ -44,15 +43,6 @@ def autobakeBuilders(props: IProperties) -> list[str]:
     builder_name = props.getProperty("parentbuildername")
     for b in BUILDERS_AUTOBAKE:
         if builder_name in b:
-            return [b]
-    return []
-
-
-@util.renderer
-def srpmBuilders(props: IProperties) -> list[str]:
-    builder_name = props.getProperty("parentbuildername")
-    for b in BUILDERS_SRPMS:
-        if builder_name in b.builder_name:
             return [b]
     return []
 
@@ -118,7 +108,6 @@ SCHEDULERS = [
         name="s_protected_branches", builderNames=protectedBranchBuilders
     ),
     schedulers.Triggerable(name="s_packages", builderNames=autobakeBuilders),
-    schedulers.Triggerable(name="s_srpms", builderNames=srpmBuilders),
     schedulers.Triggerable(name="s_bigtest", builderNames=bigtestBuilders),
     schedulers.Triggerable(name="s_install", builderNames=installBuilders),
     schedulers.Triggerable(name="s_upgrade", builderNames=upgradeBuilders),

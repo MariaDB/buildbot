@@ -1,5 +1,4 @@
 import os
-from dataclasses import dataclass
 
 import yaml
 
@@ -259,49 +258,21 @@ with open("/srv/buildbot/master/os_info.yaml") as f:
     OS_INFO = yaml.safe_load(f)
 
 # Generate install builders based on the os_info data
-
-
-@dataclass
-class BuilderSRPM:
-    builder_name: str
-    arch: str
-    image_tag: str
-    version_name: int
-    os_type: str
-
-
 BUILDERS_INSTALL = []
 BUILDERS_UPGRADE = []
 BUILDERS_AUTOBAKE = []
-BUILDERS_SRPMS: list[BuilderSRPM] = []
 ALL_PLATFORMS = set()
 for os_i in OS_INFO:
     for arch in OS_INFO[os_i]["arch"]:
         builder_name_autobake = (
             arch + "-" + os_i + "-" + OS_INFO[os_i]["type"] + "-autobake"
         )
-        builder_name_srpms = builder_name_autobake + "-srpm"
         if not ("install_only" in OS_INFO[os_i] and OS_INFO[os_i]["install_only"]):
             ALL_PLATFORMS.add(arch)
             BUILDERS_AUTOBAKE.append(builder_name_autobake)
         # CentOS Stream10 on ppc64le issue - no VM - currently (non-public) issue upstream RHEL-85047
         if arch == "ppc64le" and os_i == "centos-stream10":
             continue
-        # Can't run for s390x. Not enough minerals. You must construct additional pylons
-        if (
-            "has_srpm" in OS_INFO[os_i]
-            and OS_INFO[os_i]["has_srpm"]
-            and arch != "s390x"
-        ):
-            BUILDERS_SRPMS.append(
-                BuilderSRPM(
-                    builder_name_srpms,
-                    arch,
-                    OS_INFO[os_i]["image_tag"],
-                    OS_INFO[os_i]["version_name"],
-                    os_i,
-                )
-            )
         # Currently there are no VMs for x86 and s390x
         if arch not in ["s390x", "x86"]:
             BUILDERS_INSTALL.append(builder_name_autobake + "-install")
