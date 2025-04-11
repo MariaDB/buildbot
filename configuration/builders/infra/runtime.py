@@ -12,11 +12,11 @@ from configuration.steps.base import PrefixableStep
 class DockerConfig:
     repository: str  # e.g. quay/ghcr + org/repo
     image_tag: str
-    volume_mounts: list[tuple[Path, Path, str]]
+    bind_mounts: list[tuple[Path, Path]]  # src, dst
     env_vars: list[tuple[str, str]]
     shm_size: str
     memlock_limit: int
-    basedir: str
+    workdir: str
 
 
 class CleanupDockerResources(steps.ShellCommand):
@@ -137,6 +137,9 @@ class RunInContainer:
         self.buildername = buildername
         self.container_image = f"buildbot:{self.buildername}"
         self.build_sequence = build_sequence
+        self._volume_mount = (
+            f"--mount type=volume,src={self.buildername},dst={self.config.workdir}"
+        )
 
     def generate(self) -> list[IBuildStep]:
         result = []
@@ -156,8 +159,8 @@ class RunInContainer:
                     command=util.Interpolate(
                         (
                             "docker run --rm "
-                            f"--mount type=volume,src={self.buildername},dst=/home/buildbot "
-                            f"-w {self.config.basedir} "
+                            f"{self._volume_mount} "
+                            f"-w {self.config.workdir} "
                             f'{self.container_image} mkdir -p {" ".join(workdirs)}'
                         )
                     ),
@@ -180,11 +183,19 @@ class RunInContainer:
             if not hasattr(step, "checkpoint") or not step.checkpoint:
                 step.add_cmd_prefix(["--rm"])
 
-            for src, dst, type in self.config.volume_mounts:
+            # Mandatory volume mount for state sharing between steps
+            step.add_cmd_prefix(
+                [
+                    "--mount",
+                    util.Interpolate(self._volume_mount),
+                ]
+            )
+            # User defined bind mounts
+            for src, dst in self.config.bind_mounts:
                 step.add_cmd_prefix(
                     [
                         "--mount",
-                        util.Interpolate(f"type={type},src={src},dst={dst}"),
+                        util.Interpolate(f"type=bind,src={src},dst={dst}"),
                     ]
                 )
             # Add env vars (global << sequence >> + local << step >>)
@@ -206,7 +217,7 @@ class RunInContainer:
             else:
                 # (TODO: Razvan) No guarantee that this is a valid relative path
                 step.add_cmd_prefix(
-                    ["-w", f"{self.config.basedir}/{step.command.workdir}"]
+                    ["-w", f"{self.config.workdir}/{step.command.workdir}"]
                 )
 
             step.add_cmd_prefix([self.container_image])
@@ -223,7 +234,7 @@ class RunInContainer:
                             "bash",
                             "-c",
                             util.Interpolate(
-                                f"docker commit {self.buildername} buildbot:{self.buildername} && docker rm {self.buildername}"
+                                f"docker container commit --message {step.name} {self.buildername} buildbot:{self.buildername} && docker rm {self.buildername}"
                             ),
                         ],
                         haltOnFailure=True,

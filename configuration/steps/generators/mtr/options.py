@@ -14,6 +14,7 @@ class MTR(StrEnum):
     # passing raw strings to create an MTR run command, generate the flag
     # list via an array of MTRFlags and their values.
     BIG_TEST = "big-test"
+    CURSOR_PROTOCOL = "cursor-protocol"
     FORCE = "force"
     IN_MEMORY = "mem"
     MAX_SAVE_DATADIR = "max-save-datadir"

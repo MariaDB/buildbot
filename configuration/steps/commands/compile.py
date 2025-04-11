@@ -11,8 +11,16 @@ class MAKE(Enum):
 
 
 class CompileMakeCommand(Command):
-    def __init__(self, option: MAKE, jobs, verbose: bool = False, workdir: str = ""):
+    def __init__(
+        self,
+        option: MAKE,
+        jobs,
+        verbose: bool = False,
+        workdir: str = "",
+        output_sync: bool = True,
+    ):
         self.verbose = verbose
+        self.output_sync = output_sync
         if not isinstance(option, MAKE):
             raise ValueError(f"Invalid option: {option}")
         self.name = f"Make - {option.name.lower()}"
@@ -20,9 +28,10 @@ class CompileMakeCommand(Command):
         super().__init__(name=self.name, workdir=workdir)
 
         self.command = util.Interpolate(
-            f"make -j%(kw:jobs)s %(kw:verbose)s {option.value}",
+            f"make -j%(kw:jobs)s %(kw:output_sync)s %(kw:verbose)s {option.value}",
             jobs=jobs,
             verbose="VERBOSE=1" if self.verbose else "",
+            output_sync="--output-sync=target" if self.output_sync else "",
         )
 
     def as_cmd_arg(self) -> list[str]:
@@ -31,16 +40,22 @@ class CompileMakeCommand(Command):
 
 
 class CompileCMakeCommand(Command):
-    def __init__(self, verbose: bool, workdir: str = ""):
+    def __init__(
+        self, jobs, builddir: str = ".", verbose: bool = False, workdir: str = ""
+    ):
         self.verbose = verbose
+        self.builddir = builddir
+        self.jobs = jobs
         super().__init__(name="Compile", workdir=workdir)
 
     def as_cmd_arg(self) -> list[str]:
         return [
             "cmake",
-            "--build" "--verbose" if self.verbose else "",
+            "--build",
+            f"{self.builddir}",
+            "--verbose" if self.verbose else "",
             "--parallel",
-            util.Interpolate("j%(prop:jobs)"),
+            f"{self.jobs}",
         ]
 
 
