@@ -1,0 +1,13 @@
+server {
+  listen 80 ;
+  listen [::]:80 ;
+
+  server_name localhost;
+
+  # this is for monitoring
+  location = /basic_status {
+    stub_status;
+    allow 127.0.0.1;
+    deny all;
+  }
+}
