@@ -477,6 +477,7 @@ def hasEco(step: BuildStep) -> bool:
 
 def hasCompat(step: BuildStep) -> bool:
     builderName = str(step.getProperty("buildername"))
+    branch = step.getProperty("master_branch")
 
     # For s390x and the listed distros there are no compat files
     if any(
@@ -490,7 +491,7 @@ def hasCompat(step: BuildStep) -> bool:
             "suse-15",
             "sles-15",
         }
-    ):
+    ) or branch in ("10.5", "10.6", "10.11"):
         return False
     if "rhel" in builderName or "centos" in builderName:
         return step.getProperty("rpm_type")[-1] in ["7", "8"]
