@@ -476,25 +476,15 @@ def hasEco(step: BuildStep) -> bool:
 
 
 def hasCompat(step: BuildStep) -> bool:
-    builderName = str(step.getProperty("buildername"))
+    buildername = str(step.getProperty("buildername"))
+    major = int(step.getProperty("master_branch").split(".")[0])
+    arch = buildername.split("-")[0]
 
-    # For s390x and the listed distros there are no compat files
-    if any(
-        builderName.find(sub) != -1
-        for sub in {
-            "s390x",
-            "fedora",
-            "alma",
-            "rocky",
-            "openeuler",
-            "suse-15",
-            "sles-15",
-        }
-    ):
-        return False
-    if "rhel" in builderName or "centos" in builderName:
-        return step.getProperty("rpm_type")[-1] in ["7", "8"]
-    return True
+    return (
+        any(b in buildername for b in ("rhel-7", "rhel-8"))
+        and major < 11
+        and arch != "s390x"
+    )
 
 
 def hasDockerLibrary(step: BuildStep) -> bool:
