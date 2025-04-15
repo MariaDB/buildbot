@@ -4,7 +4,6 @@ import re
 from datetime import datetime
 from typing import Any, Tuple
 
-import docker
 from pyzabbix import ZabbixAPI
 
 from buildbot.buildrequest import BuildRequest
@@ -31,6 +30,7 @@ from constants import (
     SAVED_PACKAGE_BRANCHES,
     STAGING_PROT_TEST_BRANCHES,
 )
+import docker
 
 private_config = {"private": {}}
 exec(open("/srv/buildbot/master/master-private.cfg").read(), private_config, {})
