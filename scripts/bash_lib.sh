@@ -162,6 +162,8 @@ rpm_pkg_makecache() {
   pkg_cmd=$(rpm_pkg)
   # Try several times, to avoid sporadic "The requested URL returned error: 404"
   made_cache=0
+
+  set +u # ID_LIKE may not exist
   for i in {1..5}; do
     if [[ $ID_LIKE =~ ^suse* ]]; then
       sudo rm -rf "/var/cache/zypp/*"
@@ -174,14 +176,11 @@ rpm_pkg_makecache() {
     if [[ $ID == "rhel" ]]; then
       sudo subscription-manager refresh
     fi
-    # ID_LIKE may not exist
-    set +u
     if [[ $ID_LIKE =~ ^suse* ]]; then
       pkg_cache="refresh"
     else
       pkg_cache="makecache"
     fi
-    set -u
     if sudo "$pkg_cmd" "$pkg_cache"; then
       made_cache=1
       break
@@ -190,6 +189,7 @@ rpm_pkg_makecache() {
       sleep 5
     fi
   done
+  set -u
 
   if ((made_cache != 1)); then
     bb_log_err "failed to make cache"
