@@ -1,7 +1,12 @@
 import unittest
 
-from steps.mtr.generator import MTRGenerator
-from steps.mtr.options import MTR, SUITE, MTROption, TestSuiteCollection
+from configuration.steps.generators.mtr.generator import MTRGenerator
+from configuration.steps.generators.mtr.options import (
+    MTR,
+    SUITE,
+    MTROption,
+    TestSuiteCollection,
+)
 
 
 class TestMTRGenerator(unittest.TestCase):
@@ -81,9 +86,9 @@ class TestMTRGenerator(unittest.TestCase):
         """
         Test that setting test suites adds the correct suite flag.
         """
-        generator = MTRGenerator(flags=[])
-        suites = TestSuiteCollection([SUITE.ARCHIVE, SUITE.MAIN])
-        generator.set_test_suites(suites)
+        generator = MTRGenerator(
+            flags=[], suite_collection=TestSuiteCollection([SUITE.ARCHIVE, SUITE.MAIN])
+        )
         command = generator.generate()
         self.assertIn("--suite=archive,main", command)
 
@@ -91,9 +96,10 @@ class TestMTRGenerator(unittest.TestCase):
         """
         Test that setting test suites works alongside other flags.
         """
-        generator = MTRGenerator(flags=[MTROption(MTR.FORCE, True)])
-        suites = TestSuiteCollection([SUITE.ARCHIVE, SUITE.MAIN])
-        generator.set_test_suites(suites)
+        generator = MTRGenerator(
+            flags=[MTROption(MTR.FORCE, True)],
+            suite_collection=TestSuiteCollection([SUITE.ARCHIVE, SUITE.MAIN]),
+        )
         command = generator.generate()
         self.assertIn("--force", command)
         self.assertIn("--suite=archive,main", command)
