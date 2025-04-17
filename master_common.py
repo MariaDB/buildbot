@@ -1,8 +1,26 @@
 import os
 
+from twisted.internet import defer
+
 from buildbot.plugins import reporters, secrets, util
 from constants import GITHUB_STATUS_BUILDERS
 from schedulers_definition import SCHEDULERS
+
+
+@util.renderer
+@defer.inlineCallbacks
+def branch_url_message(props):
+    return util.Interpolate(
+        "Full test results available at %(kw:url)s#/grid?branch=%(prop:branch)s",
+        url=os.environ["BUILDMASTER_URL"],
+    )
+
+
+# for BB update: "endDescription=branch_url_message" gets replaced with "generator=branch_url_generator"
+# for GithubCommentPush, with below code removed.
+# branch_url_generator = reporters.BuildStatusGenerator(
+#    message_formatter=reporters.message.MessageFormatterRenderable(branch_url_message)
+# )
 
 
 def base_master_config(
@@ -45,7 +63,13 @@ def base_master_config(
                 endDescription="Build done.",
                 verbose=True,
                 builders=GITHUB_STATUS_BUILDERS,
-            )
+            ),
+            reporters.GitHubCommentPush(
+                token=github_access_token,
+                context="pr_status_url",
+                endDescription=branch_url_message,
+                builder="tarball-docker",
+            ),
         ],
         "secretsProviders": [secrets.SecretInAFile(dirname=secrets_provider_file)],
         # 'protocols' contains information about protocols which master will
