@@ -192,12 +192,8 @@ SUPPORTED_PLATFORMS["11.2"] = SUPPORTED_PLATFORMS["11.1"].copy()
 SUPPORTED_PLATFORMS["11.3"] = SUPPORTED_PLATFORMS["11.2"].copy()
 SUPPORTED_PLATFORMS["11.4"] = SUPPORTED_PLATFORMS["11.3"].copy()
 SUPPORTED_PLATFORMS["11.4"] += [
-    "aarch64-debian-sid",
     "aarch64-ubuntu-2410",
-    "amd64-debian-sid",
     "amd64-ubuntu-2410",
-    "ppc64le-debian-sid",
-    "x86-debian-sid",
 ]
 
 SUPPORTED_PLATFORMS["11.5"] = SUPPORTED_PLATFORMS["11.4"].copy()
@@ -206,6 +202,12 @@ SUPPORTED_PLATFORMS["11.6"] = SUPPORTED_PLATFORMS["11.5"].copy()
 SUPPORTED_PLATFORMS["11.7"] = SUPPORTED_PLATFORMS["11.6"].copy()
 SUPPORTED_PLATFORMS["11.7"] += ["amd64-almalinux-8-bintar"]
 SUPPORTED_PLATFORMS["11.8"] = SUPPORTED_PLATFORMS["11.7"].copy()
+SUPPORTED_PLATFORMS["11.8"] += [
+    "aarch64-debian-sid",
+    "amd64-debian-sid",
+    "ppc64le-debian-sid",
+    "x86-debian-sid",
+]
 SUPPORTED_PLATFORMS["12.0"] = SUPPORTED_PLATFORMS["11.8"].copy()
 SUPPORTED_PLATFORMS["main"] = SUPPORTED_PLATFORMS["12.0"].copy()
 
