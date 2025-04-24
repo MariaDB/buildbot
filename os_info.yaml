@@ -204,3 +204,12 @@ ubuntu-2410:
     - amd64
     - aarch64
   type: deb
+ubuntu-2504:
+  image_tag: ubuntu25.04
+  tags:
+    - release_packages
+  version_name: plucky
+  arch:
+    - amd64
+    - aarch64
+  type: deb

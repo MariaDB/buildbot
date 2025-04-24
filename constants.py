@@ -193,7 +193,9 @@ SUPPORTED_PLATFORMS["11.3"] = SUPPORTED_PLATFORMS["11.2"].copy()
 SUPPORTED_PLATFORMS["11.4"] = SUPPORTED_PLATFORMS["11.3"].copy()
 SUPPORTED_PLATFORMS["11.4"] += [
     "aarch64-ubuntu-2410",
+    "aarch64-ubuntu-2504",
     "amd64-ubuntu-2410",
+    "amd64-ubuntu-2504",
 ]
 
 SUPPORTED_PLATFORMS["11.5"] = SUPPORTED_PLATFORMS["11.4"].copy()
