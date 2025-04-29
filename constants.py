@@ -19,6 +19,9 @@ BRANCHES_MAIN = [
     "11.7",
     "11.8",
     "12.0",
+    "12.1",
+    "12.2",
+    "12.3",
     "main",
 ]
 
@@ -209,7 +212,10 @@ SUPPORTED_PLATFORMS["11.8"] += [
     "x86-debian-sid",
 ]
 SUPPORTED_PLATFORMS["12.0"] = SUPPORTED_PLATFORMS["11.8"].copy()
-SUPPORTED_PLATFORMS["main"] = SUPPORTED_PLATFORMS["12.0"].copy()
+SUPPORTED_PLATFORMS["12.1"] = SUPPORTED_PLATFORMS["12.0"].copy()
+SUPPORTED_PLATFORMS["12.2"] = SUPPORTED_PLATFORMS["12.1"].copy()
+SUPPORTED_PLATFORMS["12.3"] = SUPPORTED_PLATFORMS["12.2"].copy()
+SUPPORTED_PLATFORMS["main"] = SUPPORTED_PLATFORMS["12.3"].copy()
 
 # Define environment variables for MTR step
 MTR_ENV = {
