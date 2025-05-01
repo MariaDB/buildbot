@@ -40,6 +40,12 @@ server {
 		proxy_pass http://127.0.0.1:8010;
 	}
 
+  # disallow bots
+	location = /robots.txt {
+		add_header Content-Type text/plain;
+		return 200 "User-agent: *\nDisallow: /\n";
+	}
+
 	# Server sent event (sse) settings
 	location /sse {
 		proxy_buffering off;
@@ -67,9 +73,6 @@ server {
 		access_log off;
 	}
 	location = /favicon.ico {
-		access_log off;
-	}
-	location = /robots.txt {
 		access_log off;
 	}
 }
