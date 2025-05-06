@@ -75,8 +75,12 @@ jobs:
             branch: 10.11
             nogalera: false
 
-
           - image: ubuntu:24.10
+            platforms: linux/amd64, linux/arm64/v8
+            branch: 11.4
+            nogalera: false
+
+          - image: ubuntu:25.04
             platforms: linux/amd64, linux/arm64/v8
             branch: 11.4
             nogalera: true
