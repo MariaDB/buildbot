@@ -105,9 +105,13 @@ def createWorker(
     if "vladbogo" in dockerfile or "quay" in dockerfile:
         dockerfile_str = None
         image_str = dockerfile
+        dockerfile_url = "docker pull " + dockerfile
         need_pull = True
     else:
         dockerfile_str = open("dockerfiles/" + dockerfile).read()
+        dockerfile_url = (
+            "https://github.com/MariaDB/buildbot/tree/main/dockerfiles/" + dockerfile
+        )
         image_str = None
         need_pull = False
 
@@ -132,7 +136,11 @@ def createWorker(
             ],
         },
         volumes=volumes,
-        properties={"jobs": jobs, "save_packages": save_packages},
+        properties={
+            "jobs": jobs,
+            "save_packages": save_packages,
+            "dockerfile": dockerfile_url,
+        },
     )
     return (base_name, name, worker_instance)
 
@@ -434,16 +442,6 @@ do
     break
   fi
 done"""
-
-
-@util.renderer
-def dockerfile(props: IProperties) -> str:
-    worker = props.getProperty("workername")
-    return (
-        "https://github.com/MariaDB/buildbot/tree/main/dockerfiles/"
-        + "-".join(worker.split("-")[-2:])
-        + ".dockerfile"
-    )
 
 
 # checks if the list of files is empty
