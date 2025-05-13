@@ -14,7 +14,6 @@ from constants import MTR_ENV, SAVED_PACKAGE_BRANCHES, TEST_TYPE_TO_MTR_ARG
 from utils import (
     createDebRepo,
     createVar,
-    dockerfile,
     getArch,
     getHTMLLogString,
     getSourceTarball,
@@ -197,13 +196,6 @@ def addPostTests(factory):
 def getBuildFactoryPreTest(build_type="RelWithDebInfo", additional_args=""):
     f_quick_build = util.BuildFactory()
     f_quick_build.addStep(printEnv())
-    f_quick_build.addStep(
-        steps.SetProperty(
-            property="dockerfile",
-            value=util.Interpolate("%(kw:url)s", url=dockerfile),
-            description="dockerfile",
-        )
-    )
     f_quick_build.addStep(getSourceTarball())
     f_quick_build.addStep(
         steps.ShellCommand(
@@ -631,13 +623,6 @@ def getLastNFailedBuildsFactory(test_type, mtrDbPool):
 def getRpmAutobakeFactory():
     f_rpm_autobake = util.BuildFactory()
     f_rpm_autobake.addStep(printEnv())
-    f_rpm_autobake.addStep(
-        steps.SetProperty(
-            property="dockerfile",
-            value=util.Interpolate("%(kw:url)s", url=dockerfile),
-            description="dockerfile",
-        )
-    )
     f_rpm_autobake.workdir = (
         f_rpm_autobake.workdir + "/padding_for_CPACK_RPM_BUILD_SOURCE_DIRS_PREFIX/"
     )
@@ -833,13 +818,6 @@ Repository available with: curl %(kw:url)s/%(prop:tarbuildnum)s/%(prop:builderna
 def getDebAutobakeFactory() -> util.BuildFactory:
     f_deb_autobake = util.BuildFactory()
     f_deb_autobake.addStep(printEnv())
-    f_deb_autobake.addStep(
-        steps.SetProperty(
-            property="dockerfile",
-            value=util.Interpolate("%(kw:url)s", url=dockerfile),
-            description="dockerfile",
-        )
-    )
     f_deb_autobake.addStep(getSourceTarball())
     # build steps
     f_deb_autobake.addStep(
