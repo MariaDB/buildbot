@@ -17,10 +17,11 @@ jobs:
           sudo apt-get install -y libvirt-dev
       - name: Install requirements (uv pip)
         run: |
+          python_version=$(python3 --version 2>&1 | awk '{print $2}')
           curl -LsSf https://astral.sh/uv/install.sh | sh
-          make venv
-          make install
-          make install-pre-commit
+          make UV_PYTHON=$python_version venv
+          make UV_PYTHON=$python_version install
+          make UV_PYTHON=$python_version install-pre-commit
       - name: Run pre-commit (all)
         run: |
           source .venv/bin/activate
