@@ -6,7 +6,9 @@ SHELL := /usr/bin/env bash
 PATH := $(VENV_DIR)/bin:$(PATH)
 WWW_PKGS := www/base www/console_view www/grid_view www/waterfall_view www/wsgi_dashboards www/badges
 WWW_DEP_PKGS := www/guanlecoja-ui www/data_module
+UV_PYTHON := 3.9.20
 export PATH
+export UV_PYTHON
 
 help:
 	@grep -E '^[a-zA-Z1-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
@@ -21,7 +23,7 @@ install: ## Install all necessary tools
 
 venv: ## Create python3 venv if it does not exists
 	$(info --> Create python virtual env ($(VENV_DIR)))
-	[[ -d $(VENV_DIR) ]] || $(shell command -v python3) -m venv $(VENV_DIR)
+	[[ -d $(VENV_DIR) ]] || uv venv --seed $(VENV_DIR)
 	@echo -e "\n--> You should now activate the python3 venv with:"
 	@echo -e "source $(VENV_DIR)/bin/activate\n"
 
@@ -35,9 +37,10 @@ install-vlad-bb-fork: ## Install vlad bb fork
 	@echo -e "- libmariadb-dev"
 	@echo -e "- libvirt-dev\n"
 	if [[ ! -d $(VENDOR_DIR) ]]; then \
+		source $(VENV_DIR)/bin/activate; \
 		git clone --branch grid https://github.com/vladbogo/buildbot $(VENDOR_DIR); \
-	  cd $(VENDOR_DIR)/master && python setup.py bdist_wheel; \
-	  uv pip install ./dist/*.whl; \
+		cd $(VENDOR_DIR)/master && python setup.py bdist_wheel; \
+		pip install ./dist/*.whl; \
 	fi
 
 install-pre-commit: ## Install pre-commit tool
