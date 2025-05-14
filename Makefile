@@ -6,7 +6,7 @@ SHELL := /usr/bin/env bash
 PATH := $(VENV_DIR)/bin:$(PATH)
 WWW_PKGS := www/base www/console_view www/grid_view www/waterfall_view www/wsgi_dashboards www/badges
 WWW_DEP_PKGS := www/guanlecoja-ui www/data_module
-UV_PYTHON := 3.9.20
+UV_PYTHON := 3.9
 export PATH
 export UV_PYTHON
 

@@ -17,7 +17,7 @@ jobs:
           sudo apt-get install -y libvirt-dev
       - name: Install requirements (uv pip)
         run: |
-          python_version=$(python3 --version 2>&1 | awk '{print $2}')
+          python_version=$(python3 --version 2>&1 | awk '{print $2}' | cut -d. -f1,2)
           curl -LsSf https://astral.sh/uv/install.sh | sh
           make UV_PYTHON=$python_version venv
           make UV_PYTHON=$python_version install
