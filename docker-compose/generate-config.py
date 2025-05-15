@@ -22,6 +22,7 @@ MASTER_DIRECTORIES = [
     "master-galera",
     "master-protected-branches",
     "master-docker-nonstandard-2",
+    "master-migration",
 ]
 
 VOLUMES = ["./logs:/var/log/buildbot", "./buildbot/:/srv/buildbot/master"]

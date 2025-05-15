@@ -3,7 +3,12 @@ name: unittests
 
 on:
   pull_request:
+    paths:
+      - configuration/**
   push:
+    paths:
+      - configuration/**
+  workflow_dispatch:
 
 jobs:
   pre-commit:
