@@ -1,3 +1,5 @@
+from pathlib import PurePath
+
 from buildbot.plugins import util
 from configuration.steps.commands.base import Command
 from utils import read_template
@@ -5,7 +7,7 @@ from utils import read_template
 
 # TODO (Razvan):This is a copy-paste only to showcase a full factory. Re-work needed.
 class FetchTarball(Command):
-    def __init__(self, workdir: str = ""):
+    def __init__(self, workdir: PurePath = PurePath(".")):
         super().__init__(name="Download and unpack source tarball", workdir=workdir)
 
     def as_cmd_arg(self) -> list[str]:
@@ -23,7 +25,7 @@ class FetchCompat(Command):
         rpm_type: str,
         arch: str,
         url: str,
-        workdir: str = "",
+        workdir: PurePath = PurePath("."),
     ):
         super().__init__(name="Fetch MariaDB compat RPMs", workdir=workdir)
         self.rpm_type = rpm_type

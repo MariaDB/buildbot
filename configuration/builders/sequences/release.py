@@ -1,4 +1,6 @@
-from configuration.builders.infra.runtime import BuildSequence, RunInContainer
+from pathlib import PurePath
+
+from configuration.builders.infra.runtime import BuildSequence, InContainer
 from configuration.steps.base import StepOptions
 from configuration.steps.commands.compile import (
     MAKE,
@@ -19,6 +21,7 @@ from configuration.steps.commands.util import (
     CreateS3Bucket,
     DeleteS3Bucket,
     FindFiles,
+    PrintEnvironmentDetails,
     SaveCompressedTar,
 )
 from configuration.steps.generators.cmake.generator import CMakeGenerator
@@ -30,12 +33,12 @@ from configuration.steps.generators.mtr.options import (
     MTROption,
     TestSuiteCollection,
 )
-from configuration.steps.local import MasterShellStep
-from configuration.steps.remote import DockerShellStep, PropFromShellStep, ShellStep
+from configuration.steps.master import MasterShellStep
+from configuration.steps.remote import PropFromShellStep, ShellStep
 from constants import SAVED_PACKAGE_BRANCHES
 from utils import hasFailed, hasPackagesGenerated, savePackageIfBranchMatch
 
-MTR_PATH_TO_SAVE_LOGS = "/home/buildbot/mtr/logs"
+MTR_PATH_TO_SAVE_LOGS = PurePath("/home/buildbot/mtr/logs")
 
 
 def deb_autobake(
@@ -47,89 +50,128 @@ def deb_autobake(
     test_rocksdb=False,
     test_s3=False,
 ):
-    # INIT
-    prepare_steps = []
-    active_steps = []
-    cleanup_steps = []
-    in_container_steps = []
+    ### INIT
+    MTR_RUNNER_PATH = PurePath("/usr/share/mariadb/mariadb-test")
+    sequence = BuildSequence()
 
-    sequence = BuildSequence(
-        prepare_steps=prepare_steps,
-        active_steps=active_steps,
-        cleanup_steps=cleanup_steps,
+    ### ADD STEPS
+    sequence.add_step(ShellStep(command=PrintEnvironmentDetails()))
+
+    sequence.add_step(
+        InContainer(
+            docker_environment=config,
+            step=ShellStep(
+                command=FetchTarball(workdir=PurePath("build/debian")),
+            ),
+        ),
     )
 
-    in_container_steps.extend(
-        [
-            ShellStep(command=FetchTarball(workdir="build/debian")),
-            ShellStep(
-                command=CompileDebAutobake(workdir="build/debian"),
+    sequence.add_step(
+        InContainer(
+            docker_environment=config,
+            step=ShellStep(
+                command=CompileDebAutobake(workdir=PurePath("build/debian")),
                 env_vars=[
                     ("DEB_BUILD_OPTIONS", "parallel=%s" % jobs),
                 ],
             ),
-            PropFromShellStep(
+        )
+    )
+
+    sequence.add_step(
+        InContainer(
+            docker_environment=config,
+            step=PropFromShellStep(
                 command=FindFiles(
                     include="*",
-                    workdir="build",
+                    workdir=PurePath("build"),
                 ),
                 property="packages",
             ),
-            DockerShellStep(
+        )
+    )
+
+    sequence.add_step(
+        InContainer(
+            docker_environment=config,
+            container_commit=True,
+            step=ShellStep(
                 command=CreateDebRepo(
                     url=artifacts_url,
                     buildername=buildername,
-                    workdir="build",
+                    workdir=PurePath("build"),
                 ),
-                checkpoint=True,
             ),
-            DockerShellStep(
-                command=InstallDEB(workdir="build/debs", packages_file="Packages"),
-                checkpoint=True,
-            ),
-        ]
+        )
     )
 
-    add_normal_test(
-        active_steps=in_container_steps,
+    sequence.add_step(
+        InContainer(
+            docker_environment=config,
+            container_commit=True,
+            step=ShellStep(
+                command=InstallDEB(
+                    workdir=PurePath("build/debs"), packages_file="Packages"
+                ),
+            ),
+        )
+    )
+
+    ## ADD MTR TESTS
+    # Add normal MTR tests
+    for step in get_mtr_normal_steps(
         jobs=jobs,
-        path_to_test_runner="/usr/share/mariadb/mariadb-test",
+        path_to_test_runner=MTR_RUNNER_PATH,
         halt_on_failure=False,
-    )
+        step_wrapping_fn=lambda step: InContainer(docker_environment=config, step=step),
+    ):
+        sequence.add_step(step)
 
+    # Add S3 MTR tests
     if test_s3:
-        add_S3_test(
+        for step in get_mtr_s3_steps(
             buildername=buildername,
-            prepare_steps=prepare_steps,
-            active_steps=in_container_steps,
-            cleanup_steps=cleanup_steps,
             jobs=jobs,
-            path_to_test_runner="/usr/share/mariadb/mariadb-test",
+            path_to_test_runner=MTR_RUNNER_PATH,
             halt_on_failure=False,
-        )
+            step_wrapping_fn=lambda step: InContainer(
+                docker_environment=config, step=step
+            ),
+        ):
+            sequence.add_step(step)
 
+    # Add rocksdb MTR tests
     if test_rocksdb:
-        add_rocksdb_test(
-            active_steps=in_container_steps,
+        for step in get_mtr_rocksdb_steps(
             jobs=jobs,
-            path_to_test_runner="/usr/share/mariadb/mariadb-test",
+            path_to_test_runner=MTR_RUNNER_PATH,
             halt_on_failure=False,
-        )
+            step_wrapping_fn=lambda step: InContainer(
+                docker_environment=config, step=step
+            ),
+        ):
+            sequence.add_step(step)
 
+    # Add galera MTR tests
     if test_galera:
-        add_galera_test(
-            active_steps=in_container_steps,
+        for step in get_mtr_galera_steps(
             jobs=jobs,
-            path_to_test_runner="/usr/share/mariadb/mariadb-test",
+            path_to_test_runner=MTR_RUNNER_PATH,
             halt_on_failure=False,
-        )
+            step_wrapping_fn=lambda step: InContainer(
+                docker_environment=config, step=step
+            ),
+        ):
+            sequence.add_step(step)
 
-    in_container_steps.extend(
-        [
-            ShellStep(
+    ## POST-TEST STEPS
+    sequence.add_step(
+        InContainer(
+            docker_environment=config,
+            step=ShellStep(
                 command=SavePackages(
                     packages=["mariadb.sources", "debs"],
-                    workdir="build",
+                    workdir=PurePath("build"),
                 ),
                 options=StepOptions(
                     doStepIf=(
@@ -138,10 +180,16 @@ def deb_autobake(
                     )
                 ),
             ),
-            ShellStep(
+        )
+    )
+
+    sequence.add_step(
+        InContainer(
+            docker_environment=config,
+            step=ShellStep(
                 command=SaveCompressedTar(
                     name="Save failed MTR logs",
-                    workdir="/home/buildbot/mtr",
+                    workdir=PurePath("mtr"),
                     archive_name="logs",
                     destination="/packages/%(prop:tarbuildnum)s/logs/%(prop:buildername)s",
                 ),
@@ -149,15 +197,8 @@ def deb_autobake(
                     alwaysRun=True, doStepIf=(lambda step: hasFailed(step))
                 ),
             ),
-        ]
+        )
     )
-
-    RunInContainer(
-        build_sequence=sequence,  # Will update sequence prepare/active/cleanup steps
-        container_config=config,
-        active_steps=in_container_steps,
-        buildername=buildername,
-    ).generate()
 
     return sequence
 
@@ -175,36 +216,44 @@ def rpm_autobake(
     test_s3=False,
 ):
 
-    # INIT
-    prepare_steps = []
-    active_steps = []
-    cleanup_steps = []
-    # Keep in container steps separate and merge later using RunInContainer
-    in_container_steps = []
-
-    sequence = BuildSequence(
-        prepare_steps=prepare_steps,
-        active_steps=active_steps,
-        cleanup_steps=cleanup_steps,
+    ### INIT
+    RPM_AUTOBAKE_BASE_WORKDIR = PurePath(
+        "padding_for_CPACK_RPM_BUILD_SOURCE_DIRS_PREFIX"
     )
+    MTR_RUNNER_PATH = PurePath("/usr/share/mariadb-test")
+    sequence = BuildSequence()
+
+    ### ADD STEPS
+    sequence.add_step(ShellStep(command=PrintEnvironmentDetails()))
 
     if has_compat:
-        in_container_steps.append(
-            ShellStep(
-                command=FetchCompat(
-                    rpm_type=rpm_type,
-                    arch=arch,
-                    url=artifacts_url,
-                    workdir="",
+        sequence.add_step(
+            InContainer(
+                docker_environment=config,
+                step=ShellStep(
+                    command=FetchCompat(
+                        rpm_type=rpm_type,
+                        arch=arch,
+                        url=artifacts_url,
+                    ),
                 ),
             )
         )
-    in_container_steps.extend(
-        [
-            ShellStep(
-                FetchTarball(workdir="padding_for_CPACK_RPM_BUILD_SOURCE_DIRS_PREFIX")
+
+    sequence.add_step(
+        InContainer(
+            docker_environment=config,
+            container_commit=False,
+            step=ShellStep(
+                command=FetchTarball(workdir=RPM_AUTOBAKE_BASE_WORKDIR),
             ),
-            ShellStep(
+        )
+    )
+
+    sequence.add_step(
+        InContainer(
+            docker_environment=config,
+            step=ShellStep(
                 command=ConfigureMariaDBCMake(
                     name="mysql_release",
                     cmake_generator=CMakeGenerator(
@@ -214,100 +263,150 @@ def rpm_autobake(
                             CMakeOption(OTHER.RPM, rpm_type),
                         ],
                     ),
-                    workdir="padding_for_CPACK_RPM_BUILD_SOURCE_DIRS_PREFIX",
-                )
+                    workdir=RPM_AUTOBAKE_BASE_WORKDIR,
+                ),
             ),
-            ShellStep(
-                CompileMakeCommand(
+        )
+    )
+
+    sequence.add_step(
+        InContainer(
+            docker_environment=config,
+            step=ShellStep(
+                command=CompileMakeCommand(
                     option=MAKE.COMPILE,
                     jobs=jobs,
                     verbose=False,
-                    workdir="padding_for_CPACK_RPM_BUILD_SOURCE_DIRS_PREFIX",
-                )
+                    workdir=RPM_AUTOBAKE_BASE_WORKDIR,
+                ),
             ),
-            ShellStep(
-                CompileMakeCommand(
+        )
+    )
+
+    sequence.add_step(
+        InContainer(
+            docker_environment=config,
+            step=ShellStep(
+                command=CompileMakeCommand(
                     option=MAKE.PACKAGE,
                     jobs=jobs,
                     verbose=False,
-                    workdir="padding_for_CPACK_RPM_BUILD_SOURCE_DIRS_PREFIX",
-                )
+                    workdir=RPM_AUTOBAKE_BASE_WORKDIR,
+                ),
             ),
-            ShellStep(
-                CompileMakeCommand(
+        )
+    )
+
+    sequence.add_step(
+        InContainer(
+            docker_environment=config,
+            step=ShellStep(
+                command=CompileMakeCommand(
                     option=MAKE.SOURCE,
                     jobs=jobs,
                     verbose=False,
-                    workdir="padding_for_CPACK_RPM_BUILD_SOURCE_DIRS_PREFIX",
-                )
+                    workdir=RPM_AUTOBAKE_BASE_WORKDIR,
+                ),
             ),
-            PropFromShellStep(
+        )
+    )
+
+    sequence.add_step(
+        InContainer(
+            docker_environment=config,
+            step=PropFromShellStep(
                 command=FindFiles(
                     include="*.rpm",
                     exclude="*.src.rpm",
-                    workdir="padding_for_CPACK_RPM_BUILD_SOURCE_DIRS_PREFIX",
+                    workdir=RPM_AUTOBAKE_BASE_WORKDIR,
                 ),
                 property="packages",
             ),
-            DockerShellStep(
+        )
+    )
+
+    sequence.add_step(
+        InContainer(
+            docker_environment=config,
+            container_commit=True,
+            step=ShellStep(
                 command=InstallRPMFromProp(
-                    workdir="padding_for_CPACK_RPM_BUILD_SOURCE_DIRS_PREFIX",
+                    workdir=RPM_AUTOBAKE_BASE_WORKDIR,
                     property_name="packages",
                 ),
-                checkpoint=True,
             ),
-        ]
+        )
     )
 
-    # Add in container MTR tests
-    add_normal_test(
-        active_steps=in_container_steps,  # Will append to in_container_steps
+    ## ADD MTR TESTS
+    # Add normal MTR tests
+    for step in get_mtr_normal_steps(
         jobs=jobs,
-        path_to_test_runner="/usr/share/mariadb-test",  # Run from Installed Tree
+        path_to_test_runner=MTR_RUNNER_PATH,
         halt_on_failure=False,
-    )
+        step_wrapping_fn=lambda step: InContainer(docker_environment=config, step=step),
+    ):
+        sequence.add_step(step)
 
+    # Add S3 MTR tests
     if test_s3:
-        add_S3_test(
+        for step in get_mtr_s3_steps(
             buildername=buildername,
-            prepare_steps=prepare_steps,
-            active_steps=in_container_steps,
-            cleanup_steps=cleanup_steps,
             jobs=jobs,
-            path_to_test_runner="/usr/share/mariadb-test",
+            path_to_test_runner=MTR_RUNNER_PATH,
             halt_on_failure=False,
-        )
+            step_wrapping_fn=lambda step: InContainer(
+                docker_environment=config, step=step
+            ),
+        ):
+            sequence.add_step(step)
 
+    # Add rocksdb MTR tests
     if test_rocksdb:
-        add_rocksdb_test(
-            active_steps=in_container_steps,
+        for step in get_mtr_rocksdb_steps(
             jobs=jobs,
-            path_to_test_runner="/usr/share/mariadb-test",
+            path_to_test_runner=MTR_RUNNER_PATH,
             halt_on_failure=False,
-        )
+            step_wrapping_fn=lambda step: InContainer(
+                docker_environment=config, step=step
+            ),
+        ):
+            sequence.add_step(step)
 
+    # Add galera MTR tests
     if test_galera:
-        add_galera_test(
-            active_steps=in_container_steps,
+        for step in get_mtr_galera_steps(
             jobs=jobs,
-            path_to_test_runner="/usr/share/mariadb-test",
+            path_to_test_runner=MTR_RUNNER_PATH,
             halt_on_failure=False,
-        )
+            step_wrapping_fn=lambda step: InContainer(
+                docker_environment=config, step=step
+            ),
+        ):
+            sequence.add_step(step)
 
-    # ... continue adding in container steps
-    in_container_steps.extend(
-        [
-            ShellStep(
+    ## POST-TEST STEPS
+    sequence.add_step(
+        InContainer(
+            docker_environment=config,
+            container_commit=True,
+            step=ShellStep(
                 command=CreateRpmRepo(
                     rpm_type=rpm_type,
                     url=artifacts_url,
-                    workdir="padding_for_CPACK_RPM_BUILD_SOURCE_DIRS_PREFIX",
+                    workdir=RPM_AUTOBAKE_BASE_WORKDIR,
                 ),
             ),
-            ShellStep(
+        )
+    )
+
+    sequence.add_step(
+        InContainer(
+            docker_environment=config,
+            step=ShellStep(
                 command=SavePackages(
                     packages=["MariaDB.repo", "rpms", "srpms"],
-                    workdir="padding_for_CPACK_RPM_BUILD_SOURCE_DIRS_PREFIX",
+                    workdir=RPM_AUTOBAKE_BASE_WORKDIR,
                     destination="/packages/%(prop:tarbuildnum)s/%(prop:buildername)s",
                 ),
                 options=StepOptions(
@@ -317,10 +416,16 @@ def rpm_autobake(
                     )
                 ),
             ),
-            ShellStep(
+        )
+    )
+
+    sequence.add_step(
+        InContainer(
+            docker_environment=config,
+            step=ShellStep(
                 command=SaveCompressedTar(
                     name="Save failed MTR logs",
-                    workdir="/home/buildbot/mtr",
+                    workdir=PurePath("mtr"),
                     archive_name="logs",
                     destination="/packages/%(prop:tarbuildnum)s/logs/%(prop:buildername)s",
                 ),
@@ -328,177 +433,188 @@ def rpm_autobake(
                     alwaysRun=True, doStepIf=(lambda step: hasFailed(step))
                 ),
             ),
-        ]
+        )
     )
-
-    # Add in container steps to the build sequence
-    RunInContainer(
-        build_sequence=sequence,
-        container_config=config,
-        active_steps=in_container_steps,
-        buildername=buildername,
-    ).generate()
 
     return sequence
 
 
-def add_normal_test(
-    active_steps,
+## ------------------------------------------------------------------- ##
+##                        HELPER FUNCTIONS                             ##
+## ------------------------------------------------------------------- ##
+
+
+def get_mtr_normal_steps(
     jobs,
-    path_to_test_runner: str,
+    path_to_test_runner: PurePath,
     halt_on_failure: bool = True,
+    step_wrapping_fn=lambda step: step,
 ):
-    active_steps.append(
-        ShellStep(
-            MTRTest(
-                name="normal",
-                save_logs_path=f"{MTR_PATH_TO_SAVE_LOGS}/normal",
-                workdir=path_to_test_runner,
-                testcase=MTRGenerator(
-                    flags=[
-                        MTROption(MTR.VERBOSE_RESTART, True),
-                        MTROption(MTR.FORCE, True),
-                        MTROption(MTR.RETRY, 3),
-                        MTROption(MTR.MAX_SAVE_CORE, 2),
-                        MTROption(MTR.MAX_SAVE_DATADIR, 1),
-                        MTROption(MTR.MAX_TEST_FAIL, 20),
-                        MTROption(MTR.PARALLEL, jobs * 2),
-                        MTROption(MTR.VARDIR, "/dev/shm/normal"),
-                    ],
-                ),
-            ),
-            options=StepOptions(haltOnFailure=halt_on_failure),
-        )
-    )
-
-
-def add_rocksdb_test(
-    active_steps,
-    jobs,
-    path_to_test_runner: str,
-    halt_on_failure: bool = True,
-):
-    active_steps.append(
-        ShellStep(
-            MTRTest(
-                name="rocksdb",
-                save_logs_path=f"{MTR_PATH_TO_SAVE_LOGS}/rocksdb",
-                workdir=path_to_test_runner,
-                testcase=MTRGenerator(
-                    flags=[
-                        MTROption(MTR.VERBOSE_RESTART, True),
-                        MTROption(MTR.FORCE, True),
-                        MTROption(MTR.RETRY, 3),
-                        MTROption(MTR.MAX_SAVE_CORE, 1),
-                        MTROption(MTR.MAX_SAVE_DATADIR, 1),
-                        MTROption(MTR.MAX_TEST_FAIL, 3),
-                        MTROption(MTR.PARALLEL, jobs * 2),
-                        MTROption(MTR.VARDIR, "/dev/shm/rocksdb"),
-                        MTROption(MTR.SUITE, "rocksdb*"),
-                        MTROption(MTR.SKIP_TEST, "rocksdb_hotbackup*"),
-                    ],
-                ),
-            ),
-            options=StepOptions(haltOnFailure=halt_on_failure),
-        )
-    )
-
-
-def add_galera_test(
-    active_steps,
-    jobs,
-    path_to_test_runner: str,
-    halt_on_failure: bool = True,
-):
-    active_steps.append(
-        ShellStep(
-            MTRTest(
-                name="galera",
-                save_logs_path=f"{MTR_PATH_TO_SAVE_LOGS}/galera",
-                workdir=path_to_test_runner,
-                testcase=MTRGenerator(
-                    flags=[
-                        MTROption(MTR.VERBOSE_RESTART, True),
-                        MTROption(MTR.FORCE, True),
-                        MTROption(MTR.RETRY, 3),
-                        MTROption(MTR.MAX_SAVE_CORE, 2),
-                        MTROption(MTR.MAX_SAVE_DATADIR, 10),
-                        MTROption(MTR.MAX_TEST_FAIL, 1),
-                        MTROption(MTR.BIG_TEST, True),
-                        MTROption(MTR.PARALLEL, jobs * 2),
-                        MTROption(MTR.VARDIR, "/dev/shm/galera"),
-                    ],
-                    suite_collection=TestSuiteCollection(
-                        [
-                            SUITE.WSREP,
-                            SUITE.GALERA,
-                            SUITE.GALERA_3NODES,
-                            SUITE.GALERA_3NODES_SR,
-                        ]
+    steps = []
+    steps.append(
+        step_wrapping_fn(
+            ShellStep(
+                MTRTest(
+                    name="normal",
+                    save_logs_path=MTR_PATH_TO_SAVE_LOGS / "normal",
+                    workdir=path_to_test_runner,
+                    testcase=MTRGenerator(
+                        flags=[
+                            MTROption(MTR.VERBOSE_RESTART, True),
+                            MTROption(MTR.FORCE, True),
+                            MTROption(MTR.RETRY, 3),
+                            MTROption(MTR.MAX_SAVE_CORE, 2),
+                            MTROption(MTR.MAX_SAVE_DATADIR, 1),
+                            MTROption(MTR.MAX_TEST_FAIL, 20),
+                            MTROption(MTR.PARALLEL, jobs * 2),
+                            MTROption(MTR.VARDIR, "/dev/shm/normal"),
+                        ],
                     ),
                 ),
-            ),
-            options=StepOptions(haltOnFailure=halt_on_failure),
+                options=StepOptions(haltOnFailure=halt_on_failure),
+            )
         )
     )
+    return steps
 
 
-def add_S3_test(
-    buildername,
-    prepare_steps,
-    active_steps,
-    cleanup_steps,
+def get_mtr_rocksdb_steps(
     jobs,
-    path_to_test_runner: str,
+    path_to_test_runner: PurePath,
     halt_on_failure: bool = True,
+    step_wrapping_fn=lambda step: step,
 ):
-    prepare_steps.append(
+    steps = []
+    steps.append(
+        step_wrapping_fn(
+            ShellStep(
+                MTRTest(
+                    name="rocksdb",
+                    save_logs_path=MTR_PATH_TO_SAVE_LOGS / "rocksdb",
+                    workdir=path_to_test_runner,
+                    testcase=MTRGenerator(
+                        flags=[
+                            MTROption(MTR.VERBOSE_RESTART, True),
+                            MTROption(MTR.FORCE, True),
+                            MTROption(MTR.RETRY, 3),
+                            MTROption(MTR.MAX_SAVE_CORE, 1),
+                            MTROption(MTR.MAX_SAVE_DATADIR, 1),
+                            MTROption(MTR.MAX_TEST_FAIL, 3),
+                            MTROption(MTR.PARALLEL, jobs * 2),
+                            MTROption(MTR.VARDIR, "/dev/shm/rocksdb"),
+                            MTROption(MTR.SUITE, "rocksdb*"),
+                            MTROption(MTR.SKIP_TEST, "rocksdb_hotbackup*"),
+                        ],
+                    ),
+                ),
+                options=StepOptions(haltOnFailure=halt_on_failure),
+            )
+        )
+    )
+    return steps
+
+
+def get_mtr_galera_steps(
+    jobs,
+    path_to_test_runner: PurePath,
+    halt_on_failure: bool = True,
+    step_wrapping_fn=lambda step: step,
+):
+    steps = []
+    steps.append(
+        step_wrapping_fn(
+            ShellStep(
+                MTRTest(
+                    name="galera",
+                    save_logs_path=MTR_PATH_TO_SAVE_LOGS / "galera",
+                    workdir=path_to_test_runner,
+                    testcase=MTRGenerator(
+                        flags=[
+                            MTROption(MTR.VERBOSE_RESTART, True),
+                            MTROption(MTR.FORCE, True),
+                            MTROption(MTR.RETRY, 3),
+                            MTROption(MTR.MAX_SAVE_CORE, 2),
+                            MTROption(MTR.MAX_SAVE_DATADIR, 10),
+                            MTROption(MTR.MAX_TEST_FAIL, 1),
+                            MTROption(MTR.BIG_TEST, True),
+                            MTROption(MTR.PARALLEL, jobs * 2),
+                            MTROption(MTR.VARDIR, "/dev/shm/galera"),
+                        ],
+                        suite_collection=TestSuiteCollection(
+                            [
+                                SUITE.WSREP,
+                                SUITE.GALERA,
+                                SUITE.GALERA_3NODES,
+                                SUITE.GALERA_3NODES_SR,
+                            ]
+                        ),
+                    ),
+                ),
+                options=StepOptions(haltOnFailure=halt_on_failure),
+            )
+        )
+    )
+    return steps
+
+
+def get_mtr_s3_steps(
+    buildername,
+    jobs,
+    path_to_test_runner: PurePath,
+    halt_on_failure: bool = True,
+    step_wrapping_fn=lambda step: step,
+):
+    steps = []
+    steps.append(
         MasterShellStep(
             command=CreateS3Bucket(bucket=f"{buildername}-%(prop:buildnumber)s")
-        ).generate()
-    )
-
-    active_steps.append(
-        ShellStep(
-            command=MTRTest(
-                name="S3",
-                save_logs_path=f"{MTR_PATH_TO_SAVE_LOGS}/s3",
-                workdir=path_to_test_runner,
-                testcase=MTRGenerator(
-                    flags=[
-                        MTROption(MTR.VERBOSE_RESTART, True),
-                        MTROption(MTR.FORCE, True),
-                        MTROption(MTR.RETRY, 3),
-                        MTROption(MTR.MAX_SAVE_CORE, 1),
-                        MTROption(MTR.MAX_SAVE_DATADIR, 1),
-                        MTROption(MTR.MAX_TEST_FAIL, 3),
-                        MTROption(MTR.PARALLEL, jobs * 2),
-                        MTROption(MTR.VARDIR, "/dev/shm/s3"),
-                        MTROption(MTR.SUITE, "s3"),
-                    ],
-                ),
-            ),
-            env_vars=[
-                ("S3_HOST_NAME", "minio.mariadb.org"),
-                ("S3_PORT", "443"),
-                ("S3_ACCESS_KEY", "%(secret:minio_access_key)s"),
-                ("S3_SECRET_KEY", "%(secret:minio_secret_key)s"),
-                ("S3_BUCKET", "%(prop:buildername)s-%(prop:buildnumber)s"),
-                ("S3_USE_HTTPS", "OFF"),
-                ("S3_PROTOCOL_VERSION", "Path"),
-            ],
-            options=StepOptions(haltOnFailure=halt_on_failure),
         )
     )
-    cleanup_steps.append(
+
+    steps.append(
+        step_wrapping_fn(
+            ShellStep(
+                command=MTRTest(
+                    name="S3",
+                    save_logs_path=MTR_PATH_TO_SAVE_LOGS / "s3",
+                    workdir=path_to_test_runner,
+                    testcase=MTRGenerator(
+                        flags=[
+                            MTROption(MTR.VERBOSE_RESTART, True),
+                            MTROption(MTR.FORCE, True),
+                            MTROption(MTR.RETRY, 3),
+                            MTROption(MTR.MAX_SAVE_CORE, 1),
+                            MTROption(MTR.MAX_SAVE_DATADIR, 1),
+                            MTROption(MTR.MAX_TEST_FAIL, 3),
+                            MTROption(MTR.PARALLEL, jobs * 2),
+                            MTROption(MTR.VARDIR, "/dev/shm/s3"),
+                            MTROption(MTR.SUITE, "s3"),
+                        ],
+                    ),
+                ),
+                env_vars=[
+                    ("S3_HOST_NAME", "minio.mariadb.org"),
+                    ("S3_PORT", "443"),
+                    ("S3_ACCESS_KEY", "%(secret:minio_access_key)s"),
+                    ("S3_SECRET_KEY", "%(secret:minio_secret_key)s"),
+                    ("S3_BUCKET", "%(prop:buildername)s-%(prop:buildnumber)s"),
+                    ("S3_USE_HTTPS", "OFF"),
+                    ("S3_PROTOCOL_VERSION", "Path"),
+                ],
+                options=StepOptions(haltOnFailure=halt_on_failure),
+            )
+        )
+    )
+    steps.append(
         MasterShellStep(
             command=DeleteS3Bucket(bucket=f"{buildername}-%(prop:buildnumber)s"),
             options=StepOptions(alwaysRun=True),
-        ).generate(),
+        ),
     )
+    return steps
 
 
-# TODO (Razvan): Future implementations
-def bintar(): ...
-def docker_library(): ...
-def release_preparation(): ...
+# # TODO (Razvan): Future implementations
+# def bintar(): ...
+# def docker_library(): ...
+# def release_preparation(): ...
