@@ -208,6 +208,10 @@ SUPPORTED_PLATFORMS["11.8"] += [
     "amd64-debian-sid",
     "ppc64le-debian-sid",
     "x86-debian-sid",
+    "aarch64-debian-13",
+    "amd64-debian-13",
+    "ppc64le-debian-13",
+    "x86-debian-13",
 ]
 SUPPORTED_PLATFORMS["12.0"] = SUPPORTED_PLATFORMS["11.8"].copy()
 SUPPORTED_PLATFORMS["12.1"] = SUPPORTED_PLATFORMS["12.0"].copy()
