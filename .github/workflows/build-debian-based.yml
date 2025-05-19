@@ -49,6 +49,18 @@ jobs:
             nogalera: false
             dockerfile: 'debian.Dockerfile hashicorp.fragment.Dockerfile minio.fragment.Dockerfile'
 
+          - image: debian:trixie
+            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
+            branch: 11.8
+            tag: debian13
+            nogalera: true
+
+          - image: debian:trixie
+            platforms: linux/386
+            branch: 11.8
+            tag: debian13-386
+            nogalera: true
+
           - image: debian:sid
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
             branch: 11.4
