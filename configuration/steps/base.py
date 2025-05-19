@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
 from collections import namedtuple
 from dataclasses import dataclass
-
-from configuration.steps.commands.base import Command
+from typing import Optional
 
 
 @dataclass
@@ -19,22 +18,15 @@ class StepOptions:  # all step (shell, compile, etc) types support these options
 
 
 class BaseStep(ABC):
-    def __init__(self, name, options):
+    def __init__(self, name: str, options: Optional[StepOptions] = None):
         self.name = name
-        if options is None:
+        self.run_in_container = False
+        self.container_commit = False
+        self.docker_environment = None
+        self.options = options
+        if self.options is None:
             self.options = StepOptions()  # Load default options
-        else:
-            assert isinstance(options, StepOptions)
-            self.options = options
+        assert isinstance(self.options, StepOptions)
 
     @abstractmethod
     def generate(self): ...
-
-
-class PrefixableStep(BaseStep):
-    def __init__(self, name, options, env_vars):
-        self.env_vars = env_vars
-        super().__init__(name, options)
-
-    @abstractmethod
-    def add_cmd_prefix(self, command: Command): ...

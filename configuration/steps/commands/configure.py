@@ -1,9 +1,16 @@
+from pathlib import PurePath
+
 from configuration.steps.commands.base import Command
 from configuration.steps.generators.cmake.generator import CMakeGenerator
 
 
 class ConfigureMariaDBCMake(Command):
-    def __init__(self, name: str, cmake_generator: CMakeGenerator, workdir: str = ""):
+    def __init__(
+        self,
+        name: str,
+        cmake_generator: CMakeGenerator,
+        workdir: PurePath = PurePath("."),
+    ):
         self.cmake_generator = cmake_generator
         super().__init__(name=f"Configure - {name}", workdir=workdir)
 

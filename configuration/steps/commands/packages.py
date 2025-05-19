@@ -1,13 +1,15 @@
+from pathlib import PurePath
+
 from buildbot.plugins import util
-from configuration.steps.base import Command
+from configuration.steps.commands.base import Command
 
 
 class CreateDebRepo(Command):
     def __init__(
         self,
-        url,
+        url: str,
         buildername: str,
-        workdir: str = "",
+        workdir: PurePath = PurePath("."),
     ):
         name = "Create local DEB repository"
         super().__init__(name=name, workdir=workdir)
@@ -48,9 +50,9 @@ EOF
 class CreateRpmRepo(Command):
     def __init__(
         self,
-        rpm_type,
-        url,
-        workdir: str = "",
+        rpm_type: str,
+        url: str,
+        workdir: PurePath = PurePath("."),
     ):
         name = "Create local RPM repository"
         super().__init__(name=name, workdir=workdir)
@@ -95,7 +97,7 @@ class SavePackages(Command):
     def __init__(
         self,
         packages: list[str],
-        workdir: str = "",
+        workdir: PurePath = PurePath("."),
         destination: str = "/packages/%(prop:tarbuildnum)s/%(prop:buildername)s",
     ):
         name = "Save packages"
@@ -112,7 +114,7 @@ class SavePackages(Command):
                 f"""
                 mkdir -p {self.destination} &&
                 cp -r {package_list} {self.destination}
-                """,
+                """
             ),
         ]
         return result
@@ -122,7 +124,7 @@ class InstallRPMFromProp(Command):
     def __init__(
         self,
         property_name: str,
-        workdir: str = "",
+        workdir: PurePath = PurePath("."),
     ):
         name = "Install RPM Packages"
         self.property_name = property_name
@@ -150,7 +152,7 @@ class InstallDEB(Command):
     def __init__(
         self,
         packages_file: str,
-        workdir: str = "",
+        workdir: PurePath = PurePath("."),
     ):
         self.packages_file = packages_file
         super().__init__(name="Install DEB Packages", workdir=workdir, user="root")
@@ -159,8 +161,7 @@ class InstallDEB(Command):
         result = [
             "bash",
             "-ec",
-            util.Interpolate(
-                f"""
+            f"""
                 package_list=$(grep "^Package:" {self.packages_file} | grep -vE 'galera|spider|columnstore' | awk '{{print $2}}' | xargs)
 DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 apt-get -o Debug::pkgProblemResolver=1 -o Dpkg::Options::=--force-confnew install --allow-unauthenticated -y $package_list
 
@@ -169,6 +170,5 @@ DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 apt-get -o Debug::pkgP
                     ln -s /usr/share/mysql/mysql-test /usr/share/mariadb/mariadb-test
                 fi
                 """,
-            ),
         ]
         return result

@@ -1,3 +1,5 @@
+from pathlib import PurePath
+
 from buildbot.plugins import util
 from configuration.steps.commands.base import Command
 from configuration.steps.generators.mtr.generator import MTRGenerator
@@ -8,9 +10,9 @@ class MTRTest(Command):
         self,
         name: str,
         testcase: MTRGenerator,
-        workdir: str = "mysql-test",
+        workdir: PurePath = PurePath("mysql-test"),
         mtr_feedback_plugin: bool = False,
-        save_logs_path: str = "",
+        save_logs_path: PurePath = PurePath("."),
     ):
         self.name = f"MTR - {name}"
         super().__init__(name=self.name, workdir=workdir)
@@ -18,7 +20,7 @@ class MTRTest(Command):
         self.testcase = testcase
         self.mtr_feedback_plugin = int(mtr_feedback_plugin)
         self.save_logs_path = save_logs_path
-        self.log_path = self.workdir + "/var"  # default of MTR, if vardir is not set
+        self.log_path = self.workdir / "/var"  # default of MTR, if vardir is not set
         self.archive_name = f"{name}.tar.gz"
 
         for opt in self.testcase.flags:
@@ -31,11 +33,9 @@ class MTRTest(Command):
         return [
             "bash",
             "-ec",
-            util.Interpolate(
-                f"""
+            f"""
             MTR_FEEDBACK_PLUGIN={self.mtr_feedback_plugin} {mtr_cmd} || ({self._save_logs()})
             """,
-            ),
         ]
 
     def _save_logs(self) -> str:
