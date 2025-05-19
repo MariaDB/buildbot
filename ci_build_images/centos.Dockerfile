@@ -78,8 +78,9 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     liburing-devel \
     libxml2-devel \
     libzstd-devel \
-    perl-autodie \
+    lzo-devel \
     perl-Net-SSLeay \
+    perl-autodie \
     python3-devel \
     readline-devel \
     rpmlint \
