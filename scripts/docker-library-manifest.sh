@@ -5,7 +5,7 @@ set -xeuvo pipefail
 tarbuildnum=${1}
 mariadb_version=${2}
 mariadb_version=${mariadb_version#*-}
-buildername=${3:-amd64-ubuntu-2004-deb-autobake}
+buildername=${3:-amd64-ubuntu-2204-deb-autobake}
 master_branch=${mariadb_version%\.*}
 #commit=${4:-0}
 branch=${5:-${master_branch}}

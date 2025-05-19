@@ -162,17 +162,6 @@ sles-1506:
     - amd64
     - s390x
   type: rpm
-ubuntu-2004:
-  image_tag: ubuntu20.04
-  tags:
-    - release_packages
-  version_name: focal
-  arch:
-    - amd64
-    - aarch64
-    - ppc64le
-    - s390x
-  type: deb
 ubuntu-2204:
   image_tag: ubuntu22.04
   tags:
