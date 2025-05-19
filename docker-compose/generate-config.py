@@ -22,7 +22,6 @@ MASTER_DIRECTORIES = [
     "master-galera",
     "master-protected-branches",
     "master-docker-nonstandard-2",
-    "master-migration",
 ]
 
 VOLUMES = ["./logs:/var/log/buildbot", "./buildbot/:/srv/buildbot/master"]
@@ -152,6 +151,10 @@ def construct_env_section(env_vars):
 
 
 def main(args):
+    # FIXME: Temporary until master-migration is validated on dev
+    if args.env == "dev":
+        MASTER_DIRECTORIES.append("master-migration")
+
     # Load Volumes
     master_volumes = {
         key: VOLUMES[:]
