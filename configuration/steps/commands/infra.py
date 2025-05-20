@@ -12,13 +12,17 @@ class CreateDockerWorkdirs(Command):
         self.workdirs = workdirs
 
     def as_cmd_arg(self) -> list[str]:
-        return (
-            (
-                "docker run --rm "
-                f"--mount {self.volume_mount} "
-                f"{self.image_url} mkdir -p . {' '.join(self.workdirs)} "
-            ),
-        )
+        return [
+            "docker",
+            "run",
+            "--rm",
+            "--mount",
+            f"{self.volume_mount}",
+            f"{self.image_url}",
+            "bash",
+            "-ec",
+            f"mkdir -p . {' '.join(self.workdirs)} ",
+        ]
 
 
 class CleanupDockerResources(Command):
@@ -98,7 +102,6 @@ class CleanupWorkerDir(Command):
         super().__init__(
             name=f"Cleanup Worker Directory - {name}", workdir=PurePath(".")
         )
-        self.name = name
 
     def as_cmd_arg(self) -> list[str]:
-        return ["rm -r * .* 2> /dev/null || true"]
+        return ["bash", "-ec", "rm -r * .* 2> /dev/null || true"]

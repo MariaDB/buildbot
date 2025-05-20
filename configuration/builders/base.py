@@ -34,11 +34,11 @@ class BaseBuilder:
 
         POST_PROCESSING_FUNCTIONS = [
             processor_worker_cleanup,
-            processor_docker_workdirs,
             processor_docker_cleanup,
-            processor_docker_commit,
-            processor_docker_tag,
             processor_docker_fetch,
+            processor_docker_workdirs,
+            processor_docker_tag,
+            processor_docker_commit,
         ]
 
         # Get steps from all sequences
