@@ -116,6 +116,8 @@ class InContainer:
 
         step.prefix_cmd.extend(cmd_prefix)
 
+        step.command.workdir = PurePath(".")
+
         return step
 
 
