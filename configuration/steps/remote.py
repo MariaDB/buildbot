@@ -32,15 +32,10 @@ class ShellStep(BaseStep):
         )
 
     def _set_workdir(self) -> str:
-        # Assume it's a docker environment and default to worker build dir
-        # because docker will set the workdir via -w to the running container
-        workdir = "build"
-        # Running on the worker host requires changing the workdir
-        if not self.run_in_container:
-            if self.command.workdir.is_absolute():
-                workdir = self.command.workdir
-            else:
-                workdir = "build" / self.command.workdir
+        if self.command.workdir.is_absolute():
+            workdir = self.command.workdir
+        else:
+            workdir = "build" / self.command.workdir
         return str(workdir)
 
 
