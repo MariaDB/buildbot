@@ -1,20 +1,31 @@
-from configuration.steps.commands.infra import CreateDockerWorkdirs, CleanupDockerResources,FetchContainerImage,TagContainerImage, ContainerCommit, CleanupWorkerDir
-from configuration.steps.remote import ShellStep
 from configuration.steps.base import StepOptions
+from configuration.steps.commands.infra import (
+    CleanupDockerResources,
+    CleanupWorkerDir,
+    ContainerCommit,
+    CreateDockerWorkdirs,
+    FetchContainerImage,
+    TagContainerImage,
+)
+from configuration.steps.remote import ShellStep
 
 
-def add_docker_create_workdirs_step(volume_mount: str, image_url: str, workdirs: list[str]) -> ShellStep:
+def add_docker_create_workdirs_step(
+    volume_mount: str, image_url: str, workdirs: list[str]
+) -> ShellStep:
     return ShellStep(
         command=CreateDockerWorkdirs(
-            volume_mount = volume_mount,
-            image_url = image_url,
-            workdirs=workdirs),
-        options = StepOptions(
+            volume_mount=volume_mount, image_url=image_url, workdirs=workdirs
+        ),
+        options=StepOptions(
             haltOnFailure=True,
         ),
-        )
+    )
 
-def add_docker_cleanup_step(name: str, container_name: str, runtime_tag: str) -> ShellStep:
+
+def add_docker_cleanup_step(
+    name: str, container_name: str, runtime_tag: str
+) -> ShellStep:
     return ShellStep(
         command=CleanupDockerResources(
             name=name,
@@ -24,7 +35,8 @@ def add_docker_cleanup_step(name: str, container_name: str, runtime_tag: str) ->
         options=StepOptions(
             alwaysRun=True,
         ),
-        )
+    )
+
 
 def add_docker_fetch_step(image_url: str) -> ShellStep:
     return ShellStep(
@@ -32,8 +44,10 @@ def add_docker_fetch_step(image_url: str) -> ShellStep:
             image_url=image_url,
         ),
         options=StepOptions(
-            haltOnFailure=True,)
-        )
+            haltOnFailure=True,
+        ),
+    )
+
 
 def add_docker_tag_step(image_url: str, runtime_tag: str) -> ShellStep:
     return ShellStep(
@@ -42,10 +56,14 @@ def add_docker_tag_step(image_url: str, runtime_tag: str) -> ShellStep:
             runtime_tag=runtime_tag,
         ),
         options=StepOptions(
-            haltOnFailure=True,)
-        )
+            haltOnFailure=True,
+        ),
+    )
 
-def add_docker_commit_step(container_name: str, runtime_tag: str, step_name: str) -> ShellStep:
+
+def add_docker_commit_step(
+    container_name: str, runtime_tag: str, step_name: str
+) -> ShellStep:
     return ShellStep(
         command=ContainerCommit(
             container_name=container_name,
@@ -53,8 +71,10 @@ def add_docker_commit_step(container_name: str, runtime_tag: str, step_name: str
             step_name=step_name,
         ),
         options=StepOptions(
-            haltOnFailure=True,)
-        )
+            haltOnFailure=True,
+        ),
+    )
+
 
 def add_worker_cleanup_step(name: str) -> ShellStep:
     return ShellStep(
@@ -62,4 +82,4 @@ def add_worker_cleanup_step(name: str) -> ShellStep:
         options=StepOptions(
             alwaysRun=True,
         ),
-    )   
+    )

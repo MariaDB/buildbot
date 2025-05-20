@@ -1,16 +1,20 @@
+from configuration.builders.infra.runtime import InContainer
 from configuration.steps.base import BaseStep
 from configuration.steps.infra import (
-    add_docker_create_workdirs_step,
     add_docker_cleanup_step,
+    add_docker_commit_step,
+    add_docker_create_workdirs_step,
     add_docker_fetch_step,
     add_docker_tag_step,
-    add_docker_commit_step,
-    add_worker_cleanup_step
+    add_worker_cleanup_step,
 )
-from configuration.builders.infra.runtime import InContainer
 
 
-def processor_docker_workdirs(prepare_steps: list[BaseStep], active_steps: list[BaseStep], cleanup_steps: list[BaseStep]) -> tuple[list[BaseStep], list[BaseStep], list[BaseStep]]:
+def processor_docker_workdirs(
+    prepare_steps: list[BaseStep],
+    active_steps: list[BaseStep],
+    cleanup_steps: list[BaseStep],
+) -> tuple[list[BaseStep], list[BaseStep], list[BaseStep]]:
     prepare_steps = prepare_steps.copy()
     active_steps = active_steps.copy()
     cleanup_steps = cleanup_steps.copy()
@@ -34,7 +38,12 @@ def processor_docker_workdirs(prepare_steps: list[BaseStep], active_steps: list[
 
     return prepare_steps, active_steps, cleanup_steps
 
-def processor_docker_cleanup(prepare_steps: list[BaseStep], active_steps: list[BaseStep], cleanup_steps: list[BaseStep]) -> tuple[list[BaseStep], list[BaseStep], list[BaseStep]]:
+
+def processor_docker_cleanup(
+    prepare_steps: list[BaseStep],
+    active_steps: list[BaseStep],
+    cleanup_steps: list[BaseStep],
+) -> tuple[list[BaseStep], list[BaseStep], list[BaseStep]]:
     prepare_steps = prepare_steps.copy()
     active_steps = active_steps.copy()
     cleanup_steps = cleanup_steps.copy()
@@ -59,7 +68,12 @@ def processor_docker_cleanup(prepare_steps: list[BaseStep], active_steps: list[B
 
     return prepare_steps, active_steps, cleanup_steps
 
-def processor_docker_commit(prepare_steps: list[BaseStep], active_steps: list[BaseStep], cleanup_steps: list[BaseStep]) -> tuple[list[BaseStep], list[BaseStep], list[BaseStep]]:
+
+def processor_docker_commit(
+    prepare_steps: list[BaseStep],
+    active_steps: list[BaseStep],
+    cleanup_steps: list[BaseStep],
+) -> tuple[list[BaseStep], list[BaseStep], list[BaseStep]]:
     prepare_steps = prepare_steps.copy()
     active_steps = active_steps.copy()
     cleanup_steps = cleanup_steps.copy()
@@ -73,12 +87,17 @@ def processor_docker_commit(prepare_steps: list[BaseStep], active_steps: list[Ba
                         container_name=step.docker_environment.container_name,
                         runtime_tag=step.docker_environment.runtime_tag,
                         step_name=step.name,
-                    )
+                    ),
                 )
 
     return prepare_steps, active_steps, cleanup_steps
 
-def processor_docker_tag(prepare_steps: list[BaseStep], active_steps: list[BaseStep], cleanup_steps: list[BaseStep]) -> tuple[list[BaseStep], list[BaseStep], list[BaseStep]]:
+
+def processor_docker_tag(
+    prepare_steps: list[BaseStep],
+    active_steps: list[BaseStep],
+    cleanup_steps: list[BaseStep],
+) -> tuple[list[BaseStep], list[BaseStep], list[BaseStep]]:
     prepare_steps = prepare_steps.copy()
     active_steps = active_steps.copy()
     cleanup_steps = cleanup_steps.copy()
@@ -93,13 +112,18 @@ def processor_docker_tag(prepare_steps: list[BaseStep], active_steps: list[BaseS
                     add_docker_tag_step(
                         image_url=step.docker_environment.image_url,
                         runtime_tag=step.docker_environment.runtime_tag,
-                    )
+                    ),
                 )
                 current_docker_environment = step.docker_environment
 
     return prepare_steps, active_steps, cleanup_steps
 
-def processor_docker_fetch(prepare_steps: list[BaseStep], active_steps: list[BaseStep], cleanup_steps: list[BaseStep]) -> tuple[list[BaseStep], list[BaseStep], list[BaseStep]]:
+
+def processor_docker_fetch(
+    prepare_steps: list[BaseStep],
+    active_steps: list[BaseStep],
+    cleanup_steps: list[BaseStep],
+) -> tuple[list[BaseStep], list[BaseStep], list[BaseStep]]:
     prepare_steps = prepare_steps.copy()
     active_steps = active_steps.copy()
     cleanup_steps = cleanup_steps.copy()
@@ -117,14 +141,17 @@ def processor_docker_fetch(prepare_steps: list[BaseStep], active_steps: list[Bas
 
     return prepare_steps, active_steps, cleanup_steps
 
-def processor_worker_cleanup(prepare_steps: list[BaseStep], active_steps: list[BaseStep], cleanup_steps: list[BaseStep]) -> tuple[list[BaseStep], list[BaseStep], list[BaseStep]]:
+
+def processor_worker_cleanup(
+    prepare_steps: list[BaseStep],
+    active_steps: list[BaseStep],
+    cleanup_steps: list[BaseStep],
+) -> tuple[list[BaseStep], list[BaseStep], list[BaseStep]]:
     prepare_steps = prepare_steps.copy()
     active_steps = active_steps.copy()
     cleanup_steps = cleanup_steps.copy()
 
-    prepare_steps.append(
-        add_worker_cleanup_step(name="previous-run"))
-    cleanup_steps.append(
-        add_worker_cleanup_step(name="current-run"))
+    prepare_steps.append(add_worker_cleanup_step(name="previous-run"))
+    cleanup_steps.append(add_worker_cleanup_step(name="current-run"))
 
     return prepare_steps, active_steps, cleanup_steps

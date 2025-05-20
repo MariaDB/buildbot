@@ -1,4 +1,3 @@
-from abc import ABC, abstractmethod
 from typing import Callable, Iterable
 
 from buildbot.plugins import util
@@ -9,15 +8,17 @@ from buildbot.process.workerforbuilder import AbstractWorkerForBuilder
 from configuration.builders.infra.runtime import (
     BuildSequence,
 )
-from configuration.workers.base import WorkerBase
 from configuration.steps.processors import (
-    processor_docker_workdirs,
     processor_docker_cleanup,
     processor_docker_commit,
-    processor_docker_tag,
     processor_docker_fetch,
-    processor_worker_cleanup
+    processor_docker_tag,
+    processor_docker_workdirs,
+    processor_worker_cleanup,
 )
+from configuration.workers.base import WorkerBase
+
+
 class BaseBuilder:
     def __init__(self, name: str):
         self.name = name
@@ -45,7 +46,7 @@ class BaseBuilder:
         # Get steps from all sequences
         for seq in self.build_sequences:
             active_steps.extend(seq.get_steps())
-        
+
         # Step Post-Processing
         for func in POST_PROCESSING_FUNCTIONS:
             prepare_steps, active_steps, cleanup_steps = func(
@@ -55,7 +56,6 @@ class BaseBuilder:
             )
         # // end of Post-Processing
 
-
         # Generating factory steps
         for step in prepare_steps:
             factory.addStep(step.generate())
@@ -63,7 +63,6 @@ class BaseBuilder:
             factory.addStep(step.generate())
         for step in cleanup_steps:
             factory.addStep(step.generate())
-
 
         return factory
 
