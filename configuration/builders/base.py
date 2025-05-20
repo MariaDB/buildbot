@@ -5,9 +5,7 @@ from buildbot.process.builder import Builder
 from buildbot.process.buildrequest import BuildRequest
 from buildbot.process.factory import BuildFactory
 from buildbot.process.workerforbuilder import AbstractWorkerForBuilder
-from configuration.builders.infra.runtime import (
-    BuildSequence,
-)
+from configuration.builders.infra.runtime import BuildSequence
 from configuration.steps.processors import (
     processor_docker_cleanup,
     processor_docker_commit,
@@ -57,12 +55,8 @@ class BaseBuilder:
         # // end of Post-Processing
 
         # Generating factory steps
-        for step in prepare_steps:
-            factory.addStep(step.generate())
-        for step in active_steps:
-            factory.addStep(step.generate())
-        for step in cleanup_steps:
-            factory.addStep(step.generate())
+        steps = prepare_steps + active_steps + cleanup_steps
+        factory.addSteps(step.generate() for step in steps)
 
         return factory
 
