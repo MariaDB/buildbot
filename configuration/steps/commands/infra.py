@@ -1,4 +1,5 @@
 from pathlib import PurePath
+
 from configuration.steps.commands.base import Command
 
 
@@ -18,10 +19,13 @@ class CreateDockerWorkdirs(Command):
                 f"{self.image_url} mkdir -p . {' '.join(self.workdirs)} "
             ),
         )
-    
+
+
 class CleanupDockerResources(Command):
     def __init__(self, name: str, container_name: str, runtime_tag: str):
-        super().__init__(name=f"Cleanup Docker resources - {name}", workdir=PurePath("."))
+        super().__init__(
+            name=f"Cleanup Docker resources - {name}", workdir=PurePath(".")
+        )
         self.container_name = container_name
         self.runtime_tag = runtime_tag
 
@@ -37,7 +41,8 @@ class CleanupDockerResources(Command):
             ) || true
             """,
         ]
-    
+
+
 class FetchContainerImage(Command):
     def __init__(self, image_url: str):
         super().__init__(name=f"Fetch container image", workdir=PurePath("."))
@@ -45,10 +50,13 @@ class FetchContainerImage(Command):
 
     def as_cmd_arg(self) -> list[str]:
         return ["docker", "pull", self.image_url]
-    
+
+
 class TagContainerImage(Command):
     def __init__(self, image_url: str, runtime_tag: str):
-        super().__init__(name=f"Prepare runtime container image tag", workdir=PurePath("."))
+        super().__init__(
+            name=f"Prepare runtime container image tag", workdir=PurePath(".")
+        )
         self.image_url = image_url
         self.runtime_tag = runtime_tag
 
@@ -65,7 +73,9 @@ class TagContainerImage(Command):
 
 class ContainerCommit(Command):
     def __init__(self, container_name: str, runtime_tag: str, step_name: str):
-        super().__init__(name=f"Perform runtime docker commit of {step_name}", workdir=PurePath("."))
+        super().__init__(
+            name=f"Perform runtime docker commit of {step_name}", workdir=PurePath(".")
+        )
         self.container_name = container_name
         self.runtime_tag = runtime_tag
         self.step_name = step_name
@@ -81,10 +91,13 @@ class ContainerCommit(Command):
                 f"docker rm {self.container_name}"
             ),
         ]
-    
+
+
 class CleanupWorkerDir(Command):
     def __init__(self, name: str):
-        super().__init__(name=f"Cleanup Worker Directory - {name}", workdir=PurePath("."))
+        super().__init__(
+            name=f"Cleanup Worker Directory - {name}", workdir=PurePath(".")
+        )
         self.name = name
 
     def as_cmd_arg(self) -> list[str]:

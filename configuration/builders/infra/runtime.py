@@ -19,6 +19,7 @@ class BuildSequence:
     def add_step(self, step: BaseStep):
         self.steps.append(step)
 
+
 @dataclass
 class DockerConfig:
     repository: str  # e.g. quay/ghcr + org/repo
@@ -112,7 +113,6 @@ class InContainer(BaseStep):
         self.step.prefix_cmd.extend(cmd_prefix)
 
         self.step.command.workdir = PurePath(".")
-    
+
     def generate(self) -> IBuildStep:
         return self.step.generate()
-
