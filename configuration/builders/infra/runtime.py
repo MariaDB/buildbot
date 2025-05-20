@@ -7,6 +7,8 @@ from buildbot.interfaces import IBuildStep
 from buildbot.plugins import steps, util
 from configuration.steps.base import BaseStep
 from configuration.steps.remote import ShellStep
+from configuration.steps.commands.infra import CreateDockerWorkdirs, CleanupDockerResources,FetchContainerImage,TagContainerImage, ContainerCommit, CleanupWorkerDir
+from configuration.steps.base import StepOptions
 
 
 class BuildSequence:
@@ -37,11 +39,11 @@ class DockerConfig:
     workdir: PurePath
 
     @property
-    def image(self) -> str:
+    def image_url(self) -> str:
         return f"{self.repository}{self.image_tag}"
 
     @property
-    def volumemount(self):
+    def volume_mount(self):
         return f"type=volume,src={self.container_name},dst={self.workdir}"
 
     @property
@@ -81,7 +83,7 @@ class InContainer(BaseStep):
         cmd_prefix.append(
             [
                 "--mount",
-                docker_environment.volumemount,
+                docker_environment.volume_mount,
             ]
         )
 
@@ -123,90 +125,68 @@ class InContainer(BaseStep):
         return self.step.generate()
 
 
-class CreateDockerWorkdirs(steps.ShellCommand):
-    def __init__(self, config: DockerConfig, workdirs: list[str]):
-        super().__init__(
-            name=f"Create Docker Workdirs",
-            command=(
-                "docker run --rm "
-                f"--mount {config.volumemount} "
-                f"{config.image} mkdir -p . {' '.join(workdirs)} "
-            ),
-            haltOnFailure=True,
-        )
-
-
-class CleanupDockerResources(steps.ShellCommand):
-    def __init__(self, name: str, config: DockerConfig):
-        super().__init__(
-            name=f"Cleanup Docker resources - {name}",
-            command=[
-                "bash",
-                "-ec",
-                f"""
-                (
-                    docker rm --force {config.container_name};
-                    docker volume rm {config.container_name};
-                    docker image rm {config.runtime_tag};
-                ) || true
-                """,
-            ],
-            alwaysRun=True,
-        )
-
-
-class FetchContainerImage(steps.ShellCommand):
-    def __init__(self, config: DockerConfig):
-        super().__init__(
-            name=f"Fetch Container Image - {config.image_tag}",
-            command=["docker", "pull", config.repository + config.image_tag],
-            haltOnFailure=True,
-        )
-
-
-class TagContainerImage(steps.ShellCommand):
-    def __init__(self, config: DockerConfig):
-        super().__init__(
-            name=f"Tag Container Image - {config.image_tag}",
-            command=[
-                "bash",
-                "-ec",
-                (
-                    f"docker image rm -f {config.runtime_tag} && "
-                    f"docker tag {config.image} {config.runtime_tag}"
-                ),
-            ],
-            haltOnFailure=True,
-        )
-
-
-class ContainerCommit(steps.ShellCommand):
-    def __init__(self, config: DockerConfig, step_name: str):
-        super().__init__(
-            name=f"Checkpoint {step_name}",
-            command=[
-                "bash",
-                "-c",
-                (
-                    "docker container commit "
-                    f"""--message "{step_name}" {config.container_name} """
-                    f"{config.runtime_tag} && "
-                    f"docker rm {config.container_name}"
-                ),
-            ],
-            haltOnFailure=True,
-        )
-
-
 ## ----------------------------------------------------------------------##
-##                           Worker Helper Classes                       ##
+##                           Helper Functions                            ##
 ##-----------------------------------------------------------------------##
 
 
-class CleanupWorkerDir(steps.ShellCommand):
-    def __init__(self, name: str):
-        super().__init__(
-            name=f"Cleanup Worker Directory - {name}",
-            command="rm -r * .* 2> /dev/null || true",
-            alwaysRun=True,
+def add_docker_create_workdirs_step(volume_mount: str, image_url: str, workdirs: list[str]) -> ShellStep:
+    return ShellStep(
+        command=CreateDockerWorkdirs(
+            volume_mount = volume_mount,
+            image_url = image_url,
+            workdirs=workdirs),
+        options = StepOptions(
+            haltOnFailure=True,
+        ),
         )
+
+def add_docker_cleanup_step(name: str, container_name: str, runtime_tag: str) -> ShellStep:
+    return ShellStep(
+        command=CleanupDockerResources(
+            name=name,
+            container_name=container_name,
+            runtime_tag=runtime_tag,
+        ),
+        options=StepOptions(
+            alwaysRun=True,
+        ),
+        )
+
+def add_docker_fetch_step(image_url: str) -> ShellStep:
+    return ShellStep(
+        command=FetchContainerImage(
+            image_url=image_url,
+        ),
+        options=StepOptions(
+            haltOnFailure=True,)
+        )
+
+def add_docker_tag_step(image_url: str, runtime_tag: str) -> ShellStep:
+    return ShellStep(
+        command=TagContainerImage(
+            image_url=image_url,
+            runtime_tag=runtime_tag,
+        ),
+        options=StepOptions(
+            haltOnFailure=True,)
+        )
+
+def add_docker_commit_step(container_name: str, runtime_tag: str, step_name: str) -> ShellStep:
+    return ShellStep(
+        command=ContainerCommit(
+            container_name=container_name,
+            runtime_tag=runtime_tag,
+            step_name=step_name,
+        ),
+        options=StepOptions(
+            haltOnFailure=True,)
+        )
+
+def add_worker_cleanup_step(name: str) -> ShellStep:
+    return ShellStep(
+        command=CleanupWorkerDir(name=name),
+        options=StepOptions(
+            alwaysRun=True,
+        ),
+    )   

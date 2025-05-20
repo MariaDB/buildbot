@@ -9,13 +9,13 @@ from buildbot.process.factory import BuildFactory
 from buildbot.process.workerforbuilder import AbstractWorkerForBuilder
 from configuration.builders.infra.runtime import (
     BuildSequence,
-    CleanupDockerResources,
-    CleanupWorkerDir,
-    ContainerCommit,
-    CreateDockerWorkdirs,
-    FetchContainerImage,
-    TagContainerImage,
     InContainer,
+    add_docker_create_workdirs_step,
+    add_docker_cleanup_step,
+    add_docker_fetch_step,
+    add_docker_tag_step,
+    add_docker_commit_step,
+    add_worker_cleanup_step,
 )
 from configuration.workers.base import WorkerBase
 
@@ -38,7 +38,7 @@ class BaseBuilder:
         docker_config = None
         docker_workdirs = []
 
-        self.prepare_steps.append(CleanupWorkerDir(name="previous-run"))
+        self.prepare_steps.append(add_worker_cleanup_step(name="previous-run").generate())
 
         for seq in self.build_sequences:
             for step in seq.get_steps():
@@ -52,34 +52,45 @@ class BaseBuilder:
                     if not has_docker_enivornment:
                         has_docker_enivornment = True
                         self.prepare_steps.append(
-                            CleanupDockerResources(
-                                name="previous", config=step.docker_environment
-                            )
+                            add_docker_cleanup_step(
+                                name="previous-run",
+                                container_name=step.docker_environment.container_name,
+                                runtime_tag=step.docker_environment.runtime_tag,
+                            ).generate()
                         )
                         self.cleanup_steps.append(
-                            CleanupDockerResources(
-                                name="current", config=step.docker_environment
-                            )
+                            add_docker_cleanup_step(
+                                name="current-run",
+                                container_name=step.docker_environment.container_name,
+                                runtime_tag=step.docker_environment.runtime_tag,
+                            ).generate()
                         )
 
                     if docker_config != step.docker_environment:
                         docker_config = step.docker_environment
                         self.prepare_steps.append(
-                            FetchContainerImage(config=step.docker_environment)
+                            add_docker_fetch_step(
+                                image_url=step.docker_environment.image_url,
+                            ).generate()
                         )
                         # Active step below is on purpose. This will delete the old image and create a tag
                         # for the new image when the user decided to change it
                         self.active_steps.append(
-                            TagContainerImage(config=step.docker_environment)
+                            add_docker_tag_step(
+                                image_url=step.docker_environment.image_url,
+                                runtime_tag=step.docker_environment.runtime_tag,
+                            ).generate()
                         )
                         docker_config = step.docker_environment
                     self.active_steps.append(step.generate())
 
                     if step.container_commit:
                         self.active_steps.append(
-                            ContainerCommit(
-                                config=step.docker_environment, step_name=step.name
-                            )
+                            add_docker_commit_step(
+                                container_name=step.docker_environment.container_name,
+                                runtime_tag=step.docker_environment.runtime_tag,
+                                step_name=step.name,
+                            ).generate()
                         )
                 else:
                     self.active_steps.append(step.generate())
@@ -89,10 +100,15 @@ class BaseBuilder:
         # in the volume mount, relative to the base workdir (/home/buildbot),
         if docker_workdirs:
             self.prepare_steps.append(
-                CreateDockerWorkdirs(config=docker_config, workdirs=docker_workdirs)
+                add_docker_create_workdirs_step(
+                    volume_mount=docker_config.volume_mount,
+                    image_url=docker_config.image_url,
+                    workdirs=docker_workdirs,
+                ).generate()
             )
+            
 
-        self.cleanup_steps.append(CleanupWorkerDir(name="current-run"))
+        self.cleanup_steps.append(add_worker_cleanup_step(name="current-run").generate())
 
         factory.addSteps(self.prepare_steps + self.active_steps + self.cleanup_steps)
 
