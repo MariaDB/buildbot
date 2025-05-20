@@ -15,6 +15,7 @@ from configuration.builders.infra.runtime import (
     CreateDockerWorkdirs,
     FetchContainerImage,
     TagContainerImage,
+    InContainer,
 )
 from configuration.workers.base import WorkerBase
 
@@ -41,12 +42,12 @@ class BaseBuilder:
 
         for seq in self.build_sequences:
             for step in seq.get_steps():
-                if hasattr(step, "run_in_container") and step.run_in_container:
+                if isinstance(step, InContainer):
                     if (
-                        str(step.command.workdir) not in docker_workdirs
-                        and not step.command.workdir.is_absolute()
+                        str(step.workdir) not in docker_workdirs
+                        and not step.workdir.is_absolute()
                     ):
-                        docker_workdirs.append(str(step.command.workdir))
+                        docker_workdirs.append(str(step.workdir))
 
                     if not has_docker_enivornment:
                         has_docker_enivornment = True

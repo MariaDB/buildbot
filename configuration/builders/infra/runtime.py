@@ -13,7 +13,7 @@ class BuildSequence:
     def __init__(self):
         self.steps = []
 
-    def get_steps(self) -> Iterable[IBuildStep]:
+    def get_steps(self) -> Iterable[BaseStep]:
         return self.steps
 
     def add_step(self, step: BaseStep):
@@ -49,21 +49,22 @@ class DockerConfig:
         return f"buildbot:{self.container_name}"
 
 
-class InContainer:
-    def __new__(
-        cls,
+class InContainer(BaseStep):
+    def __init__(
+        self,
         step: ShellStep,
         docker_environment: DockerConfig,
         container_commit: bool = False,
     ) -> ShellStep:
+        super().__init__(name=step.name)
         assert isinstance(
             step, ShellStep
         ), "InContainer wrapper only works with ShellStep or its subclasses"
         cmd_prefix = []
-        step = copy.deepcopy(step)
-        step.run_in_container = (True,)
-        step.container_commit = container_commit
-        step.docker_environment = docker_environment
+        self.step = copy.deepcopy(step)
+        self.container_commit = container_commit
+        self.docker_environment = docker_environment
+        self.workdir = self.step.command.workdir
 
         cmd_prefix.append(
             [
@@ -73,7 +74,7 @@ class InContainer:
                 "--name",
                 f"{docker_environment.container_name}",
                 "-u",
-                f"{step.command.user}",
+                f"{self.step.command.user}",
             ]
         )
         # Mandatory volume mount for state sharing between steps
@@ -99,7 +100,7 @@ class InContainer:
         # Global variables form the base
         env_vars = dict(docker_environment.env_vars)
         # Step variables override global variables
-        env_vars.update(step.env_vars)
+        env_vars.update(self.step.env_vars)
         for variable, value in env_vars.items():
             cmd_prefix.append(["-e", util.Interpolate(f"{variable}={value}")])
 
@@ -107,18 +108,19 @@ class InContainer:
 
         path = docker_environment.workdir / step.command.workdir
         # Absolute command workdir overrides basedir.
-        if step.command.workdir.is_absolute():
-            path = step.command.workdir
+        if self.step.command.workdir.is_absolute():
+            path = self.step.command.workdir
 
         cmd_prefix.append(["-w", path.as_posix()])
 
         cmd_prefix.append([docker_environment.runtime_tag])
 
-        step.prefix_cmd.extend(cmd_prefix)
+        self.step.prefix_cmd.extend(cmd_prefix)
 
-        step.command.workdir = PurePath(".")
-
-        return step
+        self.step.command.workdir = PurePath(".")
+    
+    def generate(self) -> IBuildStep:
+        return self.step.generate()
 
 
 class CreateDockerWorkdirs(steps.ShellCommand):
