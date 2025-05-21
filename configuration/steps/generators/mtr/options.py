@@ -1,7 +1,12 @@
 from dataclasses import dataclass
-from enum import StrEnum
 
-from ..base.options import Option
+from configuration.steps.generators.base.options import Option
+
+try:
+    # breaking change introduced in python 3.11
+    from enum import StrEnum
+except ImportError:  # pragma: no cover
+    from configuration.steps.generators.base.options import StrEnum
 
 
 class MTR(StrEnum):
@@ -9,6 +14,7 @@ class MTR(StrEnum):
     # passing raw strings to create an MTR run command, generate the flag
     # list via an array of MTRFlags and their values.
     BIG_TEST = "big-test"
+    CURSOR_PROTOCOL = "cursor-protocol"
     FORCE = "force"
     IN_MEMORY = "mem"
     MAX_SAVE_DATADIR = "max-save-datadir"
@@ -20,13 +26,14 @@ class MTR(StrEnum):
     RETRY = "retry"
     # NOTE: This option accepts a regex. The generator should be tested if
     # escaping regexes with space or ".
-    SKIP_TEST = "skip_test"
+    SKIP_TEST = "skip-test"
     STORED_PROCEDURE_PROTOCOL = "sp-protocol"
     SUITE = "suite"
     VALGRIND = "valgrind"
     VERBOSE_RESTART = "verbose-restart"
     VIEW_PROTOCOL = "view-protocol"
     WITH_EMBEDDED = "embedded"
+    VARDIR = "vardir"
 
 
 # Extracted from ./mtr output manually before tests actually start.
@@ -47,6 +54,9 @@ class SUITE(StrEnum):
     FUNCS_1 = "funcs_1"
     FUNCS_2 = "funcs_2"
     FUNC_TEST = "func_test"
+    GALERA = "galera"
+    GALERA_3NODES = "galera_3nodes"
+    GALERA_3NODES_SR = "galera_3nodes_sr"
     GCOL = "gcol"
     HANDLER = "handler"
     HEAP = "heap"
@@ -90,6 +100,7 @@ class SUITE(StrEnum):
     USER_VARIABLES = "user_variables"
     VCOL = "vcol"
     VERSIONING = "versioning"
+    WSREP = "wsrep"
 
 
 @dataclass

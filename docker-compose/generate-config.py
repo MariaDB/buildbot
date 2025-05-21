@@ -151,6 +151,10 @@ def construct_env_section(env_vars):
 
 
 def main(args):
+    # FIXME: Temporary until master-migration is validated on dev
+    if args.env == "dev":
+        MASTER_DIRECTORIES.append("master-migration")
+
     # Load Volumes
     master_volumes = {
         key: VOLUMES[:]
