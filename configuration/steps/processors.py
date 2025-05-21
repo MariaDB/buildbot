@@ -19,6 +19,7 @@ def processor_docker_workdirs(
     active_steps = active_steps.copy()
     cleanup_steps = cleanup_steps.copy()
     docker_workdirs = []
+    docker_config = None
 
     for step in active_steps:
         if isinstance(step, InContainer):
@@ -27,11 +28,13 @@ def processor_docker_workdirs(
                 and not step.workdir.is_absolute()
             ):
                 docker_workdirs.append(str(step.workdir))
+                if not docker_config:
+                    docker_config = step.docker_environment
 
     prepare_steps.append(
         add_docker_create_workdirs_step(
-            volume_mount=step.docker_environment.volume_mount,
-            image_url=step.docker_environment.image_url,
+            volume_mount=docker_config.volume_mount,
+            image_url=docker_config.image_url,
             workdirs=docker_workdirs,
         )
     )
@@ -108,7 +111,7 @@ def processor_docker_tag(
             # Changing environments requires deleting the old image/tag and creating a new one
             if current_docker_environment != step.docker_environment:
                 active_steps.insert(
-                    id - 1,
+                    id,
                     add_docker_tag_step(
                         image_url=step.docker_environment.image_url,
                         runtime_tag=step.docker_environment.runtime_tag,
