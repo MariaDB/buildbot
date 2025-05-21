@@ -77,9 +77,7 @@ class TagContainerImage(Command):
 
 class ContainerCommit(Command):
     def __init__(self, container_name: str, runtime_tag: str, step_name: str):
-        super().__init__(
-            name=f"Checkpoint {step_name}", workdir=PurePath(".")
-        )
+        super().__init__(name=f"Checkpoint {step_name}", workdir=PurePath("."))
         self.container_name = container_name
         self.runtime_tag = runtime_tag
         self.step_name = step_name

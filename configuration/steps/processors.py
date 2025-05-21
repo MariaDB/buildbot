@@ -31,13 +31,14 @@ def processor_docker_workdirs(
                 if not docker_config:
                     docker_config = step.docker_environment
 
-    prepare_steps.append(
-        add_docker_create_workdirs_step(
-            volume_mount=docker_config.volume_mount,
-            image_url=docker_config.image_url,
-            workdirs=docker_workdirs,
+    if docker_config:
+        prepare_steps.append(
+            add_docker_create_workdirs_step(
+                volume_mount=docker_config.volume_mount,
+                image_url=docker_config.image_url,
+                workdirs=docker_workdirs,
+            )
         )
-    )
 
     return prepare_steps, active_steps, cleanup_steps
 
