@@ -34,7 +34,10 @@ set -x
 
 rpm_pkg_makecache
 
-rpm_setup_mariadb_mirror "$prev_major_version"
+
+mirror_url=$(rpm_get_mirror_url "$prev_major_version" "$dist_name" "$version_name" "$arch")
+archive_url=$(rpm_get_archive_url "$prev_major_version" "$dist_name" "$version_name" "$arch")
+rpm_setup_mariadb_mirror "$prev_major_version" "$mirror_url" "$archive_url"
 
 # Define the list of packages to install/upgrade
 case $test_mode in
