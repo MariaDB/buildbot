@@ -12,7 +12,7 @@ private["user_pass"]= {
 }
 private["master-variables"] = {
     "max_builds": 16,
-    "starting_port": 9996,
+    "starting_port": 9995,
     "workers": {
         "amd64": [
                 'amd-bbw1',
@@ -50,8 +50,8 @@ private["worker_pass"]= {
     "aix-worker":"1234",
     "bbw1-mac": "1234",
     "bbw2-mac": "1234",
-    "bbw1-windows":"1234",
     "bbw2-windows":"1234",
+    "bbw3-windows":"1234",
     "bb-rhel8-docker":"1234",
     "bb-rhel9-docker":"1234",
     "monty-bbw1-x64": "1234",
