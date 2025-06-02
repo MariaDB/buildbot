@@ -19,14 +19,18 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
          --org="$(cat /run/secrets/rhel_orgid)" \
          --activationkey="$(cat /run/secrets/rhel_keyname)" \
     && case $BASE_IMAGE in \
+    ubi10) \
+      v=10; \
+      extra="asio-devel fmt-devel java-latest-openjdk-devel java-latest-openjdk"; \
+      ;; \
     ubi9) \
       v=9; \
-      extra="asio-devel buildbot-worker fmt-devel"; \
+      extra="asio-devel buildbot-worker fmt-devel java-1.8.0-openjdk-devel java-1.8.0-openjdk"; \
       ;; \
     ubi8) \
       v=8; \
       # fmt-devel # >= 7.0 needed, epel8 has 6.2.1-1.el8 \
-      extra="buildbot-worker"; \
+      extra="buildbot-worker java-1.8.0-openjdk-devel java-1.8.0-openjdk"; \
       if [ "$(arch)" == "x86_64" ]; then \
          extra="$extra libpmem-devel"; \
       fi \
@@ -54,16 +58,14 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     ccache \
     check-devel \
     checkpolicy \
-    coreutils \
+    # conflicting with coreutils-single on EL10
+    coreutils --allowerasing \
     cracklib-devel \
     createrepo \
     curl-devel \
     eigen3-devel \
     flex \
     galera-4 \
-    java-1.8.0-openjdk-devel \
-    java-1.8.0-openjdk \
-    jemalloc-devel --allowerasing \
     krb5-devel \
     libaio-devel \
     libcurl-devel \
@@ -99,6 +101,11 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     wget \
     xz-devel \
     yum-utils \
+    # jemalloc-devel not in https://dl.fedoraproject.org/pub/epel/10.0/
+    # FIXME: remove the IF when RHEL is 10.1
+    && if [ "$BASE_IMAGE" != "ubi10" ]; then \
+      dnf -y install jemalloc-devel --allowerasing; \
+    fi \
     && dnf clean all \
     && subscription-manager unregister \
     # dumb-init rpm is not available on rhel \

@@ -148,6 +148,17 @@ rhel-9:
     - ppc64le
     - s390x
   type: rpm
+rhel-10:
+  image_tag: rhel10
+  tags:
+    - release_packages
+  version_name: 10
+  arch:
+    - amd64
+    - aarch64
+    - ppc64le
+    - s390x
+  type: rpm
 rockylinux-8:
   image_tag: rockylinux8
   tags: []
