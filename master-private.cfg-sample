@@ -89,9 +89,13 @@ private["docker_workers"]= {
     "ns-x64-bbw5-docker":"tcp://IP_address:port", # bg-bbw5
     "ns-x64-bbw6-docker":"tcp://IP_address:port", # monty-bbw1
     "intel-bbw1-docker":"tcp://IP_address:port",
-    "s390x-bbw1-docker":"tcp://IP_address:port",
-    "s390x-bbw2-docker":"tcp://IP_address:port",
-    "s390x-bbw3-docker":"tcp://IP_address:port",
+    "s390x-bbw1-docker":"tcp://IP_address:port", # ibm-s390x-ubuntu20.04
+    "s390x-bbw2-docker":"tcp://IP_address:port", # ibm-s390x-sles15
+    "s390x-bbw3-docker":"tcp://IP_address:port", # ibm-s390x-rhel8
+    "s390x-bbw4-docker":"tcp://IP_address:port", # ibm-s390x-ubuntu22.04
+    "s390x-bbw5-docker":"tcp://IP_address:port", # ibm-s390x-rhel9
+    "s390x-bbw6-docker":"tcp://IP_address:port", # ibm-s390x-ubuntu2404-01 (.39)
+    "s390x-bbw7-docker":"tcp://IP_address:port", # ibm-s390x-ubuntu2404-02 (.40)
     "aws-bbw1-docker":"tcp://IP_address:port",
     "release-prep-docker":"tcp://IP_address:port",
 }
@@ -100,6 +104,10 @@ private["worker_name_mapping"] = {
     "s390x-bbw1": "ibm-s390x-ubuntu20.04",
     "s390x-bbw2": "ibm-s390x-sles15",
     "s390x-bbw3": "ibm-s390x-rhel8",
+    "s390x-bbw4": "ibm-s390x-ubuntu22.04",
+    "s390x-bbw5": "ibm-s390x-rhel9",
+    "s390x-bbw6": "ibm-s390x-ubuntu2404-01",
+    "s390x-bbw7": "ibm-s390x-ubuntu2404-02",
 }
 
 private["gh_mdbci"]= {

@@ -32,3 +32,5 @@ s390x-bbw2-docker: 1
 s390x-bbw3-docker: 1
 s390x-bbw4-docker: 1
 s390x-bbw5-docker: 1
+s390x-bbw6-docker: 1
+s390x-bbw7-docker: 1
