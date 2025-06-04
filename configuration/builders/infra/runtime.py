@@ -24,12 +24,12 @@ class BuildSequence:
 class DockerConfig:
     repository: str  # e.g. quay/ghcr + org/repo
     image_tag: str
-    container_name: str
     bind_mounts: list[tuple[Path, Path]]  # src, dst
     env_vars: list[tuple[str, str]]
     shm_size: str
     memlock_limit: int
     workdir: PurePath
+    _container_name: str = None
 
     @property
     def image_url(self) -> str:
@@ -37,11 +37,17 @@ class DockerConfig:
 
     @property
     def volume_mount(self):
-        return f"type=volume,src={self.container_name},dst={self.workdir}"
+        return f"type=volume,src={self._container_name},dst={self.workdir}"
 
     @property
     def runtime_tag(self) -> str:
-        return f"buildbot:{self.container_name}"
+        return f"buildbot:{self._container_name}"
+
+    @property
+    def container_name(self) -> str:
+        if not self._container_name:
+            raise ValueError("Container name is not set.")
+        return self._container_name
 
 
 class InContainer(BaseStep):
@@ -55,36 +61,38 @@ class InContainer(BaseStep):
         assert isinstance(
             step, ShellStep
         ), "InContainer wrapper only works with ShellStep or its subclasses"
-        cmd_prefix = []
-        self.step = copy.deepcopy(step)
+        self.step = step
         self.container_commit = container_commit
         self.docker_environment = docker_environment
-        self.workdir = self.step.command.workdir
+        self.workdir = step.command.workdir
 
+    def generate(self) -> IBuildStep:
+        step = copy.deepcopy(self.step)
+        cmd_prefix = []
         cmd_prefix.append(
             [
                 "docker",
                 "run",
                 "--init",
                 "--name",
-                f"{docker_environment.container_name}",
+                f"{self.docker_environment.container_name}",
                 "-u",
-                f"{self.step.command.user}",
+                f"{step.command.user}",
             ]
         )
         # Mandatory volume mount for state sharing between steps
         cmd_prefix.append(
             [
                 "--mount",
-                docker_environment.volume_mount,
+                self.docker_environment.volume_mount,
             ]
         )
 
-        if not container_commit:
+        if not self.container_commit:
             cmd_prefix.append(["--rm"])
 
         # User defined bind mounts
-        for src, dst in docker_environment.bind_mounts:
+        for src, dst in self.docker_environment.bind_mounts:
             cmd_prefix.append(
                 [
                     "--mount",
@@ -93,26 +101,24 @@ class InContainer(BaseStep):
             )
 
         # Global variables form the base
-        env_vars = dict(docker_environment.env_vars)
+        env_vars = dict(self.docker_environment.env_vars)
         # Step variables override global variables
-        env_vars.update(self.step.env_vars)
+        env_vars.update(step.env_vars)
         for variable, value in env_vars.items():
             cmd_prefix.append(["-e", util.Interpolate(f"{variable}={value}")])
 
-        cmd_prefix.append([f"--shm-size={docker_environment.shm_size}"])
+        cmd_prefix.append([f"--shm-size={self.docker_environment.shm_size}"])
 
-        path = docker_environment.workdir / step.command.workdir
+        path = self.docker_environment.workdir / step.command.workdir
         # Absolute command workdir overrides basedir.
-        if self.step.command.workdir.is_absolute():
-            path = self.step.command.workdir
+        if step.command.workdir.is_absolute():
+            path = step.command.workdir
 
         cmd_prefix.append(["-w", path.as_posix()])
 
-        cmd_prefix.append([docker_environment.runtime_tag])
+        cmd_prefix.append([self.docker_environment.runtime_tag])
 
-        self.step.prefix_cmd.extend(cmd_prefix)
+        step.prefix_cmd.extend(cmd_prefix)
 
-        self.step.command.workdir = PurePath(".")
-
-    def generate(self) -> IBuildStep:
-        return self.step.generate()
+        step.command.workdir = PurePath(".")
+        return step.generate()
