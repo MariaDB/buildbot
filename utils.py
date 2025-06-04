@@ -36,12 +36,10 @@ private_config = {"private": {}}
 exec(open("/srv/buildbot/master/master-private.cfg").read(), private_config, {})
 
 
-def envFromProperties(envlist: list[str]) -> dict[str, str]:
+def envFromProperties(properties: list[str]) -> dict[str, str]:
     d = {}
-    for e in envlist:
-        d[e] = util.Interpolate(f"%(prop:{e})s")
-    d["tarbuildnum"] = util.Interpolate("%(prop:tarbuildnum)s")
-    d["development_branch"] = DEVELOPMENT_BRANCH
+    for prop_name in properties:
+        d[prop_name] = util.Interpolate(f"%(prop:{prop_name})s")
     return d
 
 
