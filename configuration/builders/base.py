@@ -12,6 +12,7 @@ from configuration.steps.processors import (
     processor_docker_fetch,
     processor_docker_tag,
     processor_docker_workdirs,
+    processor_set_docker_runtime_environment,
     processor_worker_cleanup,
 )
 from configuration.workers.base import WorkerBase
@@ -44,6 +45,12 @@ class BaseBuilder:
         # Get steps from all sequences
         for seq in self.build_sequences:
             active_steps.extend(seq.get_steps())
+
+        # Step Pre-Processing
+        active_steps = processor_set_docker_runtime_environment(
+            builder_name=self.name,
+            active_steps=active_steps,
+        )
 
         # Step Post-Processing
         for func in POST_PROCESSING_FUNCTIONS:

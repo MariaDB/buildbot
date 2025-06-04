@@ -159,3 +159,13 @@ def processor_worker_cleanup(
     cleanup_steps.append(add_worker_cleanup_step(name="current-run"))
 
     return prepare_steps, active_steps, cleanup_steps
+
+
+def processor_set_docker_runtime_environment(
+    builder_name: str, active_steps: list[BaseStep]
+) -> None:
+    for step in active_steps:
+        if isinstance(step, InContainer):
+            step.docker_environment._container_name = builder_name
+
+    return active_steps
