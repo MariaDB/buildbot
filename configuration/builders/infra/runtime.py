@@ -74,6 +74,9 @@ class DockerConfig:
             raise ValueError("Container name is not set.")
         return self._container_name
 
+    def __hash__(self):
+        return hash((self.image_tag))
+
 
 class InContainer(BaseStep):
     """
