@@ -9,7 +9,9 @@ from constants import RELEASE_BRANCHES, SAVED_PACKAGE_BRANCHES
 def fnmatch_any(branch: str, patterns: list[str]) -> bool:
     return any(fnmatch.fnmatch(branch, pattern) for pattern in patterns)
 
-
+# This function is crucial in build to worker assignment logic.
+# It's based on the assumption that the worker has a total_jobs property
+# and the builder has a jobs property. Please modify with care.
 def canStartBuild(
     builder: Builder, wfb: AbstractWorkerForBuilder, request: BuildRequest
 ) -> bool:
