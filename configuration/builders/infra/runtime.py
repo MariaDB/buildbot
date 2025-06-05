@@ -10,6 +10,18 @@ from configuration.steps.remote import ShellStep
 
 
 class BuildSequence:
+    """
+    A class to manage a sequence of build steps.
+    This class allows you to add steps to a sequence and retrieve them as an iterable.
+    Attributes:
+        steps (list[BaseStep]): A list of build steps in the sequence.
+    Methods:
+        get_steps() -> Iterable[BaseStep]:
+            Returns an iterable of the build steps in the sequence.
+        add_step(step: BaseStep):
+            Adds a build step to the sequence.
+    """
+
     def __init__(self):
         self.steps = []
 
@@ -22,6 +34,19 @@ class BuildSequence:
 
 @dataclass
 class DockerConfig:
+    """Configuration for a Docker container used in build steps.
+    This class encapsulates the necessary parameters for running a build step inside a Docker container,
+    including the Docker image, environment variables, volume mounts, and runtime settings.
+    Attributes:
+        repository (str): The Docker repository URL (e.g., quay.io/ghcr.io + org/repo).
+        image_tag (str): The tag of the Docker image to use.
+        bind_mounts (list[tuple[Path, Path]]): List of tuples specifying source and destination paths for bind mounts.
+        env_vars (list[tuple[str, str]]): List of environment variables to set in the container.
+        shm_size (str): Size of the shared memory for the container.
+        memlock_limit (int): Memory lock limit for the container.
+        workdir (PurePath): The working directory inside the container.
+    """
+
     repository: str  # e.g. quay/ghcr + org/repo
     image_tag: str
     bind_mounts: list[tuple[Path, Path]]  # src, dst
@@ -51,6 +76,27 @@ class DockerConfig:
 
 
 class InContainer(BaseStep):
+    """
+    A wrapper class for executing a ShellStep inside a Docker container.
+
+    This class allows you to run a ShellStep or its subclasses within a Docker container,
+    providing additional configuration options such as environment variables, volume mounts,
+    and container runtime settings.
+
+    Attributes:
+        step (ShellStep): The ShellStep instance to be executed inside the container.
+        docker_environment (DockerConfig): Configuration for the Docker container, including
+            environment variables, volume mounts, and runtime settings.
+        container_commit (bool): Whether to commit the container after execution. Defaults to False.
+        workdir (PurePath): The working directory for the step command.
+
+    Methods:
+        generate() -> IBuildStep:
+            Generates the build step with the Docker container configuration applied.
+            This includes setting up the Docker command prefix, environment variables,
+            volume mounts, and working directory.
+    """
+
     def __init__(
         self,
         step: ShellStep,

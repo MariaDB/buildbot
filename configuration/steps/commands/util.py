@@ -5,6 +5,14 @@ from configuration.steps.commands.base import Command
 
 
 class CreateS3Bucket(Command):
+    """
+    A command to create an S3 bucket using MinIO client (mc).
+    This command initializes a new S3 bucket in the MinIO server.
+    Attributes:
+        bucket (str): The name of the S3 bucket to create.
+        workdir (PurePath): The working directory for the command.
+    """
+
     def __init__(self, bucket: str, workdir: PurePath = PurePath(".")):
         name = "Create S3 bucket"
         self.bucket = bucket
@@ -19,6 +27,14 @@ class CreateS3Bucket(Command):
 
 
 class DeleteS3Bucket(Command):
+    """
+    A command to delete an S3 bucket using MinIO client (mc).
+    This command removes an existing S3 bucket from the MinIO server.
+    Attributes:
+        bucket (str): The name of the S3 bucket to delete.
+        workdir (PurePath): The working directory for the command.
+    """
+
     def __init__(self, bucket: str, workdir: PurePath = PurePath(".")):
         name = "Delete S3 bucket"
         self.bucket = bucket
@@ -33,6 +49,17 @@ class DeleteS3Bucket(Command):
 
 
 class SaveCompressedTar(Command):
+    """
+    A command to create a compressed tar archive of the current working directory.
+    This command archives the contents of the current directory, excluding hidden files,
+    and saves it to a specified destination with a given archive name.
+    Attributes:
+        name (str): The name of the command.
+        workdir (PurePath): The working directory for the command.
+        archive_name (str): The name of the archive file to create.
+        destination (str): The destination directory where the archive will be saved.
+    """
+
     def __init__(
         self,
         name: str,
@@ -60,6 +87,16 @@ class SaveCompressedTar(Command):
 
 
 class FindFiles(Command):
+    """
+    A command to find files in the current directory based on a specified pattern.
+    This command lists files that match the given include pattern and optionally excludes
+    files that match the exclude pattern.
+    Attributes:
+        include (str): The pattern to include files.
+        exclude (str): The pattern to exclude files (default: empty string).
+        workdir (PurePath): The working directory for the command.
+    """
+
     def __init__(
         self, include: str, exclude: str = "", workdir: PurePath = PurePath(".")
     ):
@@ -77,6 +114,15 @@ class FindFiles(Command):
 
 
 class PrintEnvironmentDetails(Command):
+    """
+    A command to print environment details for debugging purposes.
+    This command outputs various system information such as date, system architecture,
+    resource limits, CPU information.
+    Attributes:
+        name (str): The name of the command.
+        workdir (PurePath): The working directory for the command.
+    """
+
     def __init__(self):
         name = "Print environment details"
         super().__init__(name=name, workdir=PurePath("."))

@@ -13,6 +13,17 @@ def fnmatch_any(branch: str, patterns: list[str]) -> bool:
 def canStartBuild(
     builder: Builder, wfb: AbstractWorkerForBuilder, request: BuildRequest
 ) -> bool:
+    """
+    Check if the builder can start a build on the given worker for the given request.
+    This function checks if the worker has enough jobs available for the builder
+    based on the builder's job claim and the total jobs available on the worker.
+    Args:
+        builder (Builder): The builder instance.
+        wfb (AbstractWorkerForBuilder): The worker for the builder instance.
+        request (BuildRequest): The build request instance.
+    Returns:
+        bool: True if the builder can start a build on the worker, False otherwise.
+    """
     reserved_jobs = 0
     total_worker_jobs = wfb.worker.properties[
         "total_jobs"
@@ -44,6 +55,15 @@ def canStartBuild(
 
 
 def nextBuild(builder: Builder, requests: list[BuildRequest]) -> BuildRequest:
+    """
+    Select the next build request for the builder based on branch priority and submission time.
+    Args:
+        builder (Builder): The builder instance.
+        requests (list[BuildRequest]): A list of build requests for the builder.
+    Returns:
+        BuildRequest: The next build request to be processed.
+    """
+
     def build_request_sort_key(request: BuildRequest):
         branch = request.sources[""].branch
         # Booleans are sorted False first.

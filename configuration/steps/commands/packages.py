@@ -5,6 +5,16 @@ from configuration.steps.commands.base import Command
 
 
 class CreateDebRepo(Command):
+    """
+    This class is used to create a local DEB repository.
+    It generates the necessary files for a DEB repository
+    and sets up the local APT source list.
+    Attributes:
+        url (str): The URL for the local DEB repository.
+        buildername (str): The name of the builder.
+        workdir (PurePath): The working directory for the command.
+    """
+
     def __init__(
         self,
         url: str,
@@ -48,6 +58,16 @@ EOF
 
 # TODO (Razvan):This is a copy-paste only to showcase a full factory. Re-work needed.
 class CreateRpmRepo(Command):
+    """
+    This class is used to create a local RPM repository.
+    It generates the necessary files for an RPM repository
+    and sets up the local YUM repository configuration.
+    Attributes:
+        rpm_type (str): The type of RPM repository (e.g., rhel8, centosstream8).
+        url (str): The URL for the local RPM repository.
+        workdir (PurePath): The working directory for the command.
+    """
+
     def __init__(
         self,
         rpm_type: str,
@@ -121,6 +141,15 @@ class SavePackages(Command):
 
 
 class InstallRPMFromProp(Command):
+    """
+    This class is used to install RPM packages from a property.
+    It reads the list of packages from a specified property
+    and installs them using the yum package manager.
+    Attributes:
+        property_name (str): The name of the property containing the list of packages.
+        workdir (PurePath): The working directory for the command.
+    """
+
     def __init__(
         self,
         property_name: str,
@@ -149,6 +178,14 @@ class InstallRPMFromProp(Command):
 
 
 class InstallDEB(Command):
+    """
+    This class is used to install DEB packages from a specified file.
+    It reads the list of packages from a file and installs them using the apt package manager.
+    Attributes:
+        packages_file (str): The path to the file containing the list of DEB packages.
+        workdir (PurePath): The working directory for the command.
+    """
+
     def __init__(
         self,
         packages_file: str,

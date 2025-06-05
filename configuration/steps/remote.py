@@ -5,6 +5,16 @@ from configuration.steps.commands.base import Command
 
 
 class ShellStep(BaseStep):
+    """
+    A step that executes a shell command.
+    This class is used to run shell commands as part of a build step in Buildbot.
+    Attributes:
+        command (Command): The command to be executed.
+        options (StepOptions): Options for the step, such as timeout and retry settings.
+        interrupt_signal (str): The signal to send to interrupt the command (default: "TERM").
+        env_vars (list[tuple]): Environment variables to set for the command.
+    """
+
     def __init__(
         self,
         command: Command,
@@ -40,6 +50,17 @@ class ShellStep(BaseStep):
 
 
 class PropFromShellStep(ShellStep):
+    """
+    A step that sets a property from the output of a shell command.
+    This class is used to execute a shell command and set a build property based on its output.
+    Attributes:
+        command (Command): The command to be executed.
+        property (str): The property to set from the command output.
+        options (StepOptions): Options for the step, such as timeout and retry settings.
+        interrupt_signal (str): The signal to send to interrupt the command (default: "TERM").
+        env_vars (list[tuple]): Environment variables to set for the command.
+    """
+
     def __init__(
         self,
         command: Command,

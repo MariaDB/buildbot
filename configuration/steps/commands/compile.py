@@ -6,12 +6,34 @@ from configuration.steps.commands.base import Command
 
 
 class MAKE(Enum):
+    """
+    Enum representing different Make options for compilation or packaging.
+    This enum defines the available options for Make commands,
+    such as compiling, packaging, or generating source packages.
+    Attributes:
+        COMPILE (str): The option for compiling the project.
+        PACKAGE (str): The option for packaging the project.
+        SOURCE (str): The option for generating source packages.
+    """
+
     COMPILE = ""
     PACKAGE = "package"
     SOURCE = "package_source"
 
 
 class CompileMakeCommand(Command):
+    """
+    A command to compile or package a project using Make.
+    This command executes the Make build system with specified options,
+    such as the number of jobs, verbosity, and output synchronization.
+    Attributes:
+        option (MAKE): The Make option to use (e.g., COMPILE, PACKAGE, SOURCE).
+        jobs (int): The number of parallel jobs to run.
+        verbose (bool): Whether to enable verbose output.
+        workdir (PurePath): The working directory for the command.
+        output_sync (bool): Whether to synchronize output with the target.
+    """
+
     def __init__(
         self,
         option: MAKE,
@@ -41,6 +63,17 @@ class CompileMakeCommand(Command):
 
 
 class CompileCMakeCommand(Command):
+    """
+    A command to compile a project using CMake.
+    This command builds the project in the specified build directory
+    with the given number of jobs and verbosity.
+    Attributes:
+        jobs (int): The number of parallel jobs to run.
+        builddir (str): The directory where the build files are located.
+        verbose (bool): Whether to enable verbose output.
+        workdir (PurePath): The working directory for the command.
+    """
+
     def __init__(
         self,
         jobs: int,
@@ -65,6 +98,13 @@ class CompileCMakeCommand(Command):
 
 
 class CompileDebAutobake(Command):
+    """
+    A command to compile Debian packages using the autobake script.
+    This command executes the autobake script located in the debian directory.
+    Attributes:
+        workdir (PurePath): The working directory for the command.
+    """
+
     def __init__(self, workdir: PurePath = PurePath(".")):
         super().__init__(name="Compile - deb autobake", workdir=workdir)
 
@@ -73,6 +113,15 @@ class CompileDebAutobake(Command):
 
 
 class InstallRPMFromProp(Command):
+    """
+    This class is used to install RPM packages from a property.
+    It reads the list of packages from a specified property
+    and installs them using the yum package manager.
+    Attributes:
+        property_name (str): The name of the property containing the list of packages.
+        workdir (PurePath): The working directory for the command.
+    """
+
     def __init__(
         self,
         property_name: str,
