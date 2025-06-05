@@ -118,51 +118,16 @@ def deb_autobake(
     )
 
     ## ADD MTR TESTS
-    # Add normal MTR tests
-    for step in get_mtr_normal_steps(
+    for step in add_test_suites_steps(
         jobs=jobs,
-        path_to_test_runner=MTR_RUNNER_PATH,
-        halt_on_failure=False,
-        step_wrapping_fn=lambda step: InContainer(docker_environment=config, step=step),
+        MTR_RUNNER_PATH=MTR_RUNNER_PATH,
+        config=config,
+        buildername=buildername,
+        test_galera=test_galera,
+        test_rocksdb=test_rocksdb,
+        test_s3=test_s3,
     ):
         sequence.add_step(step)
-
-    # Add S3 MTR tests
-    if test_s3:
-        for step in get_mtr_s3_steps(
-            buildername=buildername,
-            jobs=jobs,
-            path_to_test_runner=MTR_RUNNER_PATH,
-            halt_on_failure=False,
-            step_wrapping_fn=lambda step: InContainer(
-                docker_environment=config, step=step
-            ),
-        ):
-            sequence.add_step(step)
-
-    # Add rocksdb MTR tests
-    if test_rocksdb:
-        for step in get_mtr_rocksdb_steps(
-            jobs=jobs,
-            path_to_test_runner=MTR_RUNNER_PATH,
-            halt_on_failure=False,
-            step_wrapping_fn=lambda step: InContainer(
-                docker_environment=config, step=step
-            ),
-        ):
-            sequence.add_step(step)
-
-    # Add galera MTR tests
-    if test_galera:
-        for step in get_mtr_galera_steps(
-            jobs=jobs,
-            path_to_test_runner=MTR_RUNNER_PATH,
-            halt_on_failure=False,
-            step_wrapping_fn=lambda step: InContainer(
-                docker_environment=config, step=step
-            ),
-        ):
-            sequence.add_step(step)
 
     ## POST-TEST STEPS
     sequence.add_step(
@@ -178,23 +143,6 @@ def deb_autobake(
                         lambda step: hasPackagesGenerated(step)
                         and savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
                     )
-                ),
-            ),
-        )
-    )
-
-    sequence.add_step(
-        InContainer(
-            docker_environment=config,
-            step=ShellStep(
-                command=SaveCompressedTar(
-                    name="Save failed MTR logs",
-                    workdir=PurePath("mtr"),
-                    archive_name="logs",
-                    destination="/packages/%(prop:tarbuildnum)s/logs/%(prop:buildername)s",
-                ),
-                options=StepOptions(
-                    alwaysRun=True, doStepIf=(lambda step: hasFailed(step))
                 ),
             ),
         )
@@ -339,51 +287,16 @@ def rpm_autobake(
     )
 
     ## ADD MTR TESTS
-    # Add normal MTR tests
-    for step in get_mtr_normal_steps(
+    for step in add_test_suites_steps(
         jobs=jobs,
-        path_to_test_runner=MTR_RUNNER_PATH,
-        halt_on_failure=False,
-        step_wrapping_fn=lambda step: InContainer(docker_environment=config, step=step),
+        MTR_RUNNER_PATH=MTR_RUNNER_PATH,
+        config=config,
+        buildername=buildername,
+        test_galera=test_galera,
+        test_rocksdb=test_rocksdb,
+        test_s3=test_s3,
     ):
         sequence.add_step(step)
-
-    # Add S3 MTR tests
-    if test_s3:
-        for step in get_mtr_s3_steps(
-            buildername=buildername,
-            jobs=jobs,
-            path_to_test_runner=MTR_RUNNER_PATH,
-            halt_on_failure=False,
-            step_wrapping_fn=lambda step: InContainer(
-                docker_environment=config, step=step
-            ),
-        ):
-            sequence.add_step(step)
-
-    # Add rocksdb MTR tests
-    if test_rocksdb:
-        for step in get_mtr_rocksdb_steps(
-            jobs=jobs,
-            path_to_test_runner=MTR_RUNNER_PATH,
-            halt_on_failure=False,
-            step_wrapping_fn=lambda step: InContainer(
-                docker_environment=config, step=step
-            ),
-        ):
-            sequence.add_step(step)
-
-    # Add galera MTR tests
-    if test_galera:
-        for step in get_mtr_galera_steps(
-            jobs=jobs,
-            path_to_test_runner=MTR_RUNNER_PATH,
-            halt_on_failure=False,
-            step_wrapping_fn=lambda step: InContainer(
-                docker_environment=config, step=step
-            ),
-        ):
-            sequence.add_step(step)
 
     ## POST-TEST STEPS
     sequence.add_step(
@@ -414,23 +327,6 @@ def rpm_autobake(
                         lambda step: hasPackagesGenerated(step)
                         and savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
                     )
-                ),
-            ),
-        )
-    )
-
-    sequence.add_step(
-        InContainer(
-            docker_environment=config,
-            step=ShellStep(
-                command=SaveCompressedTar(
-                    name="Save failed MTR logs",
-                    workdir=PurePath("mtr"),
-                    archive_name="logs",
-                    destination="/packages/%(prop:tarbuildnum)s/logs/%(prop:buildername)s",
-                ),
-                options=StepOptions(
-                    alwaysRun=True, doStepIf=(lambda step: hasFailed(step))
                 ),
             ),
         )
@@ -611,6 +507,81 @@ def get_mtr_s3_steps(
             options=StepOptions(alwaysRun=True),
         ),
     )
+    return steps
+
+
+def add_test_suites_steps(
+    jobs,
+    MTR_RUNNER_PATH,
+    config,
+    buildername,
+    test_galera=False,
+    test_rocksdb=False,
+    test_s3=False,
+):
+    steps = []
+    steps.extend(
+        get_mtr_normal_steps(
+            jobs=jobs,
+            path_to_test_runner=MTR_RUNNER_PATH,
+            halt_on_failure=False,
+            step_wrapping_fn=lambda step: InContainer(
+                docker_environment=config, step=step
+            ),
+        )
+    )
+    if test_s3:
+        steps.extend(
+            get_mtr_s3_steps(
+                buildername=buildername,
+                jobs=jobs,
+                path_to_test_runner=MTR_RUNNER_PATH,
+                halt_on_failure=False,
+                step_wrapping_fn=lambda step: InContainer(
+                    docker_environment=config, step=step
+                ),
+            )
+        )
+    if test_rocksdb:
+        steps.extend(
+            get_mtr_rocksdb_steps(
+                jobs=jobs,
+                path_to_test_runner=MTR_RUNNER_PATH,
+                halt_on_failure=False,
+                step_wrapping_fn=lambda step: InContainer(
+                    docker_environment=config, step=step
+                ),
+            )
+        )
+    if test_galera:
+        steps.extend(
+            get_mtr_galera_steps(
+                jobs=jobs,
+                path_to_test_runner=MTR_RUNNER_PATH,
+                halt_on_failure=False,
+                step_wrapping_fn=lambda step: InContainer(
+                    docker_environment=config, step=step
+                ),
+            )
+        )
+
+    steps.append(
+        InContainer(
+            docker_environment=config,
+            step=ShellStep(
+                command=SaveCompressedTar(
+                    name="Save failed MTR logs",
+                    workdir=PurePath("mtr"),
+                    archive_name="logs",
+                    destination="/packages/%(prop:tarbuildnum)s/logs/%(prop:buildername)s",
+                ),
+                options=StepOptions(
+                    alwaysRun=True, doStepIf=(lambda step: hasFailed(step))
+                ),
+            ),
+        )
+    )
+
     return steps
 
 
