@@ -22,7 +22,7 @@ class CreateS3Bucket(Command):
         return [
             "bash",
             "-ec",
-            f"mc mb minio/{self.bucket}",
+            util.Interpolate(f"mc mb minio/{self.bucket}"),
         ]
 
 
@@ -44,7 +44,7 @@ class DeleteS3Bucket(Command):
         return [
             "bash",
             "-ec",
-            f"mc rb --force minio/{self.bucket}",
+            util.Interpolate(f"mc rb --force minio/{self.bucket}"),
         ]
 
 
