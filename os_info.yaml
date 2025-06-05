@@ -60,6 +60,17 @@ debian-12:
     - ppc64le
     - x86
   type: deb
+debian-13:
+  image_tag: debian13
+  version_name: trixie
+  tags:
+    - release_packages
+  arch:
+    - amd64
+    - aarch64
+    - ppc64le
+    - x86
+  type: deb
 debian-sid:
   image_tag: debiansid
   version_name: sid
