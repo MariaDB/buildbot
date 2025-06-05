@@ -157,6 +157,7 @@ class InContainer(BaseStep):
             cmd_prefix.append(["-e", util.Interpolate(f"{variable}={value}")])
 
         cmd_prefix.append([f"--shm-size={self.docker_environment.shm_size}"])
+        cmd_prefix.append([f"--ulimit memlock={self.docker_environment.memlock_limit}"])
 
         path = self.docker_environment.workdir / step.command.workdir
         # Absolute command workdir overrides basedir.
