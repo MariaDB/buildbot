@@ -6,6 +6,19 @@ from configuration.steps.generators.mtr.generator import MTRGenerator
 
 
 class MTRTest(Command):
+    """
+    A command to run MySQL Test Runner (MTR) tests.
+    This command executes MTR tests based on the provided test case generator.
+    Attributes:
+        name (str): The name of the command.
+        testcase (MTRGenerator): The test case generator for MTR tests.
+        workdir (PurePath): The working directory for the command.
+        mtr_feedback_plugin (bool): Whether to enable MTR feedback plugin.
+        save_logs_path (PurePath): The path where logs will be saved.
+        log_path (PurePath): The path where MTR logs are stored.
+        archive_name (str): The name of the archive file to create.
+    """
+
     def __init__(
         self,
         name: str,

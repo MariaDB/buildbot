@@ -15,6 +15,16 @@ def processor_docker_workdirs(
     active_steps: list[BaseStep],
     cleanup_steps: list[BaseStep],
 ) -> tuple[list[BaseStep], list[BaseStep], list[BaseStep]]:
+    """Prepare Docker work directories for steps that require them.
+    This function checks the active steps for any InContainer steps and adds a
+    Docker work directory creation step for each unique work directory used in those steps.
+    Args:
+        prepare_steps (list[BaseStep]): Steps to be executed before the main steps.
+        active_steps (list[BaseStep]): Main steps to be executed.
+        cleanup_steps (list[BaseStep]): Steps to be executed after the main steps.
+    Returns:
+        tuple: Updated lists of prepare_steps, active_steps, and cleanup_steps.
+    """
     prepare_steps = prepare_steps.copy()
     active_steps = active_steps.copy()
     cleanup_steps = cleanup_steps.copy()
@@ -45,6 +55,17 @@ def processor_docker_cleanup(
     active_steps: list[BaseStep],
     cleanup_steps: list[BaseStep],
 ) -> tuple[list[BaseStep], list[BaseStep], list[BaseStep]]:
+    """Prepare Docker cleanup steps for the current and previous runs.
+    This function checks the active steps for any InContainer steps and adds cleanup
+    steps for the Docker containers used in those steps. It ensures that the cleanup
+    steps are added for both the current run and the previous run.
+    Args:
+        prepare_steps (list[BaseStep]): Steps to be executed before the main steps.
+        active_steps (list[BaseStep]): Main steps to be executed.
+        cleanup_steps (list[BaseStep]): Steps to be executed after the main steps.
+    Returns:
+        tuple: Updated lists of prepare_steps, active_steps, and cleanup_steps.
+    """
     prepare_steps = prepare_steps.copy()
     active_steps = active_steps.copy()
     cleanup_steps = cleanup_steps.copy()
@@ -75,6 +96,16 @@ def processor_docker_commit(
     active_steps: list[BaseStep],
     cleanup_steps: list[BaseStep],
 ) -> tuple[list[BaseStep], list[BaseStep], list[BaseStep]]:
+    """Prepare Docker commit steps for active InContainer steps.
+    This function checks the active steps for any InContainer steps that require
+    committing the container state and adds a Docker commit step for each such step.
+    Args:
+        prepare_steps (list[BaseStep]): Steps to be executed before the main steps.
+        active_steps (list[BaseStep]): Main steps to be executed.
+        cleanup_steps (list[BaseStep]): Steps to be executed after the main steps.
+    Returns:
+        tuple: Updated lists of prepare_steps, active_steps, and cleanup_steps.
+    """
     prepare_steps = prepare_steps.copy()
     active_steps = active_steps.copy()
     cleanup_steps = cleanup_steps.copy()
@@ -100,6 +131,16 @@ def processor_docker_tag(
     active_steps: list[BaseStep],
     cleanup_steps: list[BaseStep],
 ) -> tuple[list[BaseStep], list[BaseStep], list[BaseStep]]:
+    """Prepare Docker tagging steps for active InContainer steps.
+    This function checks the active steps for any InContainer steps and adds a
+    tag step whenever an environment change (different docker config) is detected.
+    Args:
+        prepare_steps (list[BaseStep]): Steps to be executed before the main steps.
+        active_steps (list[BaseStep]): Main steps to be executed.
+        cleanup_steps (list[BaseStep]): Steps to be executed after the main steps.
+    Returns:
+        tuple: Updated lists of prepare_steps, active_steps, and cleanup_steps.
+    """
     prepare_steps = prepare_steps.copy()
     active_steps = active_steps.copy()
     cleanup_steps = cleanup_steps.copy()
@@ -127,6 +168,16 @@ def processor_docker_fetch(
     active_steps: list[BaseStep],
     cleanup_steps: list[BaseStep],
 ) -> tuple[list[BaseStep], list[BaseStep], list[BaseStep]]:
+    """Fetch Docker images for steps that require them.
+    This function checks the active steps for any InContainer steps and adds a
+    Docker fetch step for each unique Docker environment used in those steps.
+    Args:
+        prepare_steps (list[BaseStep]): Steps to be executed before the main steps.
+        active_steps (list[BaseStep]): Main steps to be executed.
+        cleanup_steps (list[BaseStep]): Steps to be executed after the main steps.
+    Returns:
+        tuple: Updated lists of prepare_steps, active_steps, and cleanup_steps.
+    """
     prepare_steps = prepare_steps.copy()
     active_steps = active_steps.copy()
     cleanup_steps = cleanup_steps.copy()
@@ -150,6 +201,15 @@ def processor_worker_cleanup(
     active_steps: list[BaseStep],
     cleanup_steps: list[BaseStep],
 ) -> tuple[list[BaseStep], list[BaseStep], list[BaseStep]]:
+    """Prepare worker cleanup steps for the current and previous runs.
+    This function adds cleanup steps for the worker used in the current and previous runs.
+    Args:
+        prepare_steps (list[BaseStep]): Steps to be executed before the main steps.
+        active_steps (list[BaseStep]): Main steps to be executed.
+        cleanup_steps (list[BaseStep]): Steps to be executed after the main steps.
+    Returns:
+        tuple: Updated lists of prepare_steps, active_steps, and cleanup_steps.
+    """
     prepare_steps = prepare_steps.copy()
     active_steps = active_steps.copy()
     cleanup_steps = cleanup_steps.copy()
@@ -163,6 +223,15 @@ def processor_worker_cleanup(
 def processor_set_docker_runtime_environment(
     builder_name: str, active_steps: list[BaseStep]
 ) -> None:
+    """Set the Docker runtime environment for InContainer steps.
+    This function updates the Docker environment for all InContainer steps in the
+    active steps, setting the container name to the builder name.
+    Args:
+        builder_name (str): The name of the builder to set as the container name.
+        active_steps (list[BaseStep]): The list of active steps to update.
+    Returns:
+        list[BaseStep]: The updated list of active steps with the Docker environment set.
+    """
     for step in active_steps:
         if isinstance(step, InContainer):
             step.docker_environment._container_name = builder_name

@@ -19,6 +19,35 @@ from configuration.workers.base import WorkerBase
 
 
 class BaseBuilder:
+    """
+    BaseBuilder is a class responsible for managing build sequences and generating
+    build configurations for a Buildbot builder. It provides methods to add build
+    sequences, process build steps, and generate a factory and configuration for
+    the builder.
+
+    Attributes:
+        name (str): The name of the builder.
+        build_sequences (list[BuildSequence]): A list of build sequences associated
+            with the builder.
+
+    Methods:
+        __init__(name: str):
+            Initializes the BaseBuilder instance with a name and an empty list of
+            build sequences.
+
+        add_sequence(sequence: BuildSequence):
+            Adds a build sequence to the builder.
+
+        get_factory() -> BuildFactory:
+            Generates and returns a BuildFactory instance containing the processed
+            build steps.
+
+        get_config(
+            can_start_build: Callable[[Builder, AbstractWorkerForBuilder, BuildRequest], bool],
+            Generates and returns a BuilderConfig object for the builder, including
+            worker names, tags, build properties, and factory steps.
+    """
+
     def __init__(self, name: str):
         self.name = name
         self.build_sequences: list[BuildSequence] = []
