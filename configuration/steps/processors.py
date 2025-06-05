@@ -130,17 +130,17 @@ def processor_docker_fetch(
     prepare_steps = prepare_steps.copy()
     active_steps = active_steps.copy()
     cleanup_steps = cleanup_steps.copy()
-    current_docker_environment = None
+    docker_environments = set()
 
     relevant_steps = filter(lambda x: isinstance(x, InContainer), active_steps)
     for step in relevant_steps:
-        if current_docker_environment != step.docker_environment:
+        if step.docker_environment.image_tag not in docker_environments:
             prepare_steps.append(
                 add_docker_fetch_step(
                     image_url=step.docker_environment.image_url,
                 )
             )
-            current_docker_environment = step.docker_environment
+            docker_environments.add(step.docker_environment.image_tag)
 
     return prepare_steps, active_steps, cleanup_steps
 
