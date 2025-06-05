@@ -112,7 +112,7 @@ services:
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
       - MQ_ROUTER_URL
-      - PORT=9996
+      - PORT=9995
       - TITLE
       - TITLE_URL
     stop_grace_period: 5m
@@ -149,7 +149,7 @@ services:
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
       - MQ_ROUTER_URL
-      - PORT=9997
+      - PORT=9996
       - TITLE
       - TITLE_URL
     stop_grace_period: 5m
@@ -185,7 +185,7 @@ services:
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
       - MQ_ROUTER_URL
-      - PORT=9998
+      - PORT=9997
       - TITLE
       - TITLE_URL
     stop_grace_period: 5m
@@ -221,7 +221,7 @@ services:
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
       - MQ_ROUTER_URL
-      - PORT=9999
+      - PORT=9998
       - TITLE
       - TITLE_URL
     stop_grace_period: 5m
@@ -257,7 +257,7 @@ services:
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
       - MQ_ROUTER_URL
-      - PORT=10000
+      - PORT=9999
       - TITLE
       - TITLE_URL
     stop_grace_period: 5m
@@ -293,7 +293,7 @@ services:
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
       - MQ_ROUTER_URL
-      - PORT=10001
+      - PORT=10000
       - TITLE
       - TITLE_URL
     stop_grace_period: 5m
@@ -329,7 +329,7 @@ services:
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
       - MQ_ROUTER_URL
-      - PORT=10002
+      - PORT=10001
       - TITLE
       - TITLE_URL
     stop_grace_period: 5m
@@ -365,7 +365,7 @@ services:
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
       - MQ_ROUTER_URL
-      - PORT=10003
+      - PORT=10002
       - TITLE
       - TITLE_URL
     stop_grace_period: 5m
@@ -401,7 +401,7 @@ services:
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
       - MQ_ROUTER_URL
-      - PORT=10004
+      - PORT=10003
       - TITLE
       - TITLE_URL
     stop_grace_period: 5m
@@ -438,7 +438,7 @@ services:
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
       - MQ_ROUTER_URL
-      - PORT=10005
+      - PORT=10004
       - TITLE
       - TITLE_URL
     stop_grace_period: 5m
@@ -474,7 +474,7 @@ services:
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
       - MQ_ROUTER_URL
-      - PORT=10006
+      - PORT=10005
       - TITLE
       - TITLE_URL
     stop_grace_period: 5m
@@ -510,7 +510,7 @@ services:
       - MASTER_PACKAGES_DIR
       - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
       - MQ_ROUTER_URL
-      - PORT=10007
+      - PORT=10006
       - TITLE
       - TITLE_URL
     stop_grace_period: 5m
@@ -523,6 +523,42 @@ services:
       - /bin/bash
       - -c
       - "/srv/buildbot/master/docker-compose/start.sh master-docker-nonstandard-2"
+    network_mode: host
+    depends_on:
+      mariadb:
+        condition: service_healthy
+      crossbar:
+        condition: service_started
+
+  master-migration:
+    image: quay.io/mariadb-foundation/bb-master:dev_master
+    restart: unless-stopped
+    container_name: master-migration
+    environment:
+      - ARTIFACTS_URL
+      - BRANCH
+      - BUILDMASTER_URL
+      - BUILDMASTER_WG_IP
+      - CONTAINER_REGISTRY_URL
+      - ENVIRON
+      - GALERA_PACKAGES_DIR
+      - MASTER_CREDENTIALS_DIR
+      - MASTER_NONLATENT_DOCKERLIBRARY_WORKER
+      - MASTER_PACKAGES_DIR
+      - MC_HOST_minio=https://access_key:secret_key@minio.mariadb.org
+      - MQ_ROUTER_URL
+      - PORT=10007
+      - TITLE
+      - TITLE_URL
+    stop_grace_period: 5m
+    hostname: dev_master-migration
+    volumes:
+      - ./logs:/var/log/buildbot
+      - ./buildbot/:/srv/buildbot/master
+    entrypoint:
+      - /bin/bash
+      - -c
+      - "/srv/buildbot/master/docker-compose/start.sh master-migration"
     network_mode: host
     depends_on:
       mariadb:
