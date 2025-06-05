@@ -21,15 +21,12 @@ def processor_docker_workdirs(
     docker_workdirs = []
     docker_config = None
 
-    for step in active_steps:
-        if isinstance(step, InContainer):
-            if (
-                str(step.workdir) not in docker_workdirs
-                and not step.workdir.is_absolute()
-            ):
-                docker_workdirs.append(str(step.workdir))
-                if not docker_config:
-                    docker_config = step.docker_environment
+    relevant_steps = filter(lambda x: isinstance(x, InContainer), active_steps)
+    for step in relevant_steps:
+        if str(step.workdir) not in docker_workdirs and not step.workdir.is_absolute():
+            docker_workdirs.append(str(step.workdir))
+            if not docker_config:
+                docker_config = step.docker_environment
 
     if docker_config:
         prepare_steps.append(
@@ -52,23 +49,23 @@ def processor_docker_cleanup(
     active_steps = active_steps.copy()
     cleanup_steps = cleanup_steps.copy()
 
-    for step in active_steps:
-        if isinstance(step, InContainer):
-            cleanup_steps.append(
-                add_docker_cleanup_step(
-                    name="current-run",
-                    container_name=step.docker_environment.container_name,
-                    runtime_tag=step.docker_environment.runtime_tag,
-                )
+    relevant_steps = filter(lambda x: isinstance(x, InContainer), active_steps)
+    for step in relevant_steps:
+        cleanup_steps.append(
+            add_docker_cleanup_step(
+                name="current-run",
+                container_name=step.docker_environment.container_name,
+                runtime_tag=step.docker_environment.runtime_tag,
             )
-            prepare_steps.append(
-                add_docker_cleanup_step(
-                    name="previous-run",
-                    container_name=step.docker_environment.container_name,
-                    runtime_tag=step.docker_environment.runtime_tag,
-                )
+        )
+        prepare_steps.append(
+            add_docker_cleanup_step(
+                name="previous-run",
+                container_name=step.docker_environment.container_name,
+                runtime_tag=step.docker_environment.runtime_tag,
             )
-            break
+        )
+        break
 
     return prepare_steps, active_steps, cleanup_steps
 
@@ -83,16 +80,17 @@ def processor_docker_commit(
     cleanup_steps = cleanup_steps.copy()
 
     for id, step in enumerate(active_steps):
-        if isinstance(step, InContainer):
-            if step.container_commit:
-                active_steps.insert(
-                    id + 1,
-                    add_docker_commit_step(
-                        container_name=step.docker_environment.container_name,
-                        runtime_tag=step.docker_environment.runtime_tag,
-                        step_name=step.name,
-                    ),
-                )
+        if not isinstance(step, InContainer):
+            continue
+        if step.container_commit:
+            active_steps.insert(
+                id + 1,
+                add_docker_commit_step(
+                    container_name=step.docker_environment.container_name,
+                    runtime_tag=step.docker_environment.runtime_tag,
+                    step_name=step.name,
+                ),
+            )
 
     return prepare_steps, active_steps, cleanup_steps
 
@@ -108,17 +106,18 @@ def processor_docker_tag(
     current_docker_environment = None
 
     for id, step in enumerate(active_steps):
-        if isinstance(step, InContainer):
+        if not isinstance(step, InContainer):
+            continue
             # Changing environments requires deleting the old image/tag and creating a new one
-            if current_docker_environment != step.docker_environment:
-                active_steps.insert(
-                    id,
-                    add_docker_tag_step(
-                        image_url=step.docker_environment.image_url,
-                        runtime_tag=step.docker_environment.runtime_tag,
-                    ),
-                )
-                current_docker_environment = step.docker_environment
+        if current_docker_environment != step.docker_environment:
+            active_steps.insert(
+                id,
+                add_docker_tag_step(
+                    image_url=step.docker_environment.image_url,
+                    runtime_tag=step.docker_environment.runtime_tag,
+                ),
+            )
+            current_docker_environment = step.docker_environment
 
     return prepare_steps, active_steps, cleanup_steps
 
@@ -133,15 +132,15 @@ def processor_docker_fetch(
     cleanup_steps = cleanup_steps.copy()
     current_docker_environment = None
 
-    for step in active_steps:
-        if isinstance(step, InContainer):
-            if current_docker_environment != step.docker_environment:
-                prepare_steps.append(
-                    add_docker_fetch_step(
-                        image_url=step.docker_environment.image_url,
-                    )
+    relevant_steps = filter(lambda x: isinstance(x, InContainer), active_steps)
+    for step in relevant_steps:
+        if current_docker_environment != step.docker_environment:
+            prepare_steps.append(
+                add_docker_fetch_step(
+                    image_url=step.docker_environment.image_url,
                 )
-                current_docker_environment = step.docker_environment
+            )
+            current_docker_environment = step.docker_environment
 
     return prepare_steps, active_steps, cleanup_steps
 
