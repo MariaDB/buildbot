@@ -140,8 +140,15 @@ def deb_autobake(
                 ),
                 options=StepOptions(
                     doStepIf=(
-                        lambda step: hasPackagesGenerated(step)
-                        and savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
+                        lambda step: hasPackagesGenerated(
+                            step
+                        )  # Run only if packages were generated
+                        and savePackageIfBranchMatch(
+                            step, SAVED_PACKAGE_BRANCHES
+                        )  # We don't save packages for Pull Requests or bb branches
+                        and not hasFailed(
+                            step
+                        )  # Any failed step will mark the build as failed so don't save packages
                     )
                 ),
             ),
@@ -324,8 +331,15 @@ def rpm_autobake(
                 ),
                 options=StepOptions(
                     doStepIf=(
-                        lambda step: hasPackagesGenerated(step)
-                        and savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
+                        lambda step: hasPackagesGenerated(
+                            step
+                        )  # Run only if packages were generated
+                        and savePackageIfBranchMatch(
+                            step, SAVED_PACKAGE_BRANCHES
+                        )  # We don't save packages for Pull Requests or bb branches
+                        and not hasFailed(
+                            step
+                        )  # Any failed step will mark the build as failed so don't save packages
                     )
                 ),
             ),
