@@ -431,7 +431,7 @@ def get_mtr_galera_steps(
                             MTROption(MTR.RETRY, 3),
                             MTROption(MTR.MAX_SAVE_CORE, 2),
                             MTROption(MTR.MAX_SAVE_DATADIR, 10),
-                            MTROption(MTR.MAX_TEST_FAIL, 1),
+                            MTROption(MTR.MAX_TEST_FAIL, 20),
                             MTROption(MTR.BIG_TEST, True),
                             MTROption(MTR.PARALLEL, jobs * 2),
                             MTROption(MTR.VARDIR, "/dev/shm/galera"),
