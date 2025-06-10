@@ -29,7 +29,7 @@ class CreateDebRepo(Command):
     def as_cmd_arg(self) -> list[str]:
         result = [
             "bash",
-            "-ec",
+            "-exc",
             util.Interpolate(
                 f"""
     mkdir -p debs
@@ -82,7 +82,7 @@ class CreateRpmRepo(Command):
     def as_cmd_arg(self) -> list[str]:
         result = [
             "bash",
-            "-ec",
+            "-exc",
             util.Interpolate(
                 f"""
                 if [ -e MariaDB-shared-10.1.*.rpm ]; then
@@ -129,7 +129,7 @@ class SavePackages(Command):
         package_list = " ".join(self.packages)
         result = [
             "bash",
-            "-ec",
+            "-exc",
             util.Interpolate(
                 f"""
                 mkdir -p {self.destination} &&
@@ -162,7 +162,7 @@ class InstallRPMFromProp(Command):
     def as_cmd_arg(self) -> list[str]:
         result = [
             "bash",
-            "-ec",
+            "-exc",
             util.Interpolate(
                 f"""
                     yum -y --nogpgcheck install %(kw:packages)s
@@ -197,7 +197,7 @@ class InstallDEB(Command):
     def as_cmd_arg(self) -> list[str]:
         result = [
             "bash",
-            "-ec",
+            "-exc",
             f"""
                 package_list=$(grep "^Package:" {self.packages_file} | grep -vE 'galera|spider|columnstore' | awk '{{print $2}}' | xargs)
 DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 apt-get -o Debug::pkgProblemResolver=1 -o Dpkg::Options::=--force-confnew install --allow-unauthenticated -y $package_list

@@ -1,7 +1,7 @@
 from buildbot.interfaces import IBuildStep
-from buildbot.plugins import steps
+from buildbot.plugins import steps, util
 from configuration.steps.base import BaseStep, StepOptions
-from configuration.steps.commands.base import Command
+from configuration.steps.commands.base import Command, ShellCommandWithURL
 
 
 class ShellStep(BaseStep):
@@ -13,6 +13,8 @@ class ShellStep(BaseStep):
         options (StepOptions): Options for the step, such as timeout and retry settings.
         interrupt_signal (str): The signal to send to interrupt the command (default: "TERM").
         env_vars (list[tuple]): Environment variables to set for the command.
+        url (str): Optional URL to associate with the step.
+        urlText (str): Optional text for the URL. Defaults to the url itself.
     """
 
     def __init__(
@@ -21,24 +23,34 @@ class ShellStep(BaseStep):
         options: StepOptions = None,
         interrupt_signal="TERM",
         env_vars: list[tuple] = None,
+        url=None,
+        url_text=None,
+        timeout=1200,  # Default timeout in seconds
     ):
         if env_vars is None:
             env_vars = []
         self.command = command
         self.interrupt_signal = interrupt_signal
         self.env_vars = env_vars
+        self.url = url
+        self.url_text = url_text
+        self.timeout = timeout
         assert isinstance(command, Command)
         super().__init__(command.name, options)
         self.prefix_cmd = []
 
     def generate(self) -> IBuildStep:
         workdir = self._set_workdir()
-        return steps.ShellCommand(
+        return ShellCommandWithURL(
             name=self.name,
             command=[*self.prefix_cmd, *self.command.as_cmd_arg()],
             interruptSignal=self.interrupt_signal,
             **self.options.getopt,
             workdir=workdir,
+            url=util.Interpolate(self.url) if self.url else None,
+            urlText=util.Interpolate(self.url_text) if self.url_text else None,
+            timeout=self.timeout,
+            env={k: util.Interpolate(v) for k, v in self.env_vars},
         )
 
     def _set_workdir(self) -> str:

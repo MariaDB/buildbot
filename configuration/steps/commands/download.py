@@ -21,7 +21,7 @@ class FetchTarball(Command):
     def as_cmd_arg(self) -> list[str]:
         return [
             "bash",
-            "-ec",
+            "-exc",
             util.Interpolate(read_template("get_tarball")),
         ]
 
@@ -54,7 +54,7 @@ class FetchCompat(Command):
     def as_cmd_arg(self) -> list[str]:
         return [
             "bash",
-            "-ec",
+            "-exc",
             util.Interpolate(
                 f'ls -l && ls -l ../ && wget --no-check-certificate -cO MariaDB-shared-5.3.{self.arch}.rpm "{self.url}/helper_files/mariadb-shared-5.3-{self.arch}.rpm" && wget -cO MariaDB-shared-10.1.{self.arch}.rpm "{self.url}/helper_files/mariadb-shared-10.1-kvm-rpm-{self.rpm_type}-{self.arch}.rpm"',
             ),
