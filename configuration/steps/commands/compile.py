@@ -109,7 +109,7 @@ class CompileDebAutobake(Command):
         super().__init__(name="Compile - deb autobake", workdir=workdir)
 
     def as_cmd_arg(self) -> list[str]:
-        return ["debian/autobake-deb.sh"]
+        return ["bash", "-exc", "debian/autobake-deb.sh"]
 
 
 class InstallRPMFromProp(Command):

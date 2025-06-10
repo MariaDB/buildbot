@@ -25,4 +25,5 @@ class ConfigureMariaDBCMake(Command):
         super().__init__(name=f"Configure - {name}", workdir=workdir)
 
     def as_cmd_arg(self) -> list[str]:
-        return self.cmake_generator.generate()
+        cmake_cmd = self.cmake_generator.generate()
+        return ["bash", "-exc", f"{cmake_cmd}"]
