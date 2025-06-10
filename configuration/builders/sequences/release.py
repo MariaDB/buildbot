@@ -1,3 +1,4 @@
+import os
 from pathlib import PurePath
 
 from configuration.builders.infra.runtime import BuildSequence, InContainer
@@ -138,10 +139,19 @@ def deb_autobake(
                     packages=["mariadb.sources", "debs"],
                     workdir=PurePath("build"),
                 ),
+                url=f"{os.environ['ARTIFACTS_URL']}/%(prop:tarbuildnum)s/%(prop:buildername)s",
+                url_text="DEB packages",
                 options=StepOptions(
                     doStepIf=(
-                        lambda step: hasPackagesGenerated(step)
-                        and savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
+                        lambda step: hasPackagesGenerated(
+                            step
+                        )  # Run only if packages were generated
+                        and savePackageIfBranchMatch(
+                            step, SAVED_PACKAGE_BRANCHES
+                        )  # We don't save packages for Pull Requests or bb branches
+                        and not hasFailed(
+                            step
+                        )  # Any failed step will mark the build as failed so don't save packages
                     )
                 ),
             ),
@@ -226,6 +236,7 @@ def rpm_autobake(
                     jobs=jobs,
                     verbose=False,
                     workdir=RPM_AUTOBAKE_BASE_WORKDIR,
+                    output_sync=True,
                 ),
             ),
         )
@@ -322,10 +333,19 @@ def rpm_autobake(
                     workdir=RPM_AUTOBAKE_BASE_WORKDIR,
                     destination="/packages/%(prop:tarbuildnum)s/%(prop:buildername)s",
                 ),
+                url=f"{os.environ['ARTIFACTS_URL']}/%(prop:tarbuildnum)s/%(prop:buildername)s",
+                url_text="RPM packages",
                 options=StepOptions(
                     doStepIf=(
-                        lambda step: hasPackagesGenerated(step)
-                        and savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
+                        lambda step: hasPackagesGenerated(
+                            step
+                        )  # Run only if packages were generated
+                        and savePackageIfBranchMatch(
+                            step, SAVED_PACKAGE_BRANCHES
+                        )  # We don't save packages for Pull Requests or bb branches
+                        and not hasFailed(
+                            step
+                        )  # Any failed step will mark the build as failed so don't save packages
                     )
                 ),
             ),
@@ -575,6 +595,8 @@ def add_test_suites_steps(
                     archive_name="logs",
                     destination="/packages/%(prop:tarbuildnum)s/logs/%(prop:buildername)s",
                 ),
+                url=f"{os.environ['ARTIFACTS_URL']}/%(prop:tarbuildnum)s/logs/%(prop:buildername)s",
+                url_text="MTR logs",
                 options=StepOptions(
                     alwaysRun=True, doStepIf=(lambda step: hasFailed(step))
                 ),

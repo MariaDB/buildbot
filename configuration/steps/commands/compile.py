@@ -40,7 +40,7 @@ class CompileMakeCommand(Command):
         jobs: int,
         verbose: bool = False,
         workdir: PurePath = PurePath("."),
-        output_sync: bool = True,
+        output_sync: bool = False,
     ):
         self.verbose = verbose
         self.output_sync = output_sync
@@ -58,7 +58,7 @@ class CompileMakeCommand(Command):
         )
 
     def as_cmd_arg(self) -> list[str]:
-        result = ["bash", "-ec", self.command]
+        result = ["bash", "-exc", self.command]
         return result
 
 
@@ -134,7 +134,7 @@ class InstallRPMFromProp(Command):
     def as_cmd_arg(self) -> list[str]:
         result = [
             "bash",
-            "-ec",
+            "-exc",
             util.Interpolate(
                 f"""
                     yum -y --nogpgcheck install %(kw:packages)s

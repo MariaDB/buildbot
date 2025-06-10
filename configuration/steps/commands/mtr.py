@@ -45,7 +45,7 @@ class MTRTest(Command):
         mtr_cmd = " ".join(self.testcase.generate())
         return [
             "bash",
-            "-ec",
+            "-exc",
             f"""
             MTR_FEEDBACK_PLUGIN={self.mtr_feedback_plugin} {mtr_cmd} || ({self._save_logs()})
             """,

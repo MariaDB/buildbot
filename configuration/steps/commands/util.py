@@ -21,7 +21,7 @@ class CreateS3Bucket(Command):
     def as_cmd_arg(self) -> list[str]:
         return [
             "bash",
-            "-ec",
+            "-exc",
             util.Interpolate(f"mc mb minio/{self.bucket}"),
         ]
 
@@ -43,7 +43,7 @@ class DeleteS3Bucket(Command):
     def as_cmd_arg(self) -> list[str]:
         return [
             "bash",
-            "-ec",
+            "-exc",
             util.Interpolate(f"mc rb --force minio/{self.bucket}"),
         ]
 
@@ -75,7 +75,7 @@ class SaveCompressedTar(Command):
     def as_cmd_arg(self) -> list[str]:
         result = [
             "bash",
-            "-ec",
+            "-exc",
             util.Interpolate(
                 f"""
             mkdir -p {self.destination}
@@ -108,7 +108,7 @@ class FindFiles(Command):
     def as_cmd_arg(self) -> list[str]:
         return [
             "bash",
-            "-ec",
+            "-exc",
             f'find . -maxdepth 1 -type f -name "{self.include}" ! -name "{self.exclude}" | xargs',
         ]
 
@@ -131,7 +131,7 @@ class PrintEnvironmentDetails(Command):
         return (
             [
                 "bash",
-                "-c",
+                "-exc",
                 """
                 date -u
                 uname -a

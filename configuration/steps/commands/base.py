@@ -1,6 +1,10 @@
 from abc import ABC, abstractmethod
 from pathlib import PurePath
 
+from twisted.internet import defer
+
+from buildbot.plugins import steps
+
 
 class Command(ABC):
     """
@@ -20,3 +24,28 @@ class Command(ABC):
     @abstractmethod
     def as_cmd_arg(self) -> list[str]:
         pass
+
+
+class ShellCommandWithURL(steps.ShellCommand):
+    def __init__(self, url=None, urlText=None, **kwargs):
+        super().__init__(**kwargs)
+        # Add URL and URL text to the renderables list (use with Interpolate)
+        self.renderables.append("url")
+        self.renderables.append("urlText")
+        self.url = url
+        self.urlText = urlText
+
+    # FIXME Replace start() with run() when upgrading to Buildbot 4.x
+    @defer.inlineCallbacks
+    def start(self):
+        if self.url is not None:
+            urlText = self.urlText
+
+            if urlText is None:
+                urlText = self.url
+
+            yield self.addURL(urlText, self.url)
+
+        # Return to the original method
+        res = yield super().start()
+        return res

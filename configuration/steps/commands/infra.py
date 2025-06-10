@@ -31,7 +31,7 @@ class CreateDockerWorkdirs(Command):
             f"{self.volume_mount}",
             f"{self.image_url}",
             "bash",
-            "-ec",
+            "-exc",
             f"mkdir -p . {' '.join(self.workdirs)} ",
         ]
 
@@ -58,7 +58,7 @@ class CleanupDockerResources(Command):
     def as_cmd_arg(self) -> list[str]:
         return [
             "bash",
-            "-ec",
+            "-exc",
             f"""
             (
                 docker rm --force {self.container_name};
@@ -107,7 +107,7 @@ class TagContainerImage(Command):
     def as_cmd_arg(self) -> list[str]:
         return [
             "bash",
-            "-ec",
+            "-exc",
             (
                 f"docker image rm -f {self.runtime_tag} && "
                 f"docker tag {self.image_url} {self.runtime_tag}"
@@ -136,7 +136,7 @@ class ContainerCommit(Command):
     def as_cmd_arg(self) -> list[str]:
         return [
             "bash",
-            "-c",
+            "-exc",
             (
                 "docker container commit "
                 f"""--message "{self.step_name}" {self.container_name} """
@@ -162,4 +162,4 @@ class CleanupWorkerDir(Command):
         )
 
     def as_cmd_arg(self) -> list[str]:
-        return ["bash", "-ec", "rm -r * .* 2> /dev/null || true"]
+        return ["bash", "-exc", "rm -r * .* 2> /dev/null || true"]
