@@ -27,11 +27,11 @@ class Command(ABC):
 
 
 class ShellCommandWithURL(steps.ShellCommand):
+    # Add URL and URL text to the renderables list (use with Interpolate)
+    renderables = ["url", "urlText"]
+
     def __init__(self, url=None, urlText=None, **kwargs):
         super().__init__(**kwargs)
-        # Add URL and URL text to the renderables list (use with Interpolate)
-        self.renderables.append("url")
-        self.renderables.append("urlText")
         self.url = url
         self.urlText = urlText
 
