@@ -124,6 +124,7 @@ SUPPORTED_PLATFORMS["10.5"] = [
     "amd64-rhel-7",
     "amd64-rhel-8",
     "amd64-rhel-9",
+    "amd64-rhel-9-rpm-autobake-migration",
     "amd64-last-N-failed",
     "amd64-ubuntu-2004",
     "amd64-ubuntu-2004-debug",
@@ -147,10 +148,6 @@ SUPPORTED_PLATFORMS["10.5"] = [
     "x86-debian-12-fulltest",
     "x86-debian-12-fulltest-debug",
 ]
-
-# FIXME: Temporary until master-migration is validated on dev
-if os.environ["ENVIRON"] == "DEV":
-    SUPPORTED_PLATFORMS["10.5"].append("amd64-rhel-9-rpm-autobake-migration")
 
 SUPPORTED_PLATFORMS["10.6"] = SUPPORTED_PLATFORMS["10.5"].copy()
 
@@ -178,6 +175,7 @@ SUPPORTED_PLATFORMS["10.11"] = [
     "aarch64-ubuntu-2404",
     "amd64-centos-stream10",
     "amd64-debian-12",
+    "amd64-debian-12-deb-autobake-migration",
     "amd64-debian-12-debug-embedded",
     "amd64-fedora-40",
     "amd64-fedora-41",
@@ -190,10 +188,6 @@ SUPPORTED_PLATFORMS["10.11"] = [
     "s390x-ubuntu-2404",
     "ppc64le-debian-12",
 ]
-
-# FIXME: Temporary until master-migration is validated on dev
-if os.environ["ENVIRON"] == "DEV":
-    SUPPORTED_PLATFORMS["10.11"].append("amd64-debian-12-deb-autobake-migration")
 
 SUPPORTED_PLATFORMS["10.11"] += SUPPORTED_PLATFORMS["10.10"]
 
