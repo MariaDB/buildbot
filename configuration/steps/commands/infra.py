@@ -139,7 +139,7 @@ class ContainerCommit(Command):
             "-exc",
             (
                 "docker container commit "
-                f"""--message "{self.step_name}" {self.container_name} """
+                f'--message "{self.step_name}" {self.container_name} '
                 f"{self.runtime_tag} && "
                 f"docker rm {self.container_name}"
             ),
