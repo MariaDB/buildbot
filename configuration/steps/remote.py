@@ -1,7 +1,7 @@
 from buildbot.interfaces import IBuildStep
 from buildbot.plugins import steps, util
 from configuration.steps.base import BaseStep, StepOptions
-from configuration.steps.commands.base import Command, ShellCommandWithURL
+from configuration.steps.commands.base import URL, Command, ShellCommandWithURL
 
 
 class ShellStep(BaseStep):
@@ -23,8 +23,7 @@ class ShellStep(BaseStep):
         options: StepOptions = None,
         interrupt_signal="TERM",
         env_vars: list[tuple] = None,
-        url=None,
-        url_text=None,
+        url: URL = None,
         timeout=1200,  # Default timeout in seconds
     ):
         if env_vars is None:
@@ -33,7 +32,6 @@ class ShellStep(BaseStep):
         self.interrupt_signal = interrupt_signal
         self.env_vars = env_vars
         self.url = url
-        self.url_text = url_text
         self.timeout = timeout
         assert isinstance(command, Command)
         super().__init__(command.name, options)
@@ -47,8 +45,7 @@ class ShellStep(BaseStep):
             interruptSignal=self.interrupt_signal,
             **self.options.getopt,
             workdir=workdir,
-            url=util.Interpolate(self.url) if self.url else None,
-            urlText=util.Interpolate(self.url_text) if self.url_text else None,
+            url=self.url,
             timeout=self.timeout,
             env={k: util.Interpolate(v) for k, v in self.env_vars},
         )
