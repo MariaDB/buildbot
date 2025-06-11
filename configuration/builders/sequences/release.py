@@ -264,7 +264,7 @@ def rpm_autobake(
             docker_environment=config,
             step=ShellStep(
                 command=CompileMakeCommand(
-                    option=MAKE.SOURCE,
+                    option=MAKE.PACKAGE_SOURCE,
                     jobs=jobs,
                     verbose=False,
                     workdir=RPM_AUTOBAKE_BASE_WORKDIR,

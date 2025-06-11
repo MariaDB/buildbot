@@ -18,7 +18,7 @@ class MAKE(Enum):
 
     COMPILE = ""
     PACKAGE = "package"
-    SOURCE = "package_source"
+    PACKAGE_SOURCE = "package_source"
 
 
 class CompileMakeCommand(Command):

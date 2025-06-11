@@ -52,10 +52,10 @@ class MTRTest(Command):
         ]
 
     def _save_logs(self) -> str:
-        logs = ["*.log", "*.err", "core*"]
+        logs = ["*.log", "*.err*", "core*"]
         patterns = " -o ".join([f'-iname "{log}"' for log in logs])
         return f"""
-            echo "Saving MTR logs"
+            echo "Saving MTR logs to persistent volume because some tests failed"
             cd {self.log_path}
             mkdir -p {self.save_logs_path}
             find . -type f \( {patterns} \) -print0 | rsync -a --files-from=- --from0 ./ {self.save_logs_path}/
