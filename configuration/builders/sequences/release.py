@@ -3,6 +3,7 @@ from pathlib import PurePath
 
 from configuration.builders.infra.runtime import BuildSequence, InContainer
 from configuration.steps.base import StepOptions
+from configuration.steps.commands.base import URL
 from configuration.steps.commands.compile import (
     MAKE,
     CompileDebAutobake,
@@ -139,8 +140,10 @@ def deb_autobake(
                     packages=["mariadb.sources", "debs"],
                     workdir=PurePath("build"),
                 ),
-                url=f"{os.environ['ARTIFACTS_URL']}/%(prop:tarbuildnum)s/%(prop:buildername)s",
-                url_text="DEB packages",
+                url=URL(
+                    url=f"{os.environ['ARTIFACTS_URL']}/%(prop:tarbuildnum)s/%(prop:buildername)s",
+                    url_text="DEB packages",
+                ),
                 options=StepOptions(
                     doStepIf=(
                         lambda step: hasPackagesGenerated(
@@ -333,8 +336,10 @@ def rpm_autobake(
                     workdir=RPM_AUTOBAKE_BASE_WORKDIR,
                     destination="/packages/%(prop:tarbuildnum)s/%(prop:buildername)s",
                 ),
-                url=f"{os.environ['ARTIFACTS_URL']}/%(prop:tarbuildnum)s/%(prop:buildername)s",
-                url_text="RPM packages",
+                url=URL(
+                    url=f"{os.environ['ARTIFACTS_URL']}/%(prop:tarbuildnum)s/%(prop:buildername)s",
+                    url_text="RPM packages",
+                ),
                 options=StepOptions(
                     doStepIf=(
                         lambda step: hasPackagesGenerated(
@@ -595,8 +600,10 @@ def add_test_suites_steps(
                     archive_name="logs",
                     destination="/packages/%(prop:tarbuildnum)s/logs/%(prop:buildername)s",
                 ),
-                url=f"{os.environ['ARTIFACTS_URL']}/%(prop:tarbuildnum)s/logs/%(prop:buildername)s",
-                url_text="MTR logs",
+                url=URL(
+                    url=f"{os.environ['ARTIFACTS_URL']}/%(prop:tarbuildnum)s/logs/%(prop:buildername)s",
+                    url_text="MTR logs",
+                ),
                 options=StepOptions(
                     alwaysRun=True, doStepIf=(lambda step: hasFailed(step))
                 ),
