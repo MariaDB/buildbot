@@ -521,10 +521,11 @@ def waitIfStaging(step: BuildStep) -> bool:
     return True
 
 
+
 def hasAutobake(step: BuildStep) -> bool:
     builder_name = step.getProperty("buildername")
     for b in BUILDERS_AUTOBAKE:
-        if builder_name in b:
+        if builder_name == b:
             return True
     return False
 
@@ -548,7 +549,7 @@ def hasS3(props):
 def hasBigtest(step: BuildStep) -> bool:
     builder_name = step.getProperty("buildername")
     for b in BUILDERS_BIG:
-        if builder_name in b:
+        if builder_name == b:
             return True
     return False
 
