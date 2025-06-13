@@ -480,11 +480,7 @@ def addGaleraTests(factory, mtrDbPool):
 
 
 def addS3Tests(factory, mtrDbPool):
-    runS3 = (
-        lambda props: hasS3(props)
-        and props.hasProperty("compile_step_completed")
-        and "10.5" not in str(props.getProperty("master_branch"))
-    )
+    runS3 = lambda props: hasS3(props) and props.hasProperty("compile_step_completed")
     factory.addStep(
         steps.MasterShellCommand(
             name="Create minio S3 bucket",
