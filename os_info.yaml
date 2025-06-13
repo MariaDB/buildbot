@@ -19,6 +19,15 @@ almalinux-9:
     - aarch64
   type: rpm
   install_only: True
+almalinux-10:
+  image_tag: almalinux10
+  version_name: 10
+  tags:
+    - release_packages
+  arch:
+    - amd64
+  type: rpm
+  install_only: True
 centos-stream9:
   image_tag: centosstream9
   version_name: 9
@@ -171,6 +180,14 @@ rockylinux-9:
   image_tag: rockylinux9
   tags: []
   version_name: 9
+  arch:
+    - amd64
+  type: rpm
+  install_only: True
+rockylinux-10:
+  image_tag: rockylinux10
+  tags: []
+  version_name: 10
   arch:
     - amd64
   type: rpm
