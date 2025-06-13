@@ -6,7 +6,6 @@ DEVELOPMENT_BRANCH = "11.3"
 
 # Used to trigger the appropriate main branch
 BRANCHES_MAIN = [
-    "10.5",
     "10.6",
     "10.11",
     "11.0",
@@ -101,7 +100,7 @@ RELEASE_BRANCHES = ["bb-*-release", "preview-*"]
 # Maximum supported branch is the one where the default distro MariaDB package major version <= branch
 # For example, if Debian 10 has MariaDB 10.3 by default, we don't support MariaDB 10.2 on it.
 SUPPORTED_PLATFORMS = {}
-SUPPORTED_PLATFORMS["10.5"] = [
+SUPPORTED_PLATFORMS["10.6"] = [
     "aarch64-centos-stream9",
     "aarch64-debian-11",
     "aarch64-macos",
@@ -111,6 +110,7 @@ SUPPORTED_PLATFORMS["10.5"] = [
     "aarch64-rhel-9",
     "aarch64-ubuntu-2004",
     "aarch64-ubuntu-2004-debug",
+    "aarch64-ubuntu-2204",
     "amd64-centos-7-bintar",
     "amd64-centos-stream9",
     "amd64-debian-11",
@@ -119,6 +119,7 @@ SUPPORTED_PLATFORMS["10.5"] = [
     "amd64-debian-12-rocksdb",
     "amd64-fedora-40-valgrind",
     "amd64-freebsd-14",
+    "amd64-msan-clang-20",
     "amd64-openeuler-2403",
     "amd64-rhel-7",
     "amd64-rhel-8",
@@ -128,6 +129,7 @@ SUPPORTED_PLATFORMS["10.5"] = [
     "amd64-ubuntu-2004",
     "amd64-ubuntu-2004-debug",
     "amd64-ubuntu-2004-fulltest",
+    "amd64-ubuntu-2204",
     "amd64-ubuntu-2204-debug-ps",
     "amd64-ubuntu-2204-icc",
     "amd64-ubuntu-2404-clang18-asan",
@@ -140,23 +142,15 @@ SUPPORTED_PLATFORMS["10.5"] = [
     "ppc64le-ubuntu-2004",
     "ppc64le-ubuntu-2004-debug",
     "ppc64le-ubuntu-2004-without-server",
+    "ppc64le-ubuntu-2204",
     "s390x-rhel-8",
     "s390x-rhel-9",
     "s390x-ubuntu-2004",
     "s390x-ubuntu-2004-debug",
-    "x86-debian-12-fulltest",
-    "x86-debian-12-fulltest-debug",
-]
-
-SUPPORTED_PLATFORMS["10.6"] = SUPPORTED_PLATFORMS["10.5"].copy()
-
-SUPPORTED_PLATFORMS["10.6"] += [
-    "aarch64-ubuntu-2204",
-    "amd64-msan-clang-20",
-    "amd64-ubuntu-2204",
-    "ppc64le-ubuntu-2204",
     "s390x-ubuntu-2204",
     "x86-debian-12",
+    "x86-debian-12-fulltest",
+    "x86-debian-12-fulltest-debug",
 ]
 
 SUPPORTED_PLATFORMS["10.9"] = SUPPORTED_PLATFORMS["10.6"].copy()

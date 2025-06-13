@@ -486,7 +486,7 @@ def hasDockerLibrary(step: BuildStep) -> bool:
     builder_name = step.getProperty("buildername")
 
     # from https://github.com/MariaDB/mariadb-docker/blob/next/update.sh#L7-L15
-    if fnmatch.fnmatch(branch, "10.[56]"):
+    if fnmatch.fnmatch(branch, "10.6"):
         dockerbase = "ubuntu-2004-deb-autobake"
     elif fnmatch.fnmatch(branch, "10.11"):
         dockerbase = "ubuntu-2204-deb-autobake"
@@ -494,7 +494,7 @@ def hasDockerLibrary(step: BuildStep) -> bool:
         dockerbase = "ubuntu-2404-deb-autobake"
 
     # UBI images
-    if branch != "10.5" and builder_name.endswith("amd64-rhel-9-rpm-autobake"):
+    if builder_name.endswith("amd64-rhel-9-rpm-autobake"):
         return True
 
     # We only build on the above autobakes for all architectures
@@ -502,8 +502,6 @@ def hasDockerLibrary(step: BuildStep) -> bool:
 
 
 def filterBranch(step: BuildStep) -> str:
-    if "10.5" in step.getProperty("branch"):
-        return False
     if "10.6" in step.getProperty("branch"):
         return False
     return True
