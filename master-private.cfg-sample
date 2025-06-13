@@ -11,7 +11,7 @@ private["user_pass"]= {
     "admin":"user_pass",
 }
 private["master-variables"] = {
-    "max_builds": 16,
+    "max_builds": 18,
     "starting_port": 9995,
     "workers": {
         "amd64": [
