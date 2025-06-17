@@ -26,6 +26,35 @@ class FetchTarball(Command):
         ]
 
 
+class GitInitFromCommit(Command):
+    """
+    A command that receives a commit hash and a repository URL,
+    then:
+    - Initializes a new Git repository in the specified working directory
+    - Fetches the specified commit from the remote repository with a depth of 1
+    - Fetches all submodules recursively
+    - Checks out the fetched commit, making it the current HEAD of the repository.
+    Attributes:
+        commit (str): The commit hash to fetch.
+        repo_url (str): The URL of the repository from which to fetch the commit.
+        workdir (PurePath): The working directory where the repository will be initialized.
+    """
+
+    def __init__(self, commit: str, repo_url: str, workdir: PurePath = PurePath(".")):
+        super().__init__(name="Git", workdir=workdir)
+        self.commit = commit
+        self.repo_url = repo_url
+
+    def as_cmd_arg(self) -> list[str]:
+        return [
+            "bash",
+            "-exc",
+            util.Interpolate(
+                f"git init && git remote add origin {self.repo_url} && git fetch --recurse-submodules --depth 1 origin {self.commit} && git checkout FETCH_HEAD"
+            ),
+        ]
+
+
 # TODO (Razvan):This is a copy-paste only to showcase a full factory. Re-work needed.
 class FetchCompat(Command):
     """
