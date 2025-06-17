@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from pathlib import PurePath
 from typing import Union
 
 try:
@@ -25,12 +26,17 @@ class Option(ABC):
     def __init__(self, name: StrEnum, value: Union[str, int, bool] = True):
         assert isinstance(name, StrEnum)
         assert (
-            isinstance(value, str) or isinstance(value, bool) or isinstance(value, int)
+            isinstance(value, str)
+            or isinstance(value, bool)
+            or isinstance(value, int)
+            or isinstance(value, PurePath)
         )
         self.name = str(name)
         if isinstance(value, str):
             # Quote if necessary.
             self.value = self._quote_value(value)
+        elif isinstance(value, PurePath):
+            self.value = self._quote_value(str(value))
         else:
             self.value = value
 
