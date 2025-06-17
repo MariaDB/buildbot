@@ -179,7 +179,6 @@ rockylinux-8:
   arch:
     - amd64
     - aarch64
-    - ppc64le
   type: rpm
   install_only: True
 rockylinux-9:
