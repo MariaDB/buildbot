@@ -79,6 +79,19 @@ class WITH(StrEnum):
         return f"WITH_{self.value}"
 
 
+class WITHOUT(StrEnum):
+    """
+    Enumerates valid options for MariaDB's CMake configuration. Each
+    option starts with WITHOUT_.
+    """
+
+    SERVER = "SERVER"
+    PACKED_SORT_KEYS = "PACKED_SORT_KEYS"
+
+    def __str__(self):
+        return f"WITHOUT_{self.value}"
+
+
 class OTHER(StrEnum):
     """
     Enumerates other valid options for MariaDB's

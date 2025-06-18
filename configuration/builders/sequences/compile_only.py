@@ -14,6 +14,7 @@ from configuration.steps.generators.cmake.options import (
     OTHER,
     PLUGIN,
     WITH,
+    WITHOUT,
     BuildType,
     CMakeOption,
 )
@@ -86,6 +87,26 @@ def no_perf_schema(
             CMakeOption(WITH.EXTRA_CHARSETS, "complex"),
             CMakeOption(WITH.SSL, "system"),
             CMakeOption(OTHER.ENABLED_PROFILING, "OFF"),
+        ],
+    ):
+        sequence.add_step(step)
+
+    return sequence
+
+
+def without_server(
+    config,
+    jobs,
+):
+    ### INIT
+    sequence = BuildSequence()
+
+    for step in steps_compile_only(
+        config,
+        jobs,
+        cmake_step_name="Without Server",
+        cmake_flags=[
+            CMakeOption(WITHOUT.SERVER, True),
         ],
     ):
         sequence.add_step(step)
