@@ -40,17 +40,30 @@ class GitInitFromCommit(Command):
         workdir (PurePath): The working directory where the repository will be initialized.
     """
 
-    def __init__(self, commit: str, repo_url: str, workdir: PurePath = PurePath(".")):
+    def __init__(
+        self,
+        commit: str,
+        repo_url: str,
+        workdir: PurePath = PurePath("."),
+        jobs: int = 1,
+    ):
         super().__init__(name="Git", workdir=workdir)
         self.commit = commit
         self.repo_url = repo_url
+        self.jobs = jobs
 
     def as_cmd_arg(self) -> list[str]:
         return [
             "bash",
             "-exc",
             util.Interpolate(
-                f"git init && git remote add origin {self.repo_url} && git fetch --recurse-submodules --depth 1 origin {self.commit} && git checkout FETCH_HEAD"
+                (
+                    "git init && "
+                    f"git remote add origin {self.repo_url} && "
+                    f"git fetch --depth 1 origin {self.commit} && "
+                    "git checkout FETCH_HEAD && "
+                    f"git submodule update --init --recursive --depth 1 --jobs={self.jobs}"
+                )
             ),
         ]
 
