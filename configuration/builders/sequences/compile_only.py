@@ -130,6 +130,7 @@ def steps_compile_only(
                     command=GitInitFromCommit(
                         repo_url="%(prop:repository)s",
                         commit="%(prop:revision)s",
+                        jobs=jobs,
                     ),
                 ),
                 docker_environment=config,
