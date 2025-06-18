@@ -45,6 +45,9 @@ STAGING_PROT_TEST_BRANCHES = [
 GITHUB_STATUS_BUILDERS = [
     "aarch64-macos-compile-only",
     "aarch64-debian-11",
+    "amd64-compile-only-minimal",
+    "amd64-compile-only-nopart-debug",
+    "amd64-compile-only-noperf_schema",
     "amd64-debian-12",
     "amd64-debian-12-debug-embedded",
     "amd64-debian-12-deb-autobake",
