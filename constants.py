@@ -48,6 +48,7 @@ GITHUB_STATUS_BUILDERS = [
     "amd64-compile-only-minimal",
     "amd64-compile-only-nopart-debug",
     "amd64-compile-only-noperf_schema",
+    "amd64-compile-only-without-server",
     "amd64-debian-12",
     "amd64-debian-12-debug-embedded",
     "amd64-debian-12-deb-autobake",
