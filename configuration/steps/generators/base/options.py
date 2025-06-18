@@ -23,7 +23,7 @@ class Option(ABC):
             return '"' + value.replace('"', '\\"') + '"'
         return value
 
-    def __init__(self, name: StrEnum, value: Union[str, int, bool] = True):
+    def __init__(self, name: StrEnum, value: Union[str, int, bool, PurePath] = True):
         assert isinstance(name, StrEnum)
         assert (
             isinstance(value, str)
