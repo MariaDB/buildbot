@@ -26,7 +26,6 @@ RUN apt-get update \
       cmake \
       curl \
       g++ \
-      g++-multilib \
       gdb \
       libcapnp-dev \
       libzstd-dev \
@@ -41,7 +40,7 @@ RUN apt-get update \
     && rm master.zip \
     && mkdir -p build \
     && cd build \
-    && cmake -DCMAKE_PREFIX=/usr ../rr-master \
+    && cmake -Ddisable32bit=ON -DCMAKE_PREFIX=/usr ../rr-master \
     && cmake --build . --parallel 12 \
     && cmake --install . --prefix /tmp/install/usr \
     && apt-get purge -y \
@@ -50,7 +49,6 @@ RUN apt-get update \
       cmake \
       curl \
       g++ \
-      g++-multilib \
       gdb \
       libcapnp-dev \
       libzstd-dev \

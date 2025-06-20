@@ -33,7 +33,7 @@ jobs:
       matrix:
         include:
           - image: debian:12
-            platforms: linux/amd64
+            platforms: linux/amd64, linux/arm64/v8
             branch: 10.11
             tag: debian12-msan-clang-20
             clang_version: 20
