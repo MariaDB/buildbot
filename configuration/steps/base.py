@@ -20,11 +20,16 @@ class StepOptions:  # all step (shell, compile, etc) types support these options
     alwaysRun: bool = False
     haltOnFailure: bool = True
     doStepIf: callable = lambda _: True
+    description: str = None
+    descriptionDone: str = None
 
     @property
     def getopt(self):
-        Options = namedtuple("Options", ["alwaysRun", "haltOnFailure", "doStepIf"])
-        return Options(self.alwaysRun, self.haltOnFailure, self.doStepIf)._asdict()
+        return {
+            key: value
+            for key, value in self.__dict__.items()
+            if not key.startswith("_") and value is not None
+        }
 
 
 class BaseStep(ABC):
