@@ -82,21 +82,21 @@ sudo mariadb -e "drop database if exists test; \
   insert into t values (1); \
   select * from t; \
   drop table t;"
-# Columnstore tests are currently skipped for Fedora (see MCOL-5825) or Columnstore packages were not found
 
-if [[ $ID != "fedora" && "${ID}${VERSION_ID}" != "centos10" ]] && ( echo "$pkg_list" | grep -qi "columnstore" ) ; then
-  sudo mariadb --verbose -e "create database cs; \
-    use cs; \
-    create table cs.t_columnstore (a int, b char(8)) engine=Columnstore; \
-    insert into cs.t_columnstore select seq, concat('val',seq) from seq_1_to_10; \
-    select * from cs.t_columnstore"
-  sudo systemctl restart mariadb
-  sudo mariadb --verbose -e "select * from cs.t_columnstore; \
-    update cs.t_columnstore set b = 'updated'"
-  sudo systemctl restart mariadb-columnstore
-  sudo mariadb --verbose -e "update cs.t_columnstore set a = a + 10; \
-    select * from cs.t_columnstore"
-fi
+### FIXME: Disable Columnstore tests until MCOL-5825 - selinux rules needed to enable columnstore is sorted out
+# if [[ $ID != "fedora" && "${ID}${VERSION_ID}" != "centos10" ]] && ( echo "$pkg_list" | grep -qi "columnstore" ) ; then
+#   sudo mariadb --verbose -e "create database cs; \
+#     use cs; \
+#     create table cs.t_columnstore (a int, b char(8)) engine=Columnstore; \
+#     insert into cs.t_columnstore select seq, concat('val',seq) from seq_1_to_10; \
+#     select * from cs.t_columnstore"
+#   sudo systemctl restart mariadb
+#   sudo mariadb --verbose -e "select * from cs.t_columnstore; \
+#     update cs.t_columnstore set b = 'updated'"
+#   sudo systemctl restart mariadb-columnstore
+#   sudo mariadb --verbose -e "update cs.t_columnstore set a = a + 10; \
+#     select * from cs.t_columnstore"
+# fi
 sudo mariadb -e 'show global status like "wsrep%%"'
 bb_log_info "test for MDEV-18563, MDEV-18526"
 set +e
