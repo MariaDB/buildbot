@@ -241,6 +241,21 @@ def rpm_autobake(
             docker_environment=config,
             step=ShellStep(
                 command=CompileMakeCommand(
+                    option=MAKE.PACKAGE_SOURCE,
+                    jobs=jobs,
+                    verbose=False,
+                    workdir=RPM_AUTOBAKE_BASE_WORKDIR,
+                ),
+                options=StepOptions(descriptionDone="MAKE source package"),
+            ),
+        )
+    )
+
+    sequence.add_step(
+        InContainer(
+            docker_environment=config,
+            step=ShellStep(
+                command=CompileMakeCommand(
                     option=MAKE.COMPILE,
                     jobs=jobs,
                     verbose=False,
@@ -263,21 +278,6 @@ def rpm_autobake(
                     workdir=RPM_AUTOBAKE_BASE_WORKDIR,
                 ),
                 options=StepOptions(descriptionDone="MAKE package"),
-            ),
-        )
-    )
-
-    sequence.add_step(
-        InContainer(
-            docker_environment=config,
-            step=ShellStep(
-                command=CompileMakeCommand(
-                    option=MAKE.PACKAGE_SOURCE,
-                    jobs=jobs,
-                    verbose=False,
-                    workdir=RPM_AUTOBAKE_BASE_WORKDIR,
-                ),
-                options=StepOptions(descriptionDone="MAKE source package"),
             ),
         )
     )
