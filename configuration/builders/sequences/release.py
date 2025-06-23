@@ -64,6 +64,7 @@ def deb_autobake(
             docker_environment=config,
             step=ShellStep(
                 command=FetchTarball(workdir=PurePath("build/debian")),
+                options=StepOptions(descriptionDone="Fetch tarball"),
             ),
         ),
     )
@@ -76,6 +77,7 @@ def deb_autobake(
                 env_vars=[
                     ("DEB_BUILD_OPTIONS", "parallel=%s" % jobs),
                 ],
+                options=StepOptions(descriptionDone="Compile DEB autobake"),
             ),
         )
     )
@@ -103,6 +105,7 @@ def deb_autobake(
                     buildername=buildername,
                     workdir=PurePath("build"),
                 ),
+                options=StepOptions(descriptionDone="Create DEB repository"),
             ),
         )
     )
@@ -115,6 +118,7 @@ def deb_autobake(
                 command=InstallDEB(
                     workdir=PurePath("build/debs"), packages_file="Packages"
                 ),
+                options=StepOptions(descriptionDone="Install DEB packages"),
             ),
         )
     )
@@ -207,6 +211,7 @@ def rpm_autobake(
             container_commit=False,
             step=ShellStep(
                 command=FetchTarball(workdir=RPM_AUTOBAKE_BASE_WORKDIR),
+                options=StepOptions(descriptionDone="Fetch tarball"),
             ),
         )
     )
@@ -226,6 +231,7 @@ def rpm_autobake(
                     ),
                     workdir=RPM_AUTOBAKE_BASE_WORKDIR,
                 ),
+                options=StepOptions(descriptionDone="Configure"),
             ),
         )
     )
@@ -241,6 +247,7 @@ def rpm_autobake(
                     workdir=RPM_AUTOBAKE_BASE_WORKDIR,
                     output_sync=True,
                 ),
+                options=StepOptions(descriptionDone="MAKE compile"),
             ),
         )
     )
@@ -255,6 +262,7 @@ def rpm_autobake(
                     verbose=False,
                     workdir=RPM_AUTOBAKE_BASE_WORKDIR,
                 ),
+                options=StepOptions(descriptionDone="MAKE package"),
             ),
         )
     )
@@ -269,6 +277,7 @@ def rpm_autobake(
                     verbose=False,
                     workdir=RPM_AUTOBAKE_BASE_WORKDIR,
                 ),
+                options=StepOptions(descriptionDone="MAKE source package"),
             ),
         )
     )
@@ -296,6 +305,7 @@ def rpm_autobake(
                     workdir=RPM_AUTOBAKE_BASE_WORKDIR,
                     property_name="packages",
                 ),
+                options=StepOptions(descriptionDone="Install RPM packages"),
             ),
         )
     )
@@ -392,7 +402,9 @@ def get_mtr_normal_steps(
                         ],
                     ),
                 ),
-                options=StepOptions(haltOnFailure=halt_on_failure),
+                options=StepOptions(
+                    haltOnFailure=halt_on_failure, descriptionDone="MTR normal"
+                ),
             )
         )
     )
@@ -428,7 +440,9 @@ def get_mtr_rocksdb_steps(
                         ],
                     ),
                 ),
-                options=StepOptions(haltOnFailure=halt_on_failure),
+                options=StepOptions(
+                    haltOnFailure=halt_on_failure, descriptionDone="MTR rocksdb"
+                ),
             )
         )
     )
@@ -471,7 +485,9 @@ def get_mtr_galera_steps(
                         ),
                     ),
                 ),
-                options=StepOptions(haltOnFailure=halt_on_failure),
+                options=StepOptions(
+                    haltOnFailure=halt_on_failure, descriptionDone="MTR galera"
+                ),
             )
         )
     )
@@ -522,7 +538,9 @@ def get_mtr_s3_steps(
                     ("S3_USE_HTTPS", "OFF"),
                     ("S3_PROTOCOL_VERSION", "Path"),
                 ],
-                options=StepOptions(haltOnFailure=halt_on_failure),
+                options=StepOptions(
+                    haltOnFailure=halt_on_failure, descriptionDone="MTR S3"
+                ),
             )
         )
     )
