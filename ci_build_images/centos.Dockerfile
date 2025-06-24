@@ -72,6 +72,7 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     eigen3-devel \
     flex \
     galera-4 \
+    libaio-devel \
     libcurl-devel \
     libevent-devel \
     libffi-devel \

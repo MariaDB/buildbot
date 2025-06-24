@@ -604,7 +604,7 @@ check_upgraded_versions() {
     # The adjustments should be done to .cmp files, and removed after the release
     #
 
-    # Remove after Q4 2024 release
+    # Remove after Q3 2025 release (MDEV-36234)
     sed -i '/libaio.so/d;/liburing.so/d' ./reqs-*.cmp
     sed -i '/libaio.so/d;/liburing.so/d' ./ldd-*.cmp
     sed -i '/lsof/d' ./reqs-*.cmp
