@@ -39,6 +39,7 @@ RUN echo "fastestmirror=true" >> /etc/dnf/dnf.conf \
     java-1.8.0-openjdk-devel \
     java-1.8.0-openjdk \
     jemalloc-devel \
+    libaio-devel \
     libcurl-devel \
     libevent-devel \
     libffi-devel \
