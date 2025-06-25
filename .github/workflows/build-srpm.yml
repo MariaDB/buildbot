@@ -1,0 +1,205 @@
+---
+name: bbw-build-container-srpm
+
+on:
+  push:
+    branches:
+      - 'main'
+      - 'dev'
+    paths:
+      - 'ci_build_images/srpm.Dockerfile'
+  pull_request:
+    paths:
+      - 'ci_build_images/srpm.Dockerfile'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    name: ${{ matrix.image }} (${{ matrix.tag }} ${{ matrix.platforms }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - dockerfile: srpm.Dockerfile
+            image: fedora:41
+            tag: fedora41-srpm
+            platforms: linux/amd64, linux/arm64/v8
+
+          - dockerfile: srpm.Dockerfile
+            image: fedora:42
+            tag: fedora42-srpm
+            platforms: linux/amd64, linux/arm64/v8
+
+          - dockerfile: srpm.Dockerfile
+            image: registry.access.redhat.com/ubi7
+            tag: rhel7-srpm
+            platforms: linux/amd64
+
+          - dockerfile: srpm.Dockerfile
+            image: registry.access.redhat.com/ubi8
+            tag: rhel8-srpm
+            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
+
+          - dockerfile: srpm.Dockerfile
+            image: registry.access.redhat.com/ubi9
+            tag: rhel9-srpm
+            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
+
+          - dockerfile: srpm.Dockerfile
+            image: registry.access.redhat.com/ubi10
+            tag: rhel10-srpm
+            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
+
+          - dockerfile: srpm.Dockerfile
+            image: quay.io/centos/centos:stream9
+            tag: centosstream9-srpm
+            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
+
+          - dockerfile: srpm.Dockerfile
+            image: quay.io/centos/centos:stream10
+            tag: centosstream10-srpm
+            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
+
+          - dockerfile: srpm.Dockerfile
+            image: opensuse/leap:15.6
+            tag: opensuse1506-srpm
+            platforms: linux/amd64
+
+          - dockerfile: srpm.Dockerfile
+            image: registry.suse.com/bci/bci-base:15.6
+            tag: sles1506-srpm
+            platforms: linux/amd64
+
+
+    env:
+      DEPLOY_IMAGES: false
+      MAIN_BRANCH: false
+      WORKDIR: ci_build_images
+
+    steps:
+      - name: Enable Production release - no rebuild
+        run: echo "MAIN_BRANCH=true" >> $GITHUB_ENV
+        if: github.ref == 'refs/heads/main'
+
+      - uses: actions/checkout@v4
+      - name: Set up env vars
+        run: |
+          set -vx
+          echo "REPO=bb-worker" >>$GITHUB_ENV
+
+      - name: Generate Dockerfile and necessary files
+        if: ${{ env.MAIN_BRANCH == 'false' }}
+        run: |
+          cd ${{ env.WORKDIR }}
+          cat ${{ matrix.dockerfile }} >$GITHUB_WORKSPACE/Dockerfile
+
+      - name: Check Dockerfile with hadolint
+        if: ${{ env.MAIN_BRANCH == 'false' }}
+        run: |
+          docker run -i -v $(pwd):/mnt -w /mnt ghcr.io/hadolint/hadolint:latest hadolint /mnt/Dockerfile
+
+      - name: Install qemu-user-static
+        if: ${{ env.MAIN_BRANCH == 'false' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-user-static
+
+      - name: Build image
+        if: ${{ env.MAIN_BRANCH == 'false' }}
+        run: |
+          podman manifest create ${{ env.REPO }}:${{ matrix.tag }}
+          for arch in $(echo ${{ matrix.platforms }} | sed 's/,/ /g'); do
+            msg="Build $arch:"
+            line="${msg//?/=}"
+            printf "\n${line}\n${msg}\n${line}\n"
+            podman buildx build --tag ${{ env.REPO }}:${{ matrix.tag }}-${arch//\//-} \
+              --platform $arch \
+              --manifest ${{ env.REPO }}:${{ matrix.tag }} \
+              -f $GITHUB_WORKSPACE/Dockerfile \
+              --build-arg BASE_IMAGE=${{ matrix.image }}
+          done
+          podman images
+
+      - name: Push images to local registry
+        if: ${{ env.MAIN_BRANCH == 'false'}}
+        run: |
+          podman manifest push --tls-verify=0 \
+            --all ${{ env.REPO }}:${{ matrix.tag }} \
+            docker://localhost:5000/${{ env.REPO }}:${{ matrix.tag }}
+
+      - name: Check for registry credentials
+        run: |
+          missing=()
+          [[ -n "${{ secrets.QUAY_USER }}" ]] || missing+=(QUAY_USER)
+          [[ -n "${{ secrets.QUAY_TOKEN }}" ]] || missing+=(QUAY_TOKEN)
+          for i in "${missing[@]}"; do
+            echo "Missing github secret: $i"
+          done
+          if (( ${#missing[@]} == 0 )); then
+            echo "DEPLOY_IMAGES=true" >> $GITHUB_ENV
+          else
+            echo "Not pushing images to registry"
+          fi
+
+      - name: Login to ghcr.io
+        if: ${{ env.DEPLOY_IMAGES == 'true' }}
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: ghcr.io - push dev tag
+        if: ${{ env.DEPLOY_IMAGES == 'true' && env.MAIN_BRANCH == 'false' }}
+        run: |
+          msg="Push docker image to ghcr.io (${{ matrix.tag }})"
+          line="${msg//?/=}"
+          printf "\n${line}\n${msg}\n${line}\n"
+          skopeo copy --all --src-tls-verify=0 \
+            docker://localhost:5000/${{ env.REPO }}:${{ matrix.tag }} \
+            docker://ghcr.io/${GITHUB_REPOSITORY,,}/${{ env.REPO }}:dev_${{ matrix.tag }}
+
+
+      - name: ghcr.io - move tag to production
+        if: ${{ env.DEPLOY_IMAGES == 'true' && env.MAIN_BRANCH == 'true' }}
+        run: |
+          msg="Update tag (dev_${{ matrix.tag }} --> ${{ matrix.tag }})"
+          line="${msg//?/=}"
+          printf "\n${line}\n${msg}\n${line}\n"
+          skopeo copy --all --src-tls-verify=0 \
+            docker://ghcr.io/${GITHUB_REPOSITORY,,}/${{ env.REPO }}:dev_${{ matrix.tag }} \
+            docker://ghcr.io/${GITHUB_REPOSITORY,,}/${{ env.REPO }}:${{ matrix.tag }}
+
+      - name: Login to quay.io
+        if: ${{ env.DEPLOY_IMAGES == 'true' }}
+        uses: docker/login-action@v2
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_USER }}
+          password: ${{ secrets.QUAY_TOKEN }}
+
+      - name: quay.io - push dev tag
+        if: ${{ env.DEPLOY_IMAGES == 'true' && env.MAIN_BRANCH == 'false' }}
+        run: |
+          msg="Push docker image to quay.io (${{ matrix.tag }})"
+          line="${msg//?/=}"
+          printf "\n${line}\n${msg}\n${line}\n"
+          skopeo copy --all --src-tls-verify=0 \
+            docker://localhost:5000/${{ env.REPO }}:${{ matrix.tag }} \
+            docker://quay.io/mariadb-foundation/${{ env.REPO }}:dev_${{ matrix.tag }}
+
+      - name: quay.io - move tag to production
+        if: ${{ env.DEPLOY_IMAGES == 'true' && env.MAIN_BRANCH =='true' }}
+        run: |
+          msg="Update tag (dev_${{ matrix.tag }} --> ${{ matrix.tag }})"
+          line="${msg//?/=}"
+          printf "\n${line}\n${msg}\n${line}\n"
+          skopeo copy --all --src-tls-verify=0 \
+            docker://quay.io/mariadb-foundation/${{ env.REPO }}:dev_${{ matrix.tag }} \
+            docker://quay.io/mariadb-foundation/${{ env.REPO }}:${{ matrix.tag }}
