@@ -125,7 +125,7 @@ SUPPORTED_PLATFORMS["10.6"] = [
     "amd64-debian-11-debug-ps-embedded",
     "amd64-debian-12-asan-ubsan",
     "amd64-debian-12-rocksdb",
-    "amd64-fedora-40-valgrind",
+    "amd64-fedora-42-valgrind",
     "amd64-freebsd-14",
     "amd64-msan-clang-20",
     "amd64-openeuler-2403",
