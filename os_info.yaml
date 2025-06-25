@@ -105,6 +105,15 @@ fedora-41:
     - amd64
     - aarch64
   type: rpm
+fedora-42:
+  image_tag: fedora42
+  tags:
+    - release_packages
+  version_name: 42
+  arch:
+    - amd64
+    - aarch64
+  type: rpm
 openeuler-2403:
   image_tag: openeuler2403
   tags:
