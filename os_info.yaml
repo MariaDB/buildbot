@@ -96,15 +96,6 @@ debian-sid:
     - ppc64le
     - x86
   type: deb
-fedora-40:
-  image_tag: fedora40
-  tags:
-    - release_packages
-  version_name: 40
-  arch:
-    - amd64
-    - aarch64
-  type: rpm
 fedora-41:
   image_tag: fedora41
   tags:
