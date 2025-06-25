@@ -36,8 +36,6 @@ RUN echo "fastestmirror=true" >> /etc/dnf/dnf.conf \
     gawk \
     gdb \
     iproute \
-    java-1.8.0-openjdk-devel \
-    java-1.8.0-openjdk \
     jemalloc-devel \
     libaio-devel \
     libcurl-devel \
@@ -63,6 +61,11 @@ RUN echo "fastestmirror=true" >> /etc/dnf/dnf.conf \
     unixODBC-devel \
     wget \
     which \
+    && if [ "$VERSION_ID" = "42" ]; then \
+        dnf -y install java-latest-openjdk-devel java-latest-openjdk; \
+    else \
+        dnf -y install java-1.8.0-openjdk-devel java-1.8.0-openjdk; \
+    fi \
     && if [ "$(uname -m)" = "x86_64" ]; then dnf -y install libpmem-devel; fi \
     && if [ "$INSTALL_VALGRIND" = "true" ]; then dnf -y install valgrind; fi \
     && dnf clean all
