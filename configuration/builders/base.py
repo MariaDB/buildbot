@@ -1,3 +1,4 @@
+import os
 from typing import Callable, Iterable
 
 from buildbot.plugins import util
@@ -78,6 +79,7 @@ class BaseBuilder:
         # Step Pre-Processing
         active_steps = processor_set_docker_runtime_environment(
             builder_name=self.name,
+            environment=os.environ["ENVIRON"],
             active_steps=active_steps,
         )
 

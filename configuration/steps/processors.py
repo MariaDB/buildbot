@@ -221,7 +221,7 @@ def processor_worker_cleanup(
 
 
 def processor_set_docker_runtime_environment(
-    builder_name: str, active_steps: list[BaseStep]
+    builder_name: str, active_steps: list[BaseStep], environment: str
 ) -> None:
     """Set the Docker runtime environment for InContainer steps.
     This function updates the Docker environment for all InContainer steps in the
@@ -235,5 +235,7 @@ def processor_set_docker_runtime_environment(
     for step in active_steps:
         if isinstance(step, InContainer):
             step.docker_environment._container_name = builder_name
+            if environment == "DEV":
+                step.docker_environment._container_name = f"dev_{builder_name}"
 
     return active_steps
