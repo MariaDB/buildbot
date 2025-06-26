@@ -4,7 +4,7 @@
 # Provides a base Ubuntu image with latest buildbot worker installed
 # and PHP build dependencies
 
-FROM       ubuntu:20.04
+FROM       ubuntu:22.04
 LABEL maintainer="MariaDB Buildbot maintainers"
 
 ARG DEBIAN_FRONTEND=noninteractive

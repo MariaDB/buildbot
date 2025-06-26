@@ -55,17 +55,17 @@ GITHUB_STATUS_BUILDERS = [
     "amd64-debian-11-debug-ps-embedded",
     "amd64-msan-clang-20",
     "amd64-fedora-41",
-    "amd64-ubuntu-2004-debug",
+    "amd64-ubuntu-2204-debug",
     "amd64-ubuntu-2204-debug-ps",
     "amd64-windows",
 ]
 
 # Special builders triggering
-BUILDERS_BIG = ["amd64-ubuntu-2004-bigtest"]
+BUILDERS_BIG = ["amd64-ubuntu-2204-bigtest"]
 BUILDERS_ECO = [
     "amd64-debian-10-eco-mysqljs",
     "amd64-debian-10-eco-pymysql",
-    "amd64-ubuntu-2004-eco-php",
+    "amd64-ubuntu-2204-eco-php",
 ]
 
 if os.environ["ENVIRON"] == "DEV":
@@ -77,15 +77,15 @@ else:
 
 BUILDERS_GALERA_MTR = [
     "aarch64-debian-12",
-    "s390x-ubuntu-2004",
     "s390x-ubuntu-2204",
-    "ppc64le-ubuntu-2004",
+    "s390x-ubuntu-2204",
+    "ppc64le-ubuntu-2204",
     "ppc64le-ubuntu-2204",
     "amd64-freebsd-14",
 ]
 BUILDERS_S3_MTR = [
-    "aarch64-ubuntu-2004-debug",
-    "amd64-ubuntu-2004-debug",
+    "aarch64-ubuntu-2204-debug",
+    "amd64-ubuntu-2204-debug",
     "s390x-sles-1506",
 ]
 
@@ -112,9 +112,8 @@ SUPPORTED_PLATFORMS["10.6"] = [
     "aarch64-openeuler-2403",
     "aarch64-rhel-8",
     "aarch64-rhel-9",
-    "aarch64-ubuntu-2004",
-    "aarch64-ubuntu-2004-debug",
     "aarch64-ubuntu-2204",
+    "aarch64-ubuntu-2204-debug",
     "amd64-centos-7-bintar",
     "amd64-centos-stream9",
     "amd64-compile-only-minimal",
@@ -134,10 +133,9 @@ SUPPORTED_PLATFORMS["10.6"] = [
     "amd64-rhel-9",
     "amd64-rhel-9-rpm-autobake-migration",
     "amd64-last-N-failed",
-    "amd64-ubuntu-2004",
-    "amd64-ubuntu-2004-debug",
-    "amd64-ubuntu-2004-fulltest",
     "amd64-ubuntu-2204",
+    "amd64-ubuntu-2204-debug",
+    "amd64-ubuntu-2204-fulltest",
     "amd64-ubuntu-2204-debug-ps",
     "amd64-ubuntu-2204-icc",
     "amd64-ubuntu-2404-clang18-asan",
@@ -147,14 +145,12 @@ SUPPORTED_PLATFORMS["10.6"] = [
     "ppc64le-centos-stream9",
     "ppc64le-rhel-8",
     "ppc64le-rhel-9",
-    "ppc64le-ubuntu-2004",
-    "ppc64le-ubuntu-2004-debug",
     "ppc64le-ubuntu-2204",
+    "ppc64le-ubuntu-2204-debug",
     "s390x-rhel-8",
     "s390x-rhel-9",
-    "s390x-ubuntu-2004",
-    "s390x-ubuntu-2004-debug",
     "s390x-ubuntu-2204",
+    "s390x-ubuntu-2204-debug",
     "x86-debian-12",
     "x86-debian-12-fulltest",
     "x86-debian-12-fulltest-debug",
