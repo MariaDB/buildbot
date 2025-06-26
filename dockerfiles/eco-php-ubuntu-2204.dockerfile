@@ -10,22 +10,22 @@ LABEL maintainer="MariaDB Buildbot maintainers"
 ARG DEBIAN_FRONTEND=noninteractive
 
 # libaio1, snappy/numa is for the mariadb tarball
-# libreadline5 for mariadb client
+# libedit2 liburing2 for mariadb client
 # curl, git used in intialization, rest are
 # for php.
 RUN apt-get update -y && \
     apt-get install -y \
       libaio1              \
       liblzo2-2 liblzma5 libbz2-1.0 \
-      libsnappy1v5 libnuma1 libreadline5 libpmem1 \
+      libsnappy1v5 libnuma1 libedit2 liburing2  libpmem1 \
       python3 python3-pip  \
       curl                 \
       language-pack-de     \
       libgmp-dev           \
       libicu-dev           \
       libtidy-dev          \
-      libenchant-dev       \
-      libaspell-dev        \
+      #https://github.com/oerdnj/deb.sury.org/issues/1542
+      libenchant-2-dev     \
       libpspell-dev        \
       librecode-dev        \
       libsasl2-dev         \
