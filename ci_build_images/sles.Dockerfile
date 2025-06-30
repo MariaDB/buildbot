@@ -63,16 +63,15 @@ RUN zypper -n update \
     subversion \
     systemd-devel \
     wget \
-    # temporary add opensuse oss repo for some deps \
-    && zypper addrepo https://download.opensuse.org/distribution/leap/RELEASEVER/repo/oss/ repo-oss \
-    && sed -i "s/RELEASEVER/\$releasever/" /etc/zypp/repos.d/repo-oss.repo \
-    # temp add since repo (no 15.6 version) for eigen3 \
-    && zypper addrepo https://download.opensuse.org/repositories/science/SLE_15_SP5/science.repo \
-    && zypper --gpg-auto-import-keys ref science repo-oss \
+    # Using OSS repository only for judy-devel as a build-time dependency.
+    # As of now libJudy1 is still 1.0.5 in BCI for both 15.6 and 15.7.
+    # On the next bump recheck if libJudy and judy-devel versions are the same.
+    # Note that 15.7 is not available because OpenSuse jumped from 15.6 to 16.0
+    && zypper addrepo https://download.opensuse.org/distribution/leap/15.6/repo/oss/ repo-oss \
+    && zypper --gpg-auto-import-keys ref repo-oss \
     && zypper -n install \
-    eigen3-devel \
     judy-devel \
-    && rm /etc/zypp/repos.d/repo-oss.repo /etc/zypp/repos.d/science.repo \
+    && rm /etc/zypp/repos.d/repo-oss.repo \
     && zypper modifyrepo --enable SLE_BCI_source \
     && ./mariadb_zypper_expect \
     && zypper clean -a \

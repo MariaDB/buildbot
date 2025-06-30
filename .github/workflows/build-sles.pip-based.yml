@@ -36,6 +36,11 @@ jobs:
             tag: sles1506
             nogalera: false
 
+          - image: registry.suse.com/bci/bci-base:15.7
+            platforms: linux/amd64, linux/s390x
+            tag: sles1507
+            nogalera: true
+
     uses: ./.github/workflows/bbw_build_container_template.yml
     with:
       dockerfile: sles.Dockerfile pip.Dockerfile
