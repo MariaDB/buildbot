@@ -201,6 +201,15 @@ sles-1506:
     - amd64
     - s390x
   type: rpm
+sles-1507:
+  image_tag: sles1507
+  tags:
+    - release_packages
+  version_name: 15
+  arch:
+    - amd64
+    - s390x
+  type: rpm
 ubuntu-2004:
   image_tag: ubuntu20.04
   tags:
