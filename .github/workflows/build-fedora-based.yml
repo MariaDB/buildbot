@@ -20,6 +20,10 @@ on:
       - .github/workflows/bbw_build_container_template.yml
   workflow_call:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+
 jobs:
   build-images:
     strategy:

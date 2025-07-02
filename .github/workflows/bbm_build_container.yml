@@ -12,6 +12,10 @@ on:
       - "Dockerfile"
       - .github/workflows/bbm_build_container.yml
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+
 jobs:
   build:
     runs-on: ubuntu-22.04
