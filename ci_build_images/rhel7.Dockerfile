@@ -76,6 +76,7 @@ RUN yum -y upgrade \
      # USE CMAKE 3
      && yum -y remove cmake \
      && ln -sf /usr/bin/cmake3 /usr/bin/cmake \
+     && ln -sf /usr/bin/cpack3 /usr/bin/cpack \
      && curl -sL "https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_$(uname -m)" >/usr/local/bin/dumb-init \
      && chmod +x /usr/local/bin/dumb-init \
      # Upgrade pip
