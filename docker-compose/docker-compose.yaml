@@ -32,6 +32,7 @@ services:
     network_mode: host
     volumes:
       - ./crossbar/dev/config.json:/node/.crossbar/config.json
+    command: --loglevel=debug
     logging:
       driver: journald
       options:
