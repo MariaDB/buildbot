@@ -1,7 +1,6 @@
 ---
 almalinux-8:
   image_tag: almalinux8
-  version_name: 8
   tags:
     - release_packages
   arch:
@@ -12,7 +11,6 @@ almalinux-8:
   install_only: True
 almalinux-9:
   image_tag: almalinux9
-  version_name: 9
   tags:
     - release_packages
   arch:
@@ -23,7 +21,6 @@ almalinux-9:
   install_only: True
 almalinux-10:
   image_tag: almalinux10
-  version_name: 10
   tags:
     - release_packages
   arch:
@@ -34,7 +31,6 @@ almalinux-10:
   install_only: True
 centos-stream9:
   image_tag: centosstream9
-  version_name: 9
   tags:
     - release_packages
   arch:
@@ -44,7 +40,6 @@ centos-stream9:
   type: rpm
 centos-stream10:
   image_tag: centosstream10
-  version_name: 10
   tags:
     - release_packages
     - bleeding-edge
@@ -55,7 +50,6 @@ centos-stream10:
   type: rpm
 debian-11:
   image_tag: debian11
-  version_name: bullseye
   tags:
     - release_packages
   arch:
@@ -64,7 +58,6 @@ debian-11:
   type: deb
 debian-12:
   image_tag: debian12
-  version_name: bookworm
   tags:
     - release_packages
   arch:
@@ -75,7 +68,6 @@ debian-12:
   type: deb
 debian-13:
   image_tag: debian13
-  version_name: trixie
   tags:
     - release_packages
   arch:
@@ -86,7 +78,6 @@ debian-13:
   type: deb
 debian-sid:
   image_tag: debiansid
-  version_name: sid
   tags:
     - release_packages
     - bleeding-edge
@@ -100,7 +91,6 @@ fedora-41:
   image_tag: fedora41
   tags:
     - release_packages
-  version_name: 41
   arch:
     - amd64
     - aarch64
@@ -118,7 +108,6 @@ openeuler-2403:
   image_tag: openeuler2403
   tags:
     - release_packages
-  version_name: 24.03
   arch:
     - amd64
     - aarch64
@@ -127,7 +116,6 @@ opensuse-1506:
   image_tag: opensuse1506
   tags:
     - release_packages
-  version_name: 156
   arch:
     - amd64
   type: rpm
@@ -135,7 +123,6 @@ rhel-7:
   image_tag: rhel7
   tags:
     - release_packages
-  version_name: 7
   arch:
     - amd64
   type: rpm
@@ -143,7 +130,6 @@ rhel-8:
   image_tag: rhel8
   tags:
     - release_packages
-  version_name: 8
   arch:
     - amd64
     - aarch64
@@ -154,7 +140,6 @@ rhel-9:
   image_tag: rhel9
   tags:
     - release_packages
-  version_name: 9
   arch:
     - amd64
     - aarch64
@@ -165,7 +150,6 @@ rhel-10:
   image_tag: rhel10
   tags:
     - release_packages
-  version_name: 10
   arch:
     - amd64
     - aarch64
@@ -175,7 +159,6 @@ rhel-10:
 rockylinux-8:
   image_tag: rockylinux8
   tags: []
-  version_name: 8
   arch:
     - amd64
     - aarch64
@@ -184,7 +167,6 @@ rockylinux-8:
 rockylinux-9:
   image_tag: rockylinux9
   tags: []
-  version_name: 9
   arch:
     - amd64
     - aarch64
@@ -194,7 +176,6 @@ rockylinux-9:
 rockylinux-10:
   image_tag: rockylinux10
   tags: []
-  version_name: 10
   arch:
     - amd64
     - aarch64
@@ -205,7 +186,6 @@ sles-1506:
   image_tag: sles1506
   tags:
     - release_packages
-  version_name: 15
   arch:
     - amd64
     - s390x
@@ -214,7 +194,6 @@ sles-1507:
   image_tag: sles1507
   tags:
     - release_packages
-  version_name: 157
   arch:
     - amd64
     - s390x
@@ -223,7 +202,6 @@ ubuntu-2204:
   image_tag: ubuntu22.04
   tags:
     - release_packages
-  version_name: jammy
   arch:
     - amd64
     - aarch64
@@ -234,7 +212,6 @@ ubuntu-2404:
   image_tag: ubuntu24.04
   tags:
     - release_packages
-  version_name: noble
   arch:
     - amd64
     - aarch64
@@ -245,7 +222,6 @@ ubuntu-2504:
   image_tag: ubuntu25.04
   tags:
     - release_packages
-  version_name: plucky
   arch:
     - amd64
     - aarch64
