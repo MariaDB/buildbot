@@ -41,6 +41,10 @@ on:
       - "validate_master_cfg.sh"
       - "worker_locks.yaml"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+
 jobs:
   check:
     runs-on: ubuntu-22.04

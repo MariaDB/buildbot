@@ -10,6 +10,10 @@ on:
       - configuration/**
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+
 jobs:
   pre-commit:
     runs-on: ubuntu-24.04

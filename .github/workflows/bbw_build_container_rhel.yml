@@ -23,6 +23,10 @@ on:
       - 'ci_build_images/rhel7.Dockerfile'
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+
 jobs:
   build:
     runs-on: ${{ matrix.runner || 'ubuntu-22.04' }}
