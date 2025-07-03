@@ -18,12 +18,10 @@ pkg_cmd=$(rpm_pkg)
 manual_run_switch "$1"
 
 # Mandatory variables
-for var in arch master_branch; do
-  if [[ -z $var ]]; then
-    bb_log_err "$var is not defined"
-    exit 1
-  fi
-done
+if [ -z "$master_branch" ]; then
+  bb_log_err "$master_branch is not defined"
+  exit 1
+fi
 
 bb_print_env
 

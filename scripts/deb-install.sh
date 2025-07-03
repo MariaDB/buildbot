@@ -57,6 +57,7 @@ if grep -qi spider Packages; then
   spider_package_list=$(grep "^Package:" Packages |
     grep 'spider' | awk '{print $2}' | xargs)
 fi
+arch=$(deb_arch)
 if grep -qi columnstore Packages; then
   if [[ $arch != "amd64" ]] && [[ $arch != "arm64" ]]; then
     bb_log_warn "Due to MCOL-4123, Columnstore won't be installed on $arch"

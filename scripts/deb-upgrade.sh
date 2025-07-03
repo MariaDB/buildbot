@@ -29,15 +29,23 @@ bb_log_info "Current test mode: $test_mode"
 
 set -x
 
+source /etc/os-release
+
+if [ "${PRETTY_NAME##*/}" == "sid" ]; then
+	# Sid has the VERSION_CODENAME of the next
+	# release which isn't useful to us.
+	VERSION_CODENAME=sid
+fi
+
 # Prepare apt repository configuration for installation of the previous major
 # version
 deb_setup_mariadb_mirror "$prev_major_version"
 
 get_packages_file_mirror() {
   set -u
-  if ! wget "$baseurl/$dist_name/dists/$version_name/main/binary-$(deb_arch)/Packages"
+  if ! wget "$baseurl/$ID/dists/$VERSION_CODENAME/main/binary-$(deb_arch)/Packages"
   then
-    bb_log_err "Could not find the 'Packages' file for $dist_name $version_name on deb|archive.mariadb.org."
+    bb_log_err "Could not find the 'Packages' file for $ID $VERSION_CODENAME on deb|archive.mariadb.org."
     exit 1
   fi
   set +u
@@ -76,7 +84,7 @@ case $test_mode in
     if ! grep columnstore Packages >/dev/null; then
       bb_log_warn "Columnstore was not found in packages, the test will not be run"
       exit
-    elif [[ $version_name == "sid" ]]; then
+    elif [ "${VERSION_CODENAME}" == "sid" ]; then
       bb_log_warn "Columnstore isn't necessarily built on Sid, the test will be skipped"
       exit
     fi

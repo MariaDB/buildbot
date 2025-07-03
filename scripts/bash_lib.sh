@@ -85,7 +85,7 @@ bb_print_env() {
   # Environment
   source /etc/os-release
   echo -e "\nDistribution: $PRETTY_NAME"
-  echo "Architecture: $arch"
+  echo "Architecture: $(uname -m)"
   echo -e "Systemd capability: $systemdCapability"
   echo "MariaDB version: ${mariadb_version/mariadb-/}"
   if [[ $test_type == "major" ]]; then
@@ -236,6 +236,8 @@ wait_for_mariadb_upgrade() {
   fi
 }
 
+# depends on caller to have sourced /etc/os-release
+# and corrected VERSION_CODENAME=sid if it is sid.
 deb_setup_mariadb_mirror() {
   # stop if any further variable is undefined
   set -u
@@ -250,21 +252,22 @@ deb_setup_mariadb_mirror() {
     exit 1
   }
   #//TEMP it's probably better to install the last stable release here...?
+
   mirror_url="https://deb.mariadb.org/$branch"
   archive_url="https://archive.mariadb.org/mariadb-$branch/repo"
-  if wget -q --method=HEAD "$mirror_url/$dist_name/dists/$version_name"; then
+  if wget -q --method=HEAD "$mirror_url/$ID/dists/$VERSION_CODENAME"; then
     baseurl="$mirror_url"
-  elif wget -q --method=HEAD "$archive_url/$dist_name/dists/$version_name"; then
+  elif wget -q --method=HEAD "$archive_url/$ID/dists/$VERSION_CODENAME"; then
     baseurl="$archive_url"
   else
     # the correct way of handling this would be to not even start the check
     # since we know it will always fail. But apparently, it's not going to
     # happen soon in BB. Once done though, replace the warning with an error
     # and use a non-zero exit code.
-    bb_log_warn "deb_setup_mariadb_mirror: $branch packages for $dist_name $version_name does not exist on deb|archive.mariadb.org"
+    bb_log_warn "deb_setup_mariadb_mirror: $branch packages for $ID $VERSION_CODENAME does not exist on deb|archive.mariadb.org"
     exit 0
   fi
-  sudo sh -c "echo 'deb $baseurl/$dist_name $version_name main' >/etc/apt/sources.list.d/mariadb.list"
+  sudo sh -c "echo 'deb $baseurl/$ID $VERSION_CODENAME main' >/etc/apt/sources.list.d/mariadb.list"
   sudo wget https://mariadb.org/mariadb_release_signing_key.asc -O /etc/apt/trusted.gpg.d/mariadb_release_signing_key.asc || {
     bb_log_err "mariadb repository key installation failed"
     exit 1
@@ -285,9 +288,28 @@ rpm_setup_mariadb_mirror() {
     bb_log_err "wget command not found"
     exit 1
   }
+  source /etc/os-release
+  # rhel/almalinux/rocky linux are all X.Y versions
+  # because of their ABI compatibily a single is sufficient.
+  #
+  # centos stream is a single number
+  #
+  # openeuler we don't release and this function is only used
+  # in upgrade tests.
+  #
+  # Notably the SLES/OpenSUSE are two numbers without ABI compatibility
+  # between the major version.
+  # These are distributed as separately, and we need to
+  # preserve in the version number used.
+  if [ $ID = rhel ] || [ $ID = almalinux ] || [ $ID = rocky ]; then
+    base_version=${VERSION_ID%%.*}
+  else
+    base_version=$VERSION_ID
+  fi
   #//TEMP it's probably better to install the last stable release here...?
-  mirror_url="https://rpm.mariadb.org/$branch/$arch"
-  archive_url="https://archive.mariadb.org/mariadb-$branch/yum/$arch"
+  url_path="$ID/$base_version/$(rpm --eval '%_arch')"
+  mirror_url="https://rpm.mariadb.org/$branch/$url_path"
+  archive_url="https://archive.mariadb.org/mariadb-$branch/yum/$url_path"
   if wget -q --method=HEAD "$mirror_url"; then
     baseurl="$mirror_url"
   elif wget -q --method=HEAD "$archive_url"; then
@@ -297,7 +319,7 @@ rpm_setup_mariadb_mirror() {
     # since we know it will always fail. But apparently, it's not going to
     # happen soon in BB. Once done though, replace the warning with an error
     # and use a non-zero exit code.
-    bb_log_warn "rpm_setup_mariadb_mirror: $branch packages for $dist_name $version_name does not exist on https://rpm.mariadb.org/"
+    bb_log_warn "rpm_setup_mariadb_mirror: $branch packages for $ID $base_version does not exist on https://rpm.mariadb.org/"
     exit 0
   fi
   cat <<EOF | sudo tee "$(rpm_repo_dir)/MariaDB.repo"
