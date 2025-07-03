@@ -205,7 +205,7 @@ sles-1507:
   image_tag: sles1507
   tags:
     - release_packages
-  version_name: 15
+  version_name: 157
   arch:
     - amd64
     - s390x
