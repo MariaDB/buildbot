@@ -285,9 +285,11 @@ rpm_setup_mariadb_mirror() {
     bb_log_err "wget command not found"
     exit 1
   }
+  source /etc/os-release
   #//TEMP it's probably better to install the last stable release here...?
-  mirror_url="https://rpm.mariadb.org/$branch/$arch"
-  archive_url="https://archive.mariadb.org/mariadb-$branch/yum/$arch"
+  url_path="$ID/$VERSION_ID/$(rpm --eval '%_arch')"
+  mirror_url="https://rpm.mariadb.org/$branch/$url_path"
+  archive_url="https://archive.mariadb.org/mariadb-$branch/yum/$url_path"
   if wget -q --method=HEAD "$mirror_url"; then
     baseurl="$mirror_url"
   elif wget -q --method=HEAD "$archive_url"; then
@@ -297,7 +299,7 @@ rpm_setup_mariadb_mirror() {
     # since we know it will always fail. But apparently, it's not going to
     # happen soon in BB. Once done though, replace the warning with an error
     # and use a non-zero exit code.
-    bb_log_warn "rpm_setup_mariadb_mirror: $branch packages for $dist_name $version_name does not exist on https://rpm.mariadb.org/"
+    bb_log_warn "rpm_setup_mariadb_mirror: $branch packages for $ID $VERSION_ID does not exist on https://rpm.mariadb.org/"
     exit 0
   fi
   cat <<EOF | sudo tee "$(rpm_repo_dir)/MariaDB.repo"
