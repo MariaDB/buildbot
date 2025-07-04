@@ -64,6 +64,9 @@ RUN . /etc/os-release \
     iproute2 \
     iputils-ping \
     libasio-dev \
+    # bootstrapping libboost additions in below line for MDEV-35826. \
+    # to be removed after https://github.com/MariaDB/server/pull/2651 merge to 11.4 \
+    libboost-atomic-dev libboost-chrono-dev libboost-date-time-dev libboost-regex-dev libboost-system-dev libboost-thread-dev \
     libboost-dev \
     libboost-filesystem-dev \
     libboost-program-options-dev \
