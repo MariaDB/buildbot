@@ -50,7 +50,6 @@ centos-stream10:
   type: rpm
 debian-11:
   image_tag: debian11
-  version_name: bullseye
   tags:
     - release_packages
   arch:
@@ -59,7 +58,6 @@ debian-11:
   type: deb
 debian-12:
   image_tag: debian12
-  version_name: bookworm
   tags:
     - release_packages
   arch:
@@ -70,7 +68,6 @@ debian-12:
   type: deb
 debian-13:
   image_tag: debian13
-  version_name: trixie
   tags:
     - release_packages
   arch:
@@ -81,7 +78,6 @@ debian-13:
   type: deb
 debian-sid:
   image_tag: debiansid
-  version_name: sid
   tags:
     - release_packages
     - bleeding-edge
@@ -197,7 +193,6 @@ ubuntu-2204:
   image_tag: ubuntu22.04
   tags:
     - release_packages
-  version_name: jammy
   arch:
     - amd64
     - aarch64
@@ -208,7 +203,6 @@ ubuntu-2404:
   image_tag: ubuntu24.04
   tags:
     - release_packages
-  version_name: noble
   arch:
     - amd64
     - aarch64
@@ -219,7 +213,6 @@ ubuntu-2410:
   image_tag: ubuntu24.10
   tags:
     - release_packages
-  version_name: oracular
   arch:
     - amd64
     - aarch64
@@ -228,7 +221,6 @@ ubuntu-2504:
   image_tag: ubuntu25.04
   tags:
     - release_packages
-  version_name: plucky
   arch:
     - amd64
     - aarch64

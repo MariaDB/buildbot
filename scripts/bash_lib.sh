@@ -250,21 +250,23 @@ deb_setup_mariadb_mirror() {
     exit 1
   }
   #//TEMP it's probably better to install the last stable release here...?
+  source /etc/os-release
+
   mirror_url="https://deb.mariadb.org/$branch"
   archive_url="https://archive.mariadb.org/mariadb-$branch/repo"
-  if wget -q --method=HEAD "$mirror_url/$dist_name/dists/$version_name"; then
+  if wget -q --method=HEAD "$mirror_url/$dist_name/dists/$VERSION_CODENAME"; then
     baseurl="$mirror_url"
-  elif wget -q --method=HEAD "$archive_url/$dist_name/dists/$version_name"; then
+  elif wget -q --method=HEAD "$archive_url/$dist_name/dists/$VERSION_CODENAME"; then
     baseurl="$archive_url"
   else
     # the correct way of handling this would be to not even start the check
     # since we know it will always fail. But apparently, it's not going to
     # happen soon in BB. Once done though, replace the warning with an error
     # and use a non-zero exit code.
-    bb_log_warn "deb_setup_mariadb_mirror: $branch packages for $dist_name $version_name does not exist on deb|archive.mariadb.org"
+    bb_log_warn "deb_setup_mariadb_mirror: $branch packages for $dist_name $VERSION_CODENAME does not exist on deb|archive.mariadb.org"
     exit 0
   fi
-  sudo sh -c "echo 'deb $baseurl/$dist_name $version_name main' >/etc/apt/sources.list.d/mariadb.list"
+  sudo sh -c "echo 'deb $baseurl/$dist_name $VERSION_CODENAME main' >/etc/apt/sources.list.d/mariadb.list"
   sudo wget https://mariadb.org/mariadb_release_signing_key.asc -O /etc/apt/trusted.gpg.d/mariadb_release_signing_key.asc || {
     bb_log_err "mariadb repository key installation failed"
     exit 1
