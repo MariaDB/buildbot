@@ -43,7 +43,7 @@ jobs:
             runner: ubuntu-24.04
             nogalera: false
 
-          - image: docker.io/openeuler/openeuler:24.03-lts
+          - image: docker.io/openeuler/openeuler:24.03-lts-sp2
             platforms: linux/amd64, linux/arm64/v8
             tag: openeuler2403
             nogalera: false
