@@ -40,6 +40,20 @@ server {
 		proxy_pass http://127.0.0.1:8010;
 	}
 
+	# block heavy API calls
+	location = /api/v2/builds {
+		if ($args = "") {
+			return 403 "Not allowed.\n";
+		}
+		proxy_pass http://127.0.0.1:8010;
+	}
+	location = /api/v2/changes {
+		if ($args = "") {
+			return 403 "Not allowed.\n";
+		}
+		proxy_pass http://127.0.0.1:8010;
+	}
+
   # disallow bots
 	location = /robots.txt {
 		add_header Content-Type text/plain;
