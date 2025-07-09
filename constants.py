@@ -125,6 +125,7 @@ SUPPORTED_PLATFORMS["10.6"] = [
     "amd64-freebsd-14",
     "amd64-msan-clang-20",
     "amd64-openeuler-2403",
+    "amd64-openssl3-fips",
     "amd64-rhel-7",
     "amd64-rhel-8",
     "amd64-rhel-9",
