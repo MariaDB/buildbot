@@ -141,3 +141,69 @@ class PrintEnvironmentDetails(Command):
             """,
             ],
         )
+
+
+class UBIEnableFIPS(Command):
+    """
+    A command to enable FIPS mode in Red Hat-based systems.
+    Attributes:
+        name (str): The name of the command.
+        workdir (PurePath): The working directory for the command.
+    """
+
+    def __init__(self):
+        name = "Enable FIPS in UBI container"
+        super().__init__(name=name, workdir=PurePath("."), user="root")
+
+    def as_cmd_arg(self) -> list[str]:
+        return [
+            "bash",
+            "-exc",
+            """
+                # Check if OpenSSL is installed
+                if ! command -v openssl &> /dev/null; then
+                    echo "OpenSSL is not installed."
+                    exit 1
+                fi
+
+                # Enable FIPS mode in RedHat OpenSSL
+                sed -i -e '/\[ evp_properties \]/a default_properties = fips=yes' \
+                    -e '/opensslcnf.config/a .include = /etc/crypto-policies/back-ends/openssl_fips.config' \
+                    -e '/\[provider_sect\]/a fips = fips_sect' \
+                    /etc/pki/tls/openssl.cnf
+
+
+                # List providers. If FIPS is not listed, it may not be enabled.
+                if ! openssl list -providers | grep -q 'fips'; then
+                    echo "FIPS provider is not enabled."
+                    exit 1
+                fi
+
+                # If FIPS is enabled then generating a hash with MD5 should fail
+                if openssl dgst -md5 /dev/null &> /dev/null; then
+                    echo "FIPS mode is not enabled."
+                    exit 1
+                else
+                    echo "FIPS mode is enabled."
+                    exit 0
+                fi
+            """,
+        ]
+
+
+class AnyCommand(Command):
+    """
+    A command that executes any arbitrary shell command.
+    This command is useful for running custom shell commands that do not fit into predefined categories.
+    Attributes:
+        name (str): The name of the command.
+        workdir (PurePath): The working directory for the command.
+        command (str): The shell command to execute. Support for interpolation is provided.
+    """
+
+    def __init__(self, name: str, command: str, workdir: PurePath = PurePath(".")):
+        super().__init__(name=name, workdir=workdir)
+        self.command = command
+
+    def as_cmd_arg(self) -> list[str]:
+        return ["bash", "-exc", util.Interpolate(self.command)]
