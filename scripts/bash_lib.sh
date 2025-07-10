@@ -605,7 +605,7 @@ check_upgraded_versions() {
     #
 
     # Remove after Q3 2025 release (MDEV-36234)
-    sed -i '/libaio.so/d;/liburing.so/d' ./reqs-*.cmp
+    sed -i '/libaio.so/d;/liburing.so/d;/libaio1/d' ./reqs-*.cmp
     sed -i '/libaio.so/d;/liburing.so/d' ./ldd-*.cmp
     sed -i '/lsof/d' ./reqs-*.cmp
 
