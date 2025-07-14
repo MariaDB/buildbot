@@ -17,7 +17,7 @@ class MTRTest(Command):
         save_logs_path (PurePath): The path where logs will be saved.
         log_path (PurePath): The path where MTR logs are stored.
         archive_name (str): The name of the archive file to create.
-        tests_from_file (str): Optional path to a file containing tests to run. Do not specify suites in this case.
+        tests_from_file (str): Optional path to a file containing tests to run.
     """
 
     def __init__(
