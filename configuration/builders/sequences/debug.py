@@ -8,7 +8,8 @@ from configuration.steps.commands.configure import ConfigureMariaDBCMake
 from configuration.steps.commands.download import FetchTarball
 from configuration.steps.commands.mtr import MTRTest
 from configuration.steps.commands.util import (
-    AnyCommand,
+    GetSSLTests,
+    LDDCheck,
     PrintEnvironmentDetails,
     UBIEnableFIPS,
 )
@@ -106,11 +107,11 @@ def openssl_fips(
         InContainer(
             docker_environment=config,
             step=ShellStep(
-                command=AnyCommand(
-                    name="Check if libcrypto is dynamically linked",
-                    command="""
-                            ldd ./client/mariadb | grep libcrypto
-                            ldd ./sql/mariadbd | grep libcrypto""",
+                command=LDDCheck(
+                    binary_checks={
+                        "./client/mariadb": ["libcrypto"],
+                        "./sql/mariadbd": ["libcrypto"],
+                    },
                 ),
                 options=StepOptions(
                     descriptionDone="Check if libcrypto is dynamically linked"
@@ -123,58 +124,7 @@ def openssl_fips(
         InContainer(
             docker_environment=config,
             step=ShellStep(
-                command=AnyCommand(
-                    name="Extract tests to run",
-                    command="""
-                            set +x
-
-                            extract_test() {
-                            local filepath="$1"
-
-                            awk -F'/' -v path="$filepath" '
-                            BEGIN {
-                                n = split(path, parts, "/")
-                                test = parts[n]
-                                sub(/\.test$/, "", test)
-                                dir1 = parts[n-1]
-                                if (dir1 == "t") {
-                                suite = parts[n-2]
-                                } else {
-                                suite = dir1
-                                }
-                                print suite "." test
-                            }
-                            '
-                            }
-
-                            tests_to_run="mysql-test/tests_to_run.txt"
-
-                            # Extract all encryption tests
-                            find mysql-test/suite/encryption -type f -name "*.test" | while read -r file; do
-                            extract_test "$file" >> $tests_to_run
-                            done
-
-                            # Extract all tests having SSL in their name
-                            find mysql-test -name "*ssl*.test" | while read -r file; do
-                            extract_test "$file" >> $tests_to_run
-                            done
-
-                            # Extract all plugin tests
-                            find plugin/**/* -name "*.test" | while read -r file; do
-                            extract_test "$file" >> $tests_to_run
-                            done
-
-                            # Extract all tests related to encoding, encryption, and hashing
-                            grep -rliE --include="*.test" 'encode|des_encrypt|aes_encrypt|md5|sha[12]' mysql-test | while read -r file; do
-                            extract_test "$file" >> $tests_to_run
-                            done
-
-                            # Sort and remove duplicates
-                            sort -u "$tests_to_run" -o "$tests_to_run"
-
-                            cat $tests_to_run
-                        """,
-                ),
+                command=GetSSLTests(output_file="mysql-test/tests_to_run.txt"),
                 options=StepOptions(
                     descriptionDone="Extract tests to run",
                 ),
