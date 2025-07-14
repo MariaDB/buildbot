@@ -8,7 +8,7 @@ umask 0002
 if [ -d mariadb-docker ]; then
   pushd mariadb-docker
   git fetch
-  git checkout origin/next
+  git checkout -f origin/next
   popd
 else
   git clone --branch next https://github.com/MariaDB/mariadb-docker.git
