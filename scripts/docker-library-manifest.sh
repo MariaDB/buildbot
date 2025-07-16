@@ -23,7 +23,7 @@ else
 fi
 
 ubi=
-if [[ "$buildername" = *-rhel-9-rpm-autobake ]]; then
+if [[ "$buildername" = *-rhel-*-rpm-autobake ]]; then
     ubi=-ubi
     master_branch=${master_branch}-ubi
 fi

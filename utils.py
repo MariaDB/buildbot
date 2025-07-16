@@ -493,7 +493,10 @@ def hasDockerLibrary(step: BuildStep) -> bool:
 
     # UBI images
     if builder_name.endswith("amd64-rhel-9-rpm-autobake"):
-        return True
+        return fnmatch.fnmatch(branch, "10.*") or fnmatch.fnmatch(branch, "11.*")
+
+    if builder_name.endswith("amd64-rhel-10-rpm-autobake"):
+        return not (fnmatch.fnmatch(branch, "10.*") or fnmatch.fnmatch(branch, "11.*"))
 
     # We only build on the above autobakes for all architectures
     return builder_name.endswith(dockerbase)
