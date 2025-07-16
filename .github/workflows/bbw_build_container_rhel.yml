@@ -59,7 +59,7 @@ jobs:
             image: ubi10
             tag: rhel10
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
-            nogalera: true
+            nogalera: false
             runner: ubuntu-24.04
     env:
       MAIN_BRANCH: false
