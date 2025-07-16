@@ -55,7 +55,7 @@ case "${buildername#*ubuntu-}" in
   2204-deb-autobake)
     pkgver=ubu2204
     ;;
-  *-rhel-9-rpm-autobake)
+  *-rhel-*-rpm-autobake)
     ubi=-ubi
     # first arch only
     arches=( linux/amd64 )
