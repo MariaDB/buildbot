@@ -12,7 +12,7 @@ COPY --chmod=755 mariadb_zypper_expect /
 # Install updates and required packages
 RUN zypper update -y \
     && zypper install -y -t pattern devel_basis \
-    && source /etc/os-release \
+    && . /etc/os-release \
     && VERSION_ID=${VERSION_ID%.*}0${VERSION_ID#*.} \
     && ARCH=$(rpm --query --queryformat='%{ARCH}' zypper) \
     && if [ "$ARCH" = x86_64 ]; then ARCH=amd64 ; fi \
