@@ -53,13 +53,13 @@ jobs:
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
             branch: 11.8
             tag: debian13
-            nogalera: true
+            nogalera: false
 
           - image: debian:trixie
             platforms: linux/386
             branch: 11.8
             tag: debian13-386
-            nogalera: true
+            nogalera: false
 
           - image: debian:sid
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
@@ -90,7 +90,7 @@ jobs:
           - image: ubuntu:25.04
             platforms: linux/amd64, linux/arm64/v8
             branch: 11.4
-            nogalera: true
+            nogalera: false
 
     uses: ./.github/workflows/bbw_build_container_template.yml
     with:
