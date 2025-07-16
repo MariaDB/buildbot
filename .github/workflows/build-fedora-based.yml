@@ -38,7 +38,7 @@ jobs:
             platforms: linux/amd64
             tag: fedora40-valgrind
             install_valgrind: "true"
-            nogalera: false
+            nogalera: true
 
     uses: ./.github/workflows/bbw_build_container_template.yml
     with:

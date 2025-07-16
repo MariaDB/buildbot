@@ -15,7 +15,7 @@ RUN echo "fastestmirror=true" >> /etc/dnf/dnf.conf \
     && . /etc/os-release \
     && ARCH=$(rpm --query --queryformat='%{ARCH}' rpm) \
     && if [ "$ARCH" = x86_64 ]; then ARCH=amd64 ; fi \
-    && dnf config-manager --add-repo https://ci.mariadb.org/galera/mariadb-4.x-latest-gal-"${ARCH}"-fedora-"${VERSION_ID}".repo \
+    && dnf config-manager addrepo --from-repofile https://ci.mariadb.org/galera/mariadb-4.x-latest-gal-"${ARCH}"-fedora-"${VERSION_ID}".repo \
     && dnf -y builddep mariadb-server \
     && dnf -y install \
     @development-tools \
