@@ -12,7 +12,7 @@ ARG INSTALL_VALGRIND
 RUN echo "fastestmirror=true" >> /etc/dnf/dnf.conf \
     && dnf -y upgrade \
     && dnf -y install 'dnf-command(builddep)' 'dnf-command(config-manager)' \
-    && source /etc/os-release \
+    && . /etc/os-release \
     && ARCH=$(rpm --query --queryformat='%{ARCH}' rpm) \
     && if [ "$ARCH" = x86_64 ]; then ARCH=amd64 ; fi \
     && dnf config-manager --add-repo https://ci.mariadb.org/galera/mariadb-4.x-latest-gal-"${ARCH}"-fedora-"${VERSION_ID}".repo \

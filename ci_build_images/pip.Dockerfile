@@ -13,7 +13,7 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs >/tmp/rustup-init.
         *) bash /tmp/rustup-init.sh -y --profile=minimal ;; \
     esac \
     && rm -f /tmp/rustup-init.sh \
-    && source "$HOME/.cargo/env" \
+    && . "$HOME/.cargo/env" \
     # Disable until opensuse/sles dont break: && pip3 install --no-cache-dir -U pip \
     && curl -so /root/requirements.txt \
        https://raw.githubusercontent.com/MariaDB/buildbot/main/ci_build_images/requirements.txt \
