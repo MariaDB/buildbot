@@ -1,7 +1,7 @@
 from pathlib import PurePath
 
 from buildbot.plugins import util
-from configuration.steps.commands.base import Command
+from configuration.steps.commands.base import BashScriptCommand, Command
 
 
 class CreateS3Bucket(Command):
@@ -141,3 +141,35 @@ class PrintEnvironmentDetails(Command):
             """,
             ],
         )
+
+
+class UBIEnableFIPS(BashScriptCommand):
+    """
+    A command to enable FIPS mode on UBI containers.
+    """
+
+    def __init__(self):
+        super().__init__(script_name="ubi_enable_fips.sh", user="root")
+
+
+class GetSSLTests(BashScriptCommand):
+    """
+    A command to extract the list of SSL tests to run from the MariaDB test suite.
+    """
+
+    def __init__(self, output_file: str):
+        args = [output_file]
+        super().__init__(script_name="get_fips_mtr_tests.sh", args=args)
+
+
+class LDDCheck(BashScriptCommand):
+    """
+    A command to check dynamic library dependencies of specified binaries.
+    """
+
+    def __init__(
+        self,
+        binary_checks: dict[str, list[str]],
+    ):
+        args = [f"{binary}:{','.join(libs)}" for binary, libs in binary_checks.items()]
+        super().__init__(script_name="ldd_check.sh", args=args)

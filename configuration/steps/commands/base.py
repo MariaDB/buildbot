@@ -1,11 +1,21 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from pathlib import PurePath
+from pathlib import Path, PurePath
 
 from twisted.internet import defer
 
 from buildbot.plugins import steps, util
 from buildbot.process.properties import Interpolate
+
+# Use if you need to load script files to commands
+COMMAND_SCRIPT_BASE_DIR = Path(__file__).parent / "scripts"
+
+
+def load_script(script_name) -> str:
+    script_path = COMMAND_SCRIPT_BASE_DIR / script_name
+    with open(script_path, "r") as f:
+        script = f.read()
+    return script
 
 
 class Command(ABC):
@@ -26,6 +36,25 @@ class Command(ABC):
     @abstractmethod
     def as_cmd_arg(self) -> list[str]:
         pass
+
+
+class BashScriptCommand(Command):
+    def __init__(
+        self, script_name: str, args: list[str] = None, user: str = "buildbot"
+    ):
+        name = f"Run {script_name}"
+        super().__init__(name=name, workdir=PurePath("."), user=user)
+        self.script_name = script_name
+        self.args = args if args is not None else []
+
+    def as_cmd_arg(self) -> list[str]:
+        return [
+            "bash",
+            "-exc",
+            util.Interpolate(load_script(script_name=self.script_name)),
+            "--",
+            *self.args,
+        ]
 
 
 @dataclass

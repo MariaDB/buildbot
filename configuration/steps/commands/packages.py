@@ -11,20 +11,17 @@ class CreateDebRepo(Command):
     and sets up the local APT source list.
     Attributes:
         url (str): The URL for the local DEB repository.
-        buildername (str): The name of the builder.
         workdir (PurePath): The working directory for the command.
     """
 
     def __init__(
         self,
         url: str,
-        buildername: str,
         workdir: PurePath = PurePath("."),
     ):
         name = "Create local DEB repository"
         super().__init__(name=name, workdir=workdir)
         self.url = url
-        self.buildername = buildername
 
     def as_cmd_arg(self) -> list[str]:
         result = [
@@ -46,7 +43,7 @@ class CreateDebRepo(Command):
     cat << EOF > mariadb.sources
 X-Repolib-Name: MariaDB
 Types: deb
-URIs: {self.url}/%(prop:tarbuildnum)s/{self.buildername}/debs
+URIs: {self.url}/%(prop:tarbuildnum)s/%(prop:buildername)s/debs
 Suites: ./
 Trusted: yes
 EOF
