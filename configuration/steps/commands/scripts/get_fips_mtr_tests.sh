@@ -51,5 +51,8 @@ sort -u "$output_file" -o "$output_file"
 
 # FIXME - Add the test back after MDEV-37209 is fixed
 sed -i '/galera_3nodes.galera_garbd_backup/d' "$output_file"
+# FIXME - Add the test back after MDEV-37257 is fixed
+sed -i '/galera.galera_var_notify_ssl_ipv6/d' "$output_file"
+
 
 cat "$output_file"
