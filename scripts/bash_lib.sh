@@ -447,8 +447,10 @@ get_columnstore_logs() {
       sudo cat "$f" 1>>/home/buildbot/columnstore_logs 2>&1
     done
     for f in /tmp/columnstore_tmp_files/*; do
-      echo "----------- $f -----------" >>/home/buildbot/columnstore_logs
-      sudo cat "$f" | sudo tee -a /home/buildbot/columnstore_logs 2>&1
+      if [ -f "$f" ]; then
+        echo "----------- $f -----------" >>/home/buildbot/columnstore_logs
+        sudo cat "$f" | sudo tee -a /home/buildbot/columnstore_logs 2>&1
+      fi
     done
   fi
 }
