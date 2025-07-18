@@ -289,7 +289,9 @@ for os_i in OS_INFO:
         # Currently there are no VMs for x86 and s390x
         if arch not in ["s390x", "x86"]:
             BUILDERS_INSTALL.append(builder_name_autobake + "-install")
-            BUILDERS_UPGRADE.append(builder_name_autobake + "-minor-upgrade-all")
+            # Until MDEV-36945 puts sles packages in version dependant repos
+            if builder_name_autobake != "amd64-sles-1506-rpm-autobake":
+                BUILDERS_UPGRADE.append(builder_name_autobake + "-minor-upgrade-all")
             BUILDERS_UPGRADE.append(
                 builder_name_autobake + "-minor-upgrade-columnstore"
             )
