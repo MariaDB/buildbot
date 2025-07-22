@@ -40,10 +40,14 @@ class Command(ABC):
 
 class BashScriptCommand(Command):
     def __init__(
-        self, script_name: str, args: list[str] = None, user: str = "buildbot"
+        self,
+        script_name: str,
+        args: list[str] = None,
+        user: str = "buildbot",
+        workdir: PurePath = PurePath("."),
     ):
         name = f"Run {script_name}"
-        super().__init__(name=name, workdir=PurePath("."), user=user)
+        super().__init__(name=name, workdir=workdir, user=user)
         self.script_name = script_name
         self.args = args if args is not None else []
 
@@ -51,7 +55,7 @@ class BashScriptCommand(Command):
         return [
             "bash",
             "-exc",
-            util.Interpolate(load_script(script_name=self.script_name)),
+            load_script(script_name=self.script_name),
             "--",
             *self.args,
         ]
