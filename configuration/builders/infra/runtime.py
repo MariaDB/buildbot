@@ -106,17 +106,17 @@ class InContainer(BaseStep):
         docker_environment: DockerConfig,
         container_commit: bool = False,
     ) -> ShellStep:
-        super().__init__(name=step.name)
-        assert isinstance(
-            step, ShellStep
+
+        self.step = copy.deepcopy(step)
+        super().__init__(
+            name=self.step.name, options=self.step.options
         ), "InContainer wrapper only works with ShellStep or its subclasses"
-        self.step = step
         self.container_commit = container_commit
         self.docker_environment = docker_environment
         self.workdir = step.command.workdir
 
     def generate(self) -> IBuildStep:
-        step = copy.deepcopy(self.step)
+        step = self.step
         cmd_prefix = []
         cmd_prefix.append(
             [
