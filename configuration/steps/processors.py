@@ -120,6 +120,7 @@ def processor_docker_commit(
                     container_name=step.docker_environment.container_name,
                     runtime_tag=step.docker_environment.runtime_tag,
                     step_name=step.name,
+                    step_options=step.options,
                 ),
             )
 

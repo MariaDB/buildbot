@@ -105,7 +105,7 @@ def add_docker_tag_step(image_url: str, runtime_tag: str) -> ShellStep:
 
 
 def add_docker_commit_step(
-    container_name: str, runtime_tag: str, step_name: str
+    container_name: str, runtime_tag: str, step_name: str, step_options: StepOptions
 ) -> ShellStep:
     """
     Create a step to commit a Docker container.
@@ -124,9 +124,7 @@ def add_docker_commit_step(
             runtime_tag=runtime_tag,
             step_name=step_name,
         ),
-        options=StepOptions(
-            haltOnFailure=True,
-        ),
+        options=step_options,
     )
 
 
