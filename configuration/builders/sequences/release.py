@@ -4,6 +4,7 @@ from pathlib import PurePath
 from configuration.builders.infra.runtime import BuildSequence, InContainer
 from configuration.builders.sequences.helpers import add_test_suites_steps
 from configuration.steps.base import StepOptions
+from configuration.steps.callables import needToTestSrpm
 from configuration.steps.commands.base import URL
 from configuration.steps.commands.compile import (
     MAKE,
@@ -18,6 +19,11 @@ from configuration.steps.commands.packages import (
     InstallDEB,
     InstallRPMFromProp,
     SavePackages,
+)
+from configuration.steps.commands.srpm import (
+    SRPMCompare,
+    SRPMInstallBuildDeps,
+    SRPMRebuild,
 )
 from configuration.steps.commands.util import FindFiles, PrintEnvironmentDetails
 from configuration.steps.generators.cmake.generator import CMakeGenerator
@@ -159,6 +165,7 @@ def rpm_autobake(
     test_galera=False,
     test_rocksdb=False,
     test_s3=False,
+    srpm_config=None,
 ):
 
     ### INIT
@@ -315,6 +322,63 @@ def rpm_autobake(
             ),
         )
     )
+
+    if srpm_config:
+        SRPM_RUN_CONDITION = (
+            lambda step: hasPackagesGenerated(step)
+            and savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
+            and needToTestSrpm(step)
+        )
+
+        sequence.add_step(
+            InContainer(
+                docker_environment=srpm_config,
+                container_commit=True,
+                step=ShellStep(
+                    command=SRPMInstallBuildDeps(
+                        workdir=RPM_AUTOBAKE_BASE_WORKDIR,
+                    ),
+                    options=StepOptions(
+                        doStepIf=SRPM_RUN_CONDITION,
+                        description="SRPM - Installing build dependencies",
+                        descriptionDone="SRPM - Build dependencies installed",
+                    ),
+                ),
+            )
+        )
+
+        sequence.add_step(
+            InContainer(
+                docker_environment=srpm_config,
+                step=ShellStep(
+                    command=SRPMRebuild(
+                        jobs=jobs,
+                        workdir=RPM_AUTOBAKE_BASE_WORKDIR,
+                    ),
+                    options=StepOptions(
+                        doStepIf=SRPM_RUN_CONDITION,
+                        description="SRPM - Rebuild",
+                        descriptionDone="SRPM - Rebuild done",
+                    ),
+                ),
+            )
+        )
+
+        sequence.add_step(
+            InContainer(
+                docker_environment=srpm_config,
+                step=ShellStep(
+                    command=SRPMCompare(
+                        workdir=RPM_AUTOBAKE_BASE_WORKDIR,
+                    ),
+                    options=StepOptions(
+                        doStepIf=SRPM_RUN_CONDITION,
+                        description="SRPM - Compare",
+                        descriptionDone="SRPM - Compare done",
+                    ),
+                ),
+            )
+        )
 
     sequence.add_step(
         InContainer(
