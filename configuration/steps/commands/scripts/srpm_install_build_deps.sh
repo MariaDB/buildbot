@@ -28,15 +28,13 @@ srpm_file="${srpms[0]}"
 # Run appropriate build dependency install command
 source /etc/os-release
 case "$ID" in
-    fedora|centos)
-        echo "Installing build dependencies using dnf on $ID..."
-        sudo dnf --setopt=install_weak_deps=False builddep -y "$srpm_file"
-        ;;
     rhel)
         major="${VERSION_ID%%.*}"
         arch="$(uname -m)"
         echo "Enabling CodeReady Builder repo for RHEL $major ($arch)..."
         sudo dnf config-manager --enable "codeready-builder-for-rhel-${major}-${arch}-rpms"
+        ;&
+    fedora|centos)
         echo "Installing build dependencies using dnf on RHEL..."
         sudo dnf --setopt=install_weak_deps=False builddep -y "$srpm_file"
         ;;
