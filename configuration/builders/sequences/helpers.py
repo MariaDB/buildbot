@@ -29,6 +29,8 @@ def get_mtr_normal_steps(
     path_to_test_runner: PurePath,
     halt_on_failure: bool = True,
     step_wrapping_fn=lambda step: step,
+    additional_mtr_options: list[MTROption] = [],
+    env_vars: list[tuple] = [],
 ):
     steps = []
     steps.append(
@@ -49,12 +51,14 @@ def get_mtr_normal_steps(
                             MTROption(MTR.PARALLEL, jobs * 2),
                             MTROption(MTR.VARDIR, "/dev/shm/normal"),
                             MTROption(MTR.XML_REPORT, MTR_PATH_TO_SAVE_LOGS / "nm.xml"),
-                        ],
+                        ]
+                        + additional_mtr_options,
                     ),
                 ),
                 options=StepOptions(
                     haltOnFailure=halt_on_failure, descriptionDone="MTR normal"
                 ),
+                env_vars=env_vars,
             )
         )
     )
@@ -66,6 +70,8 @@ def get_mtr_rocksdb_steps(
     path_to_test_runner: PurePath,
     halt_on_failure: bool = True,
     step_wrapping_fn=lambda step: step,
+    additional_mtr_options: list[MTROption] = [],
+    env_vars: list[tuple] = [],
 ):
     steps = []
     steps.append(
@@ -90,12 +96,14 @@ def get_mtr_rocksdb_steps(
                             MTROption(
                                 MTR.XML_REPORT, MTR_PATH_TO_SAVE_LOGS / "rocksdb.xml"
                             ),
-                        ],
+                        ]
+                        + additional_mtr_options,
                     ),
                 ),
                 options=StepOptions(
                     haltOnFailure=halt_on_failure, descriptionDone="MTR rocksdb"
                 ),
+                env_vars=env_vars,
             )
         )
     )
@@ -107,6 +115,8 @@ def get_mtr_galera_steps(
     path_to_test_runner: PurePath,
     halt_on_failure: bool = True,
     step_wrapping_fn=lambda step: step,
+    additional_mtr_options: list[MTROption] = [],
+    env_vars: list[tuple] = [],
 ):
     steps = []
     steps.append(
@@ -130,7 +140,8 @@ def get_mtr_galera_steps(
                             MTROption(
                                 MTR.XML_REPORT, MTR_PATH_TO_SAVE_LOGS / "galera.xml"
                             ),
-                        ],
+                        ]
+                        + additional_mtr_options,
                         suite_collection=TestSuiteCollection(
                             [
                                 SUITE.WSREP,
@@ -144,6 +155,7 @@ def get_mtr_galera_steps(
                 options=StepOptions(
                     haltOnFailure=halt_on_failure, descriptionDone="MTR galera"
                 ),
+                env_vars=env_vars,
             )
         )
     )
@@ -155,6 +167,8 @@ def get_mtr_s3_steps(
     path_to_test_runner: PurePath,
     halt_on_failure: bool = True,
     step_wrapping_fn=lambda step: step,
+    additional_mtr_options: list[MTROption] = [],
+    env_vars: list[tuple] = [],
 ):
     steps = []
     steps.append(
@@ -182,7 +196,8 @@ def get_mtr_s3_steps(
                             MTROption(MTR.VARDIR, "/dev/shm/s3"),
                             MTROption(MTR.SUITE, "s3"),
                             MTROption(MTR.XML_REPORT, MTR_PATH_TO_SAVE_LOGS / "s3.xml"),
-                        ],
+                        ]
+                        + additional_mtr_options,
                     ),
                 ),
                 env_vars=[
@@ -193,7 +208,8 @@ def get_mtr_s3_steps(
                     ("S3_BUCKET", "%(prop:buildername)s-%(prop:buildnumber)s"),
                     ("S3_USE_HTTPS", "OFF"),
                     ("S3_PROTOCOL_VERSION", "Path"),
-                ],
+                ]
+                + env_vars,
                 options=StepOptions(
                     haltOnFailure=halt_on_failure, descriptionDone="MTR S3"
                 ),
