@@ -34,6 +34,7 @@ class MTR(StrEnum):
     VIEW_PROTOCOL = "view-protocol"
     WITH_EMBEDDED = "embedded"
     VARDIR = "vardir"
+    XML_REPORT = "xml-report"
 
 
 # Extracted from ./mtr output manually before tests actually start.
