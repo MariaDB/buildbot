@@ -48,6 +48,7 @@ def get_mtr_normal_steps(
                             MTROption(MTR.MAX_TEST_FAIL, 20),
                             MTROption(MTR.PARALLEL, jobs * 2),
                             MTROption(MTR.VARDIR, "/dev/shm/normal"),
+                            MTROption(MTR.XML_REPORT, MTR_PATH_TO_SAVE_LOGS / "nm.xml"),
                         ],
                     ),
                 ),
@@ -86,6 +87,9 @@ def get_mtr_rocksdb_steps(
                             MTROption(MTR.VARDIR, "/dev/shm/rocksdb"),
                             MTROption(MTR.SUITE, "rocksdb*"),
                             MTROption(MTR.SKIP_TEST, "rocksdb_hotbackup*"),
+                            MTROption(
+                                MTR.XML_REPORT, MTR_PATH_TO_SAVE_LOGS / "rocksdb.xml"
+                            ),
                         ],
                     ),
                 ),
@@ -123,6 +127,9 @@ def get_mtr_galera_steps(
                             MTROption(MTR.BIG_TEST, True),
                             MTROption(MTR.PARALLEL, jobs * 2),
                             MTROption(MTR.VARDIR, "/dev/shm/galera"),
+                            MTROption(
+                                MTR.XML_REPORT, MTR_PATH_TO_SAVE_LOGS / "galera.xml"
+                            ),
                         ],
                         suite_collection=TestSuiteCollection(
                             [
@@ -174,6 +181,7 @@ def get_mtr_s3_steps(
                             MTROption(MTR.PARALLEL, jobs * 2),
                             MTROption(MTR.VARDIR, "/dev/shm/s3"),
                             MTROption(MTR.SUITE, "s3"),
+                            MTROption(MTR.XML_REPORT, MTR_PATH_TO_SAVE_LOGS / "s3.xml"),
                         ],
                     ),
                 ),
