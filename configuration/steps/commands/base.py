@@ -61,6 +61,19 @@ class BashScriptCommand(Command):
         ]
 
 
+class BashCommand(Command):
+    def __init__(self, cmd: str, name: str = "Run command", user: str = "buildbot"):
+        super().__init__(name=name, workdir=PurePath("."), user=user)
+        self.cmd = cmd
+
+    def as_cmd_arg(self) -> list[str]:
+        return [
+            "bash",
+            "-exc",
+            util.Interpolate(self.cmd),
+        ]
+
+
 @dataclass
 class URL:
     url: str
