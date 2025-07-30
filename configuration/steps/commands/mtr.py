@@ -1,7 +1,8 @@
+import os
 from pathlib import PurePath
 
 from buildbot.plugins import util
-from configuration.steps.commands.base import Command
+from configuration.steps.commands.base import BashScriptCommand, Command
 from configuration.steps.generators.mtr.generator import MTRGenerator
 
 
@@ -75,3 +76,25 @@ class MTRTest(Command):
             find . -type f \( {patterns} \) -print0 | rsync -a --files-from=- --from0 ./ {self.save_logs_path}/
             exit 1
             """
+
+
+class MTRReporter(BashScriptCommand):
+    """
+    A command to transfer all the MTR JUnit test results to the mtr_junit_collector service.
+    Attributes:
+        directory (PurePath): The directory containing the MTR test results.
+    """
+
+    JUNIT_COLLECTOR_BASE_URL = os.environ.get("JUNIT_COLLECTOR_BASE_URL")
+
+    def __init__(self, workdir: PurePath = PurePath(".")):
+        base_url = self.JUNIT_COLLECTOR_BASE_URL
+        branch = util.Interpolate("%(prop:branch)s")
+        revision = util.Interpolate("%(prop:revision)s")
+        platform = util.Interpolate("%(prop:buildername)s")
+        bbnum = util.Interpolate("%(prop:buildnumber)s")
+        dir = "."
+
+        args = [base_url, branch, revision, platform, bbnum, dir]
+        super().__init__(script_name="mtr_reporter.sh", args=args, workdir=workdir)
+        self.name = "Save test results for CrossReference"
