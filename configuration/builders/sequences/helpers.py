@@ -4,7 +4,7 @@ from pathlib import PurePath
 from configuration.builders.infra.runtime import InContainer
 from configuration.steps.base import StepOptions
 from configuration.steps.commands.base import URL
-from configuration.steps.commands.mtr import MTRTest
+from configuration.steps.commands.mtr import MTRReporter, MTRTest
 from configuration.steps.commands.util import (
     CreateS3Bucket,
     DeleteS3Bucket,
@@ -270,6 +270,14 @@ def add_test_suites_steps(
         )
     )
 
+    steps.append(
+        mtr_junit_reporter(
+            step_wrapping_fn=lambda step: InContainer(
+                docker_environment=config, step=step
+            ),
+        )
+    )
+
     return steps
 
 
@@ -292,5 +300,25 @@ def save_mtr_logs(
             options=StepOptions(
                 alwaysRun=True, doStepIf=(lambda step: hasFailed(step))
             ),
+        ),
+    )
+
+
+def mtr_junit_reporter(
+    step_wrapping_fn=lambda step: step,
+):
+    return step_wrapping_fn(
+        ShellStep(
+            command=MTRReporter(
+                workdir=PurePath("mtr/logs"),
+            ),
+            url=URL(
+                url=f"{os.environ['BUILDMASTER_URL']}/cr",
+                url_text="Test results",
+            ),
+            options=StepOptions(
+                alwaysRun=True, doStepIf=(lambda step: hasFailed(step))
+            ),
+            warn_on_fail=True,
         ),
     )
