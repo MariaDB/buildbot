@@ -155,6 +155,9 @@ SUPPORTED_PLATFORMS["10.6"] = [
 ]
 
 SUPPORTED_PLATFORMS["10.9"] = SUPPORTED_PLATFORMS["10.6"].copy()
+# replaced by amd64-ubasan-clang-20*
+SUPPORTED_PLATFORMS["10.9"].remove("amd64-ubuntu-2404-clang18-asan")
+SUPPORTED_PLATFORMS["10.9"].remove("amd64-debian-12-asan-ubsan")
 
 SUPPORTED_PLATFORMS["10.10"] = [
     "amd64-debian-11-aocc",
