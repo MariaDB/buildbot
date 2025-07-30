@@ -101,3 +101,32 @@ class FetchCompat(Command):
                 f'ls -l && ls -l ../ && wget --no-check-certificate -cO MariaDB-shared-5.3.{self.arch}.rpm "{self.url}/helper_files/mariadb-shared-5.3-{self.arch}.rpm" && wget -cO MariaDB-shared-10.1.{self.arch}.rpm "{self.url}/helper_files/mariadb-shared-10.1-kvm-rpm-{self.rpm_type}-{self.arch}.rpm"',
             ),
         ]
+
+
+class FetchGitHub(Command):
+    """
+    A command to download a GitHub asset.
+    Attributes:
+        workdir (PurePath): The working directory where the asset will be downloaded.
+        repo (str): the owner/reponame of the github asset
+        asset (str): the path within the repo that is fetched
+        branch (str): the branch within the repo of the asset
+    """
+
+    def __init__(
+        self, repo: str, asset: str, branch: str, workdir: PurePath = PurePath(".")
+    ):
+
+        super().__init__(name=f"Download {asset}", workdir=workdir)
+        self.asset = asset
+        self.repo = repo
+        self.branch = branch
+
+    def as_cmd_arg(self) -> list[str]:
+        return [
+            "bash",
+            "-exc",
+            util.Interpolate(
+                f"curl -sSL https://raw.githubusercontent.com/{self.repo}/refs/heads/{self.branch}/{self.asset} -o {self.asset}"
+            ),
+        ]
