@@ -177,6 +177,8 @@ SUPPORTED_PLATFORMS["10.11"] = [
     "amd64-opensuse-1506",
     "amd64-rhel-10",
     "amd64-sles-1506",
+    "amd64-ubasan-clang-20",
+    "amd64-ubasan-clang-20-debug",
     "amd64-ubuntu-2404",
     "ppc64le-centos-stream10",
     "ppc64le-rhel-10",
