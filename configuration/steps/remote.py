@@ -1,5 +1,6 @@
 from buildbot.interfaces import IBuildStep
 from buildbot.plugins import steps, util
+from buildbot.process.results import SUCCESS, WARNINGS
 from configuration.steps.base import BaseStep, StepOptions
 from configuration.steps.commands.base import URL, Command, ShellCommandWithURL
 
@@ -15,7 +16,13 @@ class ShellStep(BaseStep):
         env_vars (list[tuple]): Environment variables to set for the command.
         url (str): Optional URL to associate with the step.
         urlText (str): Optional text for the URL. Defaults to the url itself.
+        timeout (int): Timeout for the command execution in seconds. Defaults to 1200 seconds.
+        warn_on_fail (bool): If True, treat non-zero return codes as warnings instead of failures.
+    Args:
     """
+
+    DEFAULT_DECODE_RC = {0: SUCCESS}
+    WARN_ON_FAIL_DECODE_RC = {0: SUCCESS, **{i: WARNINGS for i in range(1, 256)}}
 
     def __init__(
         self,
@@ -25,6 +32,7 @@ class ShellStep(BaseStep):
         env_vars: list[tuple] = None,
         url: URL = None,
         timeout=1200,  # Default timeout in seconds
+        warn_on_fail=False,
     ):
         if env_vars is None:
             env_vars = []
@@ -36,6 +44,10 @@ class ShellStep(BaseStep):
         assert isinstance(command, Command)
         super().__init__(command.name, options)
         self.prefix_cmd = []
+        if warn_on_fail:
+            self.decode_return_code = self.WARN_ON_FAIL_DECODE_RC
+        else:
+            self.decode_return_code = self.DEFAULT_DECODE_RC
 
     def generate(self) -> IBuildStep:
         workdir = self._set_workdir()
@@ -48,6 +60,7 @@ class ShellStep(BaseStep):
             url=self.url,
             timeout=self.timeout,
             env={k: util.Interpolate(v) for k, v in self.env_vars},
+            decodeRC=self.decode_return_code,
         )
 
     def _set_workdir(self) -> str:
