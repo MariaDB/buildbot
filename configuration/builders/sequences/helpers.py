@@ -162,6 +162,59 @@ def get_mtr_galera_steps(
     return steps
 
 
+def get_mtr_spider_steps(
+    jobs,
+    path_to_test_runner: PurePath,
+    halt_on_failure: bool = True,
+    step_wrapping_fn=lambda step: step,
+    additional_mtr_options: list[MTROption] = [],
+    env_vars: list[tuple] = [],
+):
+    steps = []
+    steps.append(
+        step_wrapping_fn(
+            ShellStep(
+                MTRTest(
+                    name="spider",
+                    save_logs_path=MTR_PATH_TO_SAVE_LOGS / "spider",
+                    workdir=path_to_test_runner,
+                    testcase=MTRGenerator(
+                        flags=[
+                            MTROption(MTR.VERBOSE_RESTART, True),
+                            MTROption(MTR.FORCE, True),
+                            MTROption(MTR.RETRY, 3),
+                            MTROption(MTR.MAX_SAVE_CORE, 2),
+                            MTROption(MTR.MAX_SAVE_DATADIR, 10),
+                            MTROption(MTR.MAX_TEST_FAIL, 20),
+                            MTROption(MTR.PARALLEL, jobs * 2),
+                            MTROption(MTR.VARDIR, "/dev/shm/spider"),
+                            MTROption(
+                                MTR.XML_REPORT, MTR_PATH_TO_SAVE_LOGS / "spider.xml"
+                            ),
+                        ]
+                        + additional_mtr_options,
+                        suite_collection=TestSuiteCollection(
+                            [
+                                SUITE.SPIDER,
+                                SUITE.SPIDER_BG,
+                                SUITE.SPIDER_BUGFIX,
+                                SUITE.SPIDER_FEATURE,
+                                SUITE.SPIDER_REGRESSION_E1121,
+                                SUITE.SPIDER_REGRESSION_E112122,
+                            ]
+                        ),
+                    ),
+                ),
+                options=StepOptions(
+                    haltOnFailure=halt_on_failure, descriptionDone="MTR spider"
+                ),
+                env_vars=env_vars,
+            )
+        )
+    )
+    return steps
+
+
 def get_mtr_s3_steps(
     jobs,
     path_to_test_runner: PurePath,
