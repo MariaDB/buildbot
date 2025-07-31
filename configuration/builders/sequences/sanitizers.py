@@ -17,6 +17,7 @@ from configuration.steps.commands.compile import CompileCMakeCommand
 from configuration.steps.commands.configure import ConfigureMariaDBCMake
 from configuration.steps.commands.download import FetchGitHub, FetchTarball
 from configuration.steps.commands.util import PrintEnvironmentDetails
+from configuration.steps.generators.cmake.compilers import ClangCompiler
 from configuration.steps.generators.cmake.generator import CMakeGenerator
 from configuration.steps.generators.cmake.options import (
     CMAKE,
