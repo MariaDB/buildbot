@@ -9,7 +9,7 @@ builderarch=${buildername%%-*}
 
 image=mariadb-${tarbuildnum}
 
-if [[ "$buildername" = *-rhel-9-rpm-autobake ]]; then
+if [[ "$buildername" = *-rhel-*-rpm-autobake ]]; then
   image=${image}-ubi
 fi
 
