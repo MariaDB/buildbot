@@ -126,6 +126,7 @@ build() {
     curl "${artifacts_url}/galera/mariadb-4.x-latest-gal-${bbarch}-${galera_distro_noarch}".repo \
       -o "$repo"
     curl "${artifacts_url}/$tarbuildnum/${bbarch}-${builder_noarch}"/MariaDB.repo \
+      | sed 's/\[.*/[mariadb]/' \
       >> "$repo"
     args=( --build-arg MARIADB_VERSION="$mariadb_version" )
   else
