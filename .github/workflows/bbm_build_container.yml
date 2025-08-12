@@ -25,7 +25,7 @@ jobs:
           - 5000:5000
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Enable Production release - no rebuild
         run: echo "MAIN_BRANCH=true" >> $GITHUB_ENV

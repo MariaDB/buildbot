@@ -60,7 +60,7 @@ jobs:
         if: github.ref == 'refs/heads/main'
 
         #runs always.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set up env vars
         run: |
           set -vx
