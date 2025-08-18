@@ -14,6 +14,7 @@ class SRPMInstallBuildDeps(BashScriptCommand):
         super().__init__(
             script_name="srpm_install_build_deps.sh", workdir=workdir, args=args
         )
+        self.name = "SRPM - Install Build Dependencies"
 
 
 class SRPMRebuild(BashScriptCommand):
@@ -25,6 +26,7 @@ class SRPMRebuild(BashScriptCommand):
         dir_srpms = "srpms"
         args = [dir_srpms, jobs]
         super().__init__(script_name="srpm_rebuild.sh", workdir=workdir, args=args)
+        self.name = "SRPM - Rebuild RPMs"
 
 
 class SRPMCompare(BashScriptCommand):
@@ -38,3 +40,4 @@ class SRPMCompare(BashScriptCommand):
         exclude_rpms = "MariaDB-compat*"
         args = [ci_rpms_dir, rebuilt_rpms_dir, exclude_rpms]
         super().__init__(script_name="srpm_compare.sh", workdir=workdir, args=args)
+        self.name = "SRPM - Compare RPMs"
