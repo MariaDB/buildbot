@@ -241,15 +241,6 @@ ubuntu-2404:
     - ppc64le
     - s390x
   type: deb
-ubuntu-2410:
-  image_tag: ubuntu24.10
-  tags:
-    - release_packages
-  version_name: oracular
-  arch:
-    - amd64
-    - aarch64
-  type: deb
 ubuntu-2504:
   image_tag: ubuntu25.04
   tags:
