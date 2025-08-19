@@ -18,7 +18,6 @@ upgrade_type_mode
 upgrade_test_type "$test_type"
 
 package_version=${mariadb_version/mariadb-/}
-distro=$version_name
 
 bb_print_env
 
@@ -141,7 +140,7 @@ echo "$package_list" | xargs sudo "$pkg_cmd" "$pkg_cmd_options" install ||
 case $(expr "$prev_major_version" '<' "10.1")"$systemdCapability" in
   0yes)
     sudo systemctl start mariadb
-    if [[ $distro != *"sles"* ]] && [[ $distro != *"suse"* ]]; then
+    if [ "$pkg_cmd" != "zypper" ]; then
       sudo systemctl enable mariadb
     else
       bb_log_warn "due to MDEV-23044 mariadb service won't be enabled in the test"
