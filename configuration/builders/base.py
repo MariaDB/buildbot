@@ -134,9 +134,14 @@ class BaseBuilder:
         # Jobs is mandatory, otherwise builder to worker allocation at runtime cannot be done
         assert jobs >= 1, "Jobs must be greater than or equal to 1"
         properties["jobs"] = jobs
+
+        # Update worker metadata
+        for worker in workers:
+            worker.requested_jobs += jobs
+            worker.builders[self.name] = jobs
         return util.BuilderConfig(
             name=self.name,
-            workernames=workers,
+            workernames=[worker.name for worker in workers],
             tags=tags,
             nextBuild=next_build,
             canStartBuild=can_start_build,

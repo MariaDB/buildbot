@@ -37,17 +37,21 @@ class WorkerPool:
 
     def __init__(self):
         self.workers = defaultdict(list)
-        self.instances = []
 
     def add(self, arch, worker):
-        self.workers[arch].append(worker.name)
-        self.instances.append(worker.instance)
+        self.workers[arch].append((worker))
 
-    def get_workers_for_arch(self, arch: str, filter_fn: str = None) -> list:
-        result = list(filter(filter_fn, self.workers[arch]))
-        if not result:
+    def get_instances(self):
+        return [
+            worker.instance for workers in self.workers.values() for worker in workers
+        ]
+
+    def get_workers_for_arch(self, arch: str, filter_fn: str = lambda _: True) -> list:
+        workers_for_arch = [worker for worker in self.workers.get(arch, [])]
+        workers = list(filter(lambda w: filter_fn(w.name), workers_for_arch))
+        if not workers:
             raise ValueError(f"No workers found for architecture: {arch}")
-        return result
+        return workers
 
 
 class NonLatent(WorkerBase):
@@ -74,6 +78,8 @@ class NonLatent(WorkerBase):
         self, name: str, config: dict[str, dict], total_jobs: int, max_builds=999
     ):
         self.instance = None
+        self.requested_jobs = 0
+        self.builders = {}
         self.config = config
         self.max_builds = max_builds
         self.total_jobs = total_jobs
