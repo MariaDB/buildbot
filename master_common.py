@@ -1,8 +1,11 @@
 import os
+import sys
 
 from buildbot.plugins import reporters, secrets, util
 from constants import GITHUB_STATUS_BUILDERS
 from schedulers_definition import SCHEDULERS
+
+IS_CHECKCONFIG = any("checkconfig" in arg for arg in sys.argv)
 
 
 def base_master_config(
