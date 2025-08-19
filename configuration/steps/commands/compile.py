@@ -87,14 +87,16 @@ class CompileCMakeCommand(Command):
         super().__init__(name="Compile", workdir=workdir)
 
     def as_cmd_arg(self) -> list[str]:
-        return [
+        r_list = [
             "cmake",
             "--build",
             f"{self.builddir}",
-            "--verbose" if self.verbose else "",
             "--parallel",
             f"{self.jobs}",
         ]
+        if self.verbose:
+            r_list.append("--verbose")
+        return r_list
 
 
 class CompileDebAutobake(Command):
