@@ -12,7 +12,6 @@ from configuration.builders.sequences.helpers import (
     save_mtr_logs,
 )
 from configuration.steps.base import StepOptions
-from configuration.steps.commands.base import BashCommand
 from configuration.steps.commands.compile import CompileCMakeCommand
 from configuration.steps.commands.configure import ConfigureMariaDBCMake
 from configuration.steps.commands.download import FetchGitHub, FetchTarball
