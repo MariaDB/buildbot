@@ -70,7 +70,6 @@ def asan_ubsan(
         CMakeOption(WITH.ASAN, True),
         CMakeOption(WITH.ASAN_SCOPED, True),
         CMakeOption(WITH.UBSAN, True),
-        CMakeOption(WITH.EMBEDDED_SERVER, False),
         CMakeOption(WITH.UNIT_TESTS, False),
         CMakeOption(PLUGIN.COLUMNSTORE_STORAGE_ENGINE, False),
     ]
