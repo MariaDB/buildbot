@@ -65,7 +65,8 @@ rm -rf -- *
 apt-get source libidn2
 mv libidn2-*/* .
 mk-build-deps -it 'apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes'
-./configure --enable-valgrind-tests=no
+make -f debian/rules  execute_before_dh_auto_configure
+./configure --enable-valgrind-tests=no --enable-doc=no
 make -j "$(nproc)"
 cp -aL lib/.libs/libidn2.so* "$MSAN_LIBDIR"
 rm -rf -- *
