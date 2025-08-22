@@ -25,8 +25,13 @@ on:
 
   workflow_call:
 
+  schedule:
+    - cron: '0 3 3 * *' # Third of the month
+
 jobs:
   build-images:
+    if: |
+      github.event_name != 'schedule' || (matrix.image == "debian:sid" && github.ref == 'refs/heads/dev')
     strategy:
       fail-fast: false
       matrix:
