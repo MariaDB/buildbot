@@ -290,7 +290,7 @@ rpm_setup_mariadb_mirror() {
   }
   source /etc/os-release
   # rhel/almalinux/rocky linux are all X.Y versions
-  # because of their ABI compatibily a single is sufficient.
+  # because of their ABI compatibility a single is sufficient.
   #
   # centos stream is a single number
   #
