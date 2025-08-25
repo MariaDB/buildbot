@@ -306,8 +306,12 @@ rpm_setup_mariadb_mirror() {
   else
     base_version=$VERSION_ID
   fi
+  base_id=$ID
+  if [ $ID = opensuse-leap ]; then
+    base_id=opensuse
+  fi
   #//TEMP it's probably better to install the last stable release here...?
-  url_path="$ID/$base_version/$(rpm --eval '%_arch')"
+  url_path="$base_id/$base_version/$(rpm --eval '%_arch')"
   mirror_url="https://rpm.mariadb.org/$branch/$url_path"
   archive_url="https://archive.mariadb.org/mariadb-$branch/yum/$url_path"
   if wget -q --method=HEAD "$mirror_url"; then
