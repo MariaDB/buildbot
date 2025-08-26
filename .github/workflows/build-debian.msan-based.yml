@@ -62,6 +62,7 @@ jobs:
       branch: ${{ matrix.branch }}
       clang_version: ${{ matrix.clang_version }}
       nogalera: ${{ matrix.nogalera }}
+      runner: 'ubuntu-24.04'
       files:
         '[
           {"name": "msan.instrumentedlibs.sh", "source": "''$WORKDIR/msan.instrumentedlibs.sh''", "target": "''$GITHUB_WORKSPACE''"},
