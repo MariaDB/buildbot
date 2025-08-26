@@ -26,7 +26,6 @@ apexis-bbw3-docker: 6
 ns-x64-bbw1-docker: 3
 ns-x64-bbw2-docker: 2
 ns-x64-bbw3-docker: 2
-ns-x64-bbw4-docker: 2
 s390x-bbw1-docker: 1
 s390x-bbw2-docker: 1
 s390x-bbw3-docker: 1
