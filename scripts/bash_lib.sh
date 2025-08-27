@@ -301,11 +301,14 @@ rpm_setup_mariadb_mirror() {
   # between the major version.
   # These are distributed as separately, and we need to
   # preserve in the version number used.
-  if [ $ID = rhel ] || [ $ID = almalinux ] || [ $ID = rocky ]; then
-    base_version=${VERSION_ID%%.*}
-  else
-    base_version=$VERSION_ID
-  fi
+  case $ID in
+    rhel|almalinux|rocky)
+      base_version=${VERSION_ID%%.*}
+    ;;
+    *)
+      base_version=$VERSION_ID
+    ;;
+  esac
   base_id=$ID
   if [ $ID = opensuse-leap ]; then
     base_id=opensuse
