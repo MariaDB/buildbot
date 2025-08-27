@@ -54,12 +54,8 @@ get_packages_file_mirror() {
 case $test_mode in
   all)
     get_packages_file_mirror
-    if grep -qi columnstore Packages; then
-      bb_log_warn "due to MCOL-4120 (Columnstore leaves the server shut down)"
-      bb_log_warn "and other bugs Columnstore upgrade is tested separately"
-    fi
     package_list=$(grep "^Package:" Packages |
-      grep -vE 'galera|spider|columnstore' |
+      grep -vE 'galera|spider' |
       awk '{print $2}' | sort -u | xargs)
     if grep -qi spider Packages; then
       bb_log_warn "due to MDEV-14622 Spider will be installed separately after the server"
