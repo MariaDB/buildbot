@@ -236,8 +236,6 @@ wait_for_mariadb_upgrade() {
   fi
 }
 
-# depends on caller to have sourced /etc/os-release
-# and corrected VERSION_CODENAME=sid if it is sid.
 deb_setup_mariadb_mirror() {
   # stop if any further variable is undefined
   set -u
@@ -252,6 +250,13 @@ deb_setup_mariadb_mirror() {
     exit 1
   }
   #//TEMP it's probably better to install the last stable release here...?
+  source /etc/os-release
+
+  if [ "${PRETTY_NAME##*/}" == "sid" ]; then
+  	# Sid has the VERSION_CODENAME of the next
+  	# release which isn't useful to us.
+  	VERSION_CODENAME=sid
+  fi
 
   mirror_url="https://deb.mariadb.org/$branch"
   archive_url="https://archive.mariadb.org/mariadb-$branch/repo"
