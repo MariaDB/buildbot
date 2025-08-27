@@ -57,11 +57,6 @@ case $test_mode in
     fi
     ;;
   columnstore)
-    package_list=$(rpm_repoquery)
-    if ! echo "$package_list" | grep -q columnstore-engine; then
-      bb_log_warn "Columnstore was not found in the released packages, the test will not be run"
-      exit
-    fi
     package_list="MariaDB-server MariaDB-columnstore-engine"
     alternative_names_package_list=$package_list
     ;;
