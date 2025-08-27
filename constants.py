@@ -169,6 +169,7 @@ SUPPORTED_PLATFORMS["10.11"] = [
     "aarch64-debian-12",
     "aarch64-fedora-41",
     "aarch64-fedora-42",
+    "aarch64-msan-clang-20-debug",
     "aarch64-rhel-10",
     "aarch64-ubuntu-2404",
     "amd64-centos-stream10",

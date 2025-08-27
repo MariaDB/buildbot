@@ -180,3 +180,124 @@ def asan_ubsan(
         sequence.add_step(step)
 
     return sequence
+
+
+def msan(
+    config: DockerConfig,
+    jobs: int,
+    isDebugBuildType: bool,
+):
+    sequence = BuildSequence()
+
+    sequence.add_step(ShellStep(command=PrintEnvironmentDetails()))
+
+    sequence.add_step(
+        InContainer(
+            docker_environment=config,
+            container_commit=False,
+            step=ShellStep(
+                command=FetchTarball(workdir=PurePath("src")),
+                options=StepOptions(descriptionDone="Fetch tarball"),
+            ),
+        )
+    )
+
+    flags = [
+        CMakeOption(WITH.MSAN, True),
+        CMakeOption(
+            CMAKE.EXE_LINKER_FLAGS, "-L${MSAN_LIBDIR} -Wl,-rpath=${MSAN_LIBDIR}"
+        ),
+        CMakeOption(
+            CMAKE.MODULE_LINKER_FLAGS, "-L${MSAN_LIBDIR} -Wl,-rpath=${MSAN_LIBDIR}"
+        ),
+        CMakeOption(WITH.UNIT_TESTS, False),
+        CMakeOption(WITH.ZLIB, "bundled"),
+        CMakeOption(WITH.SYSTEMD, "no"),
+        CMakeOption(PLUGIN.COLUMNSTORE_STORAGE_ENGINE, False),
+        CMakeOption(PLUGIN.SPIDER_STORAGE_ENGINE, False),
+        CMakeOption(PLUGIN.ROCKSDB_STORAGE_ENGINE, False),
+        CMakeOption(PLUGIN.OQGRAPH_STORAGE_ENGINE, False),
+    ]
+    if isDebugBuildType:
+        flags.append(CMakeOption(CMAKE.BUILD_TYPE, BuildType.DEBUG))
+        flags.append(CMakeOption(WITH.DBUG_TRACE, False))
+
+    sequence.add_step(
+        InContainer(
+            docker_environment=config,
+            step=ShellStep(
+                command=ConfigureMariaDBCMake(
+                    name="configure",
+                    workdir=PurePath("bld"),
+                    cmake_generator=CMakeGenerator(
+                        use_ccache=True,
+                        flags=flags,
+                        source_path="../src",
+                        compiler=ClangCompiler(),
+                    ),
+                ),
+                options=StepOptions(descriptionDone="Configure"),
+            ),
+        )
+    )
+
+    sequence.add_step(
+        InContainer(
+            docker_environment=config,
+            step=ShellStep(
+                command=CompileCMakeCommand(
+                    builddir="bld",
+                    jobs=jobs,
+                    verbose=True,
+                ),
+                options=StepOptions(descriptionDone="compile"),
+            ),
+        )
+    )
+
+    env_vars = [
+        (
+            "MSAN_OPTIONS",
+            "abort_on_error=1:poison_in_dtor=0",
+        ),
+        ("MTR_FEEDBACK_PLUGIN", "1"),
+    ]
+
+    ## ADD MTR TESTS
+    for step in (
+        get_mtr_normal_steps(
+            jobs=jobs,
+            env_vars=env_vars,
+            halt_on_failure=False,
+            path_to_test_runner=PurePath("bld", "mysql-test"),
+            additional_mtr_options=[MTROption(MTR.BIG_TEST, True)],
+            step_wrapping_fn=lambda step: InContainer(
+                docker_environment=config, step=step
+            ),
+        )
+        + get_mtr_s3_steps(
+            jobs=jobs,
+            env_vars=env_vars,
+            halt_on_failure=False,
+            additional_mtr_options=[MTROption(MTR.BIG_TEST, True)],
+            path_to_test_runner=PurePath("bld", "mysql-test"),
+            step_wrapping_fn=lambda step: InContainer(
+                docker_environment=config, step=step
+            ),
+        )
+        + [
+            save_mtr_logs(
+                step_wrapping_fn=lambda step: InContainer(
+                    docker_environment=config, step=step
+                ),
+            ),
+            mtr_junit_reporter(
+                step_wrapping_fn=lambda step: InContainer(
+                    docker_environment=config, step=step
+                ),
+            ),
+        ]
+    ):
+        sequence.add_step(step)
+
+    return sequence
