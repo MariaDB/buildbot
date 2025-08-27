@@ -25,6 +25,12 @@ bb_print_env
 # - 'deps'   -- only a limited set of main packages is installed and upgraded,
 #               to make sure upgrade does not require new dependencies
 # - 'columnstore' -- mariadb-server and mariadb-plugin-columnstore are installed
+
+# And there are three upgrade types:
+# - 'minor' -- upgrade within the same major version, e.g. 10.5.x to 10.5.y
+# - 'major' -- upgrade to the next major version, e.g. 10.x to 10.y
+# - 'distro' -- upgrade from the version provided by the distro
+
 bb_log_info "Current test mode: $test_mode"
 
 set -x
