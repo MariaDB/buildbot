@@ -84,9 +84,6 @@ case $test_mode in
     if ! grep columnstore Packages >/dev/null; then
       bb_log_warn "Columnstore was not found in packages, the test will not be run"
       exit
-    elif [ "${VERSION_CODENAME}" == "sid" ]; then
-      bb_log_warn "Columnstore isn't necessarily built on Sid, the test will be skipped"
-      exit
     fi
     package_list="mariadb-server mariadb-plugin-columnstore"
     ;;
