@@ -24,8 +24,10 @@ class CMAKE(StrEnum):
     C_FLAGS = "C_FLAGS"
     C_COMPILER_LAUNCHER = "C_COMPILER_LAUNCHER"
     CXX_COMPILER_LAUNCHER = "CXX_COMPILER_LAUNCHER"
+    EXE_LINKER_FLAGS = "EXE_LINKER_FLAGS"
     INSTALL_PREFIX = "INSTALL_PREFIX"
     LIBRARY_PATH = "LIBRARY_PATH"
+    MODULE_LINKER_FLAGS = "MODULE_LINKER_FLAGS"
 
     def __str__(self):
         return f"CMAKE_{self.value}"
@@ -71,13 +73,16 @@ class WITH(StrEnum):
     EMBEDDED_SERVER = "EMBEDDED_SERVER"
     EXTRA_CHARSETS = "EXTRA_CHARSETS"
     JEMALLOC = "JEMALLOC"
+    MSAN = "MSAN"
     NONE = "NONE"
     SAFEMALLOC = "SAFEMALLOC"
     SSL = "SSL"
+    SYSTEMD = "SYSTEMD"
     UBSAN = "UBSAN"
     UNIT_TESTS = "UNIT_TESTS"
     VALGRIND = "VALGRIND"
     WSREP = "WSREP"
+    ZLIB = "ZLIB"
 
     def __str__(self):
         return f"WITH_{self.value}"
