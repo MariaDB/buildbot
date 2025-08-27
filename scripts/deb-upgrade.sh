@@ -63,10 +63,6 @@ case $test_mode in
         grep 'spider' | awk '{print $2}' |
         sort -u | xargs)
     fi
-    if grep -si tokudb Packages; then
-      # For the sake of installing TokuDB, disable hugepages
-      sudo sh -c "echo never > /sys/kernel/mm/transparent_hugepage/enabled" || true
-    fi
     ;;
   deps)
     package_list="mariadb-server mariadb-client mariadb-common mariadb-test mysql-common libmysqlclient18"
