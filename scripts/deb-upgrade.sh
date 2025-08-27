@@ -55,14 +55,8 @@ case $test_mode in
   all)
     get_packages_file_mirror
     package_list=$(grep "^Package:" Packages |
-      grep -vE 'galera|spider' |
+      grep -vE 'galera' |
       awk '{print $2}' | sort -u | xargs)
-    if grep -qi spider Packages; then
-      bb_log_warn "due to MDEV-14622 Spider will be installed separately after the server"
-      spider_package_list=$(grep "^Package:" Packages |
-        grep 'spider' | awk '{print $2}' |
-        sort -u | xargs)
-    fi
     ;;
   deps)
     package_list="mariadb-server mariadb-client mariadb-common mariadb-test mysql-common libmysqlclient18"
@@ -108,15 +102,6 @@ if ! sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 \
 fi
 
 wait_for_mariadb_upgrade
-
-if [[ -n $spider_package_list ]]; then
-  if ! sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 \
-    apt-get -o Dpkg::Options::=--force-confnew install --allow-unauthenticated -y $spider_package_list"; then
-    bb_log_err "Installation of Spider from the previous release failed, see the output above"
-    exit 1
-  fi
-  wait_for_mariadb_upgrade
-fi
 
 # To avoid confusing errors in further logic, do an explicit check
 # whether the service is up and running
