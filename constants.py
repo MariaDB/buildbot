@@ -297,6 +297,8 @@ for os_i in OS_INFO:
                 builder_name_autobake + "-minor-upgrade-columnstore"
             )
             BUILDERS_UPGRADE.append(builder_name_autobake + "-major-upgrade")
+            if "deb" in OS_INFO[os_i]["type"]:
+                BUILDERS_UPGRADE.append(builder_name_autobake + "-distro-upgrade")
 
 BUILDERS_GALERA = list(
     map(lambda x: "gal-" + "-".join(x.split("-")[:3]), BUILDERS_AUTOBAKE)

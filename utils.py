@@ -45,8 +45,9 @@ def envFromProperties(envlist: list[str]) -> dict[str, str]:
     return d
 
 
-def getScript(scriptname: str) -> steps.ShellCommand:
-    branch = os.environ["BRANCH"]
+def getScript(
+    scriptname: str, branch: str = os.environ["BRANCH"]
+) -> steps.ShellCommand:
     return steps.ShellCommand(
         name=f"fetch_{scriptname}",
         command=[

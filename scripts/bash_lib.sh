@@ -243,13 +243,18 @@ deb_setup_mariadb_mirror() {
     bb_log_err "missing the branch variable"
     exit 1
   }
+  [[ $1 == "N/A" ]] && {
+    bb_log_info "performing a distribution upgrade, skipping repository setup"
+    set +u
+    return 0
+  }
   branch=$1
   bb_log_info "setup MariaDB repository for $branch branch"
   command -v wget >/dev/null || {
     bb_log_err "wget command not found"
     exit 1
   }
-  #//TEMP it's probably better to install the last stable release here...?
+
   source /etc/os-release
 
   if [ "${PRETTY_NAME##*/}" == "sid" ]; then
@@ -461,6 +466,9 @@ upgrade_test_type() {
       else
         prev_major_version="$major.$((minor - 1))"
       fi
+      ;;
+    "distro")
+      prev_major_version="N/A"
       ;;
     *)
       bb_log_err "test type not provided"
