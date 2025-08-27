@@ -55,7 +55,6 @@ case $test_mode in
   all)
     get_packages_file_mirror
     package_list=$(grep "^Package:" Packages |
-      grep -vE 'galera' |
       awk '{print $2}' | sort -u | xargs)
     ;;
   deps)
