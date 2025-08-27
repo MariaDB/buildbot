@@ -293,12 +293,13 @@ for os_i in OS_INFO:
         if arch not in ["s390x", "x86"]:
             BUILDERS_INSTALL.append(builder_name_autobake + "-install")
             BUILDERS_UPGRADE.append(builder_name_autobake + "-minor-upgrade-all")
-            BUILDERS_UPGRADE.append(
-                builder_name_autobake + "-minor-upgrade-columnstore"
-            )
             BUILDERS_UPGRADE.append(builder_name_autobake + "-major-upgrade")
             BUILDERS_UPGRADE.append(builder_name_autobake + "-distro-upgrade")
 
+        if arch in ["amd64", "aarch64"]:
+            BUILDERS_UPGRADE.append(
+                builder_name_autobake + "-minor-upgrade-columnstore"
+            )
 BUILDERS_GALERA = list(
     map(lambda x: "gal-" + "-".join(x.split("-")[:3]), BUILDERS_AUTOBAKE)
 )

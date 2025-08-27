@@ -79,11 +79,6 @@ case $test_mode in
     package_list=mariadb-server
     ;;
   columnstore)
-    get_packages_file_mirror
-    if ! grep columnstore Packages >/dev/null; then
-      bb_log_warn "Columnstore was not found in packages, the test will not be run"
-      exit
-    fi
     package_list="mariadb-server mariadb-plugin-columnstore"
     ;;
   *)
