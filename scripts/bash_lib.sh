@@ -292,6 +292,11 @@ rpm_setup_mariadb_mirror() {
     bb_log_err "missing the branch variable"
     exit 1
   }
+  [[ $1 == "N/A" ]] && {
+    bb_log_info "performing a distribution upgrade, skipping repository setup"
+    set +u
+    return 0
+  }
   branch=$1
   bb_log_info "setup MariaDB repository for $branch branch"
   command -v wget >/dev/null || {
@@ -616,6 +621,14 @@ check_upgraded_versions() {
 
   res=0
   errors=""
+# MDBF-1103 - "federated", "archive", and "blackhole" engines are STATIC
+# in distro packages because they were configured with -DFEATURE_SET="community"
+# while our builds load them as DYNAMIC.
+  if [[ $test_type == "distro" ]]; then
+    for eng in FEDERATED ARCHIVE BLACKHOLE; do
+      sed -i "/${eng}/d" ./engines.old
+    done
+  fi
   engines_disappeared_or_changed=$(comm -23 ./engines.old ./engines.new | wc -l)
   set +x
   if ((engines_disappeared_or_changed != 0)); then
