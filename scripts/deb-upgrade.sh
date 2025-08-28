@@ -29,18 +29,11 @@ bb_log_info "Current test mode: $test_mode"
 
 set -x
 
-source /etc/os-release
-
-if [ "${PRETTY_NAME##*/}" == "sid" ]; then
-	# Sid has the VERSION_CODENAME of the next
-	# release which isn't useful to us.
-	VERSION_CODENAME=sid
-fi
-
 # Prepare apt repository configuration for installation of the previous major
 # version
 deb_setup_mariadb_mirror "$prev_major_version"
 
+# This function depends on the deb_setup_mariadb_mirror sourcing /etc/os-release
 get_packages_file_mirror() {
   set -u
   if ! wget "$baseurl/$ID/dists/$VERSION_CODENAME/main/binary-$(deb_arch)/Packages"
