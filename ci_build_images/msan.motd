@@ -2,50 +2,57 @@ This is a container for ASAN, UBSAN and MSAN building.
 
 It can also be used as a basic build/test that contains rr.
 
+rr is available if the container is started with --privileged.
+
+The following assumed that /source is a mounted volume of the
+MariaDB source code.
+
 A basic MSAN build can be configured with:
 
-cmake \
-      -DWITH_MSAN=ON  \
-      -DCMAKE_{EXE,MODULE}_LINKER_FLAGS="-L${MSAN_LIBDIR} -Wl,-rpath=${MSAN_LIBDIR}" \
-      -DWITH_INNODB_{BZIP2,LZ4,LZMA,LZO,SNAPPY}=OFF \
-      -DCMAKE_DISABLE_FIND_PACKAGE_URING=1 \
-      -DUPDATE_SUBMODULES=OFF \
-      -DPLUGIN_COLUMNSTORE=NO  \
-      -DWITH_UNIT_TESTS=OFF \
-      -DWITH_ZLIB=bundled  \
-      -DWITH_SYSTEMD=no \
-      -DWITH_DBUG_TRACE=OFF \
-      /source
+  cmake \
+        -DWITH_MSAN=ON  \
+        -DCMAKE_{EXE,MODULE}_LINKER_FLAGS="-L${MSAN_LIBDIR} -Wl,-rpath=${MSAN_LIBDIR}" \
+        -DWITH_INNODB_{BZIP2,LZ4,LZMA,LZO,SNAPPY}=OFF \
+        -DCMAKE_DISABLE_FIND_PACKAGE_URING=1 \
+        -DUPDATE_SUBMODULES=OFF \
+        -DPLUGIN_COLUMNSTORE=NO  \
+        -DWITH_UNIT_TESTS=OFF \
+        -DWITH_ZLIB=bundled  \
+        -DWITH_SYSTEMD=no \
+        -DWITH_DBUG_TRACE=OFF \
+        /source
 
 A basic combined UBSAN/ASAN build can be configured with:
 
-cmake -DWITH_ASAN=ON -DWITH_ASAN_SCOPED=ON -DWITH_UBSAN=ON -DWITH_UNIT_TESTS=OFF /source
+  cmake -DWITH_ASAN=ON -DWITH_ASAN_SCOPED=ON -DWITH_UBSAN=ON -DWITH_UNIT_TESTS=OFF -DUPDATE_SUBMODULES=OFF /source
 
 Build with:
 
-cmake --build .
+  cmake --build .
 
 Test with:
 
-mysql-test/mtr --parallel=auto
+  mysql-test/mtr --parallel=auto
+
+Add --rr to record a specific MTR test. To replay:
+
+  rr replay mysql-test/var/log/mysqld.1.rr/mariadb-0
 
 There are UBSAN filters covering currently unfixed bugs within
-the server that can be used to direct your development, or validate if a
-observed failure is known.
+the server that can be used to direct your development, or validate
+if a observed failure is known.
 
 Perform the following to download/inspect them:
 
-curl https://raw.githubusercontent.com/mariadb-corporation/mariadb-qa/refs/heads/master/UBSAN.filter -o /build/UBSAN.filter
+  curl https://raw.githubusercontent.com/mariadb-corporation/mariadb-qa/refs/heads/master/UBSAN.filter -o /build/UBSAN.filter
 
 After this, add suppressions to UBSAN_OPTIONS with
 
-export UBSAN_OPTIONS=$UBSAN_OPTIONS:suppressions=/build/UBSAN.filter
+  export UBSAN_OPTIONS=$UBSAN_OPTIONS:suppressions=/build/UBSAN.filter
 
 To mark a function as unoptimized use the attribute:
 
   __attribute__((optnone))
-
-rr is available if the container is started with --privileged.
 
 ref sanitizer flags documents:
 * https://github.com/google/sanitizers/wiki/AddressSanitizerFlags
