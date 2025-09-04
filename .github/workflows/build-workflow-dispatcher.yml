@@ -1,6 +1,9 @@
 name: Dispatch all build container images workflows
 
 on:
+  schedule:
+    - cron: '0 12 5 * *' # FIXME: Adjust after first run
+
   workflow_dispatch:
     inputs:
       build-centospip-based:
@@ -50,9 +53,11 @@ jobs:
     uses: ./.github/workflows/build-centos.pip-based.yml
     secrets: inherit
   build-debian-based:
-    if: ${{ inputs.build-debian-based }}
+    if: ${{ inputs.build-debian-based || github.event_name == 'schedule'}}
     uses: ./.github/workflows/build-debian-based.yml
     secrets: inherit
+    with:
+      is_scheduled_event: ${{ github.event_name == 'schedule' }}
   build-debian-aocc-based:
     if: ${{ inputs.build-debian-aocc-based }}
     uses: ./.github/workflows/build-debian.aocc-based.yml
