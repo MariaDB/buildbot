@@ -24,6 +24,11 @@ on:
       - .github/workflows/bbw_build_container_template.yml
 
   workflow_call:
+    inputs:
+      is_scheduled_event:
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   build-images:
@@ -65,12 +70,14 @@ jobs:
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
             branch: 11.4
             nogalera: false
+            deploy_on_schedule: true
 
           - image: debian:sid
             platforms: linux/386
             branch: 11.4
             tag: debiansid-386
             nogalera: false
+            deploy_on_schedule: true
 
           - image: ubuntu:22.04
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
@@ -95,4 +102,6 @@ jobs:
       tag: ${{ matrix.tag }}
       branch: ${{ matrix.branch }}
       nogalera: ${{ matrix.nogalera }}
+      is_scheduled_event: ${{ inputs.is_scheduled_event || false }}
+      deploy_on_schedule: ${{ matrix.deploy_on_schedule || false }}
     secrets: inherit
