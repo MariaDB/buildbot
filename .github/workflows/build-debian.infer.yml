@@ -1,0 +1,45 @@
+name: Build Debian:infer based images
+
+on:
+  push:
+    branches:
+      - 'main'
+      - 'dev'
+    paths:
+      - 'ci_build_images/debian.Dockerfile'
+      - 'ci_build_images/infer.fragment.Dockerfile'
+      - 'ci_build_images/buildbot-worker.Dockerfile'
+      - .github/workflows/build-debian.infer.yml
+      - .github/workflows/bbw_build_container_template.yml
+  pull_request:
+    paths:
+      - 'ci_build_images/debian.Dockerfile'
+      - 'ci_build_images/infer.fragment.Dockerfile'
+      - 'ci_build_images/buildbot-worker.Dockerfile'
+      - .github/workflows/build-debian.infer.yml
+      - .github/workflows/bbw_build_container_template.yml
+  workflow_call:
+
+jobs:
+  build-images:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: debian:13
+            platforms: linux/amd64
+            branch: 11.8
+            tag: debian13-infer-clang-20
+            nogalera: true
+
+    uses: ./.github/workflows/bbw_build_container_template.yml
+    with:
+      dockerfile: debian.Dockerfile infer.fragment.Dockerfile
+      image: ${{ matrix.image }}
+      platforms: ${{ matrix.platforms }}
+      tag: ${{ matrix.tag }}
+      branch: ${{ matrix.branch }}
+      nogalera: ${{ matrix.nogalera }}
+      noqpress: true
+      runner: 'ubuntu-24.04'
+    secrets: inherit
