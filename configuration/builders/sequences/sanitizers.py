@@ -214,7 +214,7 @@ def msan(
         CMakeOption(WITH.ZLIB, "bundled"),
         CMakeOption(WITH.SYSTEMD, "no"),
         CMakeOption(PLUGIN.COLUMNSTORE_STORAGE_ENGINE, False),
-        CMakeOption(PLUGIN.SPIDER_STORAGE_ENGINE, False),
+        CMakeOption(PLUGIN.SPIDER_STORAGE_ENGINE, isDebugBuildType),
         CMakeOption(PLUGIN.ROCKSDB_STORAGE_ENGINE, False),
         CMakeOption(PLUGIN.OQGRAPH_STORAGE_ENGINE, False),
     ]
@@ -264,40 +264,46 @@ def msan(
     ]
 
     ## ADD MTR TESTS
-    for step in (
-        get_mtr_normal_steps(
+    steps = get_mtr_normal_steps(
+        jobs=jobs,
+        env_vars=env_vars,
+        halt_on_failure=False,
+        path_to_test_runner=PurePath("bld", "mysql-test"),
+        additional_mtr_options=[MTROption(MTR.BIG_TEST, True)],
+        step_wrapping_fn=lambda step: InContainer(docker_environment=config, step=step),
+    ) + get_mtr_s3_steps(
+        jobs=jobs,
+        env_vars=env_vars,
+        halt_on_failure=False,
+        additional_mtr_options=[MTROption(MTR.BIG_TEST, True)],
+        path_to_test_runner=PurePath("bld", "mysql-test"),
+        step_wrapping_fn=lambda step: InContainer(docker_environment=config, step=step),
+    )
+    if isDebugBuildType:
+        steps += get_mtr_spider_steps(
             jobs=jobs,
             env_vars=env_vars,
             halt_on_failure=False,
-            path_to_test_runner=PurePath("bld", "mysql-test"),
             additional_mtr_options=[MTROption(MTR.BIG_TEST, True)],
+            path_to_test_runner=PurePath("bld", "mysql-test"),
             step_wrapping_fn=lambda step: InContainer(
                 docker_environment=config, step=step
             ),
         )
-        + get_mtr_s3_steps(
-            jobs=jobs,
-            env_vars=env_vars,
-            halt_on_failure=False,
-            additional_mtr_options=[MTROption(MTR.BIG_TEST, True)],
-            path_to_test_runner=PurePath("bld", "mysql-test"),
+    steps += [
+        save_mtr_logs(
             step_wrapping_fn=lambda step: InContainer(
                 docker_environment=config, step=step
             ),
-        )
-        + [
-            save_mtr_logs(
-                step_wrapping_fn=lambda step: InContainer(
-                    docker_environment=config, step=step
-                ),
+        ),
+        mtr_junit_reporter(
+            step_wrapping_fn=lambda step: InContainer(
+                docker_environment=config, step=step
             ),
-            mtr_junit_reporter(
-                step_wrapping_fn=lambda step: InContainer(
-                    docker_environment=config, step=step
-                ),
-            ),
-        ]
-    ):
+        ),
+    ]
+
+    for step in steps:
         sequence.add_step(step)
 
     return sequence
