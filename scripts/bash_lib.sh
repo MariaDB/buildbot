@@ -40,6 +40,14 @@ err() {
   exit 1
 }
 
+# mariadb < 10.4 the client binary was mysql
+# needed in distro upgrade tests. Remove after rhel7, rocky/alma/rhel 8 are no longer supported
+get_db_client() {
+    command -v mariadb || command -v mysql || {
+        err "No MariaDB/MySQL client found"
+    }
+}
+
 manual_run_switch() {
   # check if we are in Buildbot CI or not
   if [[ $BB_CI != "True" ]]; then
@@ -505,17 +513,17 @@ get_columnstore_logs() {
 check_mariadb_server_and_create_structures() {
   # All the commands below should succeed
   set -e
-  sudo mariadb -e "CREATE DATABASE db"
-  sudo mariadb -e "CREATE TABLE db.t_innodb(a1 SERIAL, c1 CHAR(8)) ENGINE=InnoDB; INSERT INTO db.t_innodb VALUES (1,'foo'),(2,'bar')"
-  sudo mariadb -e "CREATE TABLE db.t_myisam(a2 SERIAL, c2 CHAR(8)) ENGINE=MyISAM; INSERT INTO db.t_myisam VALUES (1,'foo'),(2,'bar')"
-  sudo mariadb -e "CREATE TABLE db.t_aria(a3 SERIAL, c3 CHAR(8)) ENGINE=Aria; INSERT INTO db.t_aria VALUES (1,'foo'),(2,'bar')"
-  sudo mariadb -e "CREATE TABLE db.t_memory(a4 SERIAL, c4 CHAR(8)) ENGINE=MEMORY; INSERT INTO db.t_memory VALUES (1,'foo'),(2,'bar')"
-  sudo mariadb -e "CREATE ALGORITHM=MERGE VIEW db.v_merge AS SELECT * FROM db.t_innodb, db.t_myisam, db.t_aria"
-  sudo mariadb -e "CREATE ALGORITHM=TEMPTABLE VIEW db.v_temptable AS SELECT * FROM db.t_innodb, db.t_myisam, db.t_aria"
-  sudo mariadb -e "CREATE PROCEDURE db.p() SELECT * FROM db.v_merge"
-  sudo mariadb -e "CREATE FUNCTION db.f() RETURNS INT DETERMINISTIC RETURN 1"
+  sudo "$(get_db_client)" -e "CREATE DATABASE db"
+  sudo "$(get_db_client)" -e "CREATE TABLE db.t_innodb(a1 SERIAL, c1 CHAR(8)) ENGINE=InnoDB; INSERT INTO db.t_innodb VALUES (1,'foo'),(2,'bar')"
+  sudo "$(get_db_client)" -e "CREATE TABLE db.t_myisam(a2 SERIAL, c2 CHAR(8)) ENGINE=MyISAM; INSERT INTO db.t_myisam VALUES (1,'foo'),(2,'bar')"
+  sudo "$(get_db_client)" -e "CREATE TABLE db.t_aria(a3 SERIAL, c3 CHAR(8)) ENGINE=Aria; INSERT INTO db.t_aria VALUES (1,'foo'),(2,'bar')"
+  sudo "$(get_db_client)" -e "CREATE TABLE db.t_memory(a4 SERIAL, c4 CHAR(8)) ENGINE=MEMORY; INSERT INTO db.t_memory VALUES (1,'foo'),(2,'bar')"
+  sudo "$(get_db_client)" -e "CREATE ALGORITHM=MERGE VIEW db.v_merge AS SELECT * FROM db.t_innodb, db.t_myisam, db.t_aria"
+  sudo "$(get_db_client)" -e "CREATE ALGORITHM=TEMPTABLE VIEW db.v_temptable AS SELECT * FROM db.t_innodb, db.t_myisam, db.t_aria"
+  sudo "$(get_db_client)" -e "CREATE PROCEDURE db.p() SELECT * FROM db.v_merge"
+  sudo "$(get_db_client)" -e "CREATE FUNCTION db.f() RETURNS INT DETERMINISTIC RETURN 1"
   if [[ $test_mode == "columnstore" ]]; then
-    if ! sudo mariadb -e "CREATE TABLE db.t_columnstore(a INT, c VARCHAR(8)) ENGINE=ColumnStore; SHOW CREATE TABLE db.t_columnstore; INSERT INTO db.t_columnstore VALUES (1,'foo'),(2,'bar')"; then
+    if ! sudo "$(get_db_client)" -e "CREATE TABLE db.t_columnstore(a INT, c VARCHAR(8)) ENGINE=ColumnStore; SHOW CREATE TABLE db.t_columnstore; INSERT INTO db.t_columnstore VALUES (1,'foo'),(2,'bar')"; then
       get_columnstore_logs
       exit 1
     fi
@@ -525,24 +533,24 @@ check_mariadb_server_and_create_structures() {
 
 check_mariadb_server_and_verify_structures() {
   # Print "have_xx" capabilitites for the new server
-  sudo mariadb -e "select 'Stat' t, variable_name name, variable_value val from information_schema.global_status where variable_name like '%have%' union select 'Vars' t, variable_name name, variable_value val from information_schema.global_variables where variable_name like '%have%' order by t, name"
+  sudo "$(get_db_client)" -e "select 'Stat' t, variable_name name, variable_value val from information_schema.global_status where variable_name like '%have%' union select 'Vars' t, variable_name name, variable_value val from information_schema.global_variables where variable_name like '%have%' order by t, name"
   # All the commands below should succeed
   set -e
-  sudo mariadb -e "select @@version, @@version_comment"
-  sudo mariadb -e "SHOW TABLES IN db"
-  sudo mariadb -e "SELECT * FROM db.t_innodb; INSERT INTO db.t_innodb VALUES (3,'foo'),(4,'bar')"
-  sudo mariadb -e "SELECT * FROM db.t_myisam; INSERT INTO db.t_myisam VALUES (3,'foo'),(4,'bar')"
-  sudo mariadb -e "SELECT * FROM db.t_aria; INSERT INTO db.t_aria VALUES (3,'foo'),(4,'bar')"
+  sudo "$(get_db_client)" -e "select @@version, @@version_comment"
+  sudo "$(get_db_client)" -e "SHOW TABLES IN db"
+  sudo "$(get_db_client)" -e "SELECT * FROM db.t_innodb; INSERT INTO db.t_innodb VALUES (3,'foo'),(4,'bar')"
+  sudo "$(get_db_client)" -e "SELECT * FROM db.t_myisam; INSERT INTO db.t_myisam VALUES (3,'foo'),(4,'bar')"
+  sudo "$(get_db_client)" -e "SELECT * FROM db.t_aria; INSERT INTO db.t_aria VALUES (3,'foo'),(4,'bar')"
   bb_log_info "If the next INSERT fails with a duplicate key error,"
   bb_log_info "it is likely because the server was not upgraded or restarted after upgrade"
-  sudo mariadb -e "SELECT * FROM db.t_memory; INSERT INTO db.t_memory VALUES (1,'foo'),(2,'bar')"
-  sudo mariadb -e "SELECT COUNT(*) FROM db.v_merge"
-  sudo mariadb -e "SELECT COUNT(*) FROM db.v_temptable"
-  sudo mariadb -e "CALL db.p()"
-  sudo mariadb -e "SELECT db.f()"
+  sudo "$(get_db_client)" -e "SELECT * FROM db.t_memory; INSERT INTO db.t_memory VALUES (1,'foo'),(2,'bar')"
+  sudo "$(get_db_client)" -e "SELECT COUNT(*) FROM db.v_merge"
+  sudo "$(get_db_client)" -e "SELECT COUNT(*) FROM db.v_temptable"
+  sudo "$(get_db_client)" -e "CALL db.p()"
+  sudo "$(get_db_client)" -e "SELECT db.f()"
 
   if [[ $test_mode == "columnstore" ]]; then
-    if ! sudo mariadb -e "SELECT * FROM db.t_columnstore; INSERT INTO db.t_columnstore VALUES (3,'foo'),(4,'bar')"; then
+    if ! sudo "$(get_db_client)" -e "SELECT * FROM db.t_columnstore; INSERT INTO db.t_columnstore VALUES (3,'foo'),(4,'bar')"; then
       get_columnstore_logs
       exit 1
     fi
@@ -565,11 +573,11 @@ control_mariadb_server() {
 store_mariadb_server_info() {
   # We need sudo here because the mariadb local root configured this way, not because we want special write permissions for the resulting file.
   # pre-commit check has an issue with it, so instead of adding an exception before each line, we add a piped sort, which should be bogus,
-  sudo mariadb --skip-column-names -e "select @@version" | awk -F'-' '{ print $1 }' >"/tmp/version.$1"
-  sudo mariadb --skip-column-names -e "select engine, support, transactions, savepoints from information_schema.engines order by engine" | sort >"./engines.$1"
-  sudo mariadb --skip-column-names -e "select plugin_name, plugin_status, plugin_type, plugin_library, plugin_license \
+  sudo "$(get_db_client)" --skip-column-names -e "select @@version" | awk -F'-' '{ print $1 }' >"/tmp/version.$1"
+  sudo "$(get_db_client)" --skip-column-names -e "select engine, support, transactions, savepoints from information_schema.engines order by engine" | sort >"./engines.$1"
+  sudo "$(get_db_client)" --skip-column-names -e "select plugin_name, plugin_status, plugin_type, plugin_library, plugin_license \
                                        from information_schema.all_plugins order by plugin_name" | sort >"./plugins.$1"
-  sudo mariadb --skip-column-names -e "select 'Stat' t, variable_name name, variable_value val
+  sudo "$(get_db_client)" --skip-column-names -e "select 'Stat' t, variable_name name, variable_value val
                                        from information_schema.global_status where variable_name like '%have%' \
                                        union \
                                        select 'Vars' t, variable_name name, variable_value val \
