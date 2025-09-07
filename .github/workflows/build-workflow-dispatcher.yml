@@ -2,7 +2,7 @@ name: Dispatch all build container images workflows
 
 on:
   schedule:
-    - cron: '0 12 5 * *' # FIXME: Adjust after first run
+    - cron: '0 3 8 * *' # FIXME: Adjust after first run
 
   workflow_dispatch:
     inputs:
