@@ -208,7 +208,7 @@ jobs:
 
 
       - name: ghcr.io - move tag to production
-        if: ${{ env.DEPLOY_IMAGES == 'true' && (inputs.is_scheduled_event == 'true' || env.MAIN_BRANCH == 'true') }}
+        if: ${{ env.DEPLOY_IMAGES == 'true' && (inputs.is_scheduled_event || env.MAIN_BRANCH == 'true') }}
         run: |
           msg="Update tag (dev_${{ env.IMG }} --> ${{ env.IMG }})"
           line="${msg//?/=}"
@@ -236,7 +236,7 @@ jobs:
             docker://quay.io/mariadb-foundation/${{ env.REPO }}:dev_${{ env.IMG }}
 
       - name: quay.io - move tag to production
-        if: ${{ env.DEPLOY_IMAGES == 'true' && (inputs.is_scheduled_event == 'true' || env.MAIN_BRANCH == 'true')}}
+        if: ${{ env.DEPLOY_IMAGES == 'true' && (inputs.is_scheduled_event || env.MAIN_BRANCH == 'true')}}
         run: |
           msg="Update tag (dev_${{ env.IMG }} --> ${{ env.IMG }})"
           line="${msg//?/=}"
