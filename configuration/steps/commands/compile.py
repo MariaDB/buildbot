@@ -80,10 +80,12 @@ class CompileCMakeCommand(Command):
         builddir: str = ".",
         verbose: bool = False,
         workdir: PurePath = PurePath("."),
+        targets: list[str] = None,
     ):
         self.verbose = verbose
         self.builddir = builddir
         self.jobs = jobs
+        self.targets = targets
         super().__init__(name="Compile", workdir=workdir)
 
     def as_cmd_arg(self) -> list[str]:
@@ -96,6 +98,9 @@ class CompileCMakeCommand(Command):
         ]
         if self.verbose:
             r_list.append("--verbose")
+        if self.targets:
+            r_list.append("--targets")
+            r_list.append(self.targets)
         return r_list
 
 
