@@ -21,6 +21,7 @@ class CMakeGenerator(BaseGenerator):
         use_ccache: bool = False,
         compiler: CompilerCommand = None,
         source_path: str = ".",
+        builddir: str = None,
     ):
         """
         Initializes the CMakeGenerator with an optional list of flags.
@@ -31,8 +32,12 @@ class CMakeGenerator(BaseGenerator):
             compiler: An instance of CompilerCommand if you want to set it explicitly.
             source_path: The source path to the base CMakeLists.txt file.
                          Default path is "in source build".
+            builddir: The path of the build directory. Default is None.
         """
-        super().__init__(base_cmd=["cmake", source_path], flags=flags)
+        base_command = ["cmake", "-S", source_path]
+        if builddir:
+            base_command += ["-B", builddir]
+        super().__init__(base_cmd=base_command, flags=flags)
 
         if use_ccache:
             self._use_ccache()
