@@ -46,13 +46,19 @@ class GitInitFromCommit(Command):
         repo_url: str,
         workdir: PurePath = PurePath("."),
         jobs: int = 1,
+        depth: int = 1,
     ):
         super().__init__(name="Git", workdir=workdir)
         self.commit = commit
         self.repo_url = repo_url
         self.jobs = jobs
+        self.depth = depth
 
     def as_cmd_arg(self) -> list[str]:
+        if self.depth != 0:
+            depth = "--depth " + str(self.depth)
+        else:
+            depth = ""
         return [
             "bash",
             "-exc",
@@ -60,9 +66,9 @@ class GitInitFromCommit(Command):
                 (
                     "git init && "
                     f"git remote add origin {self.repo_url} && "
-                    f"git fetch --depth 1 origin {self.commit} && "
+                    f"git fetch {depth} origin {self.commit} && "
                     "git checkout FETCH_HEAD && "
-                    f"git submodule update --init --recursive --depth 1 --jobs={self.jobs}"
+                    f"git submodule update --init --recursive {depth} --jobs={self.jobs}"
                 )
             ),
         ]
