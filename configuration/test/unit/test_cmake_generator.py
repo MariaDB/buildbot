@@ -28,6 +28,7 @@ class TestCMakeGenerator(unittest.TestCase):
             command,
             [
                 "cmake",
+                "-S",
                 ".",
                 "-DCMAKE_BUILD_TYPE=RelWithDebInfo",
                 "-DCMAKE_INSTALL_PREFIX=/usr/local",
@@ -52,6 +53,7 @@ class TestCMakeGenerator(unittest.TestCase):
             command,
             [
                 "cmake",
+                "-S",
                 ".",
                 "-DCMAKE_AR=ar",
                 "-DCMAKE_LIBRARY_PATH=/usr/lib",
@@ -79,6 +81,7 @@ class TestCMakeGenerator(unittest.TestCase):
             command,
             [
                 "cmake",
+                "-S",
                 ".",
                 "-DCMAKE_CXX_COMPILER=g++",
                 "-DCMAKE_C_COMPILER=gcc",
@@ -95,6 +98,7 @@ class TestCMakeGenerator(unittest.TestCase):
             command,
             [
                 "cmake",
+                "-S",
                 ".",
                 "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                 "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
@@ -108,7 +112,7 @@ class TestCMakeGenerator(unittest.TestCase):
         """
         generator = CMakeGenerator(flags=[])
         command = generator.generate()
-        self.assertEqual(command, ["cmake", "."])
+        self.assertEqual(command, ["cmake", "-S", "."])
 
     def test_set_build_config(self):
         """
@@ -124,6 +128,7 @@ class TestCMakeGenerator(unittest.TestCase):
             command,
             [
                 "cmake",
+                "-S",
                 ".",
                 "-DBUILD_CONFIG=mysql_release",
             ],
@@ -158,6 +163,7 @@ class TestCMakeGenerator(unittest.TestCase):
             command,
             [
                 "cmake",
+                "-S",
                 ".",
                 "-DBUILD_CONFIG=mysql_release",
                 "-DCMAKE_INSTALL_PREFIX=/usr/lib/test",
