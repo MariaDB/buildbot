@@ -226,3 +226,11 @@ ubuntu-2504:
     - amd64
     - aarch64
   type: deb
+ubuntu-2510:
+  image_tag: ubuntu25.10
+  tags:
+    - release_packages
+  arch:
+    - amd64
+    - aarch64
+  type: deb
