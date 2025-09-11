@@ -61,7 +61,7 @@ RUN echo "fastestmirror=true" >> /etc/dnf/dnf.conf \
     unixODBC-devel \
     wget \
     which \
-    && if [ "$VERSION_ID" = "42" ]; then \
+    && if [ "$VERSION_ID" != "41" ] && [ "$VERSION_ID" != "40" ]; then \
         dnf -y install java-latest-openjdk-devel java-latest-openjdk; \
     else \
         dnf -y install java-1.8.0-openjdk-devel java-1.8.0-openjdk; \
