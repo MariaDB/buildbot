@@ -222,6 +222,8 @@ SUPPORTED_PLATFORMS["11.8"] += [
     "x86-debian-13",
     "amd64-sles-1507",
     "s390x-sles-1507",
+    "aarch64-ubuntu-2510",
+    "amd64-ubuntu-2510",
 ]
 SUPPORTED_PLATFORMS["12.0"] = SUPPORTED_PLATFORMS["11.8"].copy()
 SUPPORTED_PLATFORMS["12.1"] = SUPPORTED_PLATFORMS["12.0"].copy()

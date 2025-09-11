@@ -94,6 +94,11 @@ jobs:
             branch: 11.4
             nogalera: false
 
+          - image: ubuntu:25.10
+            platforms: linux/amd64, linux/arm64/v8
+            branch: 11.8
+            nogalera: true
+
     uses: ./.github/workflows/bbw_build_container_template.yml
     with:
       dockerfile: ${{ matrix.dockerfile || 'debian.Dockerfile' }}
