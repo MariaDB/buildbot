@@ -126,6 +126,13 @@ opensuse-1506:
   arch:
     - amd64
   type: rpm
+opensuse-1600:
+  image_tag: opensuse1600
+  tags:
+    - release_packages
+  arch:
+    - amd64
+  type: rpm
 rhel-7:
   image_tag: rhel7
   tags:
