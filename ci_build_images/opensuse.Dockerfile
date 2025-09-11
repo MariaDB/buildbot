@@ -16,6 +16,8 @@ RUN zypper update -y \
     && VERSION_ID=${VERSION_ID%.*}0${VERSION_ID#*.} \
     && ARCH=$(rpm --query --queryformat='%{ARCH}' zypper) \
     && if [ "$ARCH" = x86_64 ]; then ARCH=amd64 ; fi \
+    && if [ "$VERSION" = 16.0 ]; then JAVA=21; BOOST=1_86_0 ; PYTHON=313 ; \
+                                 else JAVA=17; BOOST=1_75_0; PYTHON=311; fi \
     && zypper addrepo https://ci.mariadb.org/galera/mariadb-4.x-latest-gal-"${ARCH}-${ID%%-leap}-${VERSION_ID}".repo \
     && zypper install -y \
     bzip2 \
@@ -37,14 +39,14 @@ RUN zypper update -y \
     judy-devel \
     krb5-devel \
     libaio-devel \
-    libboost_atomic1_75_0-devel \
-    libboost_chrono1_75_0-devel \
-    libboost_date_time1_75_0-devel \
-    libboost_filesystem1_75_0-devel \
-    libboost_program_options1_75_0-devel \
-    libboost_regex1_75_0-devel \
-    libboost_system1_75_0-devel \
-    libboost_thread1_75_0-devel \
+    libboost_atomic"${BOOST}"-devel \
+    libboost_chrono"${BOOST}"-devel \
+    libboost_date_time"${BOOST}"-devel \
+    libboost_filesystem"${BOOST}"-devel \
+    libboost_program_options"${BOOST}"-devel \
+    libboost_regex"${BOOST}"-devel \
+    libboost_system"${BOOST}"-devel \
+    libboost_thread"${BOOST}"-devel \
     libbz2-devel \
     libcurl-devel \
     libedit-devel \
@@ -56,13 +58,13 @@ RUN zypper update -y \
     libxml2-devel \
     libzstd-devel \
     lzo-devel \
-    java-11-openjdk-devel \
+    java-"${JAVA}"-openjdk-devel \
     pam-devel \
     pcre2-devel \
     perl-Net-SSLeay \
     policycoreutils \
-    python311-devel \
-    python311-pip \
+    python"${PYTHON}"-devel \
+    python"${PYTHON}"-pip \
     rpm-build \
     rpmlint \
     snappy-devel \

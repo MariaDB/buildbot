@@ -35,6 +35,11 @@ jobs:
             tag: opensuse1506
             nogalera: false
 
+          - image: opensuse/leap:16.0
+            platforms: linux/amd64
+            tag: opensuse1600
+            nogalera: true
+
     uses: ./.github/workflows/bbw_build_container_template.yml
     with:
       dockerfile: opensuse.Dockerfile pip.Dockerfile

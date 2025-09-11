@@ -214,6 +214,7 @@ SUPPORTED_PLATFORMS["11.7"] = SUPPORTED_PLATFORMS["11.6"].copy()
 SUPPORTED_PLATFORMS["11.7"] += ["amd64-almalinux-8-bintar"]
 SUPPORTED_PLATFORMS["11.8"] = SUPPORTED_PLATFORMS["11.7"].copy()
 SUPPORTED_PLATFORMS["11.8"] += [
+    "amd64-opensuse-1600",
     "aarch64-debian-sid",
     "amd64-debian-sid",
     "ppc64le-debian-sid",
