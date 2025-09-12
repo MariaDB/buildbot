@@ -22,7 +22,11 @@ A basic MSAN build can be configured with:
 
 A basic combined UBSAN/ASAN build can be configured with:
 
-  cmake -DWITH_ASAN=ON -DWITH_ASAN_SCOPED=ON -DWITH_UBSAN=ON -DWITH_UNIT_TESTS=OFF -DUPDATE_SUBMODULES=OFF /source
+  cmake -DWITH_ASAN=ON -DWITH_ASAN_SCOPED=ON -DWITH_UBSAN=ON \
+        -DUPDATE_SUBMODULES=OFF \
+        -DPLUGIN_COLUMNSTORE=NO  \
+        -DWITH_UNIT_TESTS=OFF \
+        /source
 
 Build with:
 
