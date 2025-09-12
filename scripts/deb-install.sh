@@ -110,16 +110,10 @@ if [[ -n $spider_package_list ]]; then
     apt-get install -y $spider_package_list"
 fi
 
-sudo mariadb --verbose -e "create database test; \
-  use test; \
-  create table t(a int primary key) engine=innodb; \
-  insert into t values (1); \
-  select * from t; \
-  drop table t; \
-  drop database test; \
-  create user galera identified by 'gal3ra123'; \
-  grant all on *.* to galera;"
-sudo mariadb -e "select @@version"
+# Check that the server is functioning and create some structures
+check_mariadb_server_and_create_structures
+
+
 bb_log_info "test for MDEV-18563, MDEV-18526"
 set +e
 
@@ -136,22 +130,5 @@ for p in /bin /sbin /usr/bin /usr/sbin /usr/local/bin /usr/local/sbin; do
 done
 sudo mariadb-install-db --no-defaults --user=mysql --plugin-maturity=unknown
 set +e
-## Install mariadb-test for further use
-# sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 apt-get install -y mariadb-test"
-if dpkg -l | grep -i spider >/dev/null; then
-  bb_log_warn "Workaround for MDEV-22979, otherwise server hangs further in SST steps"
-  sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 \
-    apt-get remove --allow-unauthenticated -y mariadb-plugin-spider" || true
-  sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 \
-    apt-get purge --allow-unauthenticated -y mariadb-plugin-spider" || true
-fi
-if dpkg -l | grep -i columnstore >/dev/null; then
-  bb_log_warn "Workaround for a bunch of Columnstore bugs"
-  bb_log_warn "otherwise mysqldump in SST steps fails when Columnstore returns errors"
-  sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 \
-    apt-get remove --allow-unauthenticated -y mariadb-plugin-columnstore" || true
-  sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 \
-    apt-get purge --allow-unauthenticated -y mariadb-plugin-columnstore" || true
-fi
 
 bb_log_ok "all done"
