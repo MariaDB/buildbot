@@ -26,33 +26,27 @@ RUN source /etc/os-release \
             dnf install -y ccache \
             && dnf clean all; \
             ;; \
-        *) \
-            # No $PLATFORM_ID in SUSE nor RH7
-            case $BASE_IMAGE in \
-                *leap:15.6|*bci-base:15.6) \
-                    zypper -n update \
-                    && zypper -n install rpm-build wget which sudo gcc-c++ ccache \
-                    && zypper clean; \
-                ;; \
-                # Only AMD64 until EOL
-                *ubi7) \
-                    yum -y upgrade \
-                    && rpm -ivh https://dl.fedoraproject.org/pub/archive/epel/7/x86_64/Packages/e/epel-release-7-14.noarch.rpm \
-                    && yum -y install rpm-build \
-                        yum-utils \
-                        wget \
-                        which \
-                        perl-generators \
-                        sudo \
-                        gcc-c++ \
-                        ccache \
-                    && yum clean all; \
-                ;; \
-            *) \
-                echo "Unsupported base image: $BASE_IMAGE"; \
-                exit 1; \
+        sles:*|opensuse-leap:*) \
+            zypper -n update \
+            && zypper -n install rpm-build wget which sudo gcc-c++ ccache \
+            && zypper clean; \
             ;; \
-            esac; \
+        rhel:7*) \
+            yum -y upgrade \
+            && rpm -ivh https://dl.fedoraproject.org/pub/archive/epel/7/x86_64/Packages/e/epel-release-7-14.noarch.rpm \
+            && yum -y install rpm-build \
+                yum-utils \
+                wget \
+                which \
+                perl-generators \
+                sudo \
+                gcc-c++ \
+                ccache \
+            && yum clean all; \
+            ;; \
+        *) \
+            echo "Unsupported base image: $BASE_IMAGE"; \
+            exit 1; \
         ;; \
     esac
 
@@ -75,8 +69,9 @@ RUN if getent passwd 1000; then \
     fi \
     # rpm build-deps require sudo
     # on some platforms there is a default that ALL should ask for password when executing sudo << ALL ALL=(ALL) ALL >>
-    && sed -i '/^ALL/d' /etc/sudoers \
-    && sed -i '/^Defaults[[:space:]]targetpw/d' /etc/sudoers \
+    && if [ -f /etc/sudoers ]; then \
+        sed -i -e  '/^ALL/d' -e '/^Defaults[[:space:]]targetpw/d' /etc/sudoers; \
+    fi \
     && echo 'buildbot ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers;
 
 
