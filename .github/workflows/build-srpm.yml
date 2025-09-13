@@ -72,6 +72,11 @@ jobs:
             platforms: linux/amd64
 
           - dockerfile: srpm.Dockerfile
+            image: opensuse/leap:16.0
+            tag: opensuse1600-srpm
+            platforms: linux/amd64
+
+          - dockerfile: srpm.Dockerfile
             image: registry.suse.com/bci/bci-base:15.6
             tag: sles1506-srpm
             platforms: linux/amd64

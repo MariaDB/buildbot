@@ -30,7 +30,7 @@ RUN source /etc/os-release \
         *) \
             # No $PLATFORM_ID in SUSE nor RH7
             case $BASE_IMAGE in \
-                *leap:15.6|*bci-base:15.6) \
+                *leap:*|*bci-base:*) \
                     zypper -n update \
                     && zypper -n install rpm-build wget which sudo gcc-c++ ccache \
                     && zypper clean; \
