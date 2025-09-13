@@ -10,20 +10,19 @@ LABEL maintainer="MariaDB Buildbot maintainers"
 # REPOSITORY AND RPM TOOLS SETUP
 # hadolint ignore=SC2086
 RUN source /etc/os-release \
-    && case $PLATFORM_ID in  \
-        "platform:el8"|"platform:el9"|"platform:el10"|"platform:f41"|"platform:f42") \
+    && case "$ID:$VERSION_ID" in \
+        rhel:8*|rhel:9*|rhel:1*) \
+            # crb in rhel is enabled with a valid subscription, will be handled by running the container in an RH host
+            rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-${PLATFORM_ID##*:el}.noarch.rpm; \
+            # fall through
+            ;& \
+        centos:*|fedora:*) \
             dnf -y upgrade \
             && dnf -y install rpm-build yum-utils wget which perl-generators sudo gcc-c++; \
-            case $ID in \
-                "rhel") \
-                    rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-${PLATFORM_ID##*:el}.noarch.rpm; \
-                    # crb in rhel is enabled with a valid subscription, will be handled by running the container in an RH host
-                    ;; \
-                "centos") \
-                    dnf -y install epel-release \
-                    && dnf config-manager --set-enabled crb; \
-                    ;; \
-            esac; \
+            if [ $ID = centos ]; then \
+                dnf -y install epel-release \
+                && dnf config-manager --set-enabled crb; \
+            fi; \
             dnf install -y ccache \
             && dnf clean all; \
             ;; \
