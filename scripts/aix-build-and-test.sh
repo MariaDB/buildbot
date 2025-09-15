@@ -29,10 +29,10 @@ build() {
   source=$1
   mkdir -p build
   cd build
-  /opt/bin/ccache --zero-stats
+  /opt/freeware/bin/ccache-swig -z
   cmake ../"$source" -DCMAKE_BUILD_TYPE="$2" \
-    -DCMAKE_C_LAUNCHER=/opt/bin/ccache \
-    -DCMAKE_CXX_LAUNCHER=/opt/bin/ccache \
+    -DCMAKE_C_LAUNCHER=/opt/freeware/bin/ccache-swig \
+    -DCMAKE_CXX_LAUNCHER=/opt/freeware/bin/ccache-swig \
     -DCMAKE_C_COMPILER=gcc-11 \
     -DCMAKE_CXX_COMPILER=g++-11 \
     -DCMAKE_AR=/usr/bin/ar \
@@ -49,7 +49,7 @@ build() {
     -Dhave_C__Wl___as_needed= \
     -DPLUGIN_AUTH_GSSAPI=NO -DPLUGIN_TYPE_MYSQL_JSON=NO
   make -j"$(("$jobs" * 2))"
-  /opt/bin/ccache --show-stats
+  /opt/freeware/bin/ccache-swig -s
 }
 
 mariadbtest() {
