@@ -202,9 +202,7 @@ SUPPORTED_PLATFORMS["11.3"] = SUPPORTED_PLATFORMS["11.2"].copy()
 SUPPORTED_PLATFORMS["11.4"] = SUPPORTED_PLATFORMS["11.3"].copy()
 SUPPORTED_PLATFORMS["11.4"] += [
     "aarch64-ubuntu-2504",
-    "amd64-sles-1507",
     "amd64-ubuntu-2504",
-    "s390x-sles-1507",
 ]
 
 SUPPORTED_PLATFORMS["11.5"] = SUPPORTED_PLATFORMS["11.4"].copy()
@@ -222,6 +220,8 @@ SUPPORTED_PLATFORMS["11.8"] += [
     "amd64-debian-13",
     "ppc64le-debian-13",
     "x86-debian-13",
+    "amd64-sles-1507",
+    "s390x-sles-1507",
 ]
 SUPPORTED_PLATFORMS["12.0"] = SUPPORTED_PLATFORMS["11.8"].copy()
 SUPPORTED_PLATFORMS["12.1"] = SUPPORTED_PLATFORMS["12.0"].copy()
