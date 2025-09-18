@@ -179,6 +179,13 @@ rm -rf -- *
 # shellcheck disable=SC2094
 /usr/sbin/cracklib-packer /usr/share/dict/cracklib-small < /usr/share/dict/cracklib-small
 
+# curl
+apt-get source curl
+mv curl*/* .
+./configure  --with-openssl --enable-ipv6 --disable-static --enable-websockets
+make -j "$(nproc)"
+mv ./lib/.libs/*.so* "$MSAN_LIBDIR"
+rm -rf -- *
 
 # Now that we are built, clear out all the temporary build dependencies
 apt-get clean
