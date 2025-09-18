@@ -296,6 +296,9 @@ for os_i in OS_INFO:
         if not ("install_only" in OS_INFO[os_i] and OS_INFO[os_i]["install_only"]):
             ALL_PLATFORMS.add(arch)
             BUILDERS_AUTOBAKE.append(builder_name_autobake)
+        # No VM install for opensuse16.0.0 yet
+        if os_i == "opensuse-1600":
+            continue
         # Currently there are no VMs for x86 and s390x
         if arch not in ["s390x", "x86"]:
             BUILDERS_INSTALL.append(builder_name_autobake + "-install")
