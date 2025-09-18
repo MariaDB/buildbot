@@ -70,11 +70,45 @@ class MTRTest(Command):
         logs = ["*.log", "*.err*", "core*"]
         patterns = " -o ".join([f'-iname "{log}"' for log in logs])
         return f"""
-            echo "Saving MTR logs to persistent volume because some tests failed"
-            cd {self.log_path}
-            mkdir -p {self.save_logs_path}
-            find . -type f \( {patterns} \) -print0 | rsync -a --files-from=- --from0 ./ {self.save_logs_path}/
-            exit 1
+            #!/bin/bash
+
+            script_dir=$(pwd) # Path where the test runner was invoked
+            vardir="{self.log_path}"
+            save_logs_path="{self.save_logs_path}"
+            save_bin_path=$(dirname "$save_logs_path")
+            file_patterns_to_save="{patterns}"
+
+            # MTR can run both from installed binaries or from build tree
+            # Try to find mariadbd binary and plugins in both cases
+            if [ -d /usr/lib/mysql/plugin ]; then
+                plugins_dir="/usr/lib/mysql/plugin"
+            elif [ -d /usr/lib64/mysql/plugin ]; then
+                plugins_dir="/usr/lib64/mysql/plugin"
+            else
+                plugins_dir="$vardir/plugins"
+            fi
+            mariadbd_path=$(command -v mariadbd 2>/dev/null || ([ -x $script_dir/../sql/mariadbd ] && realpath $script_dir/../sql/mariadbd))
+
+            echo "Saving MTR logs"
+
+            # Staging path before files are moved to CI
+            mkdir -p $save_logs_path
+
+            # Save plugins .so and mariadbd if core was generated
+            save_bin=0
+            find $vardir -name *core.* -exec false {{}} + || save_bin=1
+            if [[ $save_bin -ne 0 ]]; then
+                find -L "$plugins_dir" -maxdepth 1 -type f -name '*.so' -printf '%f\n' > $save_bin_path/plugins_list.txt
+                tar -czvf "$save_bin_path/plugins.tar.gz" --dereference -C "$plugins_dir" -T $save_bin_path/plugins_list.txt
+                gzip -c "$mariadbd_path" > "$save_bin_path/mariadbd.gz"
+            fi
+
+            # Some core files are left uncompressed by MTR
+            find $vardir -iregex ".*/core\(\.[0-9]+\)?" -ls -exec gzip {{}} +
+
+            # Copy pattern matching files to staging
+            cd "$vardir" && find . -type f \( $file_patterns_to_save \) -print0 | rsync -a --from0 --files-from=- ./ "$save_logs_path/"
+            exit 1 # Script was invoked by an MTR failure so we must mark the step as failed
             """
 
 
