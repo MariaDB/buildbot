@@ -674,6 +674,10 @@ check_upgraded_versions() {
     sed -i '/libaio.so/d;/liburing.so/d' ./ldd-*.cmp
     sed -i '/lsof/d' ./reqs-*.cmp
 
+    # Remove after Q4 2025 release (MDEV-37680) - fedora adds mysql-selinux module
+    # dependency
+    sed -i '/mysql-selinux/d;/rpmlib(RichDependencies)/d' ./reqs-*.cmp
+
     #Account for mariadb-plugin-mroonga diffs in Debian
     sed -i '/liblz4-1/d' ./reqs-*.cmp
     sed -i '/liblz4.so.1/d' ./ldd-*.cmp
