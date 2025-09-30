@@ -462,8 +462,7 @@ upgrade_test_type() {
       ;;
     "major")
       major=${major_version%.*}
-      # intentionally twice, 11.5.3 has minor of 5.
-      minor=${major_version##*.}
+      # 11.5 has minor of 5 and major of 11
       minor=${major_version##*.}
       # with the earliest supported 11.X version
       # and make this the upgrade from 10.11
@@ -477,7 +476,20 @@ upgrade_test_type() {
           exit 1
         fi
       else
-        prev_major_version="$major.$((minor - 1))"
+        case $major_version in
+        "10.11")
+          prev_major_version="10.6"
+          ;;
+        "11.4")
+          prev_major_version="10.11"
+          ;;
+        "11.8")
+          prev_major_version="11.4"
+          ;;
+        *)
+          prev_major_version="$major.$((minor - 1))"
+          ;;
+        esac
       fi
       ;;
     "distro")
