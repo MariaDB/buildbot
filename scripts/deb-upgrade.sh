@@ -11,6 +11,8 @@ set -e
 # shellcheck disable=SC1091
 . ./bash_lib.sh
 
+trap 'collect_logs' EXIT
+
 # function to be able to run the script manually (see bash_lib.sh)
 manual_run_switch "$1"
 

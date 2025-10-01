@@ -6,6 +6,8 @@ set -e
 # shellcheck disable=SC1091
 . ./bash_lib.sh
 
+trap 'collect_logs' EXIT
+
 bb_print_env
 
 control_mariadb_server restart

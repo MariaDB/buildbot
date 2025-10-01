@@ -40,6 +40,25 @@ err() {
   exit 1
 }
 
+collect_logs() {
+  exit_code=$?
+  if [[ $exit_code -ne 0 ]]; then
+    set +e
+    bb_log_info "systemd service information"
+    sudo journalctl --boot --unit mariadb.service mariadb-columnstore.service
+    if [ -f /etc/selinux/config ]; then
+      bb_log_info "selinux denial information"
+      sudo ausearch -i -m avc,user_avc,selinux_err,user_selinux_err -ts boot
+    fi
+    bb_log_info "PAM information"
+    sudo grep -i pam /var/log/secure /var/log/auth.log
+    set -e
+  else
+    bb_log_info "Test(s) ran successfully"
+  fi
+  exit $exit_code
+}
+
 # mariadb < 10.4 the client binary was mysql
 # needed in distro upgrade tests. Remove after rhel7, rocky/alma/rhel 8 are no longer supported
 get_db_client() {
