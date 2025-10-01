@@ -97,12 +97,14 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     && if [ "$PLATFORM_ID" = "platform:el9" ]; then \
          dnf -y install \
            buildbot-worker \
+           mysql-selinux \
            ; \
        fi \
     && if [ "$PLATFORM_ID" = "platform:el10" ]; then \
          dnf -y install \
            java-21-openjdk-devel \
-           java-21-openjdk ; \
+           java-21-openjdk \
+           mysql-selinux ; \
        else \
            dnf -y install \
            java-1.8.0-openjdk-devel \
