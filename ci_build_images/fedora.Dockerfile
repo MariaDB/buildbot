@@ -66,6 +66,9 @@ RUN echo "fastestmirror=true" >> /etc/dnf/dnf.conf \
     else \
         dnf -y install java-1.8.0-openjdk-devel java-1.8.0-openjdk; \
     fi \
+    && if [ "$VERSION_ID" != "40" ]; then \
+        dnf -y install mysql-selinux; \
+    fi \
     && if [ "$(uname -m)" = "x86_64" ]; then dnf -y install libpmem-devel; fi \
     && if [ "$INSTALL_VALGRIND" = "true" ]; then dnf -y install valgrind; fi \
     && dnf clean all

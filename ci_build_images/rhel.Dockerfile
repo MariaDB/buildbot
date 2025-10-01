@@ -21,11 +21,11 @@ RUN --mount=type=secret,id=rhel_orgid,target=/run/secrets/rhel_orgid \
     && case $BASE_IMAGE in \
     ubi10) \
       v=10; \
-      extra="asio-devel fmt-devel java-latest-openjdk-devel java-latest-openjdk liburing-devel"; \
+      extra="asio-devel fmt-devel java-latest-openjdk-devel java-latest-openjdk liburing-devel mysql-selinux"; \
       ;; \
     ubi9) \
       v=9; \
-      extra="asio-devel buildbot-worker fmt-devel java-1.8.0-openjdk-devel java-1.8.0-openjdk liburing-devel"; \
+      extra="asio-devel buildbot-worker fmt-devel java-1.8.0-openjdk-devel java-1.8.0-openjdk liburing-devel mysql-selinux"; \
       ;; \
     ubi8) \
       v=8; \
