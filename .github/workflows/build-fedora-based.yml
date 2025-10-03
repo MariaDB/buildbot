@@ -36,7 +36,7 @@ jobs:
 
           - image: fedora:43
             platforms: linux/amd64, linux/arm64/v8
-            nogalera: true
+            nogalera: false
 
           - image: fedora:40
             platforms: linux/amd64

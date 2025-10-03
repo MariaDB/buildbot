@@ -97,7 +97,7 @@ jobs:
           - image: ubuntu:25.10
             platforms: linux/amd64, linux/arm64/v8
             branch: 11.8
-            nogalera: true
+            nogalera: false
 
     uses: ./.github/workflows/bbw_build_container_template.yml
     with:
