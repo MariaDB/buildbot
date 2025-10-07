@@ -150,6 +150,9 @@ def openssl_fips(
                             MTROption(MTR.MAX_TEST_FAIL, 20),
                             MTROption(MTR.PARALLEL, jobs * 2),
                             MTROption(MTR.VARDIR, "/dev/shm/fips"),
+                            MTROption(
+                                MTR.XML_REPORT, MTR_PATH_TO_SAVE_LOGS / "fips.xml"
+                            ),
                         ],
                     ),
                 ),
