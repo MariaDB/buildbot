@@ -673,6 +673,14 @@ check_upgraded_versions() {
     # dependency
     sed -i '/mysql-selinux/d;/rpmlib(RichDependencies)/d' ./reqs-*.cmp
 
+    # Remove after Q4 2025 release - MDEV-37600 - 11.4 onwards
+    sed -i '/auth_mysql_sha2.so/,/^\===/ { /^\===/!d; /auth_mysql_sha2.so/d }' ./ldd-*.cmp
+    sed -i '/caching_sha2_password/d' ./plugins.*.cmp
+
+    # Remove after Q4 2025 release - MDEV-37463 - 11.8 onwards
+    sed -i '/libaio1/d;/liburing2/d' ./reqs-*.cmp
+    sed -i '/libaio.so/d;/liburing.so/d' ./ldd-*.cmp
+
     #Account for mariadb-plugin-mroonga diffs in Debian
     sed -i '/liblz4-1/d' ./reqs-*.cmp
     sed -i '/liblz4.so.1/d' ./ldd-*.cmp
