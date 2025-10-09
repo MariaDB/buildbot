@@ -107,7 +107,7 @@ class MTRTest(Command):
             find $vardir -iregex ".*/core\(\.[0-9]+\)?" -ls -exec gzip {{}} +
 
             # Copy pattern matching files to staging
-            cd "$vardir" && find . -type f \( $file_patterns_to_save \) -print0 | rsync -a --from0 --files-from=- ./ "$save_logs_path/"
+            cd "$vardir" && find . -type f \( -path './log/*' -o $file_patterns_to_save \) -print0 | rsync -a --from0 --files-from=- ./ "$save_logs_path/"
             exit 1 # Script was invoked by an MTR failure so we must mark the step as failed
             """
 
