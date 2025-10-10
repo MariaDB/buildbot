@@ -466,14 +466,24 @@ def addGaleraTests(factory, mtrDbPool):
                 "bash",
                 "-c",
                 util.Interpolate(
-                    "mv ./buildbot/logs ./buildbot/logs_main\n"
-                    + moveMTRLogs()
-                    + "\nmv ./buildbot/logs ./buildbot/logs_galera; mv ./buildbot/logs_main ./buildbot/logs; mv ./buildbot/logs_galera ./buildbot/logs/galera\n",
+                    moveMTRLogs(output_dir="galera"),
                     jobs=util.Property("jobs", default="$(getconf _NPROCESSORS_ONLN)"),
                 ),
             ],
             doStepIf=lambda props: hasGalera(props)
             and props.hasProperty("compile_step_completed"),
+        )
+    )
+    factory.addStep(
+        steps.ShellCommand(
+            name=f"create galera var archive",
+            alwaysRun=True,
+            command=[
+                "bash",
+                "-c",
+                util.Interpolate(createVar(output_dir="galera")),
+            ],
+            doStepIf=hasFailed,
         )
     )
     return factory
@@ -559,6 +569,18 @@ def addS3Tests(factory, mtrDbPool):
                 ),
             ],
             doStepIf=runS3,
+        )
+    )
+    factory.addStep(
+        steps.ShellCommand(
+            name=f"create s3 var archive",
+            alwaysRun=True,
+            command=[
+                "bash",
+                "-c",
+                util.Interpolate(createVar(output_dir="S3")),
+            ],
+            doStepIf=hasFailed,
         )
     )
     return factory
