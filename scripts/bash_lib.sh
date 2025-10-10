@@ -51,7 +51,12 @@ collect_logs() {
       sudo ausearch -i -m avc,user_avc,selinux_err,user_selinux_err -ts boot
     fi
     bb_log_info "PAM information"
-    sudo grep -i pam /var/log/secure /var/log/auth.log
+    if [ -f /var/log/secure ]; then
+      sudo grep -i pam /var/log/secure
+    fi
+    if [ -f /var/log/auth.log ]; then
+      sudo grep -i pam /var/log/auth.log
+    fi
     set -e
   else
     bb_log_info "Test(s) ran successfully"
