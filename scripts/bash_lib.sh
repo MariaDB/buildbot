@@ -42,7 +42,7 @@ err() {
 
 collect_logs() {
   exit_code=$?
-  if [[ $exit_code -ne 0 ]]; then
+  if ((exit_code != 0)); then
     set +e
     bb_log_info "systemd service information"
     sudo journalctl --boot --unit mariadb.service --unit mariadb-columnstore.service
