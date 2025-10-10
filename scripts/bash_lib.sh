@@ -45,7 +45,7 @@ collect_logs() {
   if [[ $exit_code -ne 0 ]]; then
     set +e
     bb_log_info "systemd service information"
-    sudo journalctl --boot --unit mariadb.service mariadb-columnstore.service
+    sudo journalctl --boot --unit mariadb.service --unit mariadb-columnstore.service
     if [ -f /etc/selinux/config ]; then
       bb_log_info "selinux denial information"
       sudo ausearch -i -m avc,user_avc,selinux_err,user_selinux_err -ts boot
