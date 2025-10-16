@@ -54,7 +54,7 @@ repos:
         entry: codespell
         language: python
   - repo: https://github.com/PyCQA/pylint.git
-    rev: v3.3.1
+    rev: v3.3.9
     hooks:
       - id: pylint
         name: check python syntax (pylint)
