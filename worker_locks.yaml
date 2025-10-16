@@ -14,7 +14,7 @@ amd-bbw2-docker: 6
 intel-bbw1-docker: 5
 ppc64le-rhel8-docker: 6
 ppc64le-db-docker: 8
-ppc64le-raptor-docker: 6
+ppc64le-raptor-bbw1-docker: 3
 aarch64-bbw1-docker: 2
 aarch64-bbw2-docker: 2
 aarch64-bbw3-docker: 2
