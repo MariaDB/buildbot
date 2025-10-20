@@ -107,7 +107,7 @@ class BaseBuilder:
         jobs: int,
         next_build: Callable[[Builder, Iterable[BuildRequest]], BuildRequest],
         tags: list[str] = [],
-        properties: dict[str, str] = {},
+        properties: dict[str, str] = None,
     ) -> util.BuilderConfig:
         """
         Generates a BuilderConfig object for the builder, including worker names,
@@ -133,6 +133,8 @@ class BaseBuilder:
         """
         # Jobs is mandatory, otherwise builder to worker allocation at runtime cannot be done
         assert jobs >= 1, "Jobs must be greater than or equal to 1"
+        if not properties:
+            properties = {}
         properties["jobs"] = jobs
 
         # Update worker metadata
