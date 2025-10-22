@@ -697,6 +697,15 @@ check_upgraded_versions() {
     # dependency
     sed -i '/mysql-selinux/d;/rpmlib(RichDependencies)/d' ./reqs-*.cmp
 
+    case "$ID" in
+      rhel|almalinux|rocky)
+        if [[ "${VERSION_ID%%.*}" =~ ^(8|9)$ ]] && [ "${major_version%%.*}" == 10 ]; then
+          sed -i '/libaio.so/d;/liburing.so/d;/libaio1/d' ./reqs-*.cmp
+          sed -i '/libaio.so/d;/liburing.so/d' ./ldd-*.cmp
+        fi
+      ;;
+    esac
+
     # Remove after Q4 2025 release - MDEV-37600 - 11.4 onwards
     sed -i '/auth_mysql_sha2.so/,/^\===/ { /^\===/!d; /auth_mysql_sha2.so/d }' ./ldd-*.cmp
     sed -i '/caching_sha2_password/d' ./plugins.*.cmp
