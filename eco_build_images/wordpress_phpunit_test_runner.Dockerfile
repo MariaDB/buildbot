@@ -1,4 +1,4 @@
-FROM php:8.3-cli
+FROM php:8.3-cli-bookworm
 
 # https://github.com/WordPress/phpunit-test-runner/blob/master/README.md#0-requirements
 
