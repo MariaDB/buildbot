@@ -62,20 +62,19 @@ def add_docker_cleanup_step(
     )
 
 
-def add_docker_fetch_step(image_url: str) -> ShellStep:
+def add_docker_fetch_step(image_url: str, platform: str) -> ShellStep:
     """
     Create a step to fetch a Docker container image.
     This step pulls the specified Docker image from a registry, ensuring that
     the required image is available for the build process.
     Args:
         image_url (str): The URL of the Docker image to fetch.
+        platform (str): The target platform for the Docker image.
     Returns:
         ShellStep: A configured ShellStep that executes the FetchContainerImage command.
     """
     return ShellStep(
-        command=FetchContainerImage(
-            image_url=image_url,
-        ),
+        command=FetchContainerImage(image_url=image_url, platform=platform),
         options=StepOptions(
             haltOnFailure=True,
         ),

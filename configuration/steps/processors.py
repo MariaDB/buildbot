@@ -190,6 +190,7 @@ def processor_docker_fetch(
             prepare_steps.append(
                 add_docker_fetch_step(
                     image_url=step.docker_environment.image_url,
+                    platform=step.docker_environment.platform,
                 )
             )
             docker_environments.add(step.docker_environment)
