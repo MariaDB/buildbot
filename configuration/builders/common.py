@@ -1,5 +1,6 @@
 import os
 from pathlib import PurePath
+from typing import Union
 
 from configuration.builders.base import GenericBuilder
 from configuration.builders.callables import canStartBuild, nextBuild
@@ -17,6 +18,7 @@ def docker_config(
     memlock_limit: int = DEFAULT_MEMLOCK_LIMIT,
     additional_bind_mounts: list[tuple[str, str]] = None,
     additional_env_vars: list[tuple[str, str]] = None,
+    platform: str = None,
 ) -> DockerConfig:
     bind_mounts = [
         (f'{os.environ["MASTER_PACKAGES_DIR"]}/', "/packages"),
@@ -36,16 +38,32 @@ def docker_config(
         shm_size=shm_size,
         env_vars=env_vars,
         memlock_limit=memlock_limit,
+        platform=platform,
     )
 
 
-def deb_release_builder(name: str, image: str, worker_pool: list) -> GenericBuilder:
+def deb_release_builder(
+    name: str, image: Union[str, tuple[str, str]], worker_pool: list
+) -> GenericBuilder:
+    """Create a Debian-based release builder
+    Args:
+        name: The name of the builder.
+        image: The Docker image to use, can be a string or a tuple of (image, platform). Platform is to be used with --platform flag when pulling the image.
+        worker_pool: The list of workers to assign the builder to.
+
+    """
+    if isinstance(image, tuple):
+        image_name = image[0]
+        image_platform = image[1]
+    else:
+        image_name = image
+        image_platform = None
     return GenericBuilder(
         name=name,
         sequences=[
             deb_autobake(
                 jobs=DEFAULT_BUILDER_JOBS,
-                config=docker_config(image=image),
+                config=docker_config(image=image_name, platform=image_platform),
                 artifacts_url=os.environ["ARTIFACTS_URL"],
                 test_galera=True,
                 test_rocksdb=True,
@@ -67,6 +85,15 @@ def deb_release_builder(name: str, image: str, worker_pool: list) -> GenericBuil
 def rpm_release_builder(
     name: str, image: str, worker_pool: list, arch: str, has_compat: bool, rpm_type: str
 ) -> GenericBuilder:
+    """Create an RPM-based release builder
+    Args:
+        name: The name of the builder.
+        image: The Docker image to use.
+        worker_pool: The list of workers to assign the builder to.
+        arch: For fetching the correct RPM compatibility packages.
+        has_compat: Whether to include compatibility packages.
+        rpm_type: The type of RPM (e.g., "rhel8", "rhel9"). Used during packaging.
+    """
     return GenericBuilder(
         name=name,
         sequences=[

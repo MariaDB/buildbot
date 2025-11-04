@@ -78,11 +78,14 @@ class FetchContainerImage(Command):
         image_url (str): The URL of the Docker image to fetch.
     """
 
-    def __init__(self, image_url: str):
+    def __init__(self, image_url: str, platform: str):
         super().__init__(name=f"Fetch container image", workdir=PurePath("."))
         self.image_url = image_url
+        self.platform = platform
 
     def as_cmd_arg(self) -> list[str]:
+        if self.platform:
+            return ["docker", "pull", "--platform", self.platform, self.image_url]
         return ["docker", "pull", self.image_url]
 
 

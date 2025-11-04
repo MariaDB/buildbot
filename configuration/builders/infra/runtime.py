@@ -53,6 +53,7 @@ class DockerConfig:
     env_vars: list[tuple[str, str]]
     shm_size: str
     memlock_limit: int
+    platform: str
     workdir: PurePath
     _container_name: str = None
 
