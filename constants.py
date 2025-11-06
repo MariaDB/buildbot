@@ -76,9 +76,15 @@ else:
 
 BUILDERS_GALERA_MTR = [
     "aarch64-debian-12",
+    "aarch64-rhel-9",
+    "amd64-freebsd-14",
+    "amd64-rhel-9",
+    "amd64-ubuntu-2404-debug",
     "s390x-ubuntu-2204",
     "ppc64le-ubuntu-2204",
-    "amd64-freebsd-14",
+    "ppc64le-ubuntu-2404",
+    "ppc64le-rhel-9",
+    "x86-debian-12",
 ]
 BUILDERS_S3_MTR = [
     "aarch64-ubuntu-2204-debug",
