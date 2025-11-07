@@ -135,26 +135,6 @@ if [[ $package_version == "$old_version" ]]; then
   exit
 fi
 
-# ------------------------------------------------------------------------------
-# --                          MDBF-1121 / MDEV-33459                          --
-# ------------------------------------------------------------------------------
-
-# Major upgrades within the same family (>10) and vendor (!=distro)
-# should work without removing old packages first.
-
-old_family=$(echo "$prev_major_version" | sed -n -e 's,^\([1-9][0-9]*\)\..*$,\1,p')
-new_family=$(echo "$major_version" | sed -n -e 's,^\([1-9][0-9]*\)\..*$,\1,p')
-
-if [[ "$test_type" == "distro" ||
-      ( "$old_family" -lt 11 && "$test_type" != "minor" ) ||
-      "$old_family" -ne "$new_family" ]]; then
-    bb_log_info "remove old packages for major upgrade"
-    packages_to_remove=$(rpm -qa | grep -E '^(MariaDB|mariadb)-' | awk -F'-' '{print $1"-"$2}')
-    echo "$packages_to_remove" | xargs sudo "$pkg_cmd" "$pkg_cmd_options" remove
-    rpm -qa | grep -iE 'maria|mysql' || true
-fi
-# ------------------------------------------------------------------------------
-
 rpm_setup_bb_galera_artifacts_mirror
 rpm_setup_bb_artifacts_mirror
 if [[ "$test_type" =~ ^(major|distro)$ ]]; then
