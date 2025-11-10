@@ -144,11 +144,13 @@ fi
 
 old_family=$(echo "$prev_major_version" | sed -n -e 's,^\([1-9][0-9]*\)\..*$,\1,p')
 new_family=$(echo "$major_version" | sed -n -e 's,^\([1-9][0-9]*\)\..*$,\1,p')
+major_upgrade_packages_removed=0
 
 if [[ "$test_type" == "distro" ||
       ( "$old_family" -lt 11 && "$test_type" != "minor" ) ||
       "$old_family" -ne "$new_family" ]]; then
     bb_log_info "remove old packages for major upgrade"
+    major_upgrade_packages_removed=1
     packages_to_remove=$(rpm -qa | grep -E '^(MariaDB|mariadb)-' | awk -F'-' '{print $1"-"$2}')
     echo "$packages_to_remove" | xargs sudo "$pkg_cmd" "$pkg_cmd_options" remove
     rpm -qa | grep -iE 'maria|mysql' || true
@@ -158,8 +160,12 @@ fi
 rpm_setup_bb_galera_artifacts_mirror
 rpm_setup_bb_artifacts_mirror
 if [[ "$test_type" =~ ^(major|distro)$ ]]; then
-  # major upgrade (remove then install)
-  echo "$package_list" | xargs sudo "$pkg_cmd" "$pkg_cmd_options" install
+  if [[ "$ID" == "fedora" && $major_upgrade_packages_removed -eq 0 ]]; then
+    bb_log_info "Fedora major upgrade - DNF5 requires upgrade instead of install"
+    echo "$package_list" | xargs sudo "$pkg_cmd" "$pkg_cmd_options" upgrade
+  else
+    echo "$package_list" | xargs sudo "$pkg_cmd" "$pkg_cmd_options" install
+  fi
 else
   # minor upgrade (upgrade works)
   echo "$package_list" | xargs sudo "$pkg_cmd" "$pkg_cmd_options" "$pkg_cmd_upgrade"
