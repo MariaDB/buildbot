@@ -62,8 +62,14 @@ class BashScriptCommand(Command):
 
 
 class BashCommand(Command):
-    def __init__(self, cmd: str, name: str = "Run command", user: str = "buildbot"):
-        super().__init__(name=name, workdir=PurePath("."), user=user)
+    def __init__(
+        self,
+        cmd: str,
+        name: str = "Run command",
+        user: str = "buildbot",
+        workdir: PurePath = PurePath("."),
+    ):
+        super().__init__(name=name, workdir=workdir, user=user)
         self.cmd = cmd
 
     def as_cmd_arg(self) -> list[str]:
