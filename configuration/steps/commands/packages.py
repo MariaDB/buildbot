@@ -130,7 +130,13 @@ class SavePackages(Command):
             util.Interpolate(
                 f"""
                 mkdir -p {self.destination} &&
-                cp -r {package_list} {self.destination}
+                for package in {package_list}; do
+                    if [ ! -e "$package" ]; then
+                        echo "Warning: package '$package' does not exist and will be skipped."
+                        continue
+                    fi
+                    cp -r $package {self.destination}
+                done
                 """
             ),
         ]
