@@ -1,0 +1,26 @@
+---
+- name: hz-bbw6
+  arch: amd64
+  total_jobs: 96
+  os_type: debian
+
+- name: hz-bbw8
+  arch: amd64
+  total_jobs: 110
+  os_type: redhat
+
+- name: hz-bbw9
+  arch: amd64
+  total_jobs: 110
+  os_type: redhat
+
+- name: bg-bbw5-x64
+  arch: amd64
+  total_jobs: 8
+  os_type: debian
+  max_builds: 1
+
+- name: sg-bbw1
+  arch: amd64
+  total_jobs: 128
+  os_type: debian
