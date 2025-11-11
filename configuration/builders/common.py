@@ -3,7 +3,6 @@ from pathlib import PurePath
 from typing import Union
 
 from configuration.builders.base import GenericBuilder
-from configuration.builders.callables import canStartBuild, nextBuild
 from configuration.builders.infra.runtime import DockerConfig
 from configuration.builders.sequences.release import deb_autobake, rpm_autobake
 
@@ -72,8 +71,6 @@ def deb_release_builder(
         ],
     ).get_config(
         workers=worker_pool,
-        next_build=nextBuild,
-        can_start_build=canStartBuild,
         tags=["release_packages", "autobake", "deb"],
         jobs=DEFAULT_BUILDER_JOBS,
         properties={
@@ -127,8 +124,6 @@ def rpm_release_builder(
         ],
     ).get_config(
         workers=worker_pool,
-        next_build=nextBuild,
-        can_start_build=canStartBuild,
         tags=["release_packages", "autobake", "rpm"],
         jobs=DEFAULT_BUILDER_JOBS,
         properties={
