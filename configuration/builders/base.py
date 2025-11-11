@@ -6,6 +6,7 @@ from buildbot.process.builder import Builder
 from buildbot.process.buildrequest import BuildRequest
 from buildbot.process.factory import BuildFactory
 from buildbot.process.workerforbuilder import AbstractWorkerForBuilder
+from configuration.builders.callables import canStartBuild, nextBuild
 from configuration.builders.infra.runtime import BuildSequence
 from configuration.steps.processors import (
     processor_docker_cleanup,
@@ -101,11 +102,7 @@ class BaseBuilder:
     def get_config(
         self,
         workers: Iterable[WorkerBase],
-        can_start_build: Callable[
-            [Builder, AbstractWorkerForBuilder, BuildRequest], bool
-        ],
         jobs: int,
-        next_build: Callable[[Builder, Iterable[BuildRequest]], BuildRequest],
         tags: list[str] = [],
         properties: dict[str, str] = None,
     ) -> util.BuilderConfig:
@@ -118,7 +115,6 @@ class BaseBuilder:
             can_start_build (Callable): A callable that determines if a build can
                 start on a worker.
             jobs (int): The number of CPU's to allocate for commands that support parallel execution.
-            next_build (Callable): A callable that determines the next build request.
             tags (list[str], optional): A list of tags associated with the builder.
                 Defaults to an empty list.
             properties (dict[str, str], optional): Additional properties for the builder.
@@ -127,7 +123,6 @@ class BaseBuilder:
             - jobs is a measure of how many CPU's are used for the build, for commands that support parallel execution (e.g. make, mtr).
             - provide a value greater or equal to 1
             - jobs should never exceed the number of CPU's available on the worker, given by the worker total_jobs property.
-            - canStartBuild will determine at runtime if the builder can start on any of the workers assigned to it, based on what other jobs were claimed (currently running) by other builders.
         Returns:
             util.BuilderConfig: A BuilderConfig object containing the builder's configuration.
         """
@@ -145,8 +140,8 @@ class BaseBuilder:
             name=self.name,
             workernames=[worker.name for worker in workers],
             tags=tags,
-            nextBuild=next_build,
-            canStartBuild=can_start_build,
+            nextBuild=nextBuild,
+            canStartBuild=canStartBuild,
             factory=self.get_factory(),
             properties=properties,
         )
