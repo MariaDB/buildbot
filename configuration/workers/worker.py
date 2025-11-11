@@ -6,52 +6,58 @@ from configuration.workers.base import WorkerBase
 
 class WorkerPool:
     """
-    A class to manage a pool of workers categorized by architecture.
-
+    Manages a pool of workers categorized by architecture.
+    This class allows adding workers and retrieving them based on criteria such as architecture, names, and OS type.
     Attributes:
-        workers (defaultdict): A dictionary where keys are architecture types (str)
-            and values are lists of worker names (str) associated with that architecture.
-        instances (list): A list of worker instances.
-
+        workers (defaultdict): A dictionary mapping architectures to lists of WorkerBase instances.
     Methods:
-        __init__():
-            Initializes the WorkerPool with empty workers and instances.
-
-        add(arch: str, worker):
-            Adds a worker to the pool under the specified architecture.
-            Args:
-                arch (str): The architecture type to associate the worker with.
-                worker (object): The worker object, which must have `name` and `instance` attributes.
-
-        get_workers_for_arch(arch: str, filter_fn: callable = None) -> list:
-            Retrieves a list of worker names for the specified architecture, optionally filtered
-            by a provided function.
-            Args:
-                arch (str): The architecture type to retrieve workers for.
-                filter_fn (callable, optional): A function to filter the workers. Defaults to None.
-            Returns:
-                list: A list of worker names matching the specified architecture and filter criteria.
-            Raises:
-                ValueError: If no workers are found for the specified architecture.
+        add(worker: WorkerBase): Adds a worker
+        get_instances() -> list: Retrieves all worker instances in the pool.
+        get_workers_for_arch(arch: str, names: list = None, os_type: str = None) -> list: Retrieves workers for a specific architecture, optionally filtering by names and OS type.
     """
 
     def __init__(self):
         self.workers = defaultdict(list)
 
-    def add(self, arch, worker):
-        self.workers[arch].append((worker))
+    def add(self, worker: WorkerBase):
+        self.workers[worker.arch].append((worker))
 
     def get_instances(self):
         return [
             worker.instance for workers in self.workers.values() for worker in workers
         ]
 
-    def get_workers_for_arch(self, arch: str, filter_fn: str = lambda _: True) -> list:
-        workers_for_arch = [worker for worker in self.workers.get(arch, [])]
-        workers = list(filter(lambda w: filter_fn(w.name), workers_for_arch))
-        if not workers:
-            raise ValueError(f"No workers found for architecture: {arch}")
-        return workers
+    def get_workers_for_arch(
+        self, arch: str, names: list = None, os_type: str = None
+    ) -> list:
+        WorkerPool._raise_for_invalid_os_type(os_type=os_type)
+        WorkerPool._raise_for_invalid_arch(arch=arch)
+
+        workers_for_arch: WorkerBase = [worker for worker in self.workers.get(arch, [])]
+        if names:
+            workers_for_arch = [w for w in workers_for_arch if w.name in names]
+        if os_type:
+            workers_for_arch = [w for w in workers_for_arch if w.os_type == os_type]
+
+        if not workers_for_arch:
+            raise ValueError(
+                f"No workers found for: arch={arch}, names={names}, os_type={os_type}"
+            )
+        return workers_for_arch
+
+    @staticmethod
+    def _raise_for_invalid_os_type(os_type: str):
+        if os_type and os_type not in WorkerBase.ALLOWED_OS_TYPES:
+            raise ValueError(
+                f"Invalid OS type: {os_type} requested. Allowed: {WorkerBase.ALLOWED_OS_TYPES}"
+            )
+
+    @staticmethod
+    def _raise_for_invalid_arch(arch: str):
+        if arch not in WorkerBase.ALLOWED_ARCHS:
+            raise ValueError(
+                f"Invalid arch: {arch} requested. Allowed: {WorkerBase.ALLOWED_ARCHS}"
+            )
 
 
 class NonLatent(WorkerBase):
@@ -75,7 +81,13 @@ class NonLatent(WorkerBase):
     """
 
     def __init__(
-        self, name: str, config: dict[str, dict], total_jobs: int, max_builds=999
+        self,
+        name: str,
+        config: dict[str, dict],
+        os_type: str,
+        arch: str,
+        total_jobs: int,
+        max_builds=999,
     ):
         self.instance = None
         self.requested_jobs = 0
@@ -83,7 +95,9 @@ class NonLatent(WorkerBase):
         self.config = config
         self.max_builds = max_builds
         self.total_jobs = total_jobs
-        super().__init__(name, properties={"total_jobs": total_jobs})
+        super().__init__(
+            name, properties={"total_jobs": total_jobs}, os_type=os_type, arch=arch
+        )
         self.__define()
 
     def __define(self):
