@@ -2,7 +2,6 @@ from buildbot.interfaces import IProperties
 from buildbot.plugins import schedulers, util
 from constants import (
     BUILDERS_AUTOBAKE,
-    BUILDERS_BIG,
     BUILDERS_DOCKERLIBRARY,
     BUILDERS_ECO,
     BUILDERS_INSTALL,
@@ -42,15 +41,6 @@ def protectedBranchBuilders(props: IProperties) -> list[str]:
 def autobakeBuilders(props: IProperties) -> list[str]:
     builder_name = props.getProperty("parentbuildername")
     for b in BUILDERS_AUTOBAKE:
-        if builder_name in b:
-            return [b]
-    return []
-
-
-@util.renderer
-def bigtestBuilders(props: IProperties) -> list[str]:
-    builder_name = props.getProperty("parentbuildername")
-    for b in BUILDERS_BIG:
         if builder_name in b:
             return [b]
     return []
@@ -108,7 +98,6 @@ SCHEDULERS = [
         name="s_protected_branches", builderNames=protectedBranchBuilders
     ),
     schedulers.Triggerable(name="s_packages", builderNames=autobakeBuilders),
-    schedulers.Triggerable(name="s_bigtest", builderNames=bigtestBuilders),
     schedulers.Triggerable(name="s_install", builderNames=installBuilders),
     schedulers.Triggerable(name="s_upgrade", builderNames=upgradeBuilders),
     schedulers.Triggerable(name="s_eco", builderNames=ecoBuilders),
