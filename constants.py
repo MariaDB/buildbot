@@ -61,7 +61,6 @@ GITHUB_STATUS_BUILDERS = [
 ]
 
 # Special builders triggering
-BUILDERS_BIG = ["amd64-ubuntu-2204-bigtest"]
 BUILDERS_ECO = [
     "amd64-debian-10-eco-mysqljs",
     "amd64-debian-10-eco-pymysql",
@@ -132,6 +131,7 @@ SUPPORTED_PLATFORMS["10.6"] = [
     "amd64-rhel-9-rpm-autobake-migration",
     "amd64-last-N-failed",
     "amd64-ubuntu-2204",
+    "amd64-ubuntu-2204-bigtest",
     "amd64-ubuntu-2204-debug",
     "amd64-ubuntu-2204-fulltest",
     "amd64-ubuntu-2204-debug-ps",
