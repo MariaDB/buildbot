@@ -28,7 +28,7 @@ log_basedir_path = Path("/var/log/buildbot/")
 log_basedir = log_basedir_path.as_posix()  # Kept in case buildbot uses it.
 
 rotateLength = 10000000
-maxRotatedFiles = 30
+maxRotatedFiles = 10
 
 master_name = buildbot_tac_dir.name
 # Last two directories. autogen and <master-name>
