@@ -93,4 +93,7 @@ server {
 	location ~ /wsgi_dashboards/styles.css* {
 		access_log off;
 	}
+	location = /favicon.ico {
+		alias /srv/buildbot/packages/favicon.ico
+	}
 }
