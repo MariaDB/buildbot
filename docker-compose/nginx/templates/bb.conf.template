@@ -94,6 +94,6 @@ server {
 		access_log off;
 	}
 	location = /favicon.ico {
-		alias /srv/buildbot/packages/favicon.ico
+		alias /srv/buildbot/packages/favicon.ico;
 	}
 }
