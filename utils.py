@@ -19,7 +19,6 @@ from buildbot.worker import AbstractWorker
 from constants import (
     ALL_BB_TEST_BRANCHES,
     BUILDERS_AUTOBAKE,
-    BUILDERS_BIG,
     BUILDERS_ECO,
     BUILDERS_GALERA_MTR,
     BUILDERS_INSTALL,
@@ -541,14 +540,6 @@ def hasS3(props):
     builder_name = props.getProperty("buildername")
     for b in BUILDERS_S3_MTR:
         if builder_name == b:
-            return True
-    return False
-
-
-def hasBigtest(step: BuildStep) -> bool:
-    builder_name = step.getProperty("buildername")
-    for b in BUILDERS_BIG:
-        if builder_name in b:
             return True
     return False
 

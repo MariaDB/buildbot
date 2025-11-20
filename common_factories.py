@@ -18,7 +18,6 @@ from utils import (
     getHTMLLogString,
     getSourceTarball,
     hasAutobake,
-    hasBigtest,
     hasCompat,
     hasDockerLibrary,
     hasEco,
@@ -121,21 +120,6 @@ def addPostTests(factory):
                 "master_branch": Property("master_branch"),
             },
             doStepIf=hasAutobake,
-        )
-    )
-    # trigger bigtest
-    factory.addStep(
-        steps.Trigger(
-            schedulerNames=["s_bigtest"],
-            waitForFinish=False,
-            updateSourceStamp=False,
-            set_properties={
-                "parentbuildername": Property("buildername"),
-                "tarbuildnum": Property("tarbuildnum"),
-                "mariadb_version": Property("mariadb_version"),
-                "master_branch": Property("master_branch"),
-            },
-            doStepIf=hasBigtest,
         )
     )
     # create package and upload to master
