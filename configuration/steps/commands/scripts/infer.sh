@@ -268,8 +268,7 @@ check()
     if [ "$filesize" -gt 2 ]; then
       echo "$msg"
       echo
-      echo "Here are the changes:"
-      jq . "${file}"
+      echo "See below step for the location to the ${file} contents"
       return 1
     fi
   fi
