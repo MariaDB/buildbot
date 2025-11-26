@@ -292,6 +292,9 @@ differential_to_main_branch()
   popd
 
   ref_base=$infer/$merge_base/report.json
+  # .hash isn't unique, even when combined with .node_key.
+  # If there are multiple instances of the same failure in the same function in
+  # a file duplicates result.
   #for common_commit in "${commits[@]}"; do
   #  diff_dir="${infer}/$common_commit"/differential/
   #  if [ -d "$diff_dir" ]; then
@@ -299,7 +302,7 @@ differential_to_main_branch()
   #    jq --slurpfile to_remove  "${diff_dir}"/fixed.json '
   #      ($to_remove[0] | map(.hash)) as $hashes_to_remove
   #      | map(select(.hash as $h | $hashes_to_remove | index($h) | not))' \
-  #      "${ref_base}"/report.json > "${base}"/filtered.json
+  #      "${ref_base}" > "${base}"/filtered.json
   #    ref_base=/tmp/report.json
   #    jq -s 'add | unique_by(.hash)' "${base}"/filtered.json  "${diff_dir}"/introduced.json > "${ref_base}"
   #  fi
@@ -310,13 +313,15 @@ differential_to_main_branch()
 
   result_dir_main_diff=${result_dir}/main_diff
   mv "${result_dir}_diff"/differential/ "${result_dir_main_diff}"
-  # cp here is debugging aid
-  #cp -a "${result_dir_main_diff}" "$infer/${commit}"
 
-  check "${result_dir}"/differential/fixed.json "Good human! Thanks for fixing the bad things in the last commit"
-  check "${result_dir}"/differential/introduced.json "Bad human! Don't introduce bad things in the last commit" >&2
+  if [ "$RUN_MODE" = "incremental" ]; then
+    check "${result_dir}"/differential/fixed.json "Good human! Thanks for fixing the bad things in the last commit"
+    check "${result_dir}"/differential/introduced.json "Bad human! Don't introduce bad things in the last commit" >&2
+  fi
+
+  # A increment run would compute to fixing everything not analyzed.
   check "${result_dir_main_diff}"/fixed.json "Good human! Thanks for fixing the bad things"
-  if ! check "${result_dir_main_diff}"//introduced.json "Bad human! Don't introduce bad things" >&2; then
+  if ! check "${result_dir_main_diff}"/introduced.json "Bad human! Don't introduce bad things" >&2; then
     exit 1
   fi
 }
