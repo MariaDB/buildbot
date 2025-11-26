@@ -115,7 +115,7 @@ host_cleanup()
 
 # Precondition: get_sources
 # Returns:
-#  0 - full scane needed
+#  0 - full scan needed
 #  1 - incremental scan
 # Postcondition for return 0
 #
@@ -335,7 +335,7 @@ if [ -d "${infer}/$commit" ]; then
   exit 0
 fi
 
-if populate_differences; then
+if ! populate_differences; then
   echo "No common commit ancestor with analysis or over depth limit($limit)" >&2
   echo "This is going to take a while for a full scan"
 fi
