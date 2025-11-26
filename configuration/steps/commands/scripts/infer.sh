@@ -345,6 +345,10 @@ if ! populate_differences; then
   echo "This is going to take a while for a full scan"
 fi
 
+# incremental mode can't calculate differences to main
+# so we're forcing to full for now.
+rm -f index.txt
+
 if [ ! -f index.txt ]; then
   RUN_MODE="full"
 else
