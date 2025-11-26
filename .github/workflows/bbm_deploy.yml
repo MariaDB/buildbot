@@ -45,7 +45,7 @@ jobs:
   check:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Check master.cfg files for DEV container
         run: ./validate_master_cfg.sh -e DEV
@@ -96,7 +96,7 @@ jobs:
             echo "ENV_FILE=.env" >>$GITHUB_ENV
           fi
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: prepare
         env:
