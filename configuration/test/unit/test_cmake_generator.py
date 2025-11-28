@@ -5,6 +5,8 @@ from configuration.steps.generators.cmake.compilers import CompilerCommand
 from configuration.steps.generators.cmake.generator import CMakeGenerator
 from configuration.steps.generators.cmake.options import (
     CMAKE,
+    CMAKEDEBUG,
+    CMAKEWARN,
     PLUGIN,
     WITH,
     BuildConfig,
@@ -34,6 +36,38 @@ class TestCMakeGenerator(unittest.TestCase):
                 "-DCMAKE_INSTALL_PREFIX=/usr/local",
                 "-DPLUGIN_ARCHIVE=YES",
                 "-DWITH_ASAN=ON",
+            ],
+        )
+
+    def test_all_handlers(self):
+        """Test that all CMakeOption handlers work correctly."""
+        flags = [
+            CMakeOption(CMAKE.BUILD_TYPE, BuildType.RELWITHDEBUG),
+            CMakeOption(CMAKE.INSTALL_PREFIX, "/usr/local"),
+            CMakeOption(PLUGIN.ARCHIVE_STORAGE_ENGINE, True),
+            CMakeOption(WITH.ASAN, True),
+            CMakeOption(CMAKEWARN.DEVELOPER_WARNINGS, False),
+            CMakeOption(CMAKEDEBUG.TRACE, False),
+            CMakeOption(CMAKEDEBUG.DEBUG_OUTPUT, True),
+            CMakeOption(CMAKEWARN.DEPRECATED_WARNINGS, True),
+            CMakeOption(CMAKEWARN.WARNINGS_AS_ERRORS, False),
+        ]
+        generator = CMakeGenerator(flags=flags)
+        command = generator.generate()
+        self.assertEqual(
+            command,
+            [
+                "cmake",
+                "-S",
+                ".",
+                "-DCMAKE_BUILD_TYPE=RelWithDebInfo",
+                "-DCMAKE_INSTALL_PREFIX=/usr/local",
+                "-DPLUGIN_ARCHIVE=YES",
+                "-DWITH_ASAN=ON",
+                "--debug-output",
+                "-Wdeprecated",
+                "-Wno-dev",
+                "-Wno-error",
             ],
         )
 
