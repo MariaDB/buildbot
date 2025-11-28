@@ -45,6 +45,11 @@ class BaseGenerator:
         Generates the command as a list of strings.
         """
         result = self.base_cmd.copy()
-        for flag in sorted(self.flags, key=lambda x: x.name):
-            result.append(flag.as_cmd_arg())
+        # arg can be "" for False values in CMakeFlagOption so we skip those
+        # flag options don't have a False counterpart nor can be assigned right-hand side values .e.g --trace, --trace-expand
+        result += [
+            arg
+            for flag in sorted(self.flags, key=lambda x: x.name)
+            if (arg := flag.as_cmd_arg())
+        ]
         return result

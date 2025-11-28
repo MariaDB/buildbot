@@ -34,6 +34,25 @@ class CMAKE(StrEnum):
         return f"CMAKE_{self.value}"
 
 
+class CMAKEWARN(StrEnum):
+    DEVELOPER_WARNINGS = "dev"
+    DEPRECATED_WARNINGS = "deprecated"
+    WARNINGS_AS_ERRORS = "error"
+
+    def __str__(self):
+        return self.value
+
+
+class CMAKEDEBUG(StrEnum):
+    TRACE = "trace"
+    TRACE_EXPAND = "trace-expand"
+    DEBUG_OUTPUT = "debug-output"
+    DEBUG_FIND = "debug-find"
+
+    def __str__(self):
+        return self.value
+
+
 class PLUGIN(StrEnum):
     """
     Enumerates valid plugin options for MariaDB's CMake configuration.
@@ -132,9 +151,9 @@ class BuildConfig(StrEnum):
     MYSQL_RELEASE = "mysql_release"
 
 
-class CMakeOption(Option):
+class CMakeVariableOption(Option):
     """
-    Represents a CMake option in the form `-D<name>=<value>`.
+    Represents a `-DNAME=VALUE` variable option
     """
 
     def __init__(self, name: StrEnum, value: Union[str, bool]):
@@ -147,3 +166,76 @@ class CMakeOption(Option):
 
     def as_cmd_arg(self) -> str:
         return f"-D{self.name}={self.value}"
+
+
+class CMakeFlagOption(Option):
+    """
+    Represents a flag-like option (e.g., --trace, --trace-expand).
+    """
+
+    def __init__(self, name: StrEnum, value: bool):
+        if isinstance(value, bool):
+            value = f"--{name}" if value else ""
+        else:
+            raise ValueError(
+                f"Flag option '{type(name)}-{name}' must be initialized with a boolean value at creation time. Got {type(value)} instead."
+            )
+        super().__init__(name, value)
+
+    def as_cmd_arg(self) -> str:
+        return f"{self.value}"
+
+
+class CMakeWarnOption(Option):
+    """
+    Represents a -W option (e.g., -Wno-dev, -Wdeprecated).
+    """
+
+    def __init__(self, name: StrEnum, value: bool):
+        if isinstance(value, bool):
+            value = f"-W{'' if value else 'no-'}{name}"
+        else:
+            raise ValueError(
+                f"Flag option '{type(name)}-{name}' must be initialized with a boolean value at creation time. Got {type(value)} instead."
+            )
+        super().__init__(name, value)
+
+    def as_cmd_arg(self) -> str:
+        return f"{self.value}"
+
+
+class CMakeOption:
+    """
+    Factory class to create CMake options based on the type of the input object.
+    """
+
+    HANDLERS = (
+        (
+            (
+                CMAKE,
+                PLUGIN,
+                WITH,
+                WITHOUT,
+                OTHER,
+                BuildType,
+                BuildConfig,
+            ),
+            CMakeVariableOption,
+        ),
+        (
+            (CMAKEDEBUG,),
+            CMakeFlagOption,
+        ),
+        (
+            (CMAKEWARN,),
+            CMakeWarnOption,
+        ),
+    )
+
+    def __new__(cls, obj: StrEnum, value: Union[str, bool]) -> Option:
+        for base_classes, handler_class in cls.HANDLERS:
+            if isinstance(obj, base_classes):
+                return handler_class(obj, value)
+        raise ValueError(
+            f"No handler found for object of type {type(obj)}. Cannot create a CMake option."
+        )
