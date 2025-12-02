@@ -4,9 +4,9 @@ from configuration.steps.generators.base.generator import Option
 
 try:
     # breaking change introduced in python 3.11
-    from enum import StrEnum
+    from enum import StrEnum  # pyright: ignore
 except ImportError:  # pragma: no cover
-    from configuration.steps.generators.base.options import StrEnum
+    from configuration.steps.generators.base.options import StrEnum  # pyright: ignore
 
 
 # Flag names use UPPER_CASE
@@ -158,14 +158,17 @@ class CMakeVariableOption(Option):
 
     def __init__(self, name: StrEnum, value: Union[str, bool]):
         if isinstance(value, bool):
-            if isinstance(name, PLUGIN):
-                value = "YES" if value else "NO"
-            else:
-                value = "ON" if value else "OFF"
+            value = "ON" if value else "OFF"
         super().__init__(name, value)
 
     def as_cmd_arg(self) -> str:
         return f"-D{self.name}={self.value}"
+
+
+class CMakePluginOption(CMakeVariableOption):
+    def __init__(self, name: PLUGIN, value: bool):
+        assert isinstance(value, bool)
+        super().__init__(name, "YES" if value else "NO")
 
 
 class CMakeFlagOption(Option):
@@ -174,16 +177,12 @@ class CMakeFlagOption(Option):
     """
 
     def __init__(self, name: StrEnum, value: bool):
-        if isinstance(value, bool):
-            value = f"--{name}" if value else ""
-        else:
-            raise ValueError(
-                f"Flag option '{type(name)}-{name}' must be initialized with a boolean value at creation time. Got {type(value)} instead."
-            )
-        super().__init__(name, value)
+        assert isinstance(value, bool)
+        flag = f"--{name}" if value else ""
+        super().__init__(name, flag)
 
     def as_cmd_arg(self) -> str:
-        return f"{self.value}"
+        return str(self.value)
 
 
 class CMakeWarnOption(Option):
@@ -192,16 +191,12 @@ class CMakeWarnOption(Option):
     """
 
     def __init__(self, name: StrEnum, value: bool):
-        if isinstance(value, bool):
-            value = f"-W{'' if value else 'no-'}{name}"
-        else:
-            raise ValueError(
-                f"Flag option '{type(name)}-{name}' must be initialized with a boolean value at creation time. Got {type(value)} instead."
-            )
-        super().__init__(name, value)
+        assert isinstance(value, bool)
+        flag = f"-W{'' if value else 'no-'}{name}"
+        super().__init__(name, flag)
 
     def as_cmd_arg(self) -> str:
-        return f"{self.value}"
+        return str(self.value)
 
 
 class CMakeOption:
@@ -213,7 +208,6 @@ class CMakeOption:
         (
             (
                 CMAKE,
-                PLUGIN,
                 WITH,
                 WITHOUT,
                 OTHER,
@@ -230,12 +224,16 @@ class CMakeOption:
             (CMAKEWARN,),
             CMakeWarnOption,
         ),
+        (
+            (PLUGIN,),
+            CMakePluginOption,
+        ),
     )
 
     def __new__(cls, obj: StrEnum, value: Union[str, bool]) -> Option:
         for base_classes, handler_class in cls.HANDLERS:
             if isinstance(obj, base_classes):
-                return handler_class(obj, value)
+                return handler_class(obj, value)  # pyright: ignore
         raise ValueError(
             f"No handler found for object of type {type(obj)}. Cannot create a CMake option."
         )
