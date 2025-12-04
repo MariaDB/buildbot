@@ -2,7 +2,7 @@ import os
 import time
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import date, datetime, timezone
 
 import requests
 from flask import Flask, render_template, request
@@ -44,9 +44,12 @@ class Build:
     build_number: int
     builder_id: int
     results: str
+    _status: Severity = None
 
     @property
     def status(self):
+        if self._status:
+            return self._status
         if self.results == "build successful":
             return Severities.OK
         elif self.results.lower() in [
@@ -57,6 +60,10 @@ class Build:
             return Severities.PENDING
         else:
             return Severities.BAD
+
+    @status.setter
+    def status(self, value: Severities):
+        self._status = value
 
 
 @dataclass
@@ -99,6 +106,8 @@ class Release:
     def status(self):
         if Severities.BAD in self.builders:
             return Severities.BAD
+        elif Severities.WARN in self.builders:
+            return Severities.WARN
         elif not self.builders or Severities.PENDING in self.builders:
             return Severities.PENDING
         else:
@@ -124,7 +133,7 @@ class Dashboard:
 
     def _get_releases_from_jira(self):
         """
-        Sets all releases from JIRA for the MDEV project, unfiltered.
+        Gets all releases from JIRA for the MDEV project, unfiltered.
         """
         url = f"{JIRA_API_URL}/project/MDEV/versions"
         response = requests.get(url)
@@ -280,6 +289,15 @@ class Dashboard:
                     for builder in series_builders:
                         if builder.builder_id in builds:
                             build = builds[builder.builder_id]
+
+                            # Builders that are not producing packages are most probably failed at tests
+                            # so we downgrade their status from BAD to WARN but they will mark the release as needing attention
+                            if (
+                                "autobake" not in builder.tags
+                                and build.status == Severities.BAD
+                            ):
+                                build.status = Severities.WARN
+
                             release.builders[build.status].append(
                                 ReleaseSeriesBuild(
                                     build_number=build.build_number,
@@ -301,7 +319,11 @@ class Dashboard:
                                     build=None,
                                 )
                             )
-        return self._next_releases
+        return self._next_releases, self.generated_at
+
+    @property
+    def generated_at(self):
+        return datetime.now(tz=timezone.utc)
 
 
 class ReleaseDashboard:
@@ -331,12 +353,17 @@ class ReleaseDashboard:
             return result
 
     def get_release_status(self):
-        state = Dashboard(SUPPORTED_PLATFORMS).render_releases()
+        state, generated_at = Dashboard(SUPPORTED_PLATFORMS).render_releases()
 
         if not state:
             return "No upcoming releases found."
 
-        return render_template("release_wip.html", state=state, Severities=Severities)
+        return render_template(
+            "release.html",
+            state=state,
+            Severities=Severities,
+            generated_at=generated_at,
+        )
 
 
 def get_release_status_app(buildernames=None, **kwargs):

@@ -37,9 +37,9 @@ A release is marked *Pending* when:
 1. The branch exists but there is **no Buildbot run** matching the MariaDB version planned in Jira, **or**
 1. One or more builds are **in progress** or **not yet executed**, and **no failed build exists**.
 
-### **OK**
+### **Releasable**
 
-A release is marked *OK* when:
+A release is marked *Releasable* when:
 
 1. All builds within scope are **successful**.
 1. This **does not imply** that development for the release is complete, only that the `bb-<series>-release` branch is currently in a healthy state.
@@ -48,6 +48,12 @@ A release is marked *OK* when:
 
 A release is marked *Unreleasable* when:
 
-1. **One or more builds have failed**.
+1. One or more builds that produce packages have failed.
+
+### **Needs Attention**
+
+A release is marked *Needs Attention* when:
+
+1. At least one normal builder has failed (probably MTR) but **there is no failed** autobake (producing packages for CI) builder.
 
 ---

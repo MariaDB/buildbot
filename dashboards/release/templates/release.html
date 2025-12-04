@@ -67,7 +67,11 @@
             {% endif %}
         </h3>
 
-        {% set failed_builds = release.builders.get(Severities.BAD, []) %}
+        {% set failed_builds =
+            (release.builders.get(Severities.BAD, []) +
+             release.builders.get(Severities.WARN, []))
+        %}
+
         {% set pending_builds = release.builders.get(Severities.PENDING, []) %}
         {% set successful_builds = release.builders.get(Severities.OK, []) %}
 
@@ -117,6 +121,10 @@
     </section>
     {% endfor %}
 
+    <div class="container">
+        <small>Generated at <time id="generatedAt" datetime="{{generated_at}}">{{generated_at}}</time></small>
+    </div>
+
 </div>
 
 <script>
@@ -131,7 +139,13 @@
             }
         });
     });
-    </script>
+</script>
+
+<script>
+    let elem = document.getElementById("generatedAt");
+    let date = new Date(elem.dateTime);
+    elem.innerText = date.toLocaleDateString("en-CA") + " " + date.toLocaleTimeString("pl-PL");
+</script>
 
 </body>
 </html>
