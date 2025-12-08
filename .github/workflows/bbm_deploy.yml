@@ -21,6 +21,7 @@ on:
       - "utils.py"
       - "validate_master_cfg.sh"
       - "worker_locks.yaml"
+      - "dashboards/**"
   pull_request:
     paths:
       - ".github/workflows/bbm_deploy.yml"
@@ -40,6 +41,7 @@ on:
       - "utils.py"
       - "validate_master_cfg.sh"
       - "worker_locks.yaml"
+      - "dashboards/**"
 
 jobs:
   check:
