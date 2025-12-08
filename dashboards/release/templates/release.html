@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MariaDB Community Server Release Dashboard</title>
+    <link href="{{ url_for('static', filename='dashboard.css') }}" rel="stylesheet">
+</head>
+<body>
+
+
+
+<div class="container release_status">
+    <div style="text-align: center;">
+        <h1>MariaDB Community Server Release Dashboard</h1>
+    </div>
+
+    <div class="branch-panels">
+        {% for release in state %}
+            <div
+                class="branch-panel panel-{{ release.status.css_color_class }}"
+                {#- Buildbot's React UI takes over `#` in the URL, so a HTML fragment link won't work here...  #}
+                onclick="document.getElementById('branch-section-{{branch}}').scrollIntoView();"
+            >
+                <div class="panel-heading">
+                    <h3 class="panel-title">
+                        {{ release.version }}
+                    </h3>
+                </div>
+                <div class="panel-body">
+                    <div class="releasability">
+                        <span class="severity-symbol">
+                            {{ release.status.symbol }}
+                        </span>
+                        {{ release.status.releasability }}
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div>
+                        Branch:
+                        <code>{{ release.branch }}</code>
+                    </div>
+                    {% if release.jira is defined %}
+                        <div>
+                            Schedule:
+                            <a href="https://jira.mariadb.org/projects/MDEV/versions/{{ release.jira }}">
+                                Jira {{ release.jira }}
+                            </a>
+                        </div>
+                    {% endif %}
+                    <div>
+                        Planned:
+                        <strong>{{ release.release_planned_date }}</strong>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <h2>Problems by Branch</h2>
+    {% for release in state %}
+    <section class="branch-status status-{{ release.status.css_color_class }}" id="branch-section-{{ release.branch }}">
+        <h3>
+            {{ release.branch }}
+            {% if release.commit is defined and release.commit %}
+                (Commit: {{ release.commit }})
+            {% endif %}
+        </h3>
+
+        {% set failed_builds =
+            (release.builders.get(Severities.BAD, []) +
+             release.builders.get(Severities.WARN, []))
+        %}
+
+        {% set pending_builds = release.builders.get(Severities.PENDING, []) %}
+        {% set successful_builds = release.builders.get(Severities.OK, []) %}
+
+        {% for category, builds_list in [
+            ('Failed Builds', failed_builds),
+            ('Pending Builds', pending_builds),
+            ('Successful Builds', successful_builds)
+        ] %}
+        <div class="build-category">
+            <button class="build-toggle">
+                {{ category }} ({{ builds_list | length }})
+            </button>
+
+            <div class="build-table-wrapper">
+                {% if builds_list %}
+                <table class="build-table">
+                    <thead>
+                        <tr>
+                            <th>Builder</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for build in builds_list %}
+                        <tr>
+                            <td>
+                                {% if build.url %}
+                                <a href="{{ build.url }}" target="_blank" rel="noopener noreferrer">
+                                    {{ build.builder_name }}
+                                </a>
+                                {% else %}
+                                    {{ build.builder_name }}
+                                {% endif %}
+                            </td>
+                            <td>{{ build.result }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p>No {{ category | lower }}.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        {% endfor %}
+    </section>
+    {% endfor %}
+
+    <div class="container">
+        <small>Generated at <time id="generatedAt" datetime="{{generated_at}}">{{generated_at}}</time></small>
+    </div>
+
+</div>
+
+<script>
+    build_toggle = document.getElementsByClassName('build-toggle');
+    Array.from(build_toggle).forEach(function(button) {
+        button.addEventListener('click', function() {
+            const tableWrapper = this.nextElementSibling;
+            if (tableWrapper.style.display === 'block') {
+                tableWrapper.style.display = 'none';
+            } else {
+                tableWrapper.style.display = 'block';
+            }
+        });
+    });
+</script>
+
+<script>
+    let elem = document.getElementById("generatedAt");
+    let date = new Date(elem.dateTime);
+    elem.innerText = date.toLocaleDateString("en-CA") + " " + date.toLocaleTimeString("pl-PL");
+</script>
+
+</body>
+</html>

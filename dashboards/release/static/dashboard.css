@@ -1,0 +1,258 @@
+.release_status {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin-top: 20px;
+
+    width: 90%;
+    max-width: 2500px;
+    margin: 20px auto 0;
+    font-family: 'Arial', sans-serif;
+
+    .header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .header img {
+        max-width: 100%;
+        height: auto;
+        animation: fadeIn 1s ease-out;
+    }
+
+    h1, h2 {
+        color: var(--primary-color);
+        padding-bottom: 25px;
+    }
+
+    h1 {
+        font-size: 2.5em;
+        margin-top: 20px;
+        margin-bottom: 2rem;
+    }
+
+    h2 {
+        font-size: 2em;
+        padding-bottom: 10px;
+        margin-top: 40px;
+    }
+
+    section {
+        padding-left: 1.5rem;
+    }
+    h3, h4, h5, h6 {
+        section > & {
+            margin-left: -1.5rem;
+        }
+    }
+
+    .branch-panels {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+        align-items: stretch;
+        justify-content: center;
+    }
+    .branch-panel {
+        cursor: pointer;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        height: 100%;
+        min-width: 9rem;
+        max-width: 25rem;
+
+        display: flex;
+        flex-direction: column;
+        * { flex-grow: 0; }
+
+        &:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .releasability {
+            font-weight: bold;
+            -color: var(--text-color);
+                .panel-success & {
+                    color: var(--success-color);
+                }
+                .panel-warning & {
+                    color: var(--warning-color);
+                }
+                .panel-danger & {
+                    color: var(--danger-color);
+                }
+                .panel-pending & {
+                    color: var(--pending-color);
+                }
+        }
+
+        .panel-heading {
+            padding: 15px 15px 15px;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: rgba(0, 0, 0, 0.15) 0px -5px 3px -2px inset;
+            color: white;
+
+            h3 {
+                font-size: 3rem;
+                padding: 0;
+                margin: 0;
+            }
+
+            .panel-success & {
+                background-color: var(--success-color);
+            }
+            .panel-warning & {
+                background-color: var(--warning-color-bg);
+            }
+            .panel-danger & {
+                background-color: var(--danger-color);
+            }
+            .panel-pending & {
+                background-color: var(--pending-color);
+            }
+        }
+
+        .panel-body {
+            padding: 10px;
+            background-color: white;
+            text-align: center;
+            flex-grow: 2;
+        }
+
+        .panel-footer {
+            background-color: var(--pill-bg-color);
+            padding: 10px 15px 7px;
+            text-align: center;
+            font-size: 100%;
+            box-shadow: rgba(0, 0, 0, 0.15) 0px 5px 3px -2px inset;
+            line-height: 1.5;
+        }
+    }
+
+    section.branch-status {
+        --status-color: var(--background-color);
+        border-radius: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 4px color-mix(in srgb, var(--status-color) 20%, color-mix(in srgb, var(--background-color) 50%, transparent));
+        border-left: 2px solid var(--status-color);
+        border-right: 1px solid var(--status-color);
+        border-bottom: 1px solid var(--status-color);
+        overflow: clip;
+        padding-bottom: 1rem;
+        h3 {
+            padding-left: 2rem;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+            background-color: var(--status-color);
+            color: var(--background-color);
+            position: sticky;
+            top: 0;
+            z-index: 9;
+        }
+
+        .build-category {
+            margin: 0.75rem auto;
+            border: 1px solid #857a7a;
+            border-radius: 6px;
+            overflow: hidden;
+            background: white;
+        }
+
+        .build-toggle {
+            width: 100%;
+            text-align: left;
+            padding: 0.5rem 1rem;
+            background: #f2f2f2;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.25rem;
+        }
+
+        .build-toggle:hover {
+            background: #e2e2e2;
+        }
+
+        .build-table-wrapper {
+            display: none;
+            padding: 0 1rem 1rem 1rem;
+        }
+
+        .build-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 1.25rem;
+            margin-top: 10px;
+        }
+
+        .build-table th ,
+        .build-table td {
+            border: 1px solid #ddd;
+            padding: 0.5rem;
+        }
+
+        .build-table th {
+            background: #f0f0f0;
+        }
+
+        margin-bottom: 1rem;
+        h4.tier-name {
+            font-weight: normal;
+            font-size: 100%;
+        }
+        & > section {
+            padding-bottom: 0.5rem;
+        }
+        h5 {
+            margin-bottom: 0;
+        }
+        &:empty {
+            padding-bottom: 0;
+            border-color: transparent;
+            h3 {
+                border-radius: 20px;
+            }
+        }
+
+        &.status-success { --status-color: var(--success-color); }
+        &.status-warning { --status-color: var(--warning-color); }
+        &.status-danger { --status-color: var(--danger-color); }
+        &.status-pending { --status-color: var(--pending-color); }
+    }
+}
+
+:root {
+    --primary-color: #306998;
+    --secondary-color: #FFD43B;
+    --background-color: #f4f4f4;
+    --text-color: #333;
+    --success-color: #4CAF60;
+    --warning-color: #C2870F;
+    --pending-color: #a9a9a9;
+    --warning-color-bg: #E4B615; /* nicer "traffic light" amber , but not enough contrast for text */
+    --danger-color: #f44336;
+    --pill-bg-color: #e0e0e0;
+    --pill-text-color: #333;
+    --pill-hover-bg-color: #306998;
+    --pill-hover-text-color: #ffffff;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--background-color);
+    margin: 0;
+    padding: 0;
+    transition: all 0.3s ease;
+    scroll-behavior: smooth;
+}
+
+code {
+    color: inherit;
+}
+
