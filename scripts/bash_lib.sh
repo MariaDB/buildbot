@@ -496,6 +496,8 @@ upgrade_test_type() {
           prev_major_version="10.11"
         elif ((major == 12)); then
           prev_major_version="11.8"
+        elif ((major == 13)); then
+          prev_major_version="12.3"
         else
           bb_log_err "Unknown previous branch for $branch_tmp, please update this script"
           exit 1
@@ -632,6 +634,12 @@ check_upgraded_versions() {
     elif ((old_branch_digit == 11)) && ((old_major_digit == 8)); then
       if ((new_branch_digit == 12)) && ((new_major_digit != 0)); then
         bb_log_err "This does not look like a major upgrade from 11.8 to 12.0:"
+        diff -u /tmp/version.old /tmp/version.new
+        exit 1
+      fi
+    elif ((old_branch_digit == 12)) && ((old_major_digit == 3)); then
+      if ((new_branch_digit == 13)) && ((new_major_digit != 0)); then
+        bb_log_err "This does not look like a major upgrade from 12.3 to 13.0:"
         diff -u /tmp/version.old /tmp/version.new
         exit 1
       fi
