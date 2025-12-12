@@ -2,10 +2,12 @@ import fnmatch
 import os
 import re
 from datetime import datetime
-from typing import Any, Tuple
+from typing import Any, Generator, Tuple
 
 import docker
 from pyzabbix import ZabbixAPI
+from twisted.internet import defer, threads
+from twisted.python import log
 
 from buildbot.buildrequest import BuildRequest
 from buildbot.interfaces import IProperties
@@ -289,18 +291,32 @@ def nextBuild(builder: Builder, requests: list[BuildRequest]) -> BuildRequest:
     return min(requests, key=build_request_sort_key)
 
 
+@defer.inlineCallbacks
 def canStartBuild(
     builder: Builder, wfb: AbstractWorkerForBuilder, request: BuildRequest
-) -> bool:
+) -> Generator[defer.Deferred, None, bool]:
     worker: AbstractWorker = wfb.worker
     if "s390x" not in worker.name:
         return True
 
     worker_prefix = "-".join(worker.name.split("-")[0:2])
     worker_name = private_config["private"]["worker_name_mapping"][worker_prefix]
-    # TODO(cvicentiu) this could be done with a yield to not have the master
-    # stuck until the network operation is completed.
-    load = getMetric(worker_name, "BB_accept_new_build")
+
+    try:
+        load = yield threads.deferToThread(
+            getMetric, worker_name, "BB_accept_new_build"
+        )
+    except (ZabbixNoHostFound, ZabbixToManyItems, ZabbixNoItemFound) as e:
+        log.err(e, f"Zabbix Error: Check configuration for {worker_name}")
+        return True  # This is clearly a Zabbix misconfiguration, let the build start
+    except ZabbixTooOldData as e:
+        log.err(e, f"Zabbix Error: Too old Zabbix data for worker {worker_name}")
+        return False
+    except Exception as e:
+        log.err(
+            e, f"Zabbix Error: Unexpected error when fetching data for {worker_name}"
+        )
+        return True  # In case of other errors, e.g. network issues, let the build start
 
     if float(load) > 60:
         worker.quarantine_timeout = 60
@@ -575,12 +591,28 @@ def prioritizeBuilders(
     return builders
 
 
+class ZabbixTooOldData(Exception):
+    pass
+
+
+class ZabbixToManyItems(Exception):
+    pass
+
+
+class ZabbixNoItemFound(Exception):
+    pass
+
+
+class ZabbixNoHostFound(Exception):
+    pass
+
+
 # Zabbix helper
 def getMetric(hostname: str, metric: str) -> Any:
     # set API
     zapi = ZabbixAPI(private_config["private"]["zabbix_server"])
     zapi.session.verify = True
-    zapi.timeout = 10
+    zapi.timeout = 3
 
     zapi.login(api_token=private_config["private"]["zabbix_token"])
 
@@ -590,11 +622,16 @@ def getMetric(hostname: str, metric: str) -> Any:
             host_id = h["hostid"]
             break
 
-    assert host_id is not None
+    if host_id is None:
+        raise ZabbixNoHostFound
 
     hostitems = zapi.item.get(filter={"hostid": host_id, "name": metric})
 
-    assert len(hostitems) == 1
+    if len(hostitems) > 1:
+        raise ZabbixToManyItems
+    if len(hostitems) == 0:
+        raise ZabbixNoItemFound
+
     hostitem = hostitems[0]
 
     last_value = hostitem["lastvalue"]
@@ -602,8 +639,8 @@ def getMetric(hostname: str, metric: str) -> Any:
 
     elapsed_from_last = (datetime.now() - last_time).total_seconds()
 
-    # The latest data is no older than 80 seconds
-    assert elapsed_from_last < 80
+    if elapsed_from_last >= 80:
+        raise ZabbixTooOldData
 
     return last_value
 
