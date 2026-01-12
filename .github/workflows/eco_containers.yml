@@ -39,6 +39,15 @@ jobs:
         run: |
           docker run -i -v $(pwd)/${{ env.WORKDIR }}:/mnt -w /mnt \
             hadolint/hadolint:latest hadolint ${{ matrix.containerfile }}
+
+      - name: Free space for buildah
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          df -h
+
       - name: Build with Buildah
         id: build-image
         uses: redhat-actions/buildah-build@v2
