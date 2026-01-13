@@ -1,0 +1,29 @@
+name: Copy selected labels from previous PR by same author
+
+on:
+  pull_request:
+    types: [opened, reopened]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  copy-labels:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Copy selected labels from last PR by same author
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const currentPr = context.payload.pull_request;
+            const currentPrNumber = currentPr.number;
+
+            await github.rest.issues.addLabels({
+              owner,
+              repo,
+              issue_number: currentPrNumber,
+              labels: ['test', 'test1', 'test2'],
+            });
