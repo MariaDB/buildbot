@@ -17,9 +17,7 @@ RUN zypper -n update \
     && ARCH=$(rpm --query --queryformat='%{ARCH}' zypper) \
     && if [ "$ARCH" = x86_64 ]; then ARCH=amd64 ; fi \
     && zypper addrepo https://ci.mariadb.org/galera/mariadb-4.x-latest-gal-"${ARCH}-${ID%%leap}-${VERSION_ID}".repo \
-    # permissions -> https://bugzilla.opensuse.org/show_bug.cgi?id=1228968 workaround \
-    && zypper -n install permissions; \
-    zypper -n install \
+    && zypper -n install \
     bzip2 \
     ccache \
     check-devel \
