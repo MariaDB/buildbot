@@ -188,14 +188,6 @@ rockylinux-10:
     - ppc64le
   type: rpm
   install_only: True
-sles-1506:
-  image_tag: sles1506
-  tags:
-    - release_packages
-  arch:
-    - amd64
-    - s390x
-  type: rpm
 sles-1507:
   image_tag: sles1507
   tags:

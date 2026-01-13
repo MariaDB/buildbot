@@ -179,7 +179,6 @@ SUPPORTED_PLATFORMS["10.11"] = [
     "amd64-msan-clang-20-debug",
     "amd64-opensuse-1506",
     "amd64-rhel-10",
-    "amd64-sles-1506",
     "amd64-ubasan-clang-20",
     "amd64-ubasan-clang-20-debug",
     "amd64-ubuntu-2404",
@@ -187,7 +186,6 @@ SUPPORTED_PLATFORMS["10.11"] = [
     "ppc64le-rhel-10",
     "ppc64le-ubuntu-2404",
     "s390x-rhel-10",
-    "s390x-sles-1506",
     "s390x-ubuntu-2404",
     "ppc64le-debian-12",
 ]
