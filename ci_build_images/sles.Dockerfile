@@ -13,7 +13,16 @@ COPY --chmod=755 mariadb_zypper_expect /
 RUN zypper -n update \
     && zypper -n install -t pattern devel_basis \
     && . /etc/os-release \
-    && VERSION_ID=${VERSION_ID%%.*} \
+    && if [ "$VERSION_ID" = "15.7" ]; then \
+         BOOST_VER=1_66_0; \
+         FMT_VER=8; \
+         LIBURING_VER=2; \
+       else \
+         BOOST_VER=1_86_0; \
+         FMT_VER=11; \
+         LIBURING_VER=; \
+       fi \
+    && VERSION_ID="${VERSION_ID%%.*}" \
     && ARCH=$(rpm --query --queryformat='%{ARCH}' zypper) \
     && if [ "$ARCH" = x86_64 ]; then ARCH=amd64 ; fi \
     && zypper addrepo https://ci.mariadb.org/galera/mariadb-4.x-latest-gal-"${ARCH}-${ID%%leap}-${VERSION_ID}".repo \
@@ -31,34 +40,31 @@ RUN zypper -n update \
     gdb \
     git \
     glibc-locale \
-    jemalloc-devel \
     libaio-devel \
-    libboost_atomic1_66_0-devel \
-    libboost_chrono1_66_0-devel \
-    libboost_date_time1_66_0-devel \
-    libboost_filesystem1_66_0-devel \
-    libboost_program_options1_66_0-devel \
-    libboost_regex1_66_0-devel \
-    libboost_system1_66_0-devel \
-    libboost_thread1_66_0-devel \
+    libboost_atomic"${BOOST_VER}"-devel \
+    libboost_chrono"${BOOST_VER}"-devel \
+    libboost_date_time"${BOOST_VER}"-devel \
+    libboost_filesystem"${BOOST_VER}"-devel \
+    libboost_program_options"${BOOST_VER}"-devel \
+    libboost_regex"${BOOST_VER}"-devel \
+    libboost_system"${BOOST_VER}"-devel \
+    libboost_thread"${BOOST_VER}"-devel \
     libcurl-devel \
     libffi-devel \
-    libfmt8 \
+    libfmt"${FMT_VER}" \
     libgnutls-devel \
     liblz4-devel \
     libopenssl-3-devel \
-    liburing2-devel \
+    liburing"${LIBURING_VER}"-devel \
     libxml2-devel \
     pam-devel \
     pcre2-devel \
     perl-Net-SSLeay \
     policycoreutils \
-    python311-devel \
-    python311-pip \
+    python313-devel \
+    python313-pip \
     rpm-build \
-    rpmlint \
     snappy-devel \
-    subversion \
     systemd-devel \
     wget \
     # Using OSS repository only for judy-devel as a build-time dependency.
