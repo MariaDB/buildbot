@@ -297,7 +297,7 @@ for os_i in OS_INFO:
             ALL_PLATFORMS.add(arch)
             BUILDERS_AUTOBAKE.append(builder_name_autobake)
         # No VM install for opensuse16.0.0 yet
-        if os_i == "opensuse-1600":
+        if os_i in ["opensuse-1600", "ubuntu-2604"]:
             continue
         # Currently there are no VMs for x86 and s390x
         if arch not in ["s390x", "x86"]:
