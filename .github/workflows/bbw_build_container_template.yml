@@ -28,6 +28,9 @@ on:
       install_valgrind:
         required: false
         type: string
+      arch_variant:
+        required: false
+        type: string
       files:
         required: false
         type: string
@@ -142,7 +145,8 @@ jobs:
               --build-arg BASE_IMAGE=${{ inputs.image }} \
               --build-arg CLANG_VERSION=${{ inputs.clang_version }} \
               --build-arg MARIADB_BRANCH=${{ inputs.branch }} \
-              --build-arg INSTALL_VALGRIND="${{ inputs.install_valgrind }}"
+              --build-arg INSTALL_VALGRIND="${{ inputs.install_valgrind }}" \
+              --build-arg ARCH_VARIANT="${{ inputs.arch_variant }}"
           done
           podman images
 

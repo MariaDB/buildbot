@@ -99,6 +99,18 @@ jobs:
             branch: 11.8
             nogalera: false
 
+          - image: ubuntu:26.04
+            platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
+            branch: 11.8
+            nogalera: true
+
+          - image: ubuntu:26.04
+            tag: ubuntu26.04-amd64v3
+            platforms: linux/amd64
+            branch: 11.8
+            nogalera: true
+            arch_variant: amd64v3
+
     uses: ./.github/workflows/bbw_build_container_template.yml
     with:
       dockerfile: ${{ matrix.dockerfile || 'debian.Dockerfile' }}
@@ -107,6 +119,7 @@ jobs:
       tag: ${{ matrix.tag }}
       branch: ${{ matrix.branch }}
       nogalera: ${{ matrix.nogalera }}
+      arch_variant: ${{ matrix.arch_variant }}
       is_scheduled_event: ${{ inputs.is_scheduled_event || false }}
       deploy_on_schedule: ${{ matrix.deploy_on_schedule || false }}
     secrets: inherit

@@ -23,9 +23,14 @@ RUN . /etc/os-release \
       exit 1; \
     fi
 
+ARG ARCH_VARIANT=
+ENV ARCH_VARIANT=$ARCH_VARIANT
 # Install updates and required packages
 # see: https://cryptography.io/en/latest/installation/
 RUN . /etc/os-release \
+    && if [ -n "$ARCH_VARIANT" ]; then \
+         echo "APT::Architecture-Variants \"$ARCH_VARIANT\";" > /etc/apt/apt.conf.d/99enable-$ARCH_VARIANT; \
+       fi \
     && apt-get update \
     && apt-get -y upgrade \
     && apt-get -y install --no-install-recommends \
