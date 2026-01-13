@@ -31,11 +31,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - image: registry.suse.com/bci/bci-base:15.6
-            platforms: linux/amd64, linux/s390x
-            tag: sles1506
-            nogalera: false
-
           - image: registry.suse.com/bci/bci-base:15.7
             platforms: linux/amd64, linux/s390x
             tag: sles1507
