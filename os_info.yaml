@@ -196,6 +196,14 @@ sles-1507:
     - amd64
     - s390x
   type: rpm
+sles-1600:
+  image_tag: sles1600
+  tags:
+    - release_packages
+  arch:
+    - amd64
+    - s390x
+  type: rpm
 ubuntu-2204:
   image_tag: ubuntu22.04
   tags:

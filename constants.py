@@ -221,6 +221,8 @@ SUPPORTED_PLATFORMS["11.8"] += [
     "x86-debian-13",
     "amd64-sles-1507",
     "s390x-sles-1507",
+    "amd64-sles-1600",
+    "s390x-sles-1600",
     "aarch64-ubuntu-2510",
     "amd64-ubuntu-2510",
     "aarch64-fedora-43",
