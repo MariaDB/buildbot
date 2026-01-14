@@ -98,11 +98,10 @@ RUN . /etc/os-release \
     && if [ "${VERSION_ID}" != 18.04 ]; then \
       apt-get -y install --no-install-recommends flex; \
     fi \
-    && if [ "${VERSION_ID}" = 22.04 ]; then \
-      apt-get -y install --no-install-recommends clang-14 libpcre3-dev llvm; \
-    elif [ "${VERSION_ID}" = 24.04 ]; then \
+    && if [ "${VERSION_ID}" = 24.04 ] && [ "$(arch)" = "x86_64" ]; then \
       # https://packages.ubuntu.com/noble/libclang-rt-18-dev, provider of asan, needs 32bit deps for amd64 \
-      if [ "$(arch)" = "x86_64" ]; then dpkg --add-architecture i386 && apt-get update; fi \
+      dpkg --add-architecture i386 \
+      && apt-get update \
       && apt-get -y install --no-install-recommends clang llvm-dev libclang-rt-18-dev; \
     fi \
     && apt-get clean
