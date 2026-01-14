@@ -122,4 +122,5 @@ jobs:
       arch_variant: ${{ matrix.arch_variant }}
       is_scheduled_event: ${{ inputs.is_scheduled_event || false }}
       deploy_on_schedule: ${{ matrix.deploy_on_schedule || false }}
+      runner: 'ubuntu-24.04'
     secrets: inherit
