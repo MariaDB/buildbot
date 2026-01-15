@@ -227,6 +227,11 @@ SUPPORTED_PLATFORMS["11.8"] += [
     "amd64-ubuntu-2510",
     "aarch64-fedora-43",
     "amd64-fedora-43",
+    "aarch64-ubuntu-2604",
+    "amd64-ubuntu-2604",
+    "amd64v3-ubuntu-2604-deb-autobake-migration",
+    "ppc64le-ubuntu-2604",
+    "s390x-ubuntu-2604",
 ]
 SUPPORTED_PLATFORMS["12.0"] = SUPPORTED_PLATFORMS["11.8"].copy()
 SUPPORTED_PLATFORMS["12.1"] = SUPPORTED_PLATFORMS["12.0"].copy()
@@ -297,7 +302,7 @@ for os_i in OS_INFO:
             ALL_PLATFORMS.add(arch)
             BUILDERS_AUTOBAKE.append(builder_name_autobake)
         # No VM install for opensuse16.0.0 yet
-        if os_i == "opensuse-1600":
+        if os_i in ["opensuse-1600", "ubuntu-2604"]:
             continue
         # Currently there are no VMs for x86 and s390x
         if arch not in ["s390x", "x86"]:
