@@ -562,8 +562,7 @@ def hasS3(props):
 
 def hasRpmLint(step: BuildStep) -> str:
     builder_name = step.getProperty("buildername")
-    # The step fails on s390x SLES 12 due to permissions issues
-    if "s390x-sles-12" in builder_name:
+    if "sles-1600" in builder_name:
         return False
     return True
 
