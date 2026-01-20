@@ -34,12 +34,10 @@ jobs:
           - image: registry.suse.com/bci/bci-base:15.7
             platforms: linux/amd64, linux/s390x
             tag: sles1507
-            nogalera: false
 
           - image: registry.suse.com/bci/bci-base:16.0
             platforms: linux/amd64, linux/s390x
             tag: sles1600
-            nogalera: true
 
     uses: ./.github/workflows/bbw_build_container_template.yml
     with:
