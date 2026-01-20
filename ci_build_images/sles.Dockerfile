@@ -22,7 +22,7 @@ RUN zypper -n update \
          FMT_VER=11; \
          LIBURING_VER=; \
        fi \
-    && VERSION_ID="${VERSION_ID%%.*}" \
+    && VERSION_ID="${VERSION_ID%%.*}0${VERSION_ID#*.}" \
     && ARCH=$(rpm --query --queryformat='%{ARCH}' zypper) \
     && if [ "$ARCH" = x86_64 ]; then ARCH=amd64 ; fi \
     && zypper addrepo https://ci.mariadb.org/galera/mariadb-4.x-latest-gal-"${ARCH}-${ID%%leap}-${VERSION_ID}".repo \
