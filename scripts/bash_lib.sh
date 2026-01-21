@@ -40,28 +40,77 @@ err() {
   exit 1
 }
 
+WORKER_BASE_DIR="$(pwd -P)"
+
 collect_logs() {
-  exit_code=$?
-  if ((exit_code != 0)); then
-    set +e
-    bb_log_info "systemd service information"
-    sudo journalctl --boot --unit mariadb.service --unit mariadb-columnstore.service
+  local exit_code=$?
+
+  # Do not let logging failures change outcome
+  set +e
+
+  if (( exit_code != 0 )); then
+    local systemd_log="${WORKER_BASE_DIR}/systemd.log"
+    local pam_log="${WORKER_BASE_DIR}/pam.log"
+    local selinux_log="${WORKER_BASE_DIR}/selinux.log"
+
+    # Create log files
+    touch "$systemd_log"
+    touch "$pam_log"
+    touch "$selinux_log"
+
+    # -------------------------
+    # systemd/journalctl logs
+    # -------------------------
+    {
+      echo "==== systemd service information ($(date -Is)) ===="
+      echo "-- journalctl --boot --unit mariadb.service --unit mariadb-columnstore.service"
+    } >> "$systemd_log"
+
+    sudo journalctl --boot \
+      --unit mariadb.service \
+      --unit mariadb-columnstore.service \
+      2>&1 | sudo tee -a "$systemd_log" >/dev/null
+
+    # ---------------------------------
+    # SELinux denial logs (if present)
+    # ---------------------------------
     if [ -f /etc/selinux/config ]; then
-      bb_log_info "selinux denial information"
-      sudo ausearch -i -m avc,user_avc,selinux_err,user_selinux_err -ts boot
+      {
+        echo "==== selinux denial information ($(date -Is)) ===="
+        echo "-- ausearch -i -m avc,user_avc,selinux_err,user_selinux_err -ts boot"
+      } >> "$selinux_log"
+
+      sudo ausearch -i -m avc,user_avc,selinux_err,user_selinux_err -ts boot \
+        2>&1 | sudo tee -a "$selinux_log" >/dev/null
+    else
+      echo "SELinux config not present; skipping." >> "$selinux_log"
     fi
-    bb_log_info "PAM information"
+
+    # ----------------------------------------------
+    # PAM logs (secure/auth.log depending on distro)
+    # ----------------------------------------------
+    {
+      echo "==== PAM information ($(date -Is)) ===="
+    } >> "$pam_log"
+
     if [ -f /var/log/secure ]; then
-      sudo grep -i pam /var/log/secure
+      echo "-- grep -i pam /var/log/secure" >> "$pam_log"
+      sudo grep -i pam /var/log/secure 2>&1 | sudo tee -a "$pam_log" >/dev/null
+    else
+      echo "/var/log/secure not present." >> "$pam_log"
     fi
+
     if [ -f /var/log/auth.log ]; then
-      sudo grep -i pam /var/log/auth.log
+      echo "-- grep -i pam /var/log/auth.log" >> "$pam_log"
+      sudo grep -i pam /var/log/auth.log 2>&1 | sudo tee -a "$pam_log" >/dev/null
+    else
+      echo "/var/log/auth.log not present." >> "$pam_log"
     fi
-    set -e
-  else
-    bb_log_info "Test(s) ran successfully"
   fi
-  exit $exit_code
+
+  # Restore strict mode
+  set -e
+  exit "$exit_code"
 }
 
 # mariadb < 10.4 the client binary was mysql
