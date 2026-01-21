@@ -1,4 +1,5 @@
 import os
+from enum import Enum
 from pathlib import PurePath
 
 from buildbot.plugins import util
@@ -112,23 +113,51 @@ class MTRTest(Command):
             """
 
 
+class ContentKind(str, Enum):
+    """Enumeration for the kind of content to report to the MTR log collector."""
+
+    XML = "xml"
+    LOG = "log"
+
+
 class MTRReporter(BashScriptCommand):
     """
-    A command to transfer all the MTR JUnit test results to the mtr_junit_collector service.
+    A command to report MTR test results to the MTR log collector.
     Attributes:
-        directory (PurePath): The directory containing the MTR test results.
+        workdir (PurePath): The working directory for the command.
+        content_kind (ContentKind): The kind of content to report (XML or LOG).
+        dry_run (bool): Whether to perform a dry run without actual upload.
+
+    XML files are searched in the workdir, without traversing subdirectories.
+
+    LOG files are searched in the path workdir/*/log/stdout.log
     """
 
-    JUNIT_COLLECTOR_BASE_URL = os.environ.get("JUNIT_COLLECTOR_BASE_URL")
+    MTR_LOG_COLLECTOR_BASE_URL = os.environ.get("MTR_LOG_COLLECTOR_BASE_URL")
 
-    def __init__(self, workdir: PurePath = PurePath(".")):
-        base_url = self.JUNIT_COLLECTOR_BASE_URL
+    def __init__(
+        self,
+        workdir: PurePath = PurePath("."),
+        content_kind: ContentKind = ContentKind.XML,
+        dry_run: bool = False,
+    ):
+        base_url = self.MTR_LOG_COLLECTOR_BASE_URL
         branch = util.Interpolate("%(prop:branch)s")
         revision = util.Interpolate("%(prop:revision)s")
         platform = util.Interpolate("%(prop:buildername)s")
         bbnum = util.Interpolate("%(prop:buildnumber)s")
         dir = "."
 
-        args = [base_url, branch, revision, platform, bbnum, dir]
+        args = [
+            base_url,
+            branch,
+            revision,
+            platform,
+            bbnum,
+            dir,
+            content_kind.value,
+            "1" if dry_run else "0",
+        ]
+
         super().__init__(script_name="mtr_reporter.sh", args=args, workdir=workdir)
         self.name = "Save test results for CrossReference"

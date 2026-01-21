@@ -9,7 +9,7 @@ from configuration.builders.sequences.helpers import (
     get_mtr_normal_steps,
     get_mtr_s3_steps,
     get_mtr_spider_steps,
-    mtr_junit_reporter,
+    mtr_reporter,
     save_mtr_logs,
 )
 from configuration.steps.base import StepOptions
@@ -170,7 +170,7 @@ def asan_ubsan(
                     docker_environment=config, step=step
                 ),
             ),
-            mtr_junit_reporter(
+            mtr_reporter(
                 step_wrapping_fn=lambda step: InContainer(
                     docker_environment=config, step=step
                 ),
@@ -296,7 +296,7 @@ def msan(
                 docker_environment=config, step=step
             ),
         ),
-        mtr_junit_reporter(
+        mtr_reporter(
             step_wrapping_fn=lambda step: InContainer(
                 docker_environment=config, step=step
             ),
