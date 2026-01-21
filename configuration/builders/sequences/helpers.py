@@ -340,7 +340,7 @@ def add_test_suites_steps(
     )
 
     steps.append(
-        mtr_junit_reporter(
+        mtr_reporter(
             step_wrapping_fn=lambda step: InContainer(
                 docker_environment=config, step=step
             ),
@@ -373,7 +373,7 @@ def save_mtr_logs(
     )
 
 
-def mtr_junit_reporter(
+def mtr_reporter(
     step_wrapping_fn=lambda step: step,
 ):
     return step_wrapping_fn(

@@ -1,7 +1,7 @@
 from pathlib import PurePath
 
 from configuration.builders.infra.runtime import BuildSequence, InContainer
-from configuration.builders.sequences.helpers import mtr_junit_reporter, save_mtr_logs
+from configuration.builders.sequences.helpers import mtr_reporter, save_mtr_logs
 from configuration.steps.base import StepOptions
 from configuration.steps.commands.compile import MAKE, CompileMakeCommand
 from configuration.steps.commands.configure import ConfigureMariaDBCMake
@@ -170,7 +170,7 @@ def openssl_fips(
     )
 
     sequence.add_step(
-        mtr_junit_reporter(
+        mtr_reporter(
             step_wrapping_fn=lambda step: InContainer(
                 docker_environment=config, step=step
             ),
