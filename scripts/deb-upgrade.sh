@@ -56,23 +56,8 @@ get_packages_file_mirror() {
 case $test_mode in
   all)
     get_packages_file_mirror
-    if grep -qi columnstore Packages; then
-      bb_log_warn "due to MCOL-4120 (Columnstore leaves the server shut down)"
-      bb_log_warn "and other bugs Columnstore upgrade is tested separately"
-    fi
     package_list=$(grep "^Package:" Packages |
-      grep -vE 'galera|spider|columnstore' |
       awk '{print $2}' | sort -u | xargs)
-    if grep -qi spider Packages; then
-      bb_log_warn "due to MDEV-14622 Spider will be installed separately after the server"
-      spider_package_list=$(grep "^Package:" Packages |
-        grep 'spider' | awk '{print $2}' |
-        sort -u | xargs)
-    fi
-    if grep -si tokudb Packages; then
-      # For the sake of installing TokuDB, disable hugepages
-      sudo sh -c "echo never > /sys/kernel/mm/transparent_hugepage/enabled" || true
-    fi
     ;;
   deps)
     package_list="mariadb-server mariadb-client mariadb-common mariadb-test mysql-common libmysqlclient18"
@@ -118,15 +103,6 @@ if ! sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 \
 fi
 
 wait_for_mariadb_upgrade
-
-if [[ -n $spider_package_list ]]; then
-  if ! sudo sh -c "DEBIAN_FRONTEND=noninteractive MYSQLD_STARTUP_TIMEOUT=180 \
-    apt-get -o Dpkg::Options::=--force-confnew install --allow-unauthenticated -y $spider_package_list"; then
-    bb_log_err "Installation of Spider from the previous release failed, see the output above"
-    exit 1
-  fi
-  wait_for_mariadb_upgrade
-fi
 
 # To avoid confusing errors in further logic, do an explicit check
 # whether the service is up and running
