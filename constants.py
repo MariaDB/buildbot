@@ -140,7 +140,7 @@ SUPPORTED_PLATFORMS["10.6"] = [
     "amd64-ubuntu-2404-clang18-asan",
     "amd64-windows",
     "amd64-windows-packages",
-    "ppc64be-aix-71",
+    "ppc64be-aix-73",
     "ppc64le-centos-stream9",
     "ppc64le-rhel-8",
     "ppc64le-rhel-9",

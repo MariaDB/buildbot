@@ -7,12 +7,12 @@ build_deps() {
   # manually remove install directory when changeing version
   # v=9.1.0,9.0.0,8.1.1 - fails to build
   # Currently unreleased - manual build as of b817610
-  v=10.2.2
+  v=11.0.2
   wget https://github.com/fmtlib/fmt/archive/refs/tags/${v}.tar.gz -O - | tar -zxf -
   rm -rf build-fmt
   mkdir -p build-fmt
   cd build-fmt
-  cmake -DCMAKE_CXX_COMPILER=g++-11 -DCMAKE_COMPILER_IS_GNUCXX=0 \
+  cmake -DCMAKE_CXX_COMPILER=g++ -DCMAKE_COMPILER_IS_GNUCXX=0 \
 	  -DCMAKE_INSTALL_PREFIX="$HOME"/inst-fmt \
 	  -DFMT_DOC=OFF -DFMT_TEST=OFF \
 	  ../fmt-$v/
@@ -29,12 +29,12 @@ build() {
   source=$1
   mkdir -p build
   cd build
-  /opt/bin/ccache --zero-stats
+  /opt/freeware/bin/ccache-swig -z
   cmake ../"$source" -DCMAKE_BUILD_TYPE="$2" \
-    -DCMAKE_C_LAUNCHER=/opt/bin/ccache \
-    -DCMAKE_CXX_LAUNCHER=/opt/bin/ccache \
-    -DCMAKE_C_COMPILER=gcc-11 \
-    -DCMAKE_CXX_COMPILER=g++-11 \
+    -DCMAKE_C_LAUNCHER=/opt/freeware/bin/ccache-swig \
+    -DCMAKE_CXX_LAUNCHER=/opt/freeware/bin/ccache-swig \
+    -DCMAKE_C_COMPILER=gcc \
+    -DCMAKE_CXX_COMPILER=g++ \
     -DCMAKE_AR=/usr/bin/ar \
     -DCMAKE_PREFIX_PATH=/opt/freeware/ \
     -DCMAKE_REQUIRED_FLAGS=-I\ /opt/freeware/include \
@@ -42,6 +42,7 @@ build() {
     -DWITH_UNIT_TESTS=NO \
     -DPLUGIN_S3=NO \
     -DPLUGIN_CONNECT=NO \
+    -DPLUGIN_PERFSCHEMA=NO \
     -DPLUGIN_SPIDER=NO \
     -DPLUGIN_WSREP_INFO=NO \
     -DLIBFMT_INCLUDE_DIR="$HOME"/inst-fmt/include \
@@ -49,7 +50,7 @@ build() {
     -Dhave_C__Wl___as_needed= \
     -DPLUGIN_AUTH_GSSAPI=NO -DPLUGIN_TYPE_MYSQL_JSON=NO
   make -j"$(("$jobs" * 2))"
-  /opt/bin/ccache --show-stats
+  /opt/freeware/bin/ccache-swig -s
 }
 
 mariadbtest() {
@@ -104,7 +105,7 @@ clean() {
 
 export TMPDIR="$HOME/tmp"
 # gcc-10 paths found by looking at nm /opt/freeware/.../libstdc++.a | grep {missing symbol}
-export LIBPATH=/opt/freeware/lib/gcc/powerpc-ibm-aix7.1.0.0/11/pthread/:/opt/freeware/lib/gcc/powerpc-ibm-aix7.1.0.0/11:/usr/lib:"$PWD/build/libmariadb/libmariadb/"
+# export LIBPATH=/opt/freeware/lib/gcc/powerpc-ibm-aix7.1.0.0/11/pthread/:/opt/freeware/lib/gcc/powerpc-ibm-aix7.1.0.0/11:/usr/lib:"$PWD/build/libmariadb/libmariadb/"
 
 jobs=${4:-12}
 
