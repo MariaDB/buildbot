@@ -59,6 +59,7 @@ GITHUB_STATUS_BUILDERS = [
     "amd64-ubuntu-2204-debug",
     "amd64-ubuntu-2204-debug-ps",
     "amd64-windows",
+    "amd64-windows-packages",
 ]
 
 # Special builders triggering
