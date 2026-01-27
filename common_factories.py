@@ -211,7 +211,7 @@ def getBuildFactoryPreTest(build_type="RelWithDebInfo", additional_args=""):
                         "additional_args", default=f"{additional_args}"
                     ),
                     create_package=util.Property("create_package", default="package"),
-                    verbose_build=util.Property("verbose_build", default=""),
+                    verbose_build=util.Property("verbose_build", default="VERBOSE=1"),
                 ),
             ],
             env={"CCACHE_DIR": "/mnt/ccache"},
