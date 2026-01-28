@@ -240,3 +240,13 @@ ubuntu-2510:
     - amd64
     - aarch64
   type: deb
+ubuntu-2604:
+  image_tag: ubuntu26.04
+  tags:
+    - release_packages
+  arch:
+    - amd64
+    - aarch64
+    - ppc64le
+    - s390x
+  type: deb
