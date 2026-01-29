@@ -176,6 +176,7 @@ SUPPORTED_PLATFORMS["10.11"] = [
     "amd64-debian-12-deb-autobake-migration",
     "amd64-debian-12-debug-embedded",
     "amd64-fedora-42",
+    "amd64-infer-clang-20",
     "amd64-msan-clang-20-debug",
     "amd64-opensuse-1506",
     "amd64-rhel-10",
