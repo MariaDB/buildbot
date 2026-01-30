@@ -71,6 +71,7 @@ RUN zypper -n update \
     # As of now libJudy1 is still 1.0.5 in BCI for both 15.6 and 15.7.
     # On the next bump recheck if libJudy and judy-devel versions are the same.
     # Note that 15.7 is not available because OpenSuse jumped from 15.6 to 16.0
+    && if [ "$VERSION_ID" != "1600" ]; then zypper -n install rpmlint; fi \
     && zypper addrepo https://download.opensuse.org/distribution/leap/15.6/repo/oss/ repo-oss \
     && zypper --gpg-auto-import-keys ref repo-oss \
     && zypper -n install \
