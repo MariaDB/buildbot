@@ -231,6 +231,8 @@ class Dashboard:
             if builder_id not in latest_run_by_builder:
                 latest_run_by_builder[builder_id] = b
             else:
+                if "cancelled" in b.get("state_string", "").lower():
+                    continue
                 if started_at > latest_run_by_builder[builder_id].get("started_at", 0):
                     latest_run_by_builder[builder_id] = b
 
