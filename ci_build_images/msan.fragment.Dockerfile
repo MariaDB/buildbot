@@ -66,7 +66,9 @@ RUN . /etc/os-release \
     && cd .. \
     && rm -rf -- *
 
-RUN for f in "$MSAN_LIBDIR"/libunwind*; do mv "$f" "$f"-disable; done
+RUN if [ "${CLANG_VERSION}" -le 20 ]; then \
+      for f in "$MSAN_LIBDIR"/libunwind*; do mv "$f" "$f"-disable; done \
+    fi
 # libunwrap move/disable because of https://github.com/llvm/llvm-project/issues/128621
 
 COPY msan.instrumentedlibs.sh /msan-build
