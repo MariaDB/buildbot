@@ -5,11 +5,7 @@ from configuration.builders.infra.runtime import InContainer
 from configuration.steps.base import StepOptions
 from configuration.steps.commands.base import URL
 from configuration.steps.commands.mtr import MTRReporter, MTRTest
-from configuration.steps.commands.util import (
-    CreateS3Bucket,
-    DeleteS3Bucket,
-    SaveCompressedTar,
-)
+from configuration.steps.commands.util import SaveCompressedTar
 from configuration.steps.generators.mtr.generator import MTRGenerator
 from configuration.steps.generators.mtr.options import (
     MTR,
@@ -225,12 +221,6 @@ def get_mtr_s3_steps(
 ):
     steps = []
     steps.append(
-        MasterShellStep(
-            command=CreateS3Bucket(bucket=f"%(prop:buildername)s-%(prop:buildnumber)s")
-        )
-    )
-
-    steps.append(
         step_wrapping_fn(
             ShellStep(
                 command=MTRTest(
@@ -254,13 +244,14 @@ def get_mtr_s3_steps(
                     ),
                 ),
                 env_vars=[
-                    ("S3_HOST_NAME", "minio.mariadb.org"),
+                    ("S3_HOST_NAME", "s3bb.mariadb.org"),
                     ("S3_PORT", "443"),
-                    ("S3_ACCESS_KEY", "%(secret:minio_access_key)s"),
-                    ("S3_SECRET_KEY", "%(secret:minio_secret_key)s"),
-                    ("S3_BUCKET", "%(prop:buildername)s-%(prop:buildnumber)s"),
+                    ("S3_ACCESS_KEY", "%(secret:s3_access_key)s"),
+                    ("S3_SECRET_KEY", "%(secret:s3_secret_key)s"),
+                    ("S3_BUCKET", "mariadb-buildbot"),
                     ("S3_USE_HTTPS", "OFF"),
                     ("S3_PROTOCOL_VERSION", "Path"),
+                    ("S3_REGION", "garage"),
                 ]
                 + env_vars,
                 options=StepOptions(
@@ -268,12 +259,6 @@ def get_mtr_s3_steps(
                 ),
             )
         )
-    )
-    steps.append(
-        MasterShellStep(
-            command=DeleteS3Bucket(bucket=f"%(prop:buildername)s-%(prop:buildnumber)s"),
-            options=StepOptions(alwaysRun=True),
-        ),
     )
     return steps
 

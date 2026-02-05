@@ -476,23 +476,11 @@ def addGaleraTests(factory, mtrDbPool):
 def addS3Tests(factory, mtrDbPool):
     runS3 = lambda props: hasS3(props) and props.hasProperty("compile_step_completed")
     factory.addStep(
-        steps.MasterShellCommand(
-            name="Create minio S3 bucket",
-            alwaysRun=True,
-            command=[
-                "mc",
-                "mb",
-                util.Interpolate("minio/%(prop:buildername)s-%(prop:buildnumber)s"),
-            ],
-            doStepIf=runS3,
-        )
-    )
-    factory.addStep(
         steps.MTR(
-            name="S3 minio tests",
+            name="MTR - S3",
             alwaysRun=True,
-            description="testing S3 minio",
-            descriptionDone="test s3 minio",
+            description="testing S3",
+            descriptionDone="test s3",
             logfiles={"mysqld*": "./buildbot/mysql_logs.html"},
             test_type="s3",
             command=[
@@ -512,34 +500,18 @@ def addS3Tests(factory, mtrDbPool):
             dbpool=mtrDbPool,
             autoCreateTables=True,
             env={
-                "S3_HOST_NAME": "minio.mariadb.org",
+                "S3_HOST_NAME": "s3bb.mariadb.org",
                 "S3_PORT": "443",
-                "S3_ACCESS_KEY": util.Interpolate("%(secret:minio_access_key)s"),
-                "S3_SECRET_KEY": util.Interpolate("%(secret:minio_secret_key)s"),
-                "S3_BUCKET": util.Interpolate(
-                    "%(prop:buildername)s-%(prop:buildnumber)s"
-                ),
+                "S3_ACCESS_KEY": util.Interpolate("%(secret:s3_access_key)s"),
+                "S3_SECRET_KEY": util.Interpolate("%(secret:s3_secret_key)s"),
+                "S3_BUCKET": "mariadb-buildbot",
                 "S3_USE_HTTP": "OFF",
                 "S3_PROTOCOL_VERSION": "Path",
+                "S3_REGION": "garage",
             },
             doStepIf=runS3,
         )
     )
-
-    factory.addStep(
-        steps.MasterShellCommand(
-            name="Delete minio S3 bucket",
-            alwaysRun=True,
-            command=[
-                "mc",
-                "rb",
-                "--force",
-                util.Interpolate("minio/%(prop:buildername)s-%(prop:buildnumber)s"),
-            ],
-            doStepIf=runS3,
-        )
-    )
-
     factory.addStep(
         steps.ShellCommand(
             name="move mariadb S3 log files",
