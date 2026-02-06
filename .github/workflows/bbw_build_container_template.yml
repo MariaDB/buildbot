@@ -202,9 +202,21 @@ jobs:
           msg="Push docker image to ghcr.io (${{ env.IMG }})"
           line="${msg//?/=}"
           printf "\n${line}\n${msg}\n${line}\n"
-          skopeo copy --all --src-tls-verify=0 \
-            docker://localhost:5000/${{ env.REPO }}:${{ env.IMG }} \
-            docker://ghcr.io/${GITHUB_REPOSITORY,,}/${{ env.REPO }}:dev_${{ env.IMG }}
+
+          SRC="docker://localhost:5000/${{ env.REPO }}:${{ env.IMG }}"
+          DST_BASE="docker://ghcr.io/${GITHUB_REPOSITORY,,}/${{ env.REPO }}"
+
+          SHORT_SHA="${GITHUB_SHA::12}"
+
+          TAGS=(
+            "dev_${{ env.IMG }}"
+            "hist_${{ env.IMG }}_${SHORT_SHA}"
+          )
+
+          for tag in "${TAGS[@]}"; do
+            echo "Pushing tag: $tag"
+            skopeo copy --all --src-tls-verify=0 "$SRC" "${DST_BASE}:${tag}"
+          done
 
 
       - name: ghcr.io - move tag to production

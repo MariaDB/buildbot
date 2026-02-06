@@ -1,0 +1,30 @@
+name: GHCR retention
+
+on:
+  schedule:
+    - cron: "0 3 1 * *"        # 1st day of month, 03:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  retention:
+    if: ${{ github.repository_owner == 'MariaDB' }}
+    runs-on: ubuntu-latest
+    env:
+      ORG: MariaDB
+      PACKAGE: buildbot/bb-worker
+      RETENTION_MONTHS: "6"
+      TAG_PREFIX: hist_
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run GHCR retention
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          bash scripts/ghcr_retention.sh
