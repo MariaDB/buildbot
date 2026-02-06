@@ -78,3 +78,9 @@ on:
 ```
 
 During this event, the image is not only rebuilt and pushed to **quay** and **ghcr**, but the tag is also moved and deployed to **production**.
+
+### History
+
+Older versions of the container images are kept as a backup in GHCR in the form of `hist_#image_name#_#commit_sha#` where the `commit_sha` corresponds to the commit that updated the package version.
+
+A separate GitHub scheduled workflow, `ghcr_retention`, scans GHCR container packages and deletes `hist_` versions older than 6 months.
