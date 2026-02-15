@@ -1,3 +1,4 @@
+import os
 from pathlib import PurePath
 
 from buildbot.plugins import util
@@ -173,3 +174,17 @@ class LDDCheck(BashScriptCommand):
     ):
         args = [f"{binary}:{','.join(libs)}" for binary, libs in binary_checks.items()]
         super().__init__(script_name="ldd_check.sh", args=args)
+
+
+class InferScript(BashScriptCommand):
+    """
+    A command to run the Infer analysis on the MariaDB codebase.
+    """
+
+    def __init__(self):
+        branch = util.Interpolate("%(prop:branch)s")
+        repository = util.Interpolate("%(prop:repository)s")
+        environment = os.environ.get("ENVIRON")
+        args = [branch, repository, environment]
+        super().__init__(script_name="infer.sh", args=args)
+        self.name = "Run Infer"
