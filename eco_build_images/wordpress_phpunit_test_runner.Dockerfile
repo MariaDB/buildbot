@@ -21,10 +21,13 @@ RUN apt-get update ; \
 RUN git clone --branch all_changes --single-branch --depth 1 https://github.com/grooverdan/phpunit-test-runner.git /phpunit-test-runner
 
 ENV NVM_DIR="/root/.nvm"
+ARG NODE_VERSION=20.19.0
 
 # Match nodejs version https://nodejs.org/en/download/releases to supported npm range
 # https://github.com/WordPress/wordpress-develop/blob/trunk/package.json
-RUN bash -c "set -o pipefail ; curl -o - https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash; . \"$NVM_DIR/nvm.sh\" && nvm install 20.11.0"
+RUN bash -c "set -o pipefail ; \
+  curl -o - https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash; \
+  . \"$NVM_DIR/nvm.sh\" && nvm install ${NODE_VERSION} && nvm alias default ${NODE_VERSION}"
 
 COPY wordpress_phpunit_test_runner.env /phpunit-test-runner/.env
 COPY wordpress_phpunit_test_runner.entrypoint /entrypoint.sh
@@ -32,7 +35,8 @@ COPY wordpress_phpunit_test_runner.entrypoint /entrypoint.sh
 WORKDIR /phpunit-test-runner
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
-RUN bash -c 'source /root/.bashrc && source .env && ulimit -a && php prepare.php'
+ENV PATH="${NVM_DIR}/versions/node/v${NODE_VERSION}/bin:${PATH}"
+RUN bash -c 'source .env && ulimit -a && php prepare.php'
 
 ENTRYPOINT ["/entrypoint.sh"]
 
