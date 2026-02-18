@@ -1,10 +1,12 @@
-from configuration.builders.infra.runtime import InContainer
+from configuration.builders.infra.runtime import InContainer, Sidecar
 from configuration.steps.base import BaseStep
 from configuration.steps.infra import (
     add_docker_cleanup_step,
     add_docker_commit_step,
     add_docker_create_workdirs_step,
     add_docker_fetch_step,
+    add_docker_network_step,
+    add_docker_sidecar_step,
     add_docker_tag_step,
     add_worker_cleanup_step,
 )
@@ -54,6 +56,7 @@ def processor_docker_cleanup(
     prepare_steps: list[BaseStep],
     active_steps: list[BaseStep],
     cleanup_steps: list[BaseStep],
+    sidecar: Sidecar = None,
 ) -> tuple[list[BaseStep], list[BaseStep], list[BaseStep]]:
     """Prepare Docker cleanup steps for the current and previous runs.
     This function checks the active steps for any InContainer steps and adds cleanup
@@ -77,6 +80,7 @@ def processor_docker_cleanup(
                 name="current-run",
                 container_name=step.docker_environment.container_name,
                 runtime_tag=step.docker_environment.runtime_tag,
+                sidecar=sidecar,
             )
         )
         prepare_steps.append(
@@ -84,6 +88,7 @@ def processor_docker_cleanup(
                 name="previous-run",
                 container_name=step.docker_environment.container_name,
                 runtime_tag=step.docker_environment.runtime_tag,
+                sidecar=sidecar,
             )
         )
         break
@@ -224,7 +229,7 @@ def processor_worker_cleanup(
 
 def processor_set_docker_runtime_environment(
     builder_name: str, active_steps: list[BaseStep], environment: str
-) -> None:
+) -> list[BaseStep]:
     """Set the Docker runtime environment for InContainer steps.
     This function updates the Docker environment for all InContainer steps in the
     active steps, setting the container name to the builder name.
@@ -241,3 +246,40 @@ def processor_set_docker_runtime_environment(
                 step.docker_environment._container_name = f"dev_{builder_name}"
 
     return active_steps
+
+
+def processor_sidecar(
+    builder_name: str,
+    environment: str,
+    sidecar: Sidecar,
+    prepare_steps: list[BaseStep],
+    active_steps: list[BaseStep],
+) -> tuple[list[BaseStep], list[BaseStep]]:
+    """Prepare and manage a background Docker sidecar container for the build steps.
+    This function sets up a Docker sidecar container, including fetching the image,
+    creating the network, and starting the container. It also updates the InContainer steps
+    to join the sidecar network and sets the SIDECAR_HOST environment variable for those steps.
+    """
+
+    prepare_steps = prepare_steps.copy()
+    active_steps = active_steps.copy()
+
+    sidecar._container_name = f"{environment}_{builder_name}_sidecar"
+    sidecar._network = f"{environment}_{builder_name}_network"
+
+    # Fetch the sidecar image, create the network and start the sidecar container in the prepare steps
+    prepare_steps.append(
+        add_docker_fetch_step(image_url=sidecar.image_url, platform=sidecar.platform)
+    )
+    prepare_steps.append(add_docker_network_step(network_name=sidecar.network))
+    prepare_steps.append(add_docker_sidecar_step(sidecar=sidecar))
+
+    # Join InContainer steps to the sidecar network
+    for step in active_steps:
+        if isinstance(step, InContainer):
+            step.docker_environment._network = sidecar.network
+            # Steps can access the sidecar via the SIDECAR_HOST env var
+            step.docker_environment.env_vars.append(
+                ("SIDECAR_HOST", sidecar.container_name)
+            )
+    return prepare_steps, active_steps

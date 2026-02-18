@@ -1,4 +1,5 @@
 import os
+from functools import partial
 from typing import Callable, Iterable
 
 from buildbot.plugins import util
@@ -7,7 +8,7 @@ from buildbot.process.buildrequest import BuildRequest
 from buildbot.process.factory import BuildFactory
 from buildbot.process.workerforbuilder import AbstractWorkerForBuilder
 from configuration.builders.callables import canStartBuild, nextBuild
-from configuration.builders.infra.runtime import BuildSequence
+from configuration.builders.infra.runtime import BuildSequence, Sidecar
 from configuration.steps.processors import (
     processor_docker_cleanup,
     processor_docker_commit,
@@ -15,6 +16,7 @@ from configuration.steps.processors import (
     processor_docker_tag,
     processor_docker_workdirs,
     processor_set_docker_runtime_environment,
+    processor_sidecar,
     processor_worker_cleanup,
 )
 from configuration.workers.base import WorkerBase
@@ -33,9 +35,10 @@ class BaseBuilder:
             with the builder.
 
     Methods:
-        __init__(name: str):
-            Initializes the BaseBuilder instance with a name and an empty list of
+        __init__(name: str, sidecar: Sidecar):
+            Initializes the BaseBuilder instance with a name, a sidecar, and an empty list of
             build sequences.
+            A sidecar is an optional background companion containerized service that can run alongside the main build.
 
         add_sequence(sequence: BuildSequence):
             Adds a build sequence to the builder.
@@ -50,9 +53,10 @@ class BaseBuilder:
             worker names, tags, build properties, and factory steps.
     """
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, sidecar: Sidecar):
         self.name = name
         self.build_sequences: list[BuildSequence] = []
+        self.sidecar = sidecar
 
     def add_sequence(self, sequence: BuildSequence):
         self.build_sequences.append(sequence)
@@ -66,7 +70,7 @@ class BaseBuilder:
 
         POST_PROCESSING_FUNCTIONS = [
             processor_worker_cleanup,
-            processor_docker_cleanup,
+            partial(processor_docker_cleanup, sidecar=self.sidecar),
             processor_docker_fetch,
             processor_docker_workdirs,
             processor_docker_tag,
@@ -91,6 +95,16 @@ class BaseBuilder:
                 active_steps,
                 cleanup_steps,
             )
+
+        if self.sidecar:
+            prepare_steps, active_steps = processor_sidecar(
+                builder_name=self.name,
+                environment=os.environ["ENVIRON"],
+                sidecar=self.sidecar,
+                prepare_steps=prepare_steps,
+                active_steps=active_steps,
+            )
+
         # // end of Post-Processing
 
         # Generating factory steps
@@ -148,7 +162,7 @@ class BaseBuilder:
 
 
 class GenericBuilder(BaseBuilder):
-    def __init__(self, name, sequences):
-        super().__init__(name)
+    def __init__(self, name, sequences, sidecar=None):
+        super().__init__(name, sidecar)
         for sequence in sequences:
             self.add_sequence(sequence)
