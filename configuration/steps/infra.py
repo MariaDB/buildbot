@@ -1,8 +1,11 @@
+from configuration.builders.infra.runtime import Sidecar
 from configuration.steps.base import StepOptions
 from configuration.steps.commands.infra import (
     CleanupDockerResources,
     CleanupWorkerDir,
     ContainerCommit,
+    CreateDockerNetwork,
+    CreateDockerSidecar,
     CreateDockerWorkdirs,
     FetchContainerImage,
     TagContainerImage,
@@ -36,7 +39,7 @@ def add_docker_create_workdirs_step(
 
 
 def add_docker_cleanup_step(
-    name: str, container_name: str, runtime_tag: str
+    name: str, container_name: str, runtime_tag: str, sidecar: Sidecar = None
 ) -> ShellStep:
     """
     Create a step to clean up Docker resources.
@@ -55,6 +58,7 @@ def add_docker_cleanup_step(
             name=name,
             container_name=container_name,
             runtime_tag=runtime_tag,
+            sidecar=sidecar,
         ),
         options=StepOptions(
             alwaysRun=True,
@@ -141,5 +145,35 @@ def add_worker_cleanup_step(name: str) -> ShellStep:
         command=CleanupWorkerDir(name=name),
         options=StepOptions(
             alwaysRun=True,
+        ),
+    )
+
+
+def add_docker_network_step(network_name: str) -> ShellStep:
+    """Add a step to create a Docker network.
+    Attributes:
+        network_name (str): The name of the Docker network to create.
+    Returns:
+        ShellStep: A configured ShellStep that executes the CreateDockerNetwork command.
+    """
+    return ShellStep(
+        command=CreateDockerNetwork(network_name=network_name),
+        options=StepOptions(
+            haltOnFailure=True,
+        ),
+    )
+
+
+def add_docker_sidecar_step(sidecar: Sidecar) -> ShellStep:
+    """Add a step to create a Docker sidecar container.
+    Attributes:
+        sidecar (Sidecar): The Sidecar object containing the container configuration.
+    Returns:
+        ShellStep: A configured ShellStep that executes the CreateDockerSidecar command.
+    """
+    return ShellStep(
+        command=CreateDockerSidecar(sidecar=sidecar),
+        options=StepOptions(
+            haltOnFailure=True,
         ),
     )

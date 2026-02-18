@@ -1,5 +1,7 @@
 from pathlib import PurePath
+from typing import Optional
 
+from configuration.builders.infra.runtime import Sidecar
 from configuration.steps.commands.base import Command
 
 
@@ -42,28 +44,45 @@ class CleanupDockerResources(Command):
     This command removes the specified Docker container, its associated volume,
     and the runtime Docker image used for the build, ensuring that no leftover resources
     remain after the build process is complete.
+
     Attributes:
         name (str): The name of the cleanup command.
         container_name (str): The name of the Docker container to clean up.
         runtime_tag (str): The runtime tag for the Docker image to remove.
+        sidecar (Optional[Sidecar]): Optional sidecar container to remove as well.
     """
 
-    def __init__(self, name: str, container_name: str, runtime_tag: str):
+    def __init__(
+        self,
+        name: str,
+        container_name: str,
+        runtime_tag: str,
+        sidecar: Optional[Sidecar] = None,
+    ):
         super().__init__(
             name=f"Cleanup Docker resources - {name}", workdir=PurePath(".")
         )
         self.container_name = container_name
         self.runtime_tag = runtime_tag
+        self.sidecar = sidecar
 
     def as_cmd_arg(self) -> list[str]:
+        main_container = self.container_name
+        runtime_tag = self.runtime_tag
+
+        sidecar_rm = ""
+        if self.sidecar is not None:
+            sidecar_rm = f"docker rm --force {self.sidecar.container_name};"
+
         return [
             "bash",
             "-exc",
             f"""
             (
-                docker rm --force {self.container_name};
-                docker volume rm {self.container_name};
-                docker image rm {self.runtime_tag};
+                docker rm --force {main_container};
+                {sidecar_rm}
+                docker volume rm {main_container};
+                docker image rm {runtime_tag};
             ) || true
             """,
         ]
@@ -166,3 +185,46 @@ class CleanupWorkerDir(Command):
 
     def as_cmd_arg(self) -> list[str]:
         return ["bash", "-exc", "rm -r * .* 2> /dev/null || true"]
+
+
+class CreateDockerNetwork(Command):
+    """
+    Generic command to create a Docker network.
+    Attributes:
+        network_name (str): The name of the Docker network to create.
+    """
+
+    def __init__(self, network_name: str):
+        super().__init__(name=f"Create Docker Network", workdir=PurePath("."))
+        self.network_name = network_name
+
+    def as_cmd_arg(self) -> list[str]:
+        return [
+            "bash",
+            "-exc",
+            (f"docker network create {self.network_name} || true"),
+        ]
+
+
+class CreateDockerSidecar(Command):
+    """
+    A command to create a Docker sidecar container.
+    Attributes:
+        sidecar (Sidecar): The Sidecar object containing the container configuration
+    """
+
+    def __init__(self, sidecar: Sidecar):
+        super().__init__(name=f"Start Docker Sidecar", workdir=PurePath("."))
+        self.sidecar = sidecar
+
+    def as_cmd_arg(self) -> list[str]:
+        return [
+            "bash",
+            "-exc",
+            (
+                f"docker run -d --name {self.sidecar.container_name} "
+                f"--network {self.sidecar.network} "
+                + " ".join([f'-e "{env[0]}={env[1]}"' for env in self.sidecar.env_vars])
+                + f" {self.sidecar.image_url}"
+            ),
+        ]

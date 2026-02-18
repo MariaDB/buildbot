@@ -1,7 +1,7 @@
 import copy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path, PurePath
-from typing import Iterable
+from typing import Iterable, Optional
 
 from buildbot.interfaces import IBuildStep
 from buildbot.plugins import steps, util
@@ -33,41 +33,20 @@ class BuildSequence:
 
 
 @dataclass
-class DockerConfig:
-    """Configuration for a Docker container used in build steps.
-    This class encapsulates the necessary parameters for running a build step inside a Docker container,
-    including the Docker image, environment variables, volume mounts, and runtime settings.
-    Attributes:
-        repository (str): The Docker repository URL (e.g., quay.io/ghcr.io + org/repo).
-        image_tag (str): The tag of the Docker image to use.
-        bind_mounts (list[tuple[Path, Path]]): List of tuples specifying source and destination paths for bind mounts.
-        env_vars (list[tuple[str, str]]): List of environment variables to set in the container.
-        shm_size (str): Size of the shared memory for the container.
-        memlock_limit (int): Memory lock limit for the container.
-        workdir (PurePath): The working directory inside the container.
-    """
+class ContainerBase:
+    """Base container configuration"""
 
-    repository: str  # e.g. quay/ghcr + org/repo
+    repository: str
     image_tag: str
-    bind_mounts: list[tuple[Path, Path]]  # src, dst
-    env_vars: list[tuple[str, str]]
-    shm_size: str
-    memlock_limit: int
-    platform: str
-    workdir: PurePath
-    _container_name: str = None
+    env_vars: list[tuple[str, str]] = field(default_factory=list)
+    platform: Optional[str] = field(default=None)
+
+    _container_name: Optional[str] = field(init=False, default=None)
+    _network: Optional[str] = field(init=False, default=None)
 
     @property
     def image_url(self) -> str:
         return f"{self.repository}{self.image_tag}"
-
-    @property
-    def volume_mount(self):
-        return f"type=volume,src={self._container_name},dst={self.workdir}"
-
-    @property
-    def runtime_tag(self) -> str:
-        return f"buildbot:{self._container_name}"
 
     @property
     def container_name(self) -> str:
@@ -75,8 +54,38 @@ class DockerConfig:
             raise ValueError("Container name is not set.")
         return self._container_name
 
+    @property
+    def network(self) -> Optional[str]:
+        return self._network
+
     def __hash__(self):
         return hash((self.image_tag))
+
+
+@dataclass
+class DockerConfig(ContainerBase):
+    """Docker configuration for running a containerized build step"""
+
+    __hash__ = ContainerBase.__hash__
+    shm_size: Optional[str] = field(default="15g")
+    memlock_limit: Optional[int] = field(default=67108864)
+    bind_mounts: list[tuple[Path, Path]] = field(default_factory=list)
+    workdir: Optional[PurePath] = field(default=PurePath("/home/buildbot"))
+
+    @property
+    def volume_mount(self) -> str:
+        return f"type=volume,src={self.container_name},dst={self.workdir}"
+
+    @property
+    def runtime_tag(self) -> str:
+        return f"buildbot:{self.container_name}"
+
+
+@dataclass
+class Sidecar(ContainerBase):
+    """Sidecar container configuration"""
+
+    pass
 
 
 class InContainer(BaseStep):
@@ -137,6 +146,9 @@ class InContainer(BaseStep):
                 self.docker_environment.volume_mount,
             ]
         )
+
+        if self.docker_environment.network:
+            cmd_prefix.append(["--network", self.docker_environment.network])
 
         if not self.container_commit:
             cmd_prefix.append(["--rm"])
