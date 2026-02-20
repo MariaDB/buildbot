@@ -66,6 +66,7 @@ RUN zypper -n update \
     rpm-build \
     snappy-devel \
     systemd-devel \
+    unixODBC-devel \
     wget \
     # Using OSS repository only for judy-devel as a build-time dependency.
     # As of now libJudy1 is still 1.0.5 in BCI for both 15.6 and 15.7.
