@@ -8,9 +8,11 @@ on:
       - 'dev'
     paths:
       - 'ci_build_images/srpm.Dockerfile'
+      - .github/workflows/build-srpm.yml
   pull_request:
     paths:
       - 'ci_build_images/srpm.Dockerfile'
+      - .github/workflows/build-srpm.yml
   workflow_dispatch:
 
 jobs:
@@ -26,11 +28,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - dockerfile: srpm.Dockerfile
-            image: fedora:41
-            tag: fedora41-srpm
-            platforms: linux/amd64, linux/arm64/v8
-
           - dockerfile: srpm.Dockerfile
             image: fedora:42
             tag: fedora42-srpm
@@ -82,8 +79,13 @@ jobs:
             platforms: linux/amd64
 
           - dockerfile: srpm.Dockerfile
-            image: registry.suse.com/bci/bci-base:15.6
-            tag: sles1506-srpm
+            image: registry.suse.com/bci/bci-base:15.7
+            tag: sles1507-srpm
+            platforms: linux/amd64
+
+          - dockerfile: srpm.Dockerfile
+            image: registry.suse.com/bci/bci-base:16.0
+            tag: sles1600-srpm
             platforms: linux/amd64
 
 
