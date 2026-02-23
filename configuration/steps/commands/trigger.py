@@ -11,32 +11,64 @@ from utils import (
 
 
 class Trigger:
-    def __init__(self, name, schedulername, doStepIf, additional_properties={}):
+    def __init__(self, name, schedulername, doStepIf, properties=None):
         self.name = name
         self.schedulername = schedulername
         self.doStepIf = doStepIf
-        self.additional_properties = additional_properties
+        self.properties = properties or {}
 
     def generate(self):
+        return steps.Trigger(
+            name=self.name,
+            schedulerNames=[self.schedulername],
+            waitForFinish=False,  # standard value across buildbot
+            updateSourceStamp=False,  # standard value across buildbot
+            set_properties=self.properties,
+            doStepIf=self.doStepIf,
+        )
+
+
+class Server(Trigger):
+    def __init__(self, name, schedulername, doStepIf, additional_properties=None):
         properties = {
             "tarbuildnum": Property("tarbuildnum"),  # set by tarball-docker
             "mariadb_version": Property("mariadb_version"),  # set by tarball-docker
             "master_branch": Property("master_branch"),  # set by tarball-docker
             "parentbuildername": Property("buildername"),  # set by tarball-docker
         }
-        properties.update(self.additional_properties)
-
-        return steps.Trigger(
-            name=self.name,
-            schedulerNames=[self.schedulername],
-            waitForFinish=False,  # standard value across buildbot
-            updateSourceStamp=False,  # standard value across buildbot
-            set_properties=properties,
-            doStepIf=self.doStepIf,
-        )
+        if additional_properties:
+            properties.update(additional_properties)
+        super().__init__(name, schedulername, doStepIf, properties)
 
 
-class Install(Trigger):
+class ConODBC(Trigger):
+    def __init__(self):
+        self.name = "Trigger Conc-ODBC Builders"
+        self.schedulername = "conc_odbc_all_scheduler"
+        self.doStepIf = lambda step: True
+
+        super().__init__(self.name, self.schedulername, self.doStepIf)
+
+
+class ConCPP(Trigger):
+    def __init__(self):
+        self.name = "Trigger Conc-CPP Builders"
+        self.schedulername = "conc_cpp_all_scheduler"
+        self.doStepIf = lambda step: True
+
+        super().__init__(self.name, self.schedulername, self.doStepIf)
+
+
+class ConC(Trigger):
+    def __init__(self):
+        self.name = "Trigger Conc-C Builders"
+        self.schedulername = "conc_c_all_scheduler"
+        self.doStepIf = lambda step: True
+
+        super().__init__(self.name, self.schedulername, self.doStepIf)
+
+
+class Install(Server):
     def __init__(self):
         self.name = "Trigger Install Builders"
         self.schedulername = "s_install"
@@ -49,7 +81,7 @@ class Install(Trigger):
         super().__init__(self.name, self.schedulername, self.doStepIf)
 
 
-class Upgrade(Trigger):
+class Upgrade(Server):
     def __init__(self):
         self.name = "Trigger Upgrade Builders"
         self.schedulername = "s_upgrade"
@@ -62,7 +94,7 @@ class Upgrade(Trigger):
         super().__init__(self.name, self.schedulername, self.doStepIf)
 
 
-class DockerLibrary(Trigger):
+class DockerLibrary(Server):
     def __init__(self, RHEL):
         self.name = "Trigger DockerLibrary Builder"
         self.schedulername = "s_dockerlibrary"
