@@ -34,6 +34,18 @@ server {
 		autoindex off;
 	}
 
+	location /connector-odbc {
+		alias /srv/buildbot/connectors/odbc;
+	}
+
+	location /connector-cpp {
+		alias /srv/buildbot/connectors/cpp;
+	}
+
+	location /connector-c {
+		alias /srv/buildbot/connectors/c;
+	}
+
   # disallow bots
   location = /robots.txt {
     add_header Content-Type text/plain;
