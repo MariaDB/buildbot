@@ -21,10 +21,6 @@ ENV MSAN_SYMBOLIZER_PATH=/usr/bin/llvm-symbolizer-${CLANG_VERSION}
 ENV CFLAGS="-fno-omit-frame-pointer -O2 -g"
 ENV CXXFLAGS="$CFLAGS"
 
-# https://github.com/llvm/llvm-project/issues/179147
-RUN mkdir -p /etc/crypto-policies/back-ends \
-    && printf '[hash_algorithms]\nsha1 = "always"' >> /etc/crypto-policies/back-ends/sequoia.config
-
 # hadolint ignore=SC2046,DL3003
 RUN . /etc/os-release \
     && export LLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind" \
