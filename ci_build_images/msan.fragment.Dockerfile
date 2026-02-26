@@ -62,10 +62,12 @@ RUN . /etc/os-release \
     && cd .. \
     && rm -rf -- *
 
-RUN if [ "${CLANG_VERSION}" -le 20 ]; then \
-      for f in "$MSAN_LIBDIR"/libunwind*; do mv "$f" "$f"-disable; done \
+RUN for f in "$MSAN_LIBDIR"/libunwind*; do mv "$f" "$f"-disable; done; \
+    if [ "${CLANG_VERSION}" -ge 22 ]; then \
+      apt-get -y install --no-install-recommends libunwind-19; \
     fi
-# libunwrap move/disable because of https://github.com/llvm/llvm-project/issues/128621
+# libunwind move/disable because of https://github.com/llvm/llvm-project/issues/128621
+# libunwind-19 meets ABI compatibility as its now linked to built executables.
 
 COPY msan.instrumentedlibs.sh /msan-build
 RUN ./msan.instrumentedlibs.sh
