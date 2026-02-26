@@ -2,14 +2,14 @@
 
 # msan.fragment.Dockerfile
 # this is to create images with MSAN for BB workers
-ARG CLANG_VERSION=20
+ARG CLANG_VERSION=22
 
 # earliest tested version known to work - 19
 
 # This CLANG_DEV_VERSION is a marker to make it possible to build a msan builder
 # from the nightly clang versions as they are in a differently name repositories.
 # This maps to the https://apt.llvm.org/ under "development" branch version.
-ENV CLANG_DEV_VERSION=22
+ENV CLANG_DEV_VERSION=23
 
 WORKDIR /msan-build
 
