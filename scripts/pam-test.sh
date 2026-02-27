@@ -88,6 +88,8 @@ if [[ -f suite/plugins/pam/pam_mariadb_mtr.so ]]; then
   for p in /lib*/security /lib*/*/security ; do
     [[ -f "$p/pam_unix.so" ]] && sudo cp -v suite/plugins/pam/pam_mariadb_mtr.so "$p"/
   done
+fi
+if [[ -f suite/plugins/pam/mariadb_mtr ]]; then
   sudo cp -v suite/plugins/pam/mariadb_mtr /etc/pam.d/
 fi
 
