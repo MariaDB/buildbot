@@ -750,6 +750,9 @@ check_upgraded_versions() {
     # The adjustments should be done to .cmp files, and removed after the release
     #
 
+    # Remove after Q2 2026 release (MDEV-38913) - deb re-adds mtr pamv1 test module
+    sed -i '/libc6/d;/libpam0g/d' ./reqs-*.cmp
+
     # Remove after Q4 2025 release (MDEV-37680) - fedora adds mysql-selinux module
     # dependency
     sed -i '/mysql-selinux/d;/rpmlib(RichDependencies)/d' ./reqs-*.cmp
