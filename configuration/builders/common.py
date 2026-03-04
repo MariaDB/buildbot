@@ -42,7 +42,12 @@ def docker_config(
 
 
 def deb_release_builder(
-    name: str, image: Union[str, tuple[str, str]], worker_pool: list
+    name: str,
+    image: Union[str, tuple[str, str]],
+    worker_pool: list,
+    test_galera: bool = True,
+    test_rocksdb: bool = True,
+    test_s3: bool = True,
 ) -> GenericBuilder:
     """Create a Debian-based release builder
     Args:
@@ -64,9 +69,9 @@ def deb_release_builder(
                 jobs=DEFAULT_BUILDER_JOBS,
                 config=docker_config(image=image_name, platform=image_platform),
                 artifacts_url=os.environ["ARTIFACTS_URL"],
-                test_galera=True,
-                test_rocksdb=True,
-                test_s3=True,
+                test_galera=test_galera,
+                test_rocksdb=test_rocksdb,
+                test_s3=test_s3,
             ),
         ],
     ).get_config(
@@ -80,7 +85,15 @@ def deb_release_builder(
 
 
 def rpm_release_builder(
-    name: str, image: str, worker_pool: list, arch: str, has_compat: bool, rpm_type: str
+    name: str,
+    image: str,
+    worker_pool: list,
+    arch: str,
+    has_compat: bool,
+    rpm_type: str,
+    test_galera: bool = True,
+    test_rocksdb: bool = True,
+    test_s3: bool = True,
 ) -> GenericBuilder:
     """Create an RPM-based release builder
     Args:
@@ -90,6 +103,9 @@ def rpm_release_builder(
         arch: For fetching the correct RPM compatibility packages.
         has_compat: Whether to include compatibility packages.
         rpm_type: The type of RPM (e.g., "rhel8", "rhel9"). Used during packaging.
+        test_galera: Whether to test Galera.
+        test_rocksdb: Whether to test RocksDB.
+        test_s3: Whether to test S3.
     """
     return GenericBuilder(
         name=name,
@@ -117,9 +133,9 @@ def rpm_release_builder(
                 arch=arch,
                 artifacts_url=os.environ["ARTIFACTS_URL"],
                 has_compat=has_compat,
-                test_galera=True,
-                test_rocksdb=True,
-                test_s3=True,
+                test_galera=test_galera,
+                test_rocksdb=test_rocksdb,
+                test_s3=test_s3,
             ),
         ],
     ).get_config(
