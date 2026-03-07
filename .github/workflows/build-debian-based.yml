@@ -102,13 +102,13 @@ jobs:
           - image: ubuntu:26.04
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
             branch: 11.8
-            nogalera: true
+            nogalera: false
 
           - image: ubuntu:26.04
             tag: ubuntu26.04-amd64v3
             platforms: linux/amd64
             branch: 11.8
-            nogalera: true
+            nogalera: false
             arch_variant: amd64v3
 
     uses: ./.github/workflows/bbw_build_container_template.yml
