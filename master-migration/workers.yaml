@@ -24,3 +24,8 @@
   arch: amd64
   total_jobs: 128
   os_type: debian
+
+- name: bg-arm-rasmus-5
+  arch: aarch64
+  total_jobs: 64
+  os_type: redhat
