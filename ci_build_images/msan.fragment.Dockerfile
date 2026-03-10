@@ -41,6 +41,7 @@ RUN . /etc/os-release \
        libclang-rt-${CLANG_VERSION}-dev \
        libc++abi-${CLANG_VERSION}-dev \
        libc++-${CLANG_VERSION}-dev \
+       lld-${CLANG_VERSION} \
        llvm-${CLANG_VERSION} \
        automake \
     && apt-get -y install --no-install-recommends libclang-${CLANG_VERSION}-dev libllvmlibc-${CLANG_VERSION}-dev \
