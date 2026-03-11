@@ -18,14 +18,16 @@ def docker_config(
     additional_bind_mounts: list[tuple[str, str]] = None,
     additional_env_vars: list[tuple[str, str]] = None,
     platform: str = None,
+    artifacts_url: str = os.environ["ARTIFACTS_URL"],
+    packages_dir: str = os.environ["MASTER_PACKAGES_DIR"],
 ) -> DockerConfig:
     bind_mounts = [
-        (f'{os.environ["MASTER_PACKAGES_DIR"]}/', "/packages"),
+        (f"{packages_dir}/", "/packages"),
         ("/srv/buildbot/ccache", "/mnt/ccache"),
     ] + (additional_bind_mounts if additional_bind_mounts else [])
 
     env_vars = [
-        ("ARTIFACTS_URL", os.environ["ARTIFACTS_URL"]),
+        ("ARTIFACTS_URL", artifacts_url),
         ("CCACHE_DIR", "/mnt/ccache"),
     ] + (additional_env_vars if additional_env_vars else [])
 
