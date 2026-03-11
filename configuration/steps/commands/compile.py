@@ -80,13 +80,15 @@ class CompileCMakeCommand(Command):
         builddir: str = ".",
         verbose: bool = False,
         workdir: PurePath = PurePath("."),
-        targets: list[str] = None,
+        target: MAKE = None,
     ):
         self.verbose = verbose
         self.builddir = builddir
         self.jobs = jobs
-        self.targets = targets
-        super().__init__(name="Compile", workdir=workdir)
+        self.target = target
+        super().__init__(
+            name=f"Compile {target.value if target else ''}", workdir=workdir
+        )
 
     def as_cmd_arg(self) -> list[str]:
         r_list = [
@@ -94,13 +96,13 @@ class CompileCMakeCommand(Command):
             "--build",
             f"{self.builddir}",
             "--parallel",
-            f"{self.jobs}",
+            self.jobs,
         ]
         if self.verbose:
             r_list.append("--verbose")
-        if self.targets:
-            r_list.append("--targets")
-            r_list.append(self.targets)
+        if self.target:
+            r_list.append("--target")
+            r_list.append(self.target.value)
         return r_list
 
 
