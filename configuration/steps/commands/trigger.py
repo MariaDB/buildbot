@@ -46,8 +46,14 @@ class ConODBC(Trigger):
         self.name = "Trigger Conc-ODBC Builders"
         self.schedulername = "conc_odbc_all_scheduler"
         self.doStepIf = lambda step: True
+        properties = {
+            "tarbuildnum": Property(
+                "buildnumber"
+            ),  # Used by get_tarball.sh to identify the tarball dir on CI
+            "mariadb_version": "ci",  # Used by get_tarball.sh to download ci.tar.gz
+        }
 
-        super().__init__(self.name, self.schedulername, self.doStepIf)
+        super().__init__(self.name, self.schedulername, self.doStepIf, properties)
 
 
 class ConCPP(Trigger):
@@ -55,7 +61,6 @@ class ConCPP(Trigger):
         self.name = "Trigger Conc-CPP Builders"
         self.schedulername = "conc_cpp_all_scheduler"
         self.doStepIf = lambda step: True
-
         super().__init__(self.name, self.schedulername, self.doStepIf)
 
 

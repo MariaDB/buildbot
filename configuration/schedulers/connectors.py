@@ -34,7 +34,11 @@ CONODBC_SCHEDULERS = [
         name="conc_odbc_all_scheduler",
         builderNames=[
             builder.name
-            for builder in odbc_builders.RPM_BUILDERS + odbc_builders.DEB_BUILDERS
+            for builder in (
+                builder
+                for builders in odbc_builders.RELEASE_BUILDERS_BY_ARCH.values()
+                for builder in builders
+            )
         ],
     ),
 ]
@@ -55,7 +59,11 @@ CONCPP_SCHEDULERS = [
         name="conc_cpp_all_scheduler",
         builderNames=[
             builder.name
-            for builder in cc_builders.RPM_BUILDERS + cc_builders.DEB_BUILDERS
+            for builder in (
+                builder
+                for builders in cc_builders.RELEASE_BUILDERS_BY_ARCH.values()
+                for builder in builders
+            )
         ],
     ),
 ]
@@ -76,7 +84,11 @@ CONC_SCHEDULERS = [
         name="conc_c_all_scheduler",
         builderNames=[
             builder.name
-            for builder in c_builders.RPM_BUILDERS + c_builders.DEB_BUILDERS
+            for builder in (
+                builder
+                for builders in c_builders.RELEASE_BUILDERS_BY_ARCH.values()
+                for builder in builders
+            )
         ],
     ),
 ]
