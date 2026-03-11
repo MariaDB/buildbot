@@ -59,6 +59,7 @@ private["worker_pass"]= {
     "libvirt": "1234",
     "hz-bbw8": "1234",
     "hz-bbw9": "1234",
+    "hz-bbw10": "1234",
     "bg-bbw5-x64": "1234",
     "hz-bbw6": "1234",
     "sg-bbw1": "1234",
