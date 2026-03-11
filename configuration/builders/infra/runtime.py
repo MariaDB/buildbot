@@ -85,7 +85,8 @@ class DockerConfig(ContainerBase):
 class Sidecar(ContainerBase):
     """Sidecar container configuration"""
 
-    pass
+    __hash__ = ContainerBase.__hash__
+    tmpfs: PurePath = field(default=PurePath("/tmp"))
 
 
 class InContainer(BaseStep):
