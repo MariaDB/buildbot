@@ -223,6 +223,7 @@ class CreateDockerSidecar(Command):
             "-exc",
             (
                 f"docker run -d --name {self.sidecar.container_name} "
+                f"--tmpfs {str(self.sidecar.tmpfs)} "
                 f"--network {self.sidecar.network} "
                 + " ".join([f'-e "{env[0]}={env[1]}"' for env in self.sidecar.env_vars])
                 + f" {self.sidecar.image_url}"
