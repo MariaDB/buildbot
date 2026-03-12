@@ -34,7 +34,7 @@ from configuration.steps.generators.cmake.options import (
     BuildType,
     CMakeOption,
 )
-from configuration.steps.remote import ShellStep
+from configuration.steps.remote import PropFromShellStep, ShellStep
 
 
 def tarball(config: DockerConfig):
@@ -100,6 +100,50 @@ def tarball(config: DockerConfig):
         ),
     )
 
+    # Connector/ODBC 3.1 will need C/C 3.3 from MariaDB repos which is present in server 10.11 branch
+    # Connector/ODBC 3.2 will need C/C 3.4 which is present in server versions >= 11.4
+    sequence.add_step(
+        InContainer(
+            PropFromShellStep(
+                command=BashCommand(
+                    name="odbc_to_mariadb_repo",
+                    cmd="""
+    file=$(echo mariadb-connector-odbc-*-src.tar.gz)
+    version=${file#*-odbc-}
+    version=${version%%-src.tar.gz}
+    odbc_version=$(echo "$version" | cut -d. -f1,2)
+
+    if [[ $odbc_version == 3.1 ]]; then
+        echo 10.11
+    else
+        echo 11.8
+    fi
+    """,
+                ),
+                property="odbc_to_mariadb_repo",
+            ),
+            docker_environment=config,
+        ),
+    )
+
+    sequence.add_step(
+        InContainer(
+            PropFromShellStep(
+                command=BashCommand(
+                    name="odbc_version",
+                    cmd="""
+    file=$(echo mariadb-connector-odbc-*-src.tar.gz)
+    version=${file#*-odbc-}
+    version=${version%%-src.tar.gz}
+    odbc_version=$(echo "$version" | cut -d. -f1,2)
+    echo "$odbc_version"
+    """,
+                ),
+                property="odbc_version",
+            ),
+            docker_environment=config,
+        ),
+    )
     sequence.add_step(
         InContainer(
             ShellStep(
@@ -145,11 +189,12 @@ def deb(
             ShellStep(
                 command=SetupDEBRepo(
                     repo_name="mariadb",
-                    repo_url="https://mirror.mariadb.org/repo/11.8",
+                    repo_url="https://mirror.mariadb.org/repo/%(prop:odbc_to_mariadb_repo)s",
                 ),
                 options=StepOptions(
                     description="DEB - Setup MariaDB repository",
                     descriptionDone="DEB - MariaDB repository setup done",
+                    doStepIf=do_step_if,
                 ),
             ),
             docker_environment=config,
@@ -170,6 +215,7 @@ def deb(
                 options=StepOptions(
                     description="DEB - Install MariaDB development packages",
                     descriptionDone="DEB - MariaDB development packages installed",
+                    doStepIf=do_step_if,
                 ),
             ),
             docker_environment=config,
@@ -201,6 +247,7 @@ def deb(
                 options=StepOptions(
                     description="DEB - Configure CMake",
                     descriptionDone="DEB - CMake configured",
+                    doStepIf=do_step_if,
                 ),
             ),
             docker_environment=config,
@@ -218,6 +265,7 @@ def deb(
                 options=StepOptions(
                     description="DEB - Build package",
                     descriptionDone="DEB - Package built",
+                    doStepIf=do_step_if,
                 ),
             ),
             docker_environment=config,
@@ -243,7 +291,7 @@ def rpm(
             ShellStep(
                 command=SetupRPMRepo(
                     repo_name="mariadb",
-                    repo_url="https://mirror.mariadb.org/yum/11.8",
+                    repo_url="https://mirror.mariadb.org/yum/%(prop:odbc_to_mariadb_repo)s",
                     name=f"{os_name}:Setup MariaDB repository",
                 ),
                 options=StepOptions(
@@ -359,7 +407,7 @@ def rpm(
     return sequence
 
 
-def deb_pkg_tests(config: DockerConfig, deb_path: str):
+def deb_pkg_tests(config: DockerConfig, deb_path: str, do_step_if=lambda props: True):
     """
     This sequence should take a clean Docker environment as an input to ensure
     that all dependencies required by the .deb are correctly specified,
@@ -373,11 +421,12 @@ def deb_pkg_tests(config: DockerConfig, deb_path: str):
             ShellStep(
                 command=SetupDEBRepo(
                     repo_name="mariadb",
-                    repo_url="https://mirror.mariadb.org/repo/11.8",
+                    repo_url="https://mirror.mariadb.org/repo/%(prop:odbc_to_mariadb_repo)s",
                 ),
                 options=StepOptions(
                     description="DEB - Setup MariaDB repository",
                     descriptionDone="DEB - MariaDB repository setup done",
+                    doStepIf=do_step_if,
                 ),
             ),
             docker_environment=config,
@@ -397,6 +446,7 @@ def deb_pkg_tests(config: DockerConfig, deb_path: str):
                 options=StepOptions(
                     description="DEB - Install .deb packages",
                     descriptionDone="DEB - .deb packages installed",
+                    doStepIf=do_step_if,
                 ),
             ),
             docker_environment=config,
@@ -430,6 +480,7 @@ def deb_pkg_tests(config: DockerConfig, deb_path: str):
                 options=StepOptions(
                     description="DEB - Run ODBC basic test",
                     descriptionDone="DEB - ODBC basic test done",
+                    doStepIf=do_step_if,
                 ),
             ),
             docker_environment=config,
@@ -452,7 +503,7 @@ def rpm_pkg_tests(config: DockerConfig, rpm_path: str, os_name: str):
             ShellStep(
                 command=SetupRPMRepo(
                     repo_name="mariadb",
-                    repo_url="https://mirror.mariadb.org/yum/11.8",
+                    repo_url="https://mirror.mariadb.org/yum/%(prop:odbc_to_mariadb_repo)s",
                     name=f"{os_name}:Setup MariaDB repository",
                 ),
                 options=StepOptions(
