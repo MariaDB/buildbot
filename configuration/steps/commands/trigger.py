@@ -51,6 +51,8 @@ class ConODBC(Trigger):
                 "buildnumber"
             ),  # Used by get_tarball.sh to identify the tarball dir on CI
             "mariadb_version": "ci",  # Used by get_tarball.sh to download ci.tar.gz
+            "odbc_to_mariadb_repo": Property("odbc_to_mariadb_repo"),
+            "odbc_version": Property("odbc_version"),
         }
 
         super().__init__(self.name, self.schedulername, self.doStepIf, properties)

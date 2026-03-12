@@ -259,7 +259,8 @@ class SetupDEBRepo(Command):
         return [
             "bash",
             "-exc",
-            f"""
+            util.Interpolate(
+                f"""
 set -euo pipefail
 apt-get update
 apt-get install -y apt-utils apt-transport-https ca-certificates
@@ -283,7 +284,8 @@ Pin-Priority: 1001
 EOF
 
 apt-get update
-""",
+"""
+            ),
         ]
 
 
@@ -304,7 +306,8 @@ class SetupRPMRepo(Command):
         return [
             "bash",
             "-exc",
-            f"""
+            util.Interpolate(
+                f"""
 set -euo pipefail
 
 # Detect package manager
@@ -329,7 +332,7 @@ case $ID in
   ;;
 esac
 base_id=$ID
-url_path="$base_id/$base_version/$(rpm --eval '%_arch')"
+url_path="$base_id/$base_version/$(rpm --eval '%%_arch')"
 
 # Create repo file
 cat > /etc/yum.repos.d/{self.repo_name}.repo <<EOF
@@ -348,7 +351,8 @@ if [ "$PKG_MGR" = "zypper" ]; then
 else
     $PKG_MGR makecache
 fi
-""",
+"""
+            ),
         ]
 
 
