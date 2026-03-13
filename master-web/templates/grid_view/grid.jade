@@ -36,6 +36,14 @@
                 a(href="#grid?branch=main") main
                 | ,
                 a(href="#grid?branch=mariadb-4.x") mariadb-4.x (galera)
+                | ,
+                a(href="#grid?branch=master") master (connectors)
+                | ,
+                a(href="#grid?branch=develop") develop (connectors)
+                | ,
+                a(href="#grid?branch=odbc-3.1") odbc-3.1
+                | ,
+                a(href="#grid?branch=odbc-3.2") odbc-3.2
             label Results:
                 select.form-control(ng-model="C.result", ng-change="C.changeResult(C.result)", ng-options="r.code as r.text for r in C.results")
                     option(value="") (all)
