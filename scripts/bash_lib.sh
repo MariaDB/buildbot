@@ -765,6 +765,12 @@ check_upgraded_versions() {
         fi
       ;;
     esac
+    # Remove after Q2 2026 release MDEV-30953 Add mariadb-server-galera package - 12.3+
+    sed -i -e '/^WSREP_/s/NOT INSTALLED/ACTIVE/g'  ./plugins-*.cmp
+    # mariadb-test now depends on mariadb-galera-server - and RPM had the
+    # second expression change.
+    sed -i -e 's/Depends: mariadb-server$/Depends: mariadb-server-galera/' \
+	   -e 's/MariaDB-common/MariaDB-server-galera/' ./reqs-*.cmp
 
     # Remove after Q4 2025 release - MDEV-37600 - 11.4 onwards
     sed -i '/auth_mysql_sha2.so/,/^\===/ { /^\===/!d; /auth_mysql_sha2.so/d }' ./ldd-*.cmp
