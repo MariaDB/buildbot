@@ -753,6 +753,12 @@ check_upgraded_versions() {
     # Remove after Q2 2026 release (MDEV-38913) - deb re-adds mtr pamv1 test module
     sed -i '/libc6/d;/libpam0g/d' ./reqs-*.cmp
 
+    # Remove after Q2 2026 release MDEV-30953 Add mariadb-server-galera package
+    # adds wsrep_info to mariadb-server-galera
+    gawk -i inplace '/^=== \/usr\/lib(64)?\/mysql\/plugin\/wsrep_info.so/ { skip=1; next }
+                     skip && /^\t/ { next }
+                     { skip=0; print }' ldd-*.cmp
+
     # Remove after Q4 2025 release (MDEV-37680) - fedora adds mysql-selinux module
     # dependency
     sed -i '/mysql-selinux/d;/rpmlib(RichDependencies)/d' ./reqs-*.cmp
