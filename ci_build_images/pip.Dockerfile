@@ -6,6 +6,7 @@
 # Install a recent rust toolchain needed for some arch
 # see: https://cryptography.io/en/latest/installation/
 # then upgrade pip and install BB worker requirements
+ENV AUTOBAHN_ARCH_TARGET=safe
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs >/tmp/rustup-init.sh \
     # rust installer does not detect i386 arch \
     && case $(getconf LONG_BIT) in \
