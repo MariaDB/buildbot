@@ -33,6 +33,9 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     && case "$ID" in \
         "centos") \
           ID=centos-stream; \
+          if [ "$VERSION_ID" = "9" ]; then \
+            dnf module enable mariadb:11.8 -y; \
+          fi; \
           ;; \
         "openEuler") \
           ID=openeuler; \
