@@ -64,6 +64,7 @@ private["worker_pass"]= {
     "hz-bbw6": "1234",
     "sg-bbw1": "1234",
     "bg-arm-rasmus-5": "1234",
+    "bbw3-mac": "1234",
 }
 private["docker_workers"]= {
     "amd-bbw1-docker":"tcp://IP_address:port",

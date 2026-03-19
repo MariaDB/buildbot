@@ -34,3 +34,8 @@
   arch: aarch64
   total_jobs: 64
   os_type: redhat
+
+- name: bbw3-mac
+  arch: aarch64
+  total_jobs: 10
+  os_type: macos
