@@ -38,18 +38,18 @@ jobs:
         include:
           - image: debian:11
             platforms: linux/amd64, linux/arm64/v8
-            branch: 10.11
+            branch: 11.4
             nogalera: false
 
           - image: debian:12
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
-            branch: 10.11
+            branch: 11.4
             tag: debian12
             nogalera: false
 
           - image: debian:12
             platforms: linux/386
-            branch: 10.11
+            branch: 11.4
             tag: debian12-386
             nogalera: false
             dockerfile: 'debian.Dockerfile hashicorp.fragment.Dockerfile minio.fragment.Dockerfile'
@@ -68,25 +68,25 @@ jobs:
 
           - image: debian:sid
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
-            branch: 11.4
+            branch: 11.8
             nogalera: false
             deploy_on_schedule: true
 
           - image: debian:sid
             platforms: linux/386
-            branch: 11.4
+            branch: 11.8
             tag: debiansid-386
             nogalera: false
             deploy_on_schedule: true
 
           - image: ubuntu:22.04
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
-            branch: 10.11
+            branch: 11.4
             nogalera: false
 
           - image: ubuntu:24.04
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
-            branch: 10.11
+            branch: 11.4
             nogalera: false
 
           - image: ubuntu:25.04
