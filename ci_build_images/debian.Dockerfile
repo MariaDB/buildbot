@@ -83,6 +83,7 @@ RUN . /etc/os-release \
     libmecab-dev \
     libnet-ssleay-perl \
     libssl-dev \
+    libsqliteodbc \
     lsof \
     python3-dev \
     python3-setuptools \
