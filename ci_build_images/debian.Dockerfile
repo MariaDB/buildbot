@@ -50,6 +50,10 @@ RUN . /etc/os-release \
     && curl -skO "https://raw.githubusercontent.com/MariaDB/server/$MARIADB_BRANCH/debian/autobake-deb.sh" \
     && chmod a+x autobake-deb.sh \
     && AUTOBAKE_PREP_CONTROL_RULES_ONLY=1 ./autobake-deb.sh \
+    # Hack to force install ARM boost deps on older Debian/Ubuntu,
+    # needed for building and packaging ARM CS 23.10.x for MariaDB Server >= 11.4
+    && sed -Ei '/libboost-/ s/\[amd64\]/[amd64 arm64]/g' debian/control \
+    # --
     && mk-build-deps -r -i debian/control \
     -t 'apt-get -y -o Debug::pkgProblemResolver=yes --no-install-recommends' \
     && apt-get -y build-dep -q mariadb-server \
