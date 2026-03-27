@@ -104,6 +104,8 @@ class WITH(StrEnum):
     WSREP = "WSREP"
     ZLIB = "ZLIB"
     OPENSSL = "OPENSSL"
+    SIGNCODE = "SIGNCODE"
+    EXTERNAL_ZLIB = "EXTERNAL_ZLIB"
 
     def __str__(self):
         return f"WITH_{self.value}"
@@ -137,6 +139,8 @@ class OTHER(StrEnum):
     CPACK_GENERATOR = "CPACK_GENERATOR"
     MARIADB_LINK_DYNAMIC = "MARIADB_LINK_DYNAMIC"
     USE_SYSTEM_INSTALLED_LIB = "USE_SYSTEM_INSTALLED_LIB"
+    ODBC_INCLUDE_DIR = "ODBC_INCLUDE_DIR"
+    ODBC_LIB_DIR = "ODBC_LIB_DIR"
 
 
 # Flag values use CapitalCase

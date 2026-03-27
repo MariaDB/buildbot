@@ -3,6 +3,7 @@ from pathlib import PurePath
 
 from buildbot.plugins import util
 from configuration.steps.commands.base import Command
+from configuration.steps.generators.cmake.options import BuildType
 
 
 class MAKE(Enum):
@@ -72,6 +73,8 @@ class CompileCMakeCommand(Command):
         builddir (str): The directory where the build files are located.
         verbose (bool): Whether to enable verbose output.
         workdir (PurePath): The working directory for the command.
+        target (MAKE): The Make target to build.
+        config (BuildType): The build configuration type.
     """
 
     def __init__(
@@ -81,6 +84,7 @@ class CompileCMakeCommand(Command):
         verbose: bool = False,
         workdir: PurePath = PurePath("."),
         target: MAKE = None,
+        config: BuildType = None,
     ):
         self.verbose = verbose
         self.builddir = builddir
@@ -89,6 +93,7 @@ class CompileCMakeCommand(Command):
         super().__init__(
             name=f"Compile {target.value if target else ''}", workdir=workdir
         )
+        self.config = config
 
     def as_cmd_arg(self) -> list[str]:
         r_list = [
@@ -103,6 +108,9 @@ class CompileCMakeCommand(Command):
         if self.target:
             r_list.append("--target")
             r_list.append(self.target.value)
+        if self.config:
+            r_list.append("--config")
+            r_list.append(self.config.value)
         return r_list
 
 

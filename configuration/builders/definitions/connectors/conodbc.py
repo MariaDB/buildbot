@@ -11,6 +11,7 @@ from configuration.builders.sequences.connectors.conodbc import (
     deb_pkg_tests,
     get_source_package,
     git_clone_sq,
+    macos,
     rpm,
     rpm_pkg_tests,
     save_packages,
@@ -270,4 +271,9 @@ UBASAN_BUILDER = GenericBuilder(
         with_asan_ubsan=True,
         get_source_from_git=True,
     ),
+)
+
+MACOS_BUILDER = GenericBuilder(
+    name="codbc-aarch64-macos",
+    sequences=[macos(jobs=util.Property("jobs"))],
 )
