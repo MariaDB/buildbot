@@ -51,7 +51,14 @@ TARBALL = GenericBuilder(
 )
 
 
-def generate_bintar_sqs(build_environment, ops, version):
+def generate_bintar_sqs(
+    build_environment,
+    ops,
+    version,
+    upload_packages_to_ci=True,
+    with_asan=False,
+    with_ubsan=False,
+):
     return [
         get_source_package(
             config=build_environment,
@@ -63,12 +70,19 @@ def generate_bintar_sqs(build_environment, ops, version):
             bintar_path=BINTAR_PATH,
             package_platform_suffix=f"{ops}{version}",
             jobs=util.Property("jobs"),
+            with_asan=with_asan,
+            with_ubsan=with_ubsan,
         ),
-        save_packages(
-            packages=BINTAR_PACKAGES_TO_SAVE,
-            config=build_environment,
-        ),
-    ]
+    ] + (
+        [
+            save_packages(
+                packages=BINTAR_PACKAGES_TO_SAVE,
+                config=build_environment,
+            )
+        ]
+        if upload_packages_to_ci
+        else []
+    )
 
 
 def generate_rpm_release_sq(ops, version):
@@ -225,3 +239,31 @@ for arch in ["amd64", "aarch64"]:
             sequences=generate_deb_release_sq(ops=ops, version=version),
         )
         RELEASE_BUILDERS_BY_ARCH[arch].append(builder)
+
+ASAN_BUILDER = GenericBuilder(
+    name="codbc-debian-13-asan",
+    sidecar=SIDECAR,
+    sequences=generate_bintar_sqs(
+        build_environment=docker_config(
+            image="debian13",
+        ),
+        ops="debian",
+        version="13",
+        upload_packages_to_ci=False,
+        with_asan=True,
+    ),
+)
+
+UBSAN_BUILDER = GenericBuilder(
+    name="codbc-debian-13-ubsan",
+    sidecar=SIDECAR,
+    sequences=generate_bintar_sqs(
+        build_environment=docker_config(
+            image="debian13",
+        ),
+        ops="debian",
+        version="13",
+        upload_packages_to_ci=False,
+        with_ubsan=True,
+    ),
+)

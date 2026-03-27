@@ -648,7 +648,21 @@ def bintar(
     package_platform_suffix: str,
     bintar_path: str,
     source_path: str,
+    with_asan=False,
+    with_ubsan=False,
 ):
+
+    flags = [
+        CMakeOption(OTHER.CONC_WITH_UNIT_TESTS, False),
+        CMakeOption(CMAKE.BUILD_TYPE, BuildType.RELWITHDEBUG),
+        CMakeOption(OTHER.PACKAGE_PLATFORM_SUFFIX, package_platform_suffix),
+    ]
+
+    if with_asan:
+        flags.append(CMakeOption(WITH.ASAN, True))
+    if with_ubsan:
+        flags.append(CMakeOption(WITH.UBSAN, True))
+
     sequence = BuildSequence()
     sequence.add_step(
         InContainer(
@@ -659,13 +673,7 @@ def bintar(
                         source_path=source_path,
                         builddir=bintar_path,
                         use_ccache=True,
-                        flags=[
-                            CMakeOption(OTHER.CONC_WITH_UNIT_TESTS, False),
-                            CMakeOption(CMAKE.BUILD_TYPE, BuildType.RELWITHDEBUG),
-                            CMakeOption(
-                                OTHER.PACKAGE_PLATFORM_SUFFIX, package_platform_suffix
-                            ),
-                        ],
+                        flags=flags,
                     ),
                 ),
                 options=StepOptions(
