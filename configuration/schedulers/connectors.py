@@ -39,7 +39,8 @@ CONODBC_SCHEDULERS = [
                 for builders in odbc_builders.RELEASE_BUILDERS_BY_ARCH.values()
                 for builder in builders
             )
-        ],
+        ]
+        + [odbc_builders.UBSAN_BUILDER.name, odbc_builders.ASAN_BUILDER.name],
     ),
 ]
 
