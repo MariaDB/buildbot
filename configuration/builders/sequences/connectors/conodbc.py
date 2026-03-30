@@ -648,20 +648,29 @@ def bintar(
     package_platform_suffix: str,
     bintar_path: str,
     source_path: str,
-    with_asan=False,
-    with_ubsan=False,
+    with_asan_ubsan=False,
 ):
 
+    env_vars = None
     flags = [
         CMakeOption(OTHER.CONC_WITH_UNIT_TESTS, False),
         CMakeOption(CMAKE.BUILD_TYPE, BuildType.RELWITHDEBUG),
         CMakeOption(OTHER.PACKAGE_PLATFORM_SUFFIX, package_platform_suffix),
     ]
 
-    if with_asan:
+    if with_asan_ubsan:
         flags.append(CMakeOption(WITH.ASAN, True))
-    if with_ubsan:
         flags.append(CMakeOption(WITH.UBSAN, True))
+        env_vars = [
+            (
+                "ASAN_OPTIONS",
+                "detect_stack_use_after_return=1:detect_leaks=1:abort_on_error=1:atexit=0:detect_invalid_pointer_pairs=3:dump_instruction_bytes=1:allocator_may_return_null=1",
+            ),
+            (
+                "UBSAN_OPTIONS",
+                "print_stacktrace=1:report_error_type=1:halt_on_error=1",
+            ),
+        ]
 
     sequence = BuildSequence()
     sequence.add_step(
@@ -676,6 +685,7 @@ def bintar(
                         flags=flags,
                     ),
                 ),
+                env_vars=env_vars,
                 options=StepOptions(
                     description="Bintar - Configure CMake",
                     descriptionDone="Bintar - CMake configured",
@@ -693,6 +703,7 @@ def bintar(
                     target=MAKE.PACKAGE,
                     jobs=jobs,
                 ),
+                env_vars=env_vars,
                 options=StepOptions(
                     description="Bintar - Compile",
                     descriptionDone="Bintar - Compile done",
@@ -722,7 +733,8 @@ def bintar(
                     ("TEST_VERBOSE", "true"),
                     ("TEST_DRIVER", "maodbc_test"),
                     ("TEST_DSN", "maodbc_test"),
-                ],
+                ]
+                + (env_vars if env_vars else []),
                 options=StepOptions(
                     description="Bintar - Run ODBC ctest",
                     descriptionDone="Bintar - ODBC ctest done",

@@ -56,8 +56,7 @@ def generate_bintar_sqs(
     ops,
     version,
     upload_packages_to_ci=True,
-    with_asan=False,
-    with_ubsan=False,
+    with_asan_ubsan=False,
 ):
     return [
         get_source_package(
@@ -70,8 +69,7 @@ def generate_bintar_sqs(
             bintar_path=BINTAR_PATH,
             package_platform_suffix=f"{ops}{version}",
             jobs=util.Property("jobs"),
-            with_asan=with_asan,
-            with_ubsan=with_ubsan,
+            with_asan_ubsan=with_asan_ubsan,
         ),
     ] + (
         [
@@ -240,30 +238,17 @@ for arch in ["amd64", "aarch64"]:
         )
         RELEASE_BUILDERS_BY_ARCH[arch].append(builder)
 
-ASAN_BUILDER = GenericBuilder(
-    name="codbc-debian-13-asan",
+UBASAN_BUILDER = GenericBuilder(
+    name="codbc-debian-13-ubasan-clang-22",
     sidecar=SIDECAR,
     sequences=generate_bintar_sqs(
         build_environment=docker_config(
-            image="debian13",
+            image="debian13-msan-clang-22",
+            artifacts_url=f"{os.environ['ARTIFACTS_URL']}/connector-odbc/",
         ),
         ops="debian",
         version="13",
         upload_packages_to_ci=False,
-        with_asan=True,
-    ),
-)
-
-UBSAN_BUILDER = GenericBuilder(
-    name="codbc-debian-13-ubsan",
-    sidecar=SIDECAR,
-    sequences=generate_bintar_sqs(
-        build_environment=docker_config(
-            image="debian13",
-        ),
-        ops="debian",
-        version="13",
-        upload_packages_to_ci=False,
-        with_ubsan=True,
+        with_asan_ubsan=True,
     ),
 )

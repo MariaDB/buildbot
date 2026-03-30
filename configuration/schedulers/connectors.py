@@ -40,7 +40,7 @@ CONODBC_SCHEDULERS = [
                 for builder in builders
             )
         ]
-        + [odbc_builders.UBSAN_BUILDER.name, odbc_builders.ASAN_BUILDER.name],
+        + [odbc_builders.UBASAN_BUILDER.name],
     ),
 ]
 
