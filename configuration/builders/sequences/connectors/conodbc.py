@@ -705,7 +705,7 @@ def bintar(
             ),
             (
                 "UBSAN_OPTIONS",
-                "print_stacktrace=1:report_error_type=1:halt_on_error=1",
+                f"suppressions=/home/buildbot/{source_path}/UBSAN.supp:print_stacktrace=1:report_error_type=1:halt_on_error=1",
             ),
         ]
 
