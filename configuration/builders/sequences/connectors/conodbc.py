@@ -671,7 +671,7 @@ def bintar(
     source_path: str,
     with_asan_ubsan=False,
 ):
-
+    sequence = BuildSequence()
     env_vars = None
     flags = [
         CMakeOption(OTHER.CONC_WITH_UNIT_TESTS, False),
@@ -680,6 +680,22 @@ def bintar(
     ]
 
     if with_asan_ubsan:
+        sequence.add_step(
+            InContainer(
+                ShellStep(
+                    command=BashCommand(
+                        name="Checkout latest C/C",
+                        cmd="git fetch origin $([ '%(prop:odbc_version)s' = '3.1' ] && echo 3.3 || echo 3.4) && git reset --hard FETCH_HEAD",
+                        workdir=PurePath(source_path) / "libmariadb",
+                    ),
+                    options=StepOptions(
+                        description="Checking out latest C/C",
+                        descriptionDone="Checked out latest C/C",
+                    ),
+                ),
+                docker_environment=config,
+            )
+        )
         flags.append(CMakeOption(WITH.ASAN, True))
         flags.append(CMakeOption(WITH.UBSAN, True))
         env_vars = [
@@ -693,7 +709,6 @@ def bintar(
             ),
         ]
 
-    sequence = BuildSequence()
     sequence.add_step(
         InContainer(
             ShellStep(
