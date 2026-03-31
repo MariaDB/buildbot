@@ -37,6 +37,40 @@ from configuration.steps.generators.cmake.options import (
 from configuration.steps.remote import PropFromShellStep, ShellStep
 
 
+def git_clone_step(step_wrapping_fn=lambda step: step, source_path: str = "."):
+    source_path = PurePath(source_path)
+    return step_wrapping_fn(
+        ShellStep(
+            command=GitInitFromCommit(
+                repo_url="%(prop:repository)s",
+                commit="%(prop:revision)s",
+                workdir=source_path,
+            ),
+            options=StepOptions(
+                description="Initialize git repository",
+                descriptionDone="Git repository initialized",
+            ),
+        ),
+    )
+
+
+def git_clone_sq(config: DockerConfig = None, source_path: str = "."):
+    sequence = BuildSequence()
+    if config:
+        sequence.add_step(
+            git_clone_step(
+                lambda step: InContainer(
+                    step,
+                    docker_environment=config,
+                ),
+                source_path=source_path,
+            )
+        )
+        return sequence
+    sequence.add_step(git_clone_step(source_path=source_path))
+    return sequence
+
+
 def tarball(config: DockerConfig):
     ### INIT
     sequence = BuildSequence()
@@ -44,21 +78,8 @@ def tarball(config: DockerConfig):
     ### ADD STEPS
     sequence.add_step(ShellStep(command=PrintEnvironmentDetails()))
     sequence.add_step(
-        InContainer(
-            ShellStep(
-                command=GitInitFromCommit(
-                    repo_url="%(prop:repository)s",
-                    commit="%(prop:revision)s",
-                ),
-                options=StepOptions(
-                    description="Initialize git repository",
-                    descriptionDone="Git repository initialized",
-                ),
-            ),
-            docker_environment=config,
-        ),
+        git_clone_step(lambda step: InContainer(step, docker_environment=config))
     )
-
     sequence.add_step(
         InContainer(
             ShellStep(

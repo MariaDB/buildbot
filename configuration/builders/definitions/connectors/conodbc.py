@@ -10,6 +10,7 @@ from configuration.builders.sequences.connectors.conodbc import (
     deb,
     deb_pkg_tests,
     get_source_package,
+    git_clone_sq,
     rpm,
     rpm_pkg_tests,
     save_packages,
@@ -56,30 +57,47 @@ def generate_bintar_sqs(
     ops,
     version,
     upload_packages_to_ci=True,
+    get_source_from_git=False,
     with_asan_ubsan=False,
 ):
-    return [
+
+    source_sq = [
         get_source_package(
             config=build_environment,
             source_path=SOURCE_PATH,
         ),
-        bintar(
-            config=build_environment,
-            source_path=SOURCE_PATH,
-            bintar_path=BINTAR_PATH,
-            package_platform_suffix=f"{ops}{version}",
-            jobs=util.Property("jobs"),
-            with_asan_ubsan=with_asan_ubsan,
-        ),
-    ] + (
-        [
-            save_packages(
-                packages=BINTAR_PACKAGES_TO_SAVE,
+    ]
+
+    if get_source_from_git:
+        source_sq = [
+            git_clone_sq(
                 config=build_environment,
+                source_path=SOURCE_PATH,
             )
         ]
-        if upload_packages_to_ci
-        else []
+
+    return (
+        source_sq
+        + [
+            bintar(
+                config=build_environment,
+                source_path=SOURCE_PATH,
+                bintar_path=BINTAR_PATH,
+                package_platform_suffix=f"{ops}{version}",
+                jobs=util.Property("jobs"),
+                with_asan_ubsan=with_asan_ubsan,
+            ),
+        ]
+        + (
+            [
+                save_packages(
+                    packages=BINTAR_PACKAGES_TO_SAVE,
+                    config=build_environment,
+                )
+            ]
+            if upload_packages_to_ci
+            else []
+        )
     )
 
 
@@ -250,5 +268,6 @@ UBASAN_BUILDER = GenericBuilder(
         version="13",
         upload_packages_to_ci=False,
         with_asan_ubsan=True,
+        get_source_from_git=True,
     ),
 )
