@@ -8,7 +8,7 @@ from configuration.builders.infra.runtime import (
     InContainer,
 )
 from configuration.steps.base import StepOptions
-from configuration.steps.commands.base import URL, BashCommand
+from configuration.steps.commands.base import URL, BashCommand, BashScriptCommand
 from configuration.steps.commands.compile import MAKE, CompileCMakeCommand
 from configuration.steps.commands.configure import ConfigureMariaDBCMake
 from configuration.steps.commands.download import FetchTarball, GitInitFromCommit
@@ -670,6 +670,7 @@ def bintar(
     bintar_path: str,
     source_path: str,
     with_asan_ubsan=False,
+    with_valgrind=False,
 ):
     sequence = BuildSequence()
     env_vars = None
@@ -748,16 +749,46 @@ def bintar(
             docker_environment=config,
         ),
     )
+    test_command = BashCommand(
+        name="Test bintar - ODBC ctest",
+        workdir=PurePath(f"{bintar_path}/test"),
+        cmd='sed -i "s/localhost/$SIDECAR_HOST/" odbc.ini && export TEST_SERVER=$SIDECAR_HOST && ctest --output-on-failure',
+    )
+
+    if with_valgrind:
+        if any(x in package_platform_suffix for x in ["ubu", "deb"]):
+            command_install = InstallDEBPackages(
+                packages=["valgrind"],
+            )
+        else:
+            command_install = InstallRPMPackages(
+                packages=["valgrind"],
+            )
+        sequence.add_step(
+            InContainer(
+                ShellStep(
+                    command=command_install,
+                    options=StepOptions(
+                        description="Installing Valgrind",
+                        descriptionDone="Valgrind installed",
+                    ),
+                ),
+                docker_environment=config,
+                container_commit=True,
+            ),
+        )
+
+        test_command = BashScriptCommand(
+            script_name="valgrind.sh",
+            args=["'/odbc_*'"],
+            workdir=PurePath(f"{bintar_path}/test"),
+        )
 
     # For the bintar test, we use libmariadb previously built from the source tree
     sequence.add_step(
         InContainer(
             ShellStep(
-                command=BashCommand(
-                    name="Test bintar - ODBC ctest",
-                    workdir=PurePath(f"{bintar_path}/test"),
-                    cmd='sed -i "s/localhost/$SIDECAR_HOST/" odbc.ini && export TEST_SERVER=$SIDECAR_HOST && ctest --output-on-failure',
-                ),
+                command=test_command,
                 env_vars=[
                     ("TEST_SKIP_UNSTABLE_TESTS", "1"),
                     ("ODBCINI", "./odbc.ini"),

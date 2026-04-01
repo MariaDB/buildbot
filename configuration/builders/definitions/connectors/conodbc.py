@@ -59,6 +59,7 @@ def generate_bintar_sqs(
     upload_packages_to_ci=True,
     get_source_from_git=False,
     with_asan_ubsan=False,
+    with_valgrind=False,
 ):
 
     source_sq = [
@@ -86,6 +87,7 @@ def generate_bintar_sqs(
                 package_platform_suffix=f"{ops}{version}",
                 jobs=util.Property("jobs"),
                 with_asan_ubsan=with_asan_ubsan,
+                with_valgrind=with_valgrind,
             ),
         ]
         + (
@@ -269,5 +271,19 @@ UBASAN_BUILDER = GenericBuilder(
         upload_packages_to_ci=False,
         with_asan_ubsan=True,
         get_source_from_git=True,
+    ),
+)
+
+VALGRIND_BUILDER = GenericBuilder(
+    name="codbc-ubuntu-26.04-valgrind",
+    sidecar=SIDECAR,
+    sequences=generate_bintar_sqs(
+        build_environment=docker_config(
+            image="ubuntu26.04",
+            artifacts_url=f"{os.environ['ARTIFACTS_URL']}/connector-odbc/",
+        ),
+        with_valgrind=True,
+        ops="ubuntu",
+        version="26.04",
     ),
 )
