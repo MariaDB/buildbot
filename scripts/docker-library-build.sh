@@ -49,11 +49,9 @@ ubi=
 arches=( linux/amd64 linux/arm64/v8 linux/ppc64le linux/s390x  )
 
 case "${buildername#*ubuntu-}" in
-  2404-deb-autobake)
-    pkgver=ubu2404
-    ;;
-  2204-deb-autobake)
-    pkgver=ubu2204
+  *-deb-autobake*)
+    pkgver=${buildername#*ubuntu-}
+    pkgver=ubu${pkgver%-deb-autobake*}
     ;;
   *-rhel-*-rpm-autobake)
     ubi=-ubi

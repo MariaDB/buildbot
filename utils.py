@@ -504,8 +504,10 @@ def hasDockerLibrary(step: BuildStep) -> bool:
     # from https://github.com/MariaDB/mariadb-docker/blob/next/update.sh#L7-L15
     if fnmatch.fnmatch(branch, "10.11") or fnmatch.fnmatch(branch, "10.6"):
         dockerbase = "ubuntu-2204-deb-autobake"
-    else:
+    elif fnmatch.fnmatch(branch, "11.*") or fnmatch.fnmatch(branch, "12.2"):
         dockerbase = "ubuntu-2404-deb-autobake"
+    else:
+        dockerbase = "ubuntu-2604-deb-autobake"
 
     # UBI images
     if builder_name.endswith("amd64-rhel-9-rpm-autobake"):
