@@ -107,20 +107,22 @@ aclocal
 autoheader
 autoconf
 automake --add-missing
-./configure --enable-fastvalidate  --with-pth=no --with-included-ltdl=no
+./configure --enable-fastvalidate  --with-pth=no --with-included-ltdl=yes
 make -j "$(nproc)"
 find .
 mv ./DriverManager/.libs/libodbc.so* ./odbcinst/.libs/libodbcinst.so* "$MSAN_LIBDIR"
 rm -rf -- *
 
-#libltdl - C/ODBC
-apt-get source libltdl-dev
-mv libtool-*/* .
-./bootstrap --force --no-git --skip-po --gnulib-srcdir=/usr/share/gnulib/ --copy
-./configure
-make -j "$(nproc)"
-mv ./libltdl/.libs/libltdl.so* "$MSAN_LIBDIR"
-rm -rf -- *
+##libltdl - C/ODBC
+## libodbc does a fixed path load of /lib/x86_64-linux-gnu/libltdl.so.7, which
+## isn't the instrumented version, so changed --with-included-ltdl=yes above.
+#apt-get source libltdl-dev
+#mv libtool-*/* .
+#./bootstrap --force --no-git --skip-po --gnulib-srcdir=/usr/share/gnulib/ --copy
+#./configure
+#make -j "$(nproc)"
+#mv ./libltdl/.libs/libltdl.so* "$MSAN_LIBDIR"
+#rm -rf -- *
 
 # sqlite/odbc for CONNECT engine
 apt-get source libsqliteodbc
