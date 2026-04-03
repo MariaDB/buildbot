@@ -23,7 +23,7 @@ ENV CXXFLAGS="$CFLAGS"
 
 # hadolint ignore=SC2046,DL3003
 RUN . /etc/os-release \
-    && export LLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind" \
+    && export LLVM_ENABLE_RUNTIMES="libcxx;libcxxabi" \
     && mkdir "$MSAN_LIBDIR" \
     && curl -sL https://apt.llvm.org/llvm-snapshot.gpg.key | gpg --dearmor -o /usr/share/keyrings/llvm-snapshot.gpg \
     && if [ "$VERSION_CODENAME" = forky ]; then VERSION_CODENAME=unstable; LLVM_DEB=""; else LLVM_DEB="-$VERSION_CODENAME"; fi \
@@ -54,6 +54,7 @@ RUN . /etc/os-release \
     && cd ll-build \
     && cmake -S ../"$LLVM_DIR"*/runtimes \
         -DCMAKE_BUILD_TYPE=Release \
+        -DLIBCXXABI_USE_LLVM_UNWINDER=OFF \
         -DLLVM_ENABLE_RUNTIMES="${LLVM_ENABLE_RUNTIMES}" \
         -DLLVM_INCLUDE_TESTS=OFF -DLLVM_INCLUDE_DOCS=OFF -DLLVM_ENABLE_SPHINX=OFF \
         -DLLVM_USE_SANITIZER=MemoryWithOrigins \
@@ -62,13 +63,6 @@ RUN . /etc/os-release \
     && cp -a include/c++/v1 "$MSAN_LIBDIR/include" \
     && cd .. \
     && rm -rf -- *
-
-RUN for f in "$MSAN_LIBDIR"/libunwind*; do mv "$f" "$f"-disable; done; \
-    if [ "${CLANG_VERSION}" -ge 22 ]; then \
-      apt-get -y install --no-install-recommends libunwind-19; \
-    fi
-# libunwind move/disable because of https://github.com/llvm/llvm-project/issues/128621
-# libunwind-19 meets ABI compatibility as its now linked to built executables.
 
 COPY msan.instrumentedlibs.sh /msan-build
 RUN ./msan.instrumentedlibs.sh
