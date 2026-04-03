@@ -150,6 +150,7 @@ def printEnv() -> steps.ShellCommand:
             date -u
             uname -a
             ulimit -a
+            command -v systemctl >/dev/null && systemctl --version
             command -v lscpu >/dev/null && lscpu
             LD_SHOW_AUXV=1 sleep 0
             """
