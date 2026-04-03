@@ -122,6 +122,14 @@ make -j "$(nproc)"
 mv ./libltdl/.libs/libltdl.so* "$MSAN_LIBDIR"
 rm -rf -- *
 
+# sqlite/odbc for CONNECT engine
+apt-get source libsqliteodbc
+mv sqliteodbc-*/* .
+mk-build-deps -it 'apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends --yes'
+autoreconf --install .
+./configure
+make -j "$(nproc)"
+mv ./.libs/libsqlite3odbc.so* "$MSAN_LIBDIR"
 rm -rf -- *
 
 # libfmt -  used by server for SFORMAT function
