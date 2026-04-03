@@ -112,6 +112,16 @@ make -j "$(nproc)"
 find .
 mv ./DriverManager/.libs/libodbc.so* ./odbcinst/.libs/libodbcinst.so* "$MSAN_LIBDIR"
 rm -rf -- *
+
+#libltdl - C/ODBC
+apt-get source libltdl-dev
+mv libtool-*/* .
+./bootstrap --force --no-git --skip-po --gnulib-srcdir=/usr/share/gnulib/ --copy
+./configure
+make -j "$(nproc)"
+mv ./libltdl/.libs/libltdl.so* "$MSAN_LIBDIR"
+rm -rf -- *
+
 rm -rf -- *
 
 # libfmt -  used by server for SFORMAT function
