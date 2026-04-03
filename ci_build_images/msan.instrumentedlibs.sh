@@ -94,7 +94,7 @@ make -j "$(nproc)"
 cp -aL .libs/libxml2.so* "$MSAN_LIBDIR"
 rm -rf -- *
 
-# Unixodbc used by MariaDB Connect engine.
+# Unixodbc used by MariaDB Connect engine and C/ODBC.
 if [ "${VERSION_CODENAME}" = trixie ]; then
   # additional dependency in later debian versions.
   # libltdl-dev - System independent dlopen wrapper for GNU libtool
@@ -109,7 +109,9 @@ autoconf
 automake --add-missing
 ./configure --enable-fastvalidate  --with-pth=no --with-included-ltdl=no
 make -j "$(nproc)"
-mv ./DriverManager/.libs/libodbc.so* "$MSAN_LIBDIR"
+find .
+mv ./DriverManager/.libs/libodbc.so* ./odbcinst/.libs/libodbcinst.so* "$MSAN_LIBDIR"
+rm -rf -- *
 rm -rf -- *
 
 # libfmt -  used by server for SFORMAT function
