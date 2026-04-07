@@ -4,6 +4,15 @@ set -xeuvo pipefail
 
 tarbuildnum=${1}
 buildername=${2}
+BASE_URL="$3" # e.g., http://100.64.101.1:9990
+BRANCH="$4"
+REVISION="$5"
+PLATFORM="$6"
+BBNUM="$7"
+
+UPLOAD_URL="${BASE_URL}/upload-test-results/"
+HEALTH_URL="${BASE_URL}/health"
+
 
 builderarch=${buildername%%-*}
 
@@ -32,5 +41,35 @@ fi
 # clean images if test does not succeed
 #trap 'buildah rmi "$image"' EXIT
 
-mariadb-docker/.test/run.sh "$image"
+mariadb-docker/.test/run.sh --xml=doi.xml "$image"
+
+if ! curl "$HEALTH_URL" \
+    --max-time 5 \
+    --retry 3 \
+    --retry-max-time 0 \
+    --retry-delay 5 \
+    --retry-connrefused \
+    --fail-with-body; then
+  echo "Service health check failed. Aborting uploads."
+  exit 2
+fi
+
+if [ ! -f doi.xml ]; then
+  echo "Test result file doi.xml not created"
+  exit 1
+fi
+
+curl \
+    --max-time 120 \
+    --connect-timeout 10 \
+    --fail-with-body \
+    -X POST "$UPLOAD_URL" \
+    -F "branch=${BRANCH}" \
+    -F "revision=${REVISION}" \
+    -F "platform=${PLATFORM}" \
+    -F "bbnum=${BBNUM}" \
+    -F "typ=docker_offical_images" \
+    -F "file=@doi.xml;type=application/xml" || exit 1
+rm -f doi.xml
+
 trap - EXIT
