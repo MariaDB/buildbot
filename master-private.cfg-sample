@@ -52,6 +52,7 @@ private["worker_pass"]= {
     "bbw2-mac": "1234",
     "bbw3-windows":"1234",
     "bbw4-windows":"1234",
+    "bbw5-windows":"1234",
     "bb-rhel8-docker":"1234",
     "bb-rhel9-docker":"1234",
     "monty-bbw1-x64": "1234",

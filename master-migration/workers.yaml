@@ -39,3 +39,8 @@
   arch: aarch64
   total_jobs: 10
   os_type: macos
+
+- name: bbw5-windows
+  arch: amd64
+  total_jobs: 12
+  os_type: windows
