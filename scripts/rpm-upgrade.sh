@@ -37,6 +37,15 @@ rpm_pkg_makecache
 
 rpm_setup_mariadb_mirror "$prev_major_version"
 
+
+# This function updates package_list to include MariaDB-server-galera
+# if available
+update_to_include_mariadb_server_galera() {
+  if [[ "$(rpm_repoquery)" =~ MariaDB-server-galera ]]; then
+    package_list="${package_list} MariaDB-server-galera"
+  fi
+}
+
 # Define the list of packages to install/upgrade
 case $test_mode in
   all)
@@ -49,6 +58,7 @@ case $test_mode in
     ;;
   server)
     package_list="MariaDB-server MariaDB-client"
+    update_to_include_mariadb_server_galera
     alternative_names_package_list=$package_list
     if [[ "$test_type" == "distro" ]]; then
       if [[ "$ID_LIKE" =~ ^suse.* ]]; then
@@ -60,6 +70,7 @@ case $test_mode in
     ;;
   columnstore)
     package_list="MariaDB-server MariaDB-columnstore-engine"
+    update_to_include_mariadb_server_galera
     alternative_names_package_list=$package_list
     ;;
   *)

@@ -52,6 +52,14 @@ get_packages_file_mirror() {
   set +u
 }
 
+# This function updates package_list to include mariadb-server-galera
+# if available
+update_to_include_mariadb_server_galera() {
+  if grep -qi mariadb-server-galera Packages; then
+    package_list="${package_list} mariadb-server-galera"
+  fi
+}
+
 # Define the list of packages to install/upgrade
 case $test_mode in
   all)
@@ -76,12 +84,15 @@ case $test_mode in
     ;;
   deps)
     package_list="mariadb-server mariadb-client mariadb-common mariadb-test mysql-common libmysqlclient18"
+    update_to_include_mariadb_server_galera
     ;;
   server)
     package_list=mariadb-server
+    update_to_include_mariadb_server_galera
     ;;
   columnstore)
     package_list="mariadb-server mariadb-plugin-columnstore"
+    update_to_include_mariadb_server_galera
     ;;
   *)
     bb_log_err "unknown test mode: $test_mode"
