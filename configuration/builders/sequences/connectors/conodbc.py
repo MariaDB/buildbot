@@ -8,7 +8,7 @@ from configuration.builders.infra.runtime import (
     InContainer,
 )
 from configuration.steps.base import StepOptions
-from configuration.steps.commands.base import URL, BashCommand
+from configuration.steps.commands.base import URL, BashCommand, PowerShellCommand
 from configuration.steps.commands.compile import MAKE, CompileCMakeCommand
 from configuration.steps.commands.configure import ConfigureMariaDBCMake
 from configuration.steps.commands.download import FetchTarball, GitInitFromCommit
@@ -25,9 +25,12 @@ from configuration.steps.commands.srpm import (
     SRPMInstallBuildDeps,
     SRPMRebuild,
 )
+from configuration.steps.commands.upload import FileUpload
 from configuration.steps.commands.util import PrintEnvironmentDetails
 from configuration.steps.generators.cmake.generator import CMakeGenerator
 from configuration.steps.generators.cmake.options import (
+    BUILDPLATFORM,
+    BUILDTOOLS,
     CMAKE,
     OTHER,
     WITH,
@@ -874,5 +877,154 @@ def macos(jobs: int):
                 descriptionDone="ODBC ctest done",
             ),
         ),
+    )
+    return sequence
+
+
+def windows(jobs: int, target_platform: str):
+    sequence = BuildSequence()
+    sequence.add_step(git_clone_step())
+
+    if target_platform == "32-bit":
+        cmake_generator = CMakeGenerator(
+            build_platform=BUILDPLATFORM.WIN32,
+            build_tool=BUILDTOOLS.WINVS2022,
+            flags=[],
+        )
+    if target_platform == "64-bit":
+        cmake_generator = CMakeGenerator(build_tool=BUILDTOOLS.WINVS2022, flags=[])
+
+    cmake_generator.flags.extend(
+        [
+            CMakeOption(CMAKE.BUILD_TYPE, BuildType.RELWITHDEBUG),
+            CMakeOption(WITH.SSL, "SCHANNEL"),
+            CMakeOption(OTHER.CONC_WITH_UNIT_TESTS, False),
+            CMakeOption(OTHER.CONC_WITH_MSI, False),
+            CMakeOption(OTHER.ALL_PLUGINS_STATIC, True),
+        ],
+    )
+
+    sequence.add_step(
+        ShellStep(
+            command=ConfigureMariaDBCMake(
+                name="RelWithDebugInfo",
+                cmake_generator=cmake_generator,
+            ),
+            options=StepOptions(
+                description="Configure CMake",
+                descriptionDone="CMake configured",
+            ),
+        ),
+    )
+
+    sequence.add_step(
+        ShellStep(
+            command=CompileCMakeCommand(
+                jobs=jobs,
+                config=BuildType.RELWITHDEBUG,
+            ),
+            options=StepOptions(
+                description="Build package",
+                descriptionDone="Package built",
+            ),
+        ),
+    )
+
+    sequence.add_step(
+        ShellStep(
+            command=PowerShellCommand(
+                workdir=PurePath("packaging\\windows"),
+                name="Install ODBC MSI",
+                cmd=r'$msis = Get-ChildItem -Path . -Filter *.msi -File | Sort-Object Name; if (-not $msis) { throw "No MSI files found in current directory" }; foreach ($msi in $msis) { $p = Start-Process msiexec.exe -ArgumentList "/i `"$($msi.FullName)`" /qn /norestart" -Wait -PassThru; if ($p.ExitCode -ne 0) { throw ("MSI install failed for " + $msi.Name + " with exit code " + $p.ExitCode) } }',
+            ),
+            options=StepOptions(
+                description="Install ODBC MSI",
+                descriptionDone="ODBC MSI installed",
+            ),
+        )
+    )
+
+    # A pre-configured host-level MariaDB Server instance is required
+    # to both register a DSN and run the tests.
+    sequence.add_step(
+        ShellStep(
+            command=PowerShellCommand(
+                name="Create DSN",
+                cmd=f'Add-OdbcDsn -Name "maodbc" -DriverName "MariaDB ODBC %(prop:odbc_version)s Driver" -DsnType "User" -Platform "{target_platform}" -SetPropertyValue "SERVER=127.0.0.1","PORT=3306","DATABASE=test","USER=root","PASSWORD=test"',
+            ),
+            options=StepOptions(
+                description="Create DSN",
+                descriptionDone="DSN created",
+            ),
+        )
+    )
+
+    sequence.add_step(
+        ShellStep(
+            command=BashCommand(
+                name="ODBC ctest",
+                cmd='export TEST_DRIVER="MariaDB ODBC %(prop:odbc_version)s Driver" && cd test && ctest --output-on-failure',
+            ),
+            env_vars=[
+                ("TEST_UID", "root"),
+                ("TEST_PASSWORD", "test"),
+                ("TEST_PORT", "3306"),
+                ("TEST_SCHEMA", "test"),
+                ("TEST_DSN", "maodbc"),
+            ],
+            options=StepOptions(
+                description="Run ODBC ctest",
+                descriptionDone="ODBC ctest done",
+            ),
+        ),
+    )
+
+    sequence.add_step(
+        PropFromShellStep(
+            command=BashCommand(
+                name="find MSI",
+                cmd="find . -maxdepth 1 -type f -name '*.msi' -exec basename {} \\;",
+                workdir=PurePath("packaging\\windows"),
+            ),
+            property="packages",
+        ),
+    )
+
+    sequence.add_step(
+        FileUpload(
+            workersrc="packaging/windows/%(prop:packages)s",
+            masterdest="/srv/buildbot/connectors/odbc/%(prop:tarbuildnum)s/%(prop:buildername)s/%(prop:packages)s",
+            mode=0o755,
+            url=f"{os.environ['ARTIFACTS_URL']}/connector-odbc/%(prop:tarbuildnum)s/%(prop:buildername)s/",
+        )
+    )
+
+    sequence.add_step(
+        ShellStep(
+            command=PowerShellCommand(
+                name="Remove DSN",
+                cmd=f"""$dsn = Get-OdbcDsn -Name "maodbc" -DsnType "User" -Platform "{target_platform}" -ErrorAction SilentlyContinue; if ($null -ne $dsn) {{ Remove-OdbcDsn -Name "maodbc" -DsnType "User" -Platform "{target_platform}" }}""",
+            ),
+            options=StepOptions(
+                alwaysRun=True,
+                description="Remove DSN",
+                descriptionDone="DSN removed",
+            ),
+        )
+    )
+
+    sequence.add_step(
+        ShellStep(
+            command=PowerShellCommand(
+                workdir=PurePath("packaging\\windows"),
+                name="Uninstall ODBC MSI",
+                cmd=r'$msis = Get-ChildItem -Path . -Filter *.msi -File | Sort-Object Name; foreach ($msi in $msis) { $p = Start-Process msiexec.exe -ArgumentList "/x `"$($msi.FullName)`" /qn /norestart" -Wait -PassThru; if ($p.ExitCode -notin 0,1605,1614) { throw ("MSI uninstall failed for " + $msi.Name + " with exit code " + $p.ExitCode) } }',
+            ),
+            options=StepOptions(
+                alwaysRun=True,
+                description="Uninstall ODBC MSI",
+                descriptionDone="ODBC MSI uninstalled",
+            ),
+        )
     )
     return sequence
