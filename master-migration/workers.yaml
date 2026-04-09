@@ -44,3 +44,4 @@
   arch: amd64
   total_jobs: 12
   os_type: windows
+  max_builds: 1
