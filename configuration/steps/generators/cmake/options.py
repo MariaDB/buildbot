@@ -9,6 +9,17 @@ except ImportError:  # pragma: no cover
     from configuration.steps.generators.base.options import StrEnum  # pyright: ignore
 
 
+class BUILDTOOLS(StrEnum):
+    WINVS2022 = "Visual Studio 17 2022"
+    NINJA = "Ninja"
+    MACXCODE = "Xcode"
+
+
+class BUILDPLATFORM(StrEnum):
+    WIN32 = "Win32"
+    X64 = "x64"
+
+
 # Flag names use UPPER_CASE
 class CMAKE(StrEnum):
     """
@@ -134,6 +145,7 @@ class OTHER(StrEnum):
     RPM = "RPM"
     GIT_BUILD_SRCPKG = "GIT_BUILD_SRCPKG"
     CONC_WITH_UNIT_TESTS = "CONC_WITH_UNIT_TESTS"
+    CONC_WITH_MSI = "CONC_WITH_MSI"
     PACKAGE_PLATFORM_SUFFIX = "PACKAGE_PLATFORM_SUFFIX"
     DEB = "DEB"
     CPACK_GENERATOR = "CPACK_GENERATOR"
@@ -141,6 +153,7 @@ class OTHER(StrEnum):
     USE_SYSTEM_INSTALLED_LIB = "USE_SYSTEM_INSTALLED_LIB"
     ODBC_INCLUDE_DIR = "ODBC_INCLUDE_DIR"
     ODBC_LIB_DIR = "ODBC_LIB_DIR"
+    ALL_PLUGINS_STATIC = "ALL_PLUGINS_STATIC"
 
 
 # Flag values use CapitalCase

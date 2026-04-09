@@ -3,6 +3,8 @@ from typing import Iterable
 from configuration.steps.generators.base.generator import BaseGenerator
 from configuration.steps.generators.cmake.compilers import CompilerCommand
 from configuration.steps.generators.cmake.options import (
+    BUILDPLATFORM,
+    BUILDTOOLS,
     CMAKE,
     OTHER,
     BuildConfig,
@@ -20,6 +22,8 @@ class CMakeGenerator(BaseGenerator):
         flags: Iterable[CMakeOption],
         use_ccache: bool = False,
         compiler: CompilerCommand = None,
+        build_tool: BUILDTOOLS = None,
+        build_platform: BUILDPLATFORM = None,
         source_path: str = ".",
         builddir: str = None,
     ):
@@ -44,6 +48,12 @@ class CMakeGenerator(BaseGenerator):
 
         if compiler:
             self._set_compiler(compiler)
+
+        if build_tool:
+            base_command += ["-G", f"""\"{build_tool.value}\""""]
+
+        if build_platform:
+            base_command += ["-A", build_platform.value]
 
     def _set_compiler(self, compiler: CompilerCommand):
         """
