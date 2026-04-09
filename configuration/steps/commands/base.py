@@ -80,6 +80,25 @@ class BashCommand(Command):
         ]
 
 
+class PowerShellCommand(Command):
+    def __init__(
+        self,
+        cmd: str,
+        name: str = "Run command",
+        user: str = "buildbot",
+        workdir: PurePath = PurePath("."),
+    ):
+        super().__init__(name=name, workdir=workdir, user=user)
+        self.cmd = cmd
+
+    def as_cmd_arg(self) -> list[str]:
+        return [
+            "powershell",
+            "-Command",
+            util.Interpolate(self.cmd),
+        ]
+
+
 @dataclass
 class URL:
     url: str
