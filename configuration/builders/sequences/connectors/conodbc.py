@@ -673,6 +673,7 @@ def bintar(
     bintar_path: str,
     source_path: str,
     with_asan_ubsan=False,
+    with_msan=False,
 ):
     sequence = BuildSequence()
     env_vars = None
@@ -681,6 +682,24 @@ def bintar(
         CMakeOption(CMAKE.BUILD_TYPE, BuildType.RELWITHDEBUG),
         CMakeOption(OTHER.PACKAGE_PLATFORM_SUFFIX, package_platform_suffix),
     ]
+
+    if with_msan:
+        flags.append(CMakeOption(WITH.MSAN, True))
+        flags.append(
+            CMakeOption(
+                CMAKE.EXE_LINKER_FLAGS, "-L${MSAN_LIBDIR} -Wl,-rpath,${MSAN_LIBDIR}"
+            )
+        )
+        flags.append(
+            CMakeOption(
+                CMAKE.SHARED_LINKER_FLAGS, "-L${MSAN_LIBDIR} -Wl,-rpath,${MSAN_LIBDIR}"
+            )
+        )
+        flags.append(
+            CMakeOption(
+                CMAKE.MODULE_LINKER_FLAGS, "-L${MSAN_LIBDIR} -Wl,-rpath,${MSAN_LIBDIR}"
+            )
+        )
 
     if with_asan_ubsan:
         sequence.add_step(
