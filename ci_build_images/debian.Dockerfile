@@ -23,6 +23,7 @@ RUN . /etc/os-release \
       exit 1; \
     fi
 
+ARG BASE_IMAGE
 ARG ARCH_VARIANT=
 ENV ARCH_VARIANT=$ARCH_VARIANT
 # Install updates and required packages
@@ -93,6 +94,7 @@ RUN . /etc/os-release \
     socat \
     sudo  \
     wget \
+    && if [ "$BASE_IMAGE" != "debian:sid" ]; then apt-get -y install --no-install-recommends libboost-system-dev; fi \
     && if [ "$(getconf LONG_BIT)" = 64 ]; then apt-get -y install --no-install-recommends galera-4; fi \
     && if [ "${VERSION_ID}" != 11 ]; then \
       # Bootstrap MDEV-32686 so only temporary until https://github.com/MariaDB/server/pull/3692 merged up \
