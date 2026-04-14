@@ -40,6 +40,7 @@ class CMAKE(StrEnum):
     INSTALL_PREFIX = "INSTALL_PREFIX"
     LIBRARY_PATH = "LIBRARY_PATH"
     MODULE_LINKER_FLAGS = "MODULE_LINKER_FLAGS"
+    SHARED_LINKER_FLAGS = "SHARED_LINKER_FLAGS"
 
     def __str__(self):
         return f"CMAKE_{self.value}"

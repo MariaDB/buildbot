@@ -61,6 +61,7 @@ def generate_bintar_sqs(
     upload_packages_to_ci=True,
     get_source_from_git=False,
     with_asan_ubsan=False,
+    with_msan=False,
 ):
 
     source_sq = [
@@ -88,6 +89,7 @@ def generate_bintar_sqs(
                 package_platform_suffix=f"{ops}{version}",
                 jobs=util.Property("jobs"),
                 with_asan_ubsan=with_asan_ubsan,
+                with_msan=with_msan,
             ),
         ]
         + (
@@ -291,4 +293,19 @@ WINDOWS_32_BUILDER = GenericBuilder(
     sequences=[
         windows(jobs=util.Property("jobs"), target_platform="32-bit"),
     ],
+)
+
+MSAN_BUILDER = GenericBuilder(
+    name="codbc-debian-13-msan-clang-22",
+    sidecar=SIDECAR,
+    sequences=generate_bintar_sqs(
+        build_environment=docker_config(
+            image="debian13-msan-clang-22",
+            artifacts_url=f"{os.environ['ARTIFACTS_URL']}/connector-odbc/",
+        ),
+        with_msan=True,
+        ops="debian",
+        version="13",
+        upload_packages_to_ci=False,
+    ),
 )

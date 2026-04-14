@@ -45,6 +45,7 @@ CONODBC_SCHEDULERS = [
             odbc_builders.MACOS_BUILDER.name,
             odbc_builders.WINDOWS_64_BUILDER.name,
             odbc_builders.WINDOWS_32_BUILDER.name,
+            odbc_builders.MSAN_BUILDER.name,
         ],
     ),
 ]
