@@ -144,7 +144,7 @@ def construct_env_section(env_vars):
     for key, value in sorted(env_vars.items()):
         if key.startswith("NGINX_"):
             continue
-        elif key not in ["PORT", "MC_HOST_minio"]:
+        elif key not in ["PORT"]:
             env_section += f"      - {key}\n"
         else:
             env_section += f"      - {key}={value}\n"
@@ -190,14 +190,12 @@ def main(args):
         f"container_name: master-web\n{construct_env_section(env_vars)}",
     )
 
-    env_vars["MC_HOST_minio"] = "{mc_host}"
     # Modify the docker_compose_template to include the environment variables
     docker_compose_template = DOCKER_COMPOSE_TEMPLATE.replace(
         "container_name: {master_name}",
         f"container_name: {{master_name}}\n{construct_env_section(env_vars)}",
     )
 
-    mc_host = config["private"]["minio_url"]
     starting_port = config["private"]["master-variables"]["starting_port"]
     master_web_port = 8010
     # Generate startup scripts and Docker Compose pieces for each master directory
@@ -227,7 +225,6 @@ def main(args):
                 master_hostname=master_hostname,
                 master_directory=master_directory,
                 port=port,
-                mc_host=mc_host,
                 volumes=generate_volumes(master_volumes[master_name]),
                 environment="" if args.env == "prod" else "dev_",
                 buildbot_stop_grace_period=BUILDBOT_STOP_GRACE_PERIOD,
