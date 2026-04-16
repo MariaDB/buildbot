@@ -103,7 +103,6 @@ SCHEDULERS = [
     schedulers.Triggerable(name="s_eco", builderNames=ecoBuilders),
     schedulers.Triggerable(name="s_dockerlibrary", builderNames=dockerLibraryBuilders),
     schedulers.Triggerable(name="s_wordpress", builderNames=wordpressBuilders),
-    schedulers.Triggerable(name="s_release_prep", builderNames=["release-prep"]),
     schedulers.Triggerable(
         name="s_jepsen", builderNames=["amd64-ubuntu-2204-jepsen-mariadb"]
     ),
