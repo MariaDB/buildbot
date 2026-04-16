@@ -105,7 +105,6 @@ private["docker_workers"]= {
     "s390x-bbw6-docker":"tcp://IP_address:port", # ibm-s390x-ubuntu2404-01 (.39)
     "s390x-bbw7-docker":"tcp://IP_address:port", # ibm-s390x-ubuntu2404-02 (.40)
     "aws-bbw1-docker":"tcp://IP_address:port",
-    "release-prep-docker":"tcp://IP_address:port",
 }
 
 private["worker_name_mapping"] = {

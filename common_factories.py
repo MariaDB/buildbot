@@ -863,23 +863,6 @@ def getDebAutobakeFactory() -> util.BuildFactory:
     )
     f_deb_autobake.addStep(
         steps.Trigger(
-            name="release preparation",
-            schedulerNames=["s_release_prep"],
-            waitForFinish=True,
-            updateSourceStamp=False,
-            set_properties={
-                "tarbuildnum": Property("tarbuildnum"),
-                "mariadb_version": Property("mariadb_version"),
-                "master_branch": Property("master_branch"),
-                "parentbuildername": Property("buildername"),
-            },
-            doStepIf=(
-                lambda step: savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES)
-            ),
-        )
-    )
-    f_deb_autobake.addStep(
-        steps.Trigger(
             name="install",
             schedulerNames=["s_install"],
             waitForFinish=False,
