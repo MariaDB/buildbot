@@ -9,7 +9,9 @@ LABEL maintainer="MariaDB Buildbot maintainers"
 
 # Install updates and required packages
 # hadolint ignore=SC2086
-RUN dnf -y install 'dnf-command(config-manager)' \
+RUN source /etc/os-release \
+    && if [ "$ID" == "openEuler" ]; then sed -i 's#http://repo.openeuler.org#https://mirrors.dotsrc.org/openeuler#g' /etc/yum.repos.d/openEuler.repo; fi \
+    && dnf -y install 'dnf-command(config-manager)' \
     && source /etc/os-release \
     && ARCH=$(rpm --query --queryformat='%{ARCH}' rpm) \
     && case "$PLATFORM_ID" in \
