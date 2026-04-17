@@ -10,12 +10,13 @@ from twisted.internet import defer, threads
 from twisted.python import log
 
 from buildbot.buildrequest import BuildRequest
+from buildbot.data.resultspec import Filter
 from buildbot.interfaces import IProperties
 from buildbot.master import BuildMaster
 from buildbot.plugins import steps, util, worker
 from buildbot.process.builder import Builder
 from buildbot.process.buildstep import BuildStep
-from buildbot.process.results import FAILURE
+from buildbot.process.results import FAILURE, SUCCESS
 from buildbot.process.workerforbuilder import AbstractWorkerForBuilder
 from buildbot.worker import AbstractWorker
 from constants import (
@@ -678,3 +679,233 @@ def mtrEnv(props: IProperties) -> dict:
                 mtr_add_env[key] = value
         return mtr_add_env
     return MTR_ENV
+
+
+# TODO: Upgrading buildbot to 4.* deprecates this class
+# Use instead the OldBuildCanceller service
+# https://docs.buildbot.net/latest/manual/configuration/services/old_build_canceller.html
+class CancelOlderSameBranchRequests(BuildStep):
+    name = "cancel older obsolete buildrequests"
+    description = ["checking older matching requests"]
+    descriptionDone = ["older matching requests checked"]
+
+    def __init__(
+        self,
+        dry_run=False,
+        same_builder_only=False,
+        cancel_claimed=True,
+        buildbot_base_url=None,
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+        self.dry_run = dry_run
+        self.same_builder_only = same_builder_only
+        self.cancel_claimed = cancel_claimed
+        self.buildbot_base_url = (
+            buildbot_base_url.rstrip("/") if buildbot_base_url else None
+        )
+        self._builder_name_cache = {}
+
+    def _buildrequest_url(self, brid):
+        if not self.buildbot_base_url:
+            return None
+        return f"{self.buildbot_base_url}/#/buildrequests/{brid}"
+
+    @defer.inlineCallbacks
+    def _builder_name(self, builderid):
+        if builderid in self._builder_name_cache:
+            return self._builder_name_cache[builderid]
+
+        builder = yield self.master.data.get(("builders", builderid))
+        name = builder.get("name", f"<builderid={builderid}>")
+        self._builder_name_cache[builderid] = name
+        return name
+
+    @staticmethod
+    def _fmt_ss(ss):
+        return (
+            f"branch={ss.get('branch')!r}, "
+            f"repository={ss.get('repository')!r}, "
+            f"revision={ss.get('revision')!r}, "
+            f"codebase={ss.get('codebase', '')!r}"
+        )
+
+    @defer.inlineCallbacks
+    def run(self):
+        current_buildid = self.build.buildid
+
+        current_build = yield self.master.data.get(("builds", current_buildid))
+        current_buildrequestid = current_build["buildrequestid"]
+        current_builderid = current_build["builderid"]
+        current_buildername = yield self._builder_name(current_builderid)
+
+        current_buildrequest = yield self.master.data.get(
+            ("buildrequests", current_buildrequestid)
+        )
+        current_buildsetid = current_buildrequest["buildsetid"]
+
+        current_buildset = yield self.master.data.get(("buildsets", current_buildsetid))
+        current_submitted_at = current_buildset.get("submitted_at")
+        current_sourcestamps = current_buildset.get("sourcestamps", [])
+
+        if current_submitted_at is None or not current_sourcestamps:
+            self.addCompleteLog(
+                "summary",
+                "Current buildset is missing submitted_at or sourcestamps; nothing to do.\n",
+            )
+            return SUCCESS
+
+        # We want only running or in queue buildrequests
+        filters = [Filter("complete", "eq", [False])]
+        # Narrow the search to cancel only buildrequests for the calling builder
+        if self.same_builder_only:
+            filters.append(Filter("builderid", "eq", [current_builderid]))
+
+        # Getting all buildrequests based on filters
+        buildrequests = yield self.master.data.get(
+            ("buildrequests",),
+            filters=filters,
+            fields=[
+                "buildrequestid",
+                "buildsetid",
+                "builderid",
+                "claimed",
+                "complete",
+                "submitted_at",
+            ],
+        )
+
+        # Log info about the current build
+        lines = []
+        lines.append(f"Mode: {'DRY-RUN' if self.dry_run else 'ACTIVE'}")
+        lines.append(f"same_builder_only={self.same_builder_only}")
+        lines.append(f"cancel_claimed={self.cancel_claimed}")
+        lines.append("")
+        lines.append("Current:")
+        lines.append(f"  buildid={current_buildid}")
+        lines.append(f"  buildrequestid={current_buildrequestid}")
+        lines.append(f"  builderid={current_builderid}")
+        lines.append(f"  buildername={current_buildername!r}")
+        lines.append(f"  buildsetid={current_buildsetid}")
+        lines.append(f"  submitted_at={current_submitted_at}")
+        current_url = self._buildrequest_url(current_buildrequestid)
+        if current_url:
+            lines.append(f"  url={current_url}")
+        lines.append("  sourcestamps:")
+        for i, ss in enumerate(current_sourcestamps, 1):
+            lines.append(f"    [{i}] {self._fmt_ss(ss)}")
+        lines.append("")
+
+        matches = []
+        actions = []
+
+        for br in buildrequests:
+            brid = br["buildrequestid"]
+
+            # Skip self
+            if brid == current_buildrequestid:
+                continue
+
+            # Skip cancelling running builds if cancel_claimed is False
+            if not self.cancel_claimed and br.get("claimed"):
+                continue
+
+            other_buildsetid = br["buildsetid"]
+            other_buildset = yield self.master.data.get(("buildsets", other_buildsetid))
+            other_submitted_at = other_buildset.get("submitted_at")
+            other_sourcestamps = other_buildset.get("sourcestamps", [])
+
+            if other_submitted_at is None:
+                continue
+
+            # Newest wins: only cancel OLDER matching requests
+            if other_submitted_at >= current_submitted_at:
+                continue
+
+            # A match means same branch+repository+codebase but different revision
+            matched_other_ss = None
+
+            # If the buildset can have multiple sourcestamps
+            for current_ss in current_sourcestamps:
+                for other_ss in other_sourcestamps:
+                    same_target = (
+                        other_ss.get("codebase", "") == current_ss.get("codebase", "")
+                        and other_ss.get("repository") == current_ss.get("repository")
+                        and other_ss.get("branch") == current_ss.get("branch")
+                    )
+                    different_revision = other_ss.get("revision") != current_ss.get(
+                        "revision"
+                    )
+
+                    if same_target and different_revision:
+                        matched_other_ss = other_ss
+                        break
+                if matched_other_ss is not None:
+                    break
+
+            if matched_other_ss is None:
+                continue
+
+            other_builderid = br["builderid"]
+            other_buildername = yield self._builder_name(other_builderid)
+
+            info = {
+                "buildrequestid": brid,
+                "buildername": other_buildername,
+                "claimed": br.get("claimed"),
+                "complete": br.get("complete"),
+                "submitted_at": other_submitted_at,
+                "branch": matched_other_ss.get("branch"),
+                "repository": matched_other_ss.get("repository"),
+                "revision": matched_other_ss.get("revision"),
+                "codebase": matched_other_ss.get("codebase", ""),
+                "url": self._buildrequest_url(brid),
+            }
+            matches.append(info)
+
+            action_prefix = "[DRY-RUN] would cancel" if self.dry_run else "Canceled"
+            msg = (
+                f"{action_prefix} buildrequest {brid} "
+                f"(buildername={other_buildername!r}, "
+                f"claimed={br.get('claimed')}, "
+                f"submitted_at={other_submitted_at}, "
+                f"revision={matched_other_ss.get('revision')!r})"
+            )
+            if info["url"]:
+                msg += f" url={info['url']}"
+            actions.append(msg)
+
+            # Dry-run mode doesn't actually cancel, just log what would be cancelled
+            if not self.dry_run:
+                yield self.master.data.control(
+                    "cancel",
+                    {"reason": ("Superseded by newer build for same branch")},
+                    ("buildrequests", brid),
+                )
+
+        lines.append(f"Matched older buildrequests: {len(matches)}")
+        lines.append("")
+
+        # Log detailed info about matched buildrequests and actions taken
+        if matches:
+            lines.append("Matches:")
+            for m in matches:
+                lines.append(f"  - buildrequestid={m['buildrequestid']}")
+                lines.append(f"    buildername={m['buildername']!r}")
+                lines.append(f"    claimed={m['claimed']}")
+                lines.append(f"    complete={m['complete']}")
+                lines.append(f"    submitted_at={m['submitted_at']}")
+                lines.append(f"    branch={m['branch']!r}")
+                lines.append(f"    repository={m['repository']!r}")
+                lines.append(f"    revision={m['revision']!r}")
+                lines.append(f"    codebase={m['codebase']!r}")
+                if m["url"]:
+                    lines.append(f"    url={m['url']}")
+            lines.append("")
+            lines.append("Actions:")
+            lines.extend(f"  {a}" for a in actions)
+        else:
+            lines.append("No older matching buildrequests found.")
+
+        self.addCompleteLog("obsolete-buildrequests", "\n".join(lines) + "\n")
+        return SUCCESS
