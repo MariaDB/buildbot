@@ -10,12 +10,13 @@ from twisted.internet import defer, threads
 from twisted.python import log
 
 from buildbot.buildrequest import BuildRequest
+from buildbot.data.resultspec import Filter
 from buildbot.interfaces import IProperties
 from buildbot.master import BuildMaster
 from buildbot.plugins import steps, util, worker
 from buildbot.process.builder import Builder
 from buildbot.process.buildstep import BuildStep
-from buildbot.process.results import FAILURE
+from buildbot.process.results import FAILURE, SUCCESS
 from buildbot.process.workerforbuilder import AbstractWorkerForBuilder
 from buildbot.worker import AbstractWorker
 from constants import (
@@ -678,3 +679,221 @@ def mtrEnv(props: IProperties) -> dict:
                 mtr_add_env[key] = value
         return mtr_add_env
     return MTR_ENV
+
+
+class CancelDuplicateBuildRequests(BuildStep):
+    """BuildStep to cancel duplicate buildrequests for the same commit on the same builder
+    if the current build is for a pull request event. It checks for other pending buildrequests
+    with the same builder and if they have a sourcestamp with the same revision as
+    the current build, it cancels them. It also checks that the branch is cancelable to avoid
+    canceling important branches like main, release or merge branches.
+    """
+
+    name = "cancel duplicate buildrequests"
+    description = ["checking duplicate buildrequests"]
+    descriptionDone = ["duplicate buildrequests checked"]
+
+    def __init__(self, dry_run=False, buildbot_base_url=None, **kwargs):
+        super().__init__(**kwargs)
+        self.dry_run = dry_run
+        self.buildbot_base_url = (
+            buildbot_base_url.rstrip("/") if buildbot_base_url else None
+        )
+        self._builder_name_cache = {}
+
+    def _buildrequest_url(self, brid):
+        if not self.buildbot_base_url:
+            return None
+        return f"{self.buildbot_base_url}/#/buildrequests/{brid}"
+
+    @staticmethod
+    def _fmt_ss(ss):
+        return (
+            f"branch={ss.get('branch')!r}, "
+            f"repository={ss.get('repository')!r}, "
+            f"revision={ss.get('revision')!r}, "
+            f"codebase={ss.get('codebase', '')!r}"
+        )
+
+    @staticmethod
+    def _branch_is_cancelable(branch):
+        """Should not cancel pushes on main, release, merge, or preview branches"""
+        if not branch:
+            return False
+
+        branch_lc = branch.lower()
+        return (
+            len(branch) > 5
+            and "release" not in branch_lc
+            and "merge" not in branch_lc
+            and "preview" not in branch_lc
+        )
+
+    @defer.inlineCallbacks
+    def run(self):
+        lines = []
+        lines.append(f"Mode: {'DRY-RUN' if self.dry_run else 'ACTIVE'}")
+        lines.append("")
+
+        event = self.getProperty("event", None)
+        lines.append(f"event property: {event!r}")
+
+        if event is None:
+            lines.append("No 'event' property found; nothing to do.")
+            self.addCompleteLog("duplicate-buildrequests", "\n".join(lines) + "\n")
+            return SUCCESS
+
+        if event != "pull_request":
+            lines.append("Event is not 'pull_request'; nothing to do.")
+            self.addCompleteLog("duplicate-buildrequests", "\n".join(lines) + "\n")
+            return SUCCESS
+
+        current_buildid = self.build.buildid
+        current_build = yield self.master.data.get(("builds", current_buildid))
+
+        current_buildrequestid = current_build["buildrequestid"]
+        current_builderid = current_build["builderid"]
+
+        current_buildrequest = yield self.master.data.get(
+            ("buildrequests", current_buildrequestid)
+        )
+        current_buildsetid = current_buildrequest["buildsetid"]
+
+        current_buildset = yield self.master.data.get(("buildsets", current_buildsetid))
+        current_sourcestamps = current_buildset.get("sourcestamps", [])
+
+        if not current_sourcestamps:
+            lines.append("Current buildset has no sourcestamps; nothing to do.")
+            self.addCompleteLog("duplicate-buildrequests", "\n".join(lines) + "\n")
+            return SUCCESS
+
+        current_revisions = {
+            ss.get("revision")
+            for ss in current_sourcestamps
+            if ss.get("revision") is not None
+        }
+
+        if not current_revisions:
+            lines.append(
+                "Current buildset has no revision in sourcestamps; nothing to do."
+            )
+            self.addCompleteLog("duplicate-buildrequests", "\n".join(lines) + "\n")
+            return SUCCESS
+
+        lines.append("Current:")
+        lines.append(f"  buildid={current_buildid}")
+        lines.append(f"  buildrequestid={current_buildrequestid}")
+        lines.append(f"  builderid={current_builderid}")
+        lines.append(f"  buildsetid={current_buildsetid}")
+        lines.append(f"  revisions={sorted(current_revisions)!r}")
+        current_url = self._buildrequest_url(current_buildrequestid)
+        if current_url:
+            lines.append(f"  url={current_url}")
+        lines.append("  sourcestamps:")
+        for i, ss in enumerate(current_sourcestamps, 1):
+            lines.append(f"    [{i}] {self._fmt_ss(ss)}")
+        lines.append("")
+
+        filters = [
+            Filter("complete", "eq", [False]),
+            Filter("builderid", "eq", [current_builderid]),
+        ]
+
+        buildrequests = yield self.master.data.get(
+            ("buildrequests",),
+            filters=filters,
+            fields=[
+                "buildrequestid",
+                "buildsetid",
+                "builderid",
+                "claimed",
+                "complete",
+            ],
+        )
+
+        matches = []
+        actions = []
+
+        for br in buildrequests:
+            brid = br["buildrequestid"]
+
+            # skip self
+            if brid == current_buildrequestid:
+                continue
+
+            other_buildsetid = br["buildsetid"]
+            other_buildset = yield self.master.data.get(("buildsets", other_buildsetid))
+            other_sourcestamps = other_buildset.get("sourcestamps", [])
+
+            matched_revision = None
+            matched_branch = None
+
+            for other_ss in other_sourcestamps:
+                other_revision = other_ss.get("revision")
+                other_branch = other_ss.get("branch")
+
+                if other_revision not in current_revisions:
+                    continue
+
+                if not self._branch_is_cancelable(other_branch):
+                    continue
+
+                matched_revision = other_revision
+                matched_branch = other_branch
+                break
+
+            if matched_revision is None:
+                continue
+
+            info = {
+                "buildrequestid": brid,
+                "claimed": br.get("claimed"),
+                "complete": br.get("complete"),
+                "buildsetid": other_buildsetid,
+                "revision": matched_revision,
+                "branch": matched_branch,
+                "url": self._buildrequest_url(brid),
+                "sourcestamps": other_sourcestamps,
+            }
+            matches.append(info)
+
+            action_prefix = "[DRY-RUN] would cancel" if self.dry_run else "Canceled"
+            msg = (
+                f"{action_prefix} buildrequest {brid} "
+                f"(claimed={br.get('claimed')}, "
+                f"revision={matched_revision!r}, "
+                f"branch={matched_branch!r})"
+            )
+            if info["url"]:
+                msg += f" url={info['url']}"
+            actions.append(msg)
+
+            if not self.dry_run:
+                yield self.master.data.control(
+                    "cancel",
+                    {"reason": "Duplicate build for same commit on same builder"},
+                    ("buildrequests", brid),
+                )
+
+        lines.append(f"Matched duplicate buildrequests: {len(matches)}")
+        lines.append("")
+
+        if matches:
+            lines.append("Matches:")
+            for m in matches:
+                lines.append(f"  - buildrequestid={m['buildrequestid']}")
+                lines.append(f"    claimed={m['claimed']}")
+                lines.append(f"    complete={m['complete']}")
+                lines.append(f"    buildsetid={m['buildsetid']}")
+                lines.append(f"    revision={m['revision']!r}")
+                lines.append(f"    branch={m['branch']!r}")
+                if m["url"]:
+                    lines.append(f"    url={m['url']}")
+            lines.append("")
+            lines.append("Actions:")
+            lines.extend(f"  {a}" for a in actions)
+        else:
+            lines.append("No matching cancelable buildrequests found on this builder.")
+
+        self.addCompleteLog("duplicate-buildrequests", "\n".join(lines) + "\n")
+        return SUCCESS
