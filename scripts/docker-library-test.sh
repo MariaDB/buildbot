@@ -49,8 +49,7 @@ if [ $ret ] && ! curl "$HEALTH_URL" \
     --retry 3 \
     --retry-max-time 0 \
     --retry-delay 5 \
-    --retry-connrefused \
-    --fail-with-body; then
+    --retry-connrefused; then
   echo "Service health check failed. Aborting uploads."
   exit 2
 fi
@@ -63,7 +62,6 @@ fi
 [ $ret ] && curl \
     --max-time 120 \
     --connect-timeout 10 \
-    --fail-with-body \
     -X POST "$UPLOAD_URL" \
     -F "branch=${BRANCH}" \
     -F "revision=${REVISION}" \
