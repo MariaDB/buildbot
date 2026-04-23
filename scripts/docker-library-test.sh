@@ -45,6 +45,7 @@ ret=0
 mariadb-docker/.test/run.sh --xml=doi.xml "$image" || ret=1
 
 if [ $ret ] && ! curl "$HEALTH_URL" \
+    --fail \
     --max-time 5 \
     --retry 3 \
     --retry-max-time 0 \
@@ -60,6 +61,7 @@ if [ ! -f doi.xml ]; then
 fi
 
 [ $ret ] && curl \
+    --fail \
     --max-time 120 \
     --connect-timeout 10 \
     -X POST "$UPLOAD_URL" \
