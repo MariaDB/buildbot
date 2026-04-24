@@ -39,6 +39,11 @@ jobs:
             platforms: linux/amd64, linux/arm64/v8
 
           - dockerfile: srpm.Dockerfile
+            image: fedora:44
+            tag: fedora44-srpm
+            platforms: linux/amd64, linux/arm64/v8
+
+          - dockerfile: srpm.Dockerfile
             image: registry.access.redhat.com/ubi7
             tag: rhel7-srpm
             platforms: linux/amd64
