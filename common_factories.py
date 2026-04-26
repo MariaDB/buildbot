@@ -1,10 +1,14 @@
 import os
 import re
 
+from sqlalchemy import text
+from sqlalchemy.exc import OperationalError
 from twisted.internet import defer
+from twisted.python import log
 
 from buildbot.plugins import steps, util
 from buildbot.process import results
+from buildbot.process.buildstep import BuildStep
 from buildbot.process.factory import BuildFactory
 from buildbot.process.properties import Property
 from buildbot.steps.mtrlogobserver import MTR
@@ -52,27 +56,51 @@ from utils import (
 # * run for view protocol and sanitizers
 # * how to do it for install/upgrade tests?
 #
-class FetchTestData(MTR):
-    def __init__(self, mtrDbPool, test_type, **kwargs):
-        self.mtrDbPool = mtrDbPool
+class FetchTestData(BuildStep):
+    def __init__(self, test_type, **kwargs):
         self.test_type = test_type
-        super().__init__(dbpool=mtrDbPool, **kwargs)
+        super().__init__(**kwargs)
 
-    @defer.inlineCallbacks
     def get_tests_for_type(self, branch, typ, limit):
         scale = 20
-        query = f"""
+        inner_limit = int(limit * scale)
+        outer_limit = int(limit)
+
+        q = text(
+            """
             select concat(test_name, ',', test_variant)
             from
-              (select id, test_name, test_variant
-               from test_failure join test_run on (test_run_id=id)
-               where branch='{branch}' and typ='{typ}'
-               order by test_run_id desc limit {limit*scale}) x
+            (select id, test_name, test_variant
+            from test_failure join test_run on (test_run_id=id)
+            where branch=:branch and typ=:typ
+            order by test_run_id desc
+            limit :inner_limit) x
             group by test_name, test_variant
-            order by max(id) desc limit {limit}
+            order by max(id) desc
+            limit :outer_limit
         """
-        tests = yield self.runQueryWithRetry(query)
-        return list(t[0] for t in tests)
+        )
+
+        def thd(conn):
+            try:
+                res = conn.execute(
+                    q,
+                    {
+                        "branch": branch,
+                        "typ": typ,
+                        "inner_limit": inner_limit,
+                        "outer_limit": outer_limit,
+                    },
+                )
+            except OperationalError as e:
+                log.err(f"[FetchTestData] DB query failed: {e}")
+                # An empty list will allow for all configured suites to run
+                # Better this than an immense crash
+                return []
+
+            return [row[0] for row in res.fetchall()]
+
+        return self.master.db.pool.do(thd)  # Runs in a Thread and returns a Deferred
 
     @defer.inlineCallbacks
     def run(self):
@@ -613,7 +641,6 @@ def getLastNFailedBuildsFactory(test_type, mtrDbPool):
         f.addStep(
             FetchTestData(
                 name=f"Get last N failed {typ} tests",
-                mtrDbPool=mtrDbPool,
                 test_type=typ,
             )
         )
