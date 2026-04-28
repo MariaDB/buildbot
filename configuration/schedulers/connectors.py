@@ -71,6 +71,11 @@ CONCPP_SCHEDULERS = [
                 for builders in cc_builders.RELEASE_BUILDERS_BY_ARCH.values()
                 for builder in builders
             )
+        ]
+        + [
+            cc_builders.UBASAN_BUILDER.name,
+            cc_builders.WINDOWS_64_BUILDER.name,
+            cc_builders.MSAN_BUILDER.name,
         ],
     ),
 ]
