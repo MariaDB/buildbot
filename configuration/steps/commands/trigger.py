@@ -63,7 +63,16 @@ class ConCPP(Trigger):
         self.name = "Trigger Conc-CPP Builders"
         self.schedulername = "conc_cpp_all_scheduler"
         self.doStepIf = lambda step: True
-        super().__init__(self.name, self.schedulername, self.doStepIf)
+        properties = {
+            "tarbuildnum": Property(
+                "buildnumber"
+            ),  # Used by get_tarball.sh to identify the tarball dir on CI
+            "mariadb_version": "ci",  # Used by get_tarball.sh to download ci.tar.gz
+            "cpp_to_mariadb_repo": Property("cpp_to_mariadb_repo"),
+            "cpp_version": Property("cpp_version"),
+        }
+
+        super().__init__(self.name, self.schedulername, self.doStepIf, properties)
 
 
 class ConC(Trigger):
