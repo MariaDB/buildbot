@@ -82,6 +82,11 @@ case $test_mode in
     ;;
   columnstore)
     package_list="mariadb-server mariadb-plugin-columnstore"
+    arch=$(uname -m)
+    if [[ $arch == "aarch64" && ( $major_version == "10.6" || $major_version == "10.11" ) ]]; then
+      bb_log_warn "Columnstore is not built for aarch64 on 10.6 and 10.11, skipping the test"
+      exit 0
+    fi
     ;;
   *)
     bb_log_err "unknown test mode: $test_mode"
