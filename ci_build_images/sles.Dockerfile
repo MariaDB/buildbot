@@ -54,6 +54,7 @@ RUN zypper -n update \
     libfmt"${FMT_VER}" \
     libgnutls-devel \
     liblz4-devel \
+    lzo-devel \
     libopenssl-3-devel \
     liburing"${LIBURING_VER}"-devel \
     libxml2-devel \
