@@ -118,6 +118,7 @@ class WITH(StrEnum):
     OPENSSL = "OPENSSL"
     SIGNCODE = "SIGNCODE"
     EXTERNAL_ZLIB = "EXTERNAL_ZLIB"
+    DOCS = "DOCS"
 
     def __str__(self):
         return f"WITH_{self.value}"

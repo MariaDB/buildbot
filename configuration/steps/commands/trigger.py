@@ -80,8 +80,14 @@ class ConC(Trigger):
         self.name = "Trigger Conc-C Builders"
         self.schedulername = "conc_c_all_scheduler"
         self.doStepIf = lambda step: True
+        properties = {
+            "tarbuildnum": Property(
+                "buildnumber"
+            ),  # Used by get_tarball.sh to identify the tarball dir on CI
+            "mariadb_version": "ci",  # Used by get_tarball.sh to download ci.tar.gz
+        }
 
-        super().__init__(self.name, self.schedulername, self.doStepIf)
+        super().__init__(self.name, self.schedulername, self.doStepIf, properties)
 
 
 class Install(Server):
