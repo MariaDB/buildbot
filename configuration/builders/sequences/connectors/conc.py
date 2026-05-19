@@ -114,6 +114,31 @@ def tarball(config: DockerConfig):
             docker_environment=config,
         ),
     )
+
+    sequence.add_step(
+        InContainer(
+            ShellStep(
+                command=SavePackages(
+                    packages=[
+                        "ci_source/ci.tar.gz",
+                        "*src.tar.gz",
+                        "ci_source/sha256sums.txt",
+                    ],
+                    destination="/packages/%(prop:buildnumber)s",
+                ),
+                url=URL(
+                    url=f"{os.environ['ARTIFACTS_URL']}/connector-c/%(prop:buildnumber)s",
+                    url_text="Source tarball",
+                ),
+                options=StepOptions(
+                    description="Save source packages",
+                    descriptionDone="Source packages saved",
+                ),
+            ),
+            docker_environment=config,
+        )
+    )
+
     sequence.add_step(trigger.ConC())
 
     return sequence
