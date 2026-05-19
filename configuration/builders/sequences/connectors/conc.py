@@ -286,8 +286,9 @@ def bintar(
                     ShellStep(
                         command=BashCommand(
                             name="Test bintar on {}".format(test_env.image_tag),
-                            workdir=PurePath(f"{bintar_path}/test"),
+                            workdir=PurePath(f"{bintar_path}/unittest/libmariadb"),
                             cmd="export MYSQL_TEST_HOST=$SIDECAR_HOST && ctest --output-on-failure",
+                            user="root",
                         ),
                         env_vars=[
                             ("MYSQL_TEST_USER", "root"),
