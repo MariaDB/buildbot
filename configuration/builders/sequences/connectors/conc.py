@@ -114,7 +114,7 @@ def tarball(config: DockerConfig):
             docker_environment=config,
         ),
     )
-    sequence.add_step(trigger.ConCPP())
+    sequence.add_step(trigger.ConC())
 
     return sequence
 
