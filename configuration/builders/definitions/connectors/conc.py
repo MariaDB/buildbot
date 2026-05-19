@@ -14,7 +14,7 @@ from configuration.builders.sequences.connectors.conc import (
     windows,
 )
 
-PACKAGES_DIR = f"{os.environ['CONNECTORS_PACKAGES_DIR']}/cpp"
+PACKAGES_DIR = f"{os.environ['CONNECTORS_PACKAGES_DIR']}/c"
 BUILD_BASE_PATH = "build"
 BINTAR_PATH = f"{BUILD_BASE_PATH}/bintar"
 SOURCE_PATH = f"{BUILD_BASE_PATH}/source"
