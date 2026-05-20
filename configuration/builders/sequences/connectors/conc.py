@@ -410,19 +410,18 @@ def windows(jobs: int, target_platform: str):
         PropFromShellStep(
             command=BashCommand(
                 name="find MSI",
-                cmd="find . -maxdepth 4 -type f -name '*.msi' -exec basename {} \\;",
-                workdir=PurePath("wininstall"),
+                cmd="find . -maxdepth 1 -type f -name '*.msi' -exec basename {} \\;",
             ),
             property="packages",
         ),
     )
 
-    # sequence.add_step(
-    #     FileUpload(
-    #         workersrc="wininstall\\%(prop:packages)s",
-    #         masterdest="/srv/buildbot/connectors/c/%(prop:tarbuildnum)s/%(prop:buildername)s/%(prop:packages)s",
-    #         mode=0o755,
-    #         url=f"{os.environ['ARTIFACTS_URL']}/connector-c/%(prop:tarbuildnum)s/%(prop:buildername)s/",
-    #     )
-    # )
+    sequence.add_step(
+        FileUpload(
+            workersrc="%(prop:packages)s",
+            masterdest="/srv/buildbot/connectors/c/%(prop:tarbuildnum)s/%(prop:buildername)s/%(prop:packages)s",
+            mode=0o755,
+            url=f"{os.environ['ARTIFACTS_URL']}/connector-c/%(prop:tarbuildnum)s/%(prop:buildername)s/",
+        )
+    )
     return sequence
