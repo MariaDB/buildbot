@@ -171,12 +171,19 @@ for arch in ["amd64", "aarch64"]:
 #     ),
 # )
 
-# WINDOWS_64_BUILDER = GenericBuilder(
-#     name="cc-amd64-windows",
-#     sequences=[
-#         windows(jobs=util.Property("jobs"), target_platform="64-bit"),
-#     ],
-# )
+WINDOWS_64_BUILDER = GenericBuilder(
+    name="cc-amd64-windows",
+    sequences=[
+        windows(jobs=util.Property("jobs"), target_platform="64-bit"),
+    ],
+)
+
+WINDOWS_32_BUILDER = GenericBuilder(
+    name="cc-x86-windows",
+    sequences=[
+        windows(jobs=util.Property("jobs"), target_platform="32-bit"),
+    ],
+)
 
 # MSAN_BUILDER = GenericBuilder(
 #     name="cc-debian-13-msan-clang-22",

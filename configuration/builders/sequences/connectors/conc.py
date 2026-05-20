@@ -353,10 +353,8 @@ def windows(jobs: int, target_platform: str):
     cmake_generator.flags.extend(
         [
             CMakeOption(CMAKE.BUILD_TYPE, BuildType.RELWITHDEBUG),
-            CMakeOption(WITH.SSL, "SCHANNEL"),
-            CMakeOption(OTHER.CONC_WITH_UNIT_TESTS, False),
-            CMakeOption(OTHER.CONC_WITH_MSI, False),
-            CMakeOption(OTHER.INSTALL_PLUGINDIR, "plugin"),
+            CMakeOption(WITH.CURL, True),
+            CMakeOption(WITH.MSI, True),
         ],
     )
 
@@ -389,18 +387,21 @@ def windows(jobs: int, target_platform: str):
     sequence.add_step(
         ShellStep(
             command=BashCommand(
-                name="C/C++ ctest",
-                cmd="cd test && ctest --output-on-failure",
+                name="C/C ctest",
+                cmd="cd unittest/libmariadb && ctest --output-on-failure",
             ),
             env_vars=[
-                ("TEST_UID", "root"),
-                ("TEST_PASSWORD", "test"),
-                ("TEST_PORT", "3306"),
-                ("TEST_SCHEMA", "test"),
+                ("MYSQL_TEST_USER", "root"),
+                ("MYSQL_TEST_PASSWD", "test"),
+                ("MYSQL_TEST_PORT", "3306"),
+                ("MYSQL_TEST_DB", "test"),
+                ("MYSQL_TEST_HOST", "127.0.0.1"),
+                ("MARIADB_CC_TEST", "1"),
+                ("MYSQL_TEST_TLS", "0"),
             ],
             options=StepOptions(
-                description="Run C/C++ ctest",
-                descriptionDone="C/C++ ctest done",
+                description="Run C/C ctest",
+                descriptionDone="C/C ctest done",
             ),
         ),
     )
@@ -409,19 +410,19 @@ def windows(jobs: int, target_platform: str):
         PropFromShellStep(
             command=BashCommand(
                 name="find MSI",
-                cmd="find . -maxdepth 1 -type f -name '*.msi' -exec basename {} \\;",
+                cmd="find . -maxdepth 4 -type f -name '*.msi' -exec basename {} \\;",
                 workdir=PurePath("wininstall"),
             ),
             property="packages",
         ),
     )
 
-    sequence.add_step(
-        FileUpload(
-            workersrc="wininstall\\%(prop:packages)s",
-            masterdest="/srv/buildbot/connectors/c/%(prop:tarbuildnum)s/%(prop:buildername)s/%(prop:packages)s",
-            mode=0o755,
-            url=f"{os.environ['ARTIFACTS_URL']}/connector-c/%(prop:tarbuildnum)s/%(prop:buildername)s/",
-        )
-    )
+    # sequence.add_step(
+    #     FileUpload(
+    #         workersrc="wininstall\\%(prop:packages)s",
+    #         masterdest="/srv/buildbot/connectors/c/%(prop:tarbuildnum)s/%(prop:buildername)s/%(prop:packages)s",
+    #         mode=0o755,
+    #         url=f"{os.environ['ARTIFACTS_URL']}/connector-c/%(prop:tarbuildnum)s/%(prop:buildername)s/",
+    #     )
+    # )
     return sequence
