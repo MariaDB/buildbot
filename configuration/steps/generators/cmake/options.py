@@ -101,11 +101,13 @@ class WITH(StrEnum):
 
     ASAN = "ASAN"
     ASAN_SCOPED = "ASAN_SCOPED"
+    CURL = "CURL"
     DBUG_TRACE = "DBUG_TRACE"
     EMBEDDED_SERVER = "EMBEDDED_SERVER"
     EXTRA_CHARSETS = "EXTRA_CHARSETS"
     JEMALLOC = "JEMALLOC"
     MSAN = "MSAN"
+    MSI = "MSI"
     NONE = "NONE"
     SAFEMALLOC = "SAFEMALLOC"
     SSL = "SSL"
@@ -118,6 +120,7 @@ class WITH(StrEnum):
     OPENSSL = "OPENSSL"
     SIGNCODE = "SIGNCODE"
     EXTERNAL_ZLIB = "EXTERNAL_ZLIB"
+    DOCS = "DOCS"
 
     def __str__(self):
         return f"WITH_{self.value}"

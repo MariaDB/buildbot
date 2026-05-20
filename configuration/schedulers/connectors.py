@@ -94,13 +94,18 @@ CONC_SCHEDULERS = [
     ),
     schedulers.Triggerable(
         name="conc_c_all_scheduler",
+        # builderNames=[
+        #     builder.name
+        #     for builder in (
+        #         builder
+        #         for builders in c_builders.RELEASE_BUILDERS_BY_ARCH.values()
+        #         for builder in builders
+        #     )
+        # ]
+        # + [c_builders.WINDOWS_32_BUILDER.name, c_builders.WINDOWS_64_BUILDER.name],
         builderNames=[
-            builder.name
-            for builder in (
-                builder
-                for builders in c_builders.RELEASE_BUILDERS_BY_ARCH.values()
-                for builder in builders
-            )
+            c_builders.WINDOWS_32_BUILDER.name,
+            c_builders.WINDOWS_64_BUILDER.name,
         ],
     ),
 ]
