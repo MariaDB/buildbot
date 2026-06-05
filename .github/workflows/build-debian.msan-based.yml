@@ -42,12 +42,6 @@ jobs:
             nogalera: false
           - image: debian:13
             platforms: linux/amd64
-            branch: 11.4
-            tag: debian13-msan-clang-21
-            clang_version: 21
-            nogalera: false
-          - image: debian:13
-            platforms: linux/amd64
             branch: 11.8
             tag: debian13-msan-clang-22
             clang_version: 22
