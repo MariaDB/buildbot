@@ -201,6 +201,15 @@ rm -rf -- *
 # shellcheck disable=SC2094
 /usr/sbin/cracklib-packer /usr/share/dict/cracklib-small < /usr/share/dict/cracklib-small
 
+# libnghttp2, a curl dependency. Shows up in s3 tests
+apt-get source nghttp2
+mv nghttp2-*/* .
+autoreconf --install .
+./configure --without-libcares
+make -j "$(nproc)"
+mv ./.libs/* "$MSAN_LIBDIR"
+rm -rf -- *
+
 # curl
 apt-get source curl
 mv curl*/* .
