@@ -101,10 +101,12 @@ if [ "${VERSION_CODENAME}" = trixie ]; then
   apt-get install --no-install-recommends -y libltdl-dev
 fi
 apt-get source unixodbc-dev
+mv unixodbc-*/* .
+if [ "${VERSION_CODENAME}" = trixie ]; then
 # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1136221
 # awaiting arrival on Debian stable.
-mv unixodbc-*/* .
-curl https://github.com/lurcher/unixODBC/commit/447ca7624394f8cc9825c6ac3ff60e3715831b87.patch | patch -p1
+  curl https://github.com/lurcher/unixODBC/commit/447ca7624394f8cc9825c6ac3ff60e3715831b87.patch | patch -p1
+fi
 libtoolize --force
 aclocal
 autoheader
