@@ -218,7 +218,15 @@ rm -rf -- *
 # curl
 apt-get source curl
 mv curl*/* .
-./configure  --with-openssl --enable-ipv6 --disable-static --enable-websockets
+if [ "${VERSION_CODENAME}" = trixie ]; then
+  # extras from debian/rules
+  # ./storage/maria/ha_s3.so: /msan-libs/libcurl.so.4: no version information available (required by ./storage/maria/ha_s3.so)
+  ./configure  --with-openssl --enable-ipv6 --disable-static --enable-websockets \
+      --disable-symbol-hiding --enable-versioned-symbols --enable-threaded-resolver
+else
+  # keeping old stable - stable
+  ./configure  --with-openssl --enable-ipv6 --disable-static --enable-websockets
+fi
 make -j "$(nproc)"
 mv ./lib/.libs/*.so* "$MSAN_LIBDIR"
 rm -rf -- *
