@@ -101,7 +101,10 @@ if [ "${VERSION_CODENAME}" = trixie ]; then
   apt-get install --no-install-recommends -y libltdl-dev
 fi
 apt-get source unixodbc-dev
+# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1136221
+# awaiting arrival on Debian stable.
 mv unixodbc-*/* .
+curl https://github.com/lurcher/unixODBC/commit/447ca7624394f8cc9825c6ac3ff60e3715831b87.patch | patch -p1
 libtoolize --force
 aclocal
 autoheader
@@ -110,7 +113,7 @@ automake --add-missing
 ./configure --enable-fastvalidate  --with-pth=no --with-included-ltdl=yes
 make -j "$(nproc)"
 find .
-mv ./DriverManager/.libs/libodbc.so* ./odbcinst/.libs/libodbcinst.so* "$MSAN_LIBDIR"
+mv ./cur/.libs/libodbccr* ./DriverManager/.libs/libodbc.so* ./odbcinst/.libs/libodbcinst.so* "$MSAN_LIBDIR"
 rm -rf -- *
 
 ##libltdl - C/ODBC
