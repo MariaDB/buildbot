@@ -212,7 +212,7 @@ mv nghttp2-*/* .
 autoreconf --install .
 ./configure --without-libcares
 make -j "$(nproc)"
-mv ./.libs/* "$MSAN_LIBDIR"
+mv lib/.libs/*.so* "$MSAN_LIBDIR"
 rm -rf -- *
 
 # curl
