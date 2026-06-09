@@ -115,7 +115,7 @@ def asan_ubsan(
         (
             "LSAN_OPTIONS",
             "print_suppressions=0,suppressions="
-            + str(PurePath("/home", "buildbot", "src", "lsan.supp")),
+            + str(PurePath("/home", "buildbot", "src", "mysql-test", "lsan.supp")),
         ),
         (
             "ASAN_OPTIONS",
