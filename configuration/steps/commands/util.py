@@ -4,50 +4,6 @@ from buildbot.plugins import util
 from configuration.steps.commands.base import BashScriptCommand, Command
 
 
-class CreateS3Bucket(Command):
-    """
-    A command to create an S3 bucket using MinIO client (mc).
-    This command initializes a new S3 bucket in the MinIO server.
-    Attributes:
-        bucket (str): The name of the S3 bucket to create.
-        workdir (PurePath): The working directory for the command.
-    """
-
-    def __init__(self, bucket: str, workdir: PurePath = PurePath(".")):
-        name = "Create S3 bucket"
-        self.bucket = bucket
-        super().__init__(name=name, workdir=workdir)
-
-    def as_cmd_arg(self) -> list[str]:
-        return [
-            "bash",
-            "-exc",
-            util.Interpolate(f"mc mb minio/{self.bucket}"),
-        ]
-
-
-class DeleteS3Bucket(Command):
-    """
-    A command to delete an S3 bucket using MinIO client (mc).
-    This command removes an existing S3 bucket from the MinIO server.
-    Attributes:
-        bucket (str): The name of the S3 bucket to delete.
-        workdir (PurePath): The working directory for the command.
-    """
-
-    def __init__(self, bucket: str, workdir: PurePath = PurePath(".")):
-        name = "Delete S3 bucket"
-        self.bucket = bucket
-        super().__init__(name=name, workdir=workdir)
-
-    def as_cmd_arg(self) -> list[str]:
-        return [
-            "bash",
-            "-exc",
-            util.Interpolate(f"mc rb --force minio/{self.bucket}"),
-        ]
-
-
 class SaveCompressedTar(Command):
     """
     A command to create a compressed tar archive of the current working directory.
