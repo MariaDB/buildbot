@@ -74,9 +74,13 @@ BUILDERS_ECO = [
 if os.environ["ENVIRON"] == "DEV":
     BUILDERS_WORDPRESS = ["amd64-rhel9-wordpress"]
     BUILDERS_DOCKERLIBRARY = ["amd64-rhel9-dockerlibrary"]
+    BUILDERS_TXN_TESTER = ["amd64-rhel9-txntester"]
+    BUILDERS_TXN_TESTER_SOAK = ["amd64-rhel9-txntester-soak"]
 else:
     BUILDERS_WORDPRESS = ["amd64-rhel8-wordpress"]
     BUILDERS_DOCKERLIBRARY = ["amd64-rhel8-dockerlibrary"]
+    BUILDERS_TXN_TESTER = ["amd64-rhel8-txntester"]
+    BUILDERS_TXN_TESTER_SOAK = ["amd64-rhel8-txntester-soak"]
 
 BUILDERS_GALERA_MTR = [
     "aarch64-debian-12",
