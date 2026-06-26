@@ -120,7 +120,10 @@ def addPostTests(factory):
                 "mariadb_version": Property("mariadb_version"),
                 "master_branch": Property("master_branch"),
             },
-            doStepIf=hasAutobake,
+            doStepIf=(
+                lambda step: hasAutobake(step)
+                and step.build.results != results.CANCELLED
+            ),
         )
     )
     # create package and upload to master
