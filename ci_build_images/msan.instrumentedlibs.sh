@@ -99,14 +99,17 @@ if [ "${VERSION_CODENAME}" = trixie ]; then
   # additional dependency in later debian versions.
   # libltdl-dev - System independent dlopen wrapper for GNU libtool
   apt-get install --no-install-recommends -y libltdl-dev
+
+# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1141600
+# awaiting arrival on Debian stable 13.7 point release
+  for a in deb deb-src; do echo "$a" https://snapshot.debian.org/archive/debian/20260716T143135Z/ "${VERSION_CODENAME}" main ; done > /etc/apt/sources.list.d/unixodbc.list
+  apt-get update
+  # for ASAN
+  apt-get install -y unixodbc-dev
 fi
 apt-get source unixodbc-dev
+rm -f /etc/apt/sources.list.d/unixodbc.list
 mv unixodbc-*/* .
-if [ "${VERSION_CODENAME}" = trixie ]; then
-# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1136221
-# awaiting arrival on Debian stable.
-  curl https://github.com/lurcher/unixODBC/commit/447ca7624394f8cc9825c6ac3ff60e3715831b87.patch | patch -p1
-fi
 libtoolize --force
 aclocal
 autoheader
