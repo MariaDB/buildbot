@@ -6,9 +6,11 @@ from configuration.builders.infra.runtime import (
     InContainer,
 )
 from configuration.builders.sequences.helpers import (
+    get_mtr_cursor_steps,
     get_mtr_normal_steps,
     get_mtr_s3_steps,
     get_mtr_spider_steps,
+    get_mtr_view_steps,
     mtr_reporter,
     save_mtr_logs,
 )
@@ -34,6 +36,7 @@ def asan_ubsan(
     config: DockerConfig,
     jobs: int,
     isDebugBuildType: bool,
+    isExperimental: bool,
 ):
     sequence = BuildSequence()
 
@@ -73,10 +76,17 @@ def asan_ubsan(
         CMakeOption(WITH.UBSAN, True),
         CMakeOption(WITH.UNIT_TESTS, False),
         CMakeOption(PLUGIN.COLUMNSTORE_STORAGE_ENGINE, False),
+        CMakeOption(PLUGIN.DUCKDB_STORAGE_ENGINE, False),
     ]
     if isDebugBuildType:
-        flags.append(CMakeOption(CMAKE.BUILD_TYPE, BuildType.DEBUG))
-        flags.append(CMakeOption(WITH.DBUG_TRACE, False))
+        flags.extend(
+            [
+                CMakeOption(CMAKE.BUILD_TYPE, BuildType.DEBUG),
+                CMakeOption(WITH.DBUG_TRACE, False),
+                CMakeOption(CMAKE.C_FLAGS, "-Og"),
+                CMakeOption(CMAKE.CXX_FLAGS, "-Og"),
+            ]
+        )
 
     sequence.add_step(
         InContainer(
@@ -164,20 +174,24 @@ def asan_ubsan(
                 docker_environment=config, step=step
             ),
         )
-        + [
-            save_mtr_logs(
-                step_wrapping_fn=lambda step: InContainer(
-                    docker_environment=config, step=step
-                ),
-            ),
-            mtr_reporter(
-                step_wrapping_fn=lambda step: InContainer(
-                    docker_environment=config, step=step
-                ),
-            ),
-        ]
     ):
         sequence.add_step(step)
+
+    sequence.add_step(
+        save_mtr_logs(
+            step_wrapping_fn=lambda step: InContainer(
+                docker_environment=config, step=step
+            ),
+        )
+    )
+
+    sequence.add_step(
+        mtr_reporter(
+            step_wrapping_fn=lambda step: InContainer(
+                docker_environment=config, step=step
+            ),
+        ),
+    )
 
     return sequence
 
@@ -186,6 +200,7 @@ def msan(
     config: DockerConfig,
     jobs: int,
     isDebugBuildType: bool,
+    isExperimental: bool,
 ):
     sequence = BuildSequence()
 
@@ -214,13 +229,20 @@ def msan(
         CMakeOption(WITH.ZLIB, "bundled"),
         CMakeOption(WITH.SYSTEMD, "no"),
         CMakeOption(PLUGIN.COLUMNSTORE_STORAGE_ENGINE, False),
-        CMakeOption(PLUGIN.SPIDER_STORAGE_ENGINE, isDebugBuildType),
+        CMakeOption(PLUGIN.SPIDER_STORAGE_ENGINE, isDebugBuildType or isExperimental),
         CMakeOption(PLUGIN.ROCKSDB_STORAGE_ENGINE, False),
         CMakeOption(PLUGIN.OQGRAPH_STORAGE_ENGINE, False),
+        CMakeOption(PLUGIN.DUCKDB_STORAGE_ENGINE, False),
     ]
     if isDebugBuildType:
-        flags.append(CMakeOption(CMAKE.BUILD_TYPE, BuildType.DEBUG))
-        flags.append(CMakeOption(WITH.DBUG_TRACE, False))
+        flags.extend(
+            [
+                CMakeOption(CMAKE.BUILD_TYPE, BuildType.DEBUG),
+                CMakeOption(WITH.DBUG_TRACE, False),
+                CMakeOption(CMAKE.C_FLAGS, "-Og"),
+                CMakeOption(CMAKE.CXX_FLAGS, "-Og"),
+            ]
+        )
 
     sequence.add_step(
         InContainer(
@@ -279,7 +301,7 @@ def msan(
         path_to_test_runner=PurePath("bld", "mysql-test"),
         step_wrapping_fn=lambda step: InContainer(docker_environment=config, step=step),
     )
-    if isDebugBuildType:
+    if isDebugBuildType or isExperimental:
         steps += get_mtr_spider_steps(
             jobs=jobs,
             env_vars=env_vars,
@@ -290,6 +312,26 @@ def msan(
                 docker_environment=config, step=step
             ),
         )
+    if isExperimental and not isDebugBuildType:
+        steps += get_mtr_cursor_steps(
+            jobs=jobs,
+            env_vars=env_vars,
+            halt_on_failure=False,
+            path_to_test_runner=PurePath("bld", "mysql-test"),
+            step_wrapping_fn=lambda step: InContainer(
+                docker_environment=config, step=step
+            ),
+        )
+        steps += get_mtr_view_steps(
+            jobs=jobs,
+            env_vars=env_vars,
+            halt_on_failure=False,
+            path_to_test_runner=PurePath("bld", "mysql-test"),
+            step_wrapping_fn=lambda step: InContainer(
+                docker_environment=config, step=step
+            ),
+        )
+    # Save results
     steps += [
         save_mtr_logs(
             step_wrapping_fn=lambda step: InContainer(

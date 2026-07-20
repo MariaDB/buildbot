@@ -65,6 +65,102 @@ def get_mtr_normal_steps(
     return steps
 
 
+def get_mtr_cursor_steps(
+    jobs,
+    path_to_test_runner: PurePath,
+    halt_on_failure: bool = True,
+    step_wrapping_fn=lambda step: step,
+    additional_mtr_options: list[MTROption] = [],
+    env_vars: list[tuple] = [],
+):
+    steps = []
+    steps.append(
+        step_wrapping_fn(
+            ShellStep(
+                MTRTest(
+                    name="cursor",
+                    save_logs_path=MTR_PATH_TO_SAVE_LOGS / "cursor",
+                    workdir=path_to_test_runner,
+                    testcase=MTRGenerator(
+                        flags=[
+                            MTROption(MTR.VERBOSE_RESTART, True),
+                            MTROption(MTR.FORCE, True),
+                            MTROption(MTR.CURSOR_PROTOCOL, True),
+                            MTROption(MTR.MAX_SAVE_CORE, 2),
+                            MTROption(MTR.MAX_SAVE_DATADIR, 1),
+                            MTROption(MTR.MAX_TEST_FAIL, 20),
+                            MTROption(MTR.PARALLEL, jobs * 2),
+                            MTROption(MTR.VARDIR, "/dev/shm/cursor"),
+                            MTROption(
+                                MTR.XML_REPORT, MTR_PATH_TO_SAVE_LOGS / "cursor.xml"
+                            ),
+                        ]
+                        + additional_mtr_options,
+                        suite_collection=TestSuiteCollection(
+                            [
+                                SUITE.MAIN,
+                            ]
+                        ),
+                    ),
+                ),
+                options=StepOptions(
+                    haltOnFailure=halt_on_failure, descriptionDone="MTR cursor"
+                ),
+                env_vars=env_vars,
+            )
+        )
+    )
+    return steps
+
+
+def get_mtr_view_steps(
+    jobs,
+    path_to_test_runner: PurePath,
+    halt_on_failure: bool = True,
+    step_wrapping_fn=lambda step: step,
+    additional_mtr_options: list[MTROption] = [],
+    env_vars: list[tuple] = [],
+):
+    steps = []
+    steps.append(
+        step_wrapping_fn(
+            ShellStep(
+                MTRTest(
+                    name="view",
+                    save_logs_path=MTR_PATH_TO_SAVE_LOGS / "view",
+                    workdir=path_to_test_runner,
+                    testcase=MTRGenerator(
+                        flags=[
+                            MTROption(MTR.VERBOSE_RESTART, True),
+                            MTROption(MTR.FORCE, True),
+                            MTROption(MTR.VIEW_PROTOCOL, True),
+                            MTROption(MTR.MAX_SAVE_CORE, 2),
+                            MTROption(MTR.MAX_SAVE_DATADIR, 1),
+                            MTROption(MTR.MAX_TEST_FAIL, 20),
+                            MTROption(MTR.PARALLEL, jobs * 2),
+                            MTROption(MTR.VARDIR, "/dev/shm/view"),
+                            MTROption(
+                                MTR.XML_REPORT, MTR_PATH_TO_SAVE_LOGS / "view.xml"
+                            ),
+                        ]
+                        + additional_mtr_options,
+                        suite_collection=TestSuiteCollection(
+                            [
+                                SUITE.MAIN,
+                            ]
+                        ),
+                    ),
+                ),
+                options=StepOptions(
+                    haltOnFailure=halt_on_failure, descriptionDone="MTR view"
+                ),
+                env_vars=env_vars,
+            )
+        )
+    )
+    return steps
+
+
 def get_mtr_rocksdb_steps(
     jobs,
     path_to_test_runner: PurePath,

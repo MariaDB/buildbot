@@ -27,7 +27,7 @@
 
 - name: sg-bbw1
   arch: amd64
-  total_jobs: 128
+  total_jobs: 20
   os_type: debian
 
 - name: bg-arm-rasmus-5
