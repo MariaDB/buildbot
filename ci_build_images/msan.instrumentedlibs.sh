@@ -102,7 +102,7 @@ if [ "${VERSION_CODENAME}" = trixie ]; then
 
 # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1141600
 # awaiting arrival on Debian stable 13.7 point release
-  for a in deb deb-src; do echo "$a" https://snapshot.debian.org/archive/debian/20260716T143135Z/ "${VERSION_CODENAME}" main ; done > /etc/apt/sources.list.d/unixodbc.list
+  for a in deb deb-src; do echo "$a [check-valid-until=no]" https://snapshot.debian.org/archive/debian/20260716T143135Z/ "${VERSION_CODENAME}-proposed-updates" main ; done > /etc/apt/sources.list.d/unixodbc.list
   apt-get update
   # for ASAN
   apt-get install -y unixodbc-dev
