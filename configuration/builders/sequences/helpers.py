@@ -242,6 +242,7 @@ def get_mtr_galera_steps(
                             [
                                 SUITE.WSREP,
                                 SUITE.GALERA,
+                                SUITE.GALERA_SR,
                                 SUITE.GALERA_3NODES,
                                 SUITE.GALERA_3NODES_SR,
                             ]

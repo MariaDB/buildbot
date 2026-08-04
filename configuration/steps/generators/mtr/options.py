@@ -56,6 +56,7 @@ class SUITE(StrEnum):
     FUNCS_2 = "funcs_2"
     FUNC_TEST = "func_test"
     GALERA = "galera"
+    GALERA_SR = "galera_sr"
     GALERA_3NODES = "galera_3nodes"
     GALERA_3NODES_SR = "galera_3nodes_sr"
     GCOL = "gcol"
