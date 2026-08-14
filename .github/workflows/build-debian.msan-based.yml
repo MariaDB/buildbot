@@ -46,6 +46,12 @@ jobs:
             tag: debian13-msan-clang-22
             clang_version: 22
             nogalera: false
+          - image: debian:13
+            platforms: linux/amd64
+            branch: 11.8
+            tag: debian13-msan-clang-24
+            clang_version: 24
+            nogalera: false
 
     uses: ./.github/workflows/bbw_build_container_template.yml
     with:
