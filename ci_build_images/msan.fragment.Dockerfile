@@ -9,7 +9,7 @@ ARG CLANG_VERSION=22
 # This CLANG_DEV_VERSION is a marker to make it possible to build a msan builder
 # from the nightly clang versions as they are in a differently name repositories.
 # This maps to the https://apt.llvm.org/ under "development" branch version.
-ENV CLANG_DEV_VERSION=23
+ENV CLANG_DEV_VERSION=24
 
 WORKDIR /msan-build
 
