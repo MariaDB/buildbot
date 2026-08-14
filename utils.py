@@ -570,6 +570,10 @@ def isJepsenBranch(step: BuildStep) -> bool:
     return step.getProperty("branch").startswith("jpsn")
 
 
+def isTxnTesterBranch(step: BuildStep) -> bool:
+    return step.getProperty("branch").startswith("txn")
+
+
 @util.renderer
 def mtrEnv(props: IProperties) -> dict:
     """
