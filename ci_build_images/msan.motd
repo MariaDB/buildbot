@@ -59,4 +59,4 @@ To mark a function as unoptimized use the attribute:
 ref sanitizer flags documents:
 * https://github.com/google/sanitizers/wiki/AddressSanitizerFlags
 * https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
-* https://mariadb.com/docs/server/server-management/install-and-upgrade-mariadb/installing-mariadb/compiling-mariadb-from-source/compile-and-using-mariadb-with-sanitizers-asan-ubsan-tsan-msan#buildbots-msan-container
+* https://mariadb.com/docs/server/reference/product-development/mariadb-fault-finding/compile-and-using-mariadb-with-sanitizers-asan-ubsan-tsan-msan
