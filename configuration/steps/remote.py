@@ -2,7 +2,7 @@ from buildbot.interfaces import IBuildStep
 from buildbot.plugins import steps, util
 from buildbot.process.results import SUCCESS, WARNINGS
 from configuration.steps.base import BaseStep, StepOptions
-from configuration.steps.commands.base import URL, Command, ShellCommandWithURL
+from configuration.steps.commands.base import URL, Command, CustomShellCommand
 
 
 class ShellStep(BaseStep):
@@ -51,7 +51,7 @@ class ShellStep(BaseStep):
 
     def generate(self) -> IBuildStep:
         workdir = self._set_workdir()
-        return ShellCommandWithURL(
+        return CustomShellCommand(
             name=self.name,
             command=[*self.prefix_cmd, *self.command.as_cmd_arg()],
             interruptSignal=self.interrupt_signal,
