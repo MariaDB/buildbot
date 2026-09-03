@@ -119,6 +119,10 @@ RUN source /etc/os-release \
        fi \
     && if [ "$ID" != "openeuler" ]; then dnf -y install yum-utils; fi \
     && if [ "$(uname -m)" = "x86_64" ]; then dnf -y install libpmem-devel; fi \
+    # leaving the mariadb module stream enabled in the image makes dnf
+    # modular-filter out MariaDB packages that builders later pull from
+    # their own mariadb repo (version mismatch with the enabled stream)
+    && if [ "$ID" = "centos-stream" ] && [ "$VERSION_ID" = "9" ]; then dnf -y module disable mariadb; fi \
     && dnf clean all \
     # dumb-init rpm is not available on centos (official repo) \
     && curl -sL "https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_$(uname -m)" >/usr/local/bin/dumb-init \
