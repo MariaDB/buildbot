@@ -221,11 +221,26 @@ class RunPluginMTRSuite(Command):
     # gets installed -- see that class for why re-discovering it here, after
     # install, doesn't work. No suite for the plugin under test is skipped
     # rather than failing the build.
+    #
+    # On failure, logs are saved under save_logs_path -- default mirrors
+    # _save_packages_step's layout in autobake.py (plugin/commit dir), with
+    # a "logs" dir per builder underneath, e.g.
+    # /packages/foundry/<mariadb_version>-<tarbuildnum>/<plugin>/<foundry_revision>/logs/<buildername>
+    MTR_VARDIR = "/home/buildbot"
+
     def __init__(
-        self, package_type: str, suites: str, workdir: PurePath = PurePath(".")
+        self,
+        package_type: str,
+        suites: str,
+        workdir: PurePath = PurePath("."),
+        save_logs_path: str = (
+            "/packages/foundry/%(prop:mariadb_version)s-%(prop:tarbuildnum)s"
+            "/%(prop:plugin)s/%(prop:foundry_revision)s/logs/%(prop:buildername)s"
+        ),
     ):
         self.package_type = package_type
         self.suites = suites
+        self.save_logs_path = save_logs_path
         super().__init__(name="Run plugin MTR suite", workdir=workdir, user="root")
 
     def as_cmd_arg(self) -> list[str]:
@@ -258,10 +273,52 @@ if [ -z "$suites" ]; then
     exit 0
 fi
 
-cd "$mtr_base_dir" && perl mariadb-test-run.pl --force --max-test-fail=20 --suite="$suites" --vardir=/home/buildbot
+cd "$mtr_base_dir" && perl mariadb-test-run.pl --force --max-test-fail=20 --suite="$suites" --vardir={self.MTR_VARDIR} || ({self._save_logs()})
 """
             ),
         ]
+
+    def _save_logs(self) -> str:
+        # Mirrors MTRTest._save_logs (commands/mtr.py) for the "installed
+        # packages" case: RunPluginMTRSuite always runs off installed
+        # MariaDB-test/mariadb-test packages, never a build tree, so there's
+        # no source-tree mariadbd fallback to try.
+        logs = ["*.log", "*.err*", "core*"]
+        patterns = " -o ".join([f'-iname "{log}"' for log in logs])
+        return f"""
+            vardir="{self.MTR_VARDIR}"
+            save_logs_path="{self.save_logs_path}"
+            file_patterns_to_save="{patterns}"
+
+            if [ -d /usr/lib/mysql/plugin ]; then
+                plugins_dir="/usr/lib/mysql/plugin"
+            elif [ -d /usr/lib64/mysql/plugin ]; then
+                plugins_dir="/usr/lib64/mysql/plugin"
+            else
+                plugins_dir="$vardir/plugins"
+            fi
+            mariadbd_path=$(command -v mariadbd 2>/dev/null || true)
+
+            echo "Saving MTR logs"
+
+            mkdir -p "$save_logs_path"
+
+            # Save plugins .so and mariadbd if a core file was generated
+            save_bin=0
+            find $vardir -name *core.* -exec false {{}} + || save_bin=1
+            if [[ $save_bin -ne 0 ]]; then
+                find -L "$plugins_dir" -maxdepth 1 -type f -name '*.so' -printf '%%f\\n' > "$save_logs_path/plugins_list.txt"
+                tar -czvf "$save_logs_path/plugins.tar.gz" --dereference -C "$plugins_dir" -T "$save_logs_path/plugins_list.txt"
+                [ -n "$mariadbd_path" ] && gzip -c "$mariadbd_path" > "$save_logs_path/mariadbd.gz"
+            fi
+
+            # Some core files are left uncompressed by MTR
+            find $vardir -iregex ".*/core\\(\\.[0-9]+\\)?" -ls -exec gzip {{}} +
+
+            # Copy pattern matching files to the final destination
+            cd "$vardir" && find . -type f \\( -path './log/*' -o $file_patterns_to_save \\) -print0 | rsync -a --from0 --files-from=- ./ "$save_logs_path/"
+            exit 1 # Script was invoked by an MTR failure so we must mark the step as failed
+            """
 
 
 class RunPluginMTRSuiteFromBintar(Command):

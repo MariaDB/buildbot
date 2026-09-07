@@ -56,6 +56,19 @@ def _capture_foundry_revision_step(config: DockerConfig):
     )
 
 
+def _run_plugin_mtr_suite_step(config: DockerConfig, command: RunPluginMTRSuite):
+    # Points at the same "logs" dir RunPluginMTRSuite's default
+    # save_logs_path saves into on failure -- see foundry.py.
+    url = (
+        f"{os.environ['ARTIFACTS_URL']}/foundry/%(prop:mariadb_version)s-%(prop:tarbuildnum)s"
+        "/%(prop:plugin)s/%(prop:foundry_revision)s/logs/%(prop:buildername)s"
+    )
+    return InContainer(
+        ShellStep(command=command, url=URL(url=url, url_text="Logs")),
+        docker_environment=config,
+    )
+
+
 def _save_packages_step(config: DockerConfig, package_glob: str):
     # The same builder gets triggered once per mariadb_version (and, on a
     # different run, for a different plugin, or a different foundry commit)
@@ -132,11 +145,8 @@ def deb(config: DockerConfig, repo_file_url: str):
         )
     )
     sequence.add_step(
-        InContainer(
-            ShellStep(
-                command=RunPluginMTRSuite("DEB", "%(prop:plugin_suites)s")
-            ),
-            docker_environment=config,
+        _run_plugin_mtr_suite_step(
+            config, RunPluginMTRSuite("DEB", "%(prop:plugin_suites)s")
         )
     )
     return sequence
@@ -193,11 +203,8 @@ def rpm(config: DockerConfig, repo_file_url: str):
         )
     )
     sequence.add_step(
-        InContainer(
-            ShellStep(
-                command=RunPluginMTRSuite("RPM", "%(prop:plugin_suites)s")
-            ),
-            docker_environment=config,
+        _run_plugin_mtr_suite_step(
+            config, RunPluginMTRSuite("RPM", "%(prop:plugin_suites)s")
         )
     )
     return sequence
