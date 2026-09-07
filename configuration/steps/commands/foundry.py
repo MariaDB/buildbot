@@ -226,7 +226,11 @@ class RunPluginMTRSuite(Command):
     # _save_packages_step's layout in autobake.py (plugin/commit dir), with
     # a "logs" dir per builder underneath, e.g.
     # /packages/foundry/<mariadb_version>-<tarbuildnum>/<plugin>/<foundry_revision>/logs/<buildername>
-    MTR_VARDIR = "/home/buildbot"
+    #
+    # A subdir of the container's home, not /home/buildbot itself -- that's
+    # the docker volume's own mount point, so MTR's "remove old var
+    # directory" can never succeed there (Device or resource busy).
+    MTR_VARDIR = "/home/buildbot/mtr-var"
 
     def __init__(
         self,
@@ -241,7 +245,14 @@ class RunPluginMTRSuite(Command):
         self.package_type = package_type
         self.suites = suites
         self.save_logs_path = save_logs_path
-        super().__init__(name="Run plugin MTR suite", workdir=workdir, user="root")
+        # Run unprivileged (the Command default, "buildbot"): galera SST's
+        # rsync daemon only privilege-drops to nobody:nogroup when launched
+        # by root (see rsyncd.conf(5) "uid"/"gid") -- wsrep_sst_rsync's
+        # generated config never pins uid=/gid=, so a root-run mariadbd hits
+        # that default and can't read the 0660 wsrep_* system tables during
+        # SST. Running as buildbot keeps rsync at that same uid, which owns
+        # those files, sidestepping the whole thing.
+        super().__init__(name="Run plugin MTR suite", workdir=workdir)
 
     def as_cmd_arg(self) -> list[str]:
         # Ask the package manager where MariaDB-test/mariadb-test actually
