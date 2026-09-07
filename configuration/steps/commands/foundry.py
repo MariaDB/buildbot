@@ -307,16 +307,21 @@ cd "$mtr_base_dir" && perl mariadb-test-run.pl --force --max-test-fail=20 --suit
             save_bin=0
             find $vardir -name *core.* -exec false {{}} + || save_bin=1
             if [[ $save_bin -ne 0 ]]; then
-                find -L "$plugins_dir" -maxdepth 1 -type f -name '*.so' -printf '%%f\\n' > "$save_logs_path/plugins_list.txt"
-                tar -czvf "$save_logs_path/plugins.tar.gz" --dereference -C "$plugins_dir" -T "$save_logs_path/plugins_list.txt"
+                plugins_list=$(mktemp)
+                find -L "$plugins_dir" -maxdepth 1 -type f -name '*.so' -printf '%%f\\n' > "$plugins_list"
+                tar -czvf "$save_logs_path/plugins.tar.gz" --dereference -C "$plugins_dir" -T "$plugins_list"
+                rm -f "$plugins_list"
                 [ -n "$mariadbd_path" ] && gzip -c "$mariadbd_path" > "$save_logs_path/mariadbd.gz"
             fi
 
             # Some core files are left uncompressed by MTR
             find $vardir -iregex ".*/core\\(\\.[0-9]+\\)?" -ls -exec gzip {{}} +
 
-            # Copy pattern matching files to the final destination
-            cd "$vardir" && find . -type f \\( -path './log/*' -o $file_patterns_to_save \\) -print0 | rsync -a --from0 --files-from=- ./ "$save_logs_path/"
+            # Archive matching log/core files into a single var.tar.gz --
+            # same as the classic autobake server builders (see createVar()
+            # in utils.py) -- instead of laying individual files out under
+            # save_logs_path.
+            cd "$vardir" && find . -type f \\( -path './log/*' -o $file_patterns_to_save \\) -print0 | tar -czf "$save_logs_path/var.tar.gz" --null -T -
             exit 1 # Script was invoked by an MTR failure so we must mark the step as failed
             """
 
