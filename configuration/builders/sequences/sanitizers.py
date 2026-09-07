@@ -15,6 +15,7 @@ from configuration.builders.sequences.helpers import (
     save_mtr_logs,
 )
 from configuration.steps.base import StepOptions
+from configuration.steps.commands.base import BashCommand
 from configuration.steps.commands.compile import CompileCMakeCommand
 from configuration.steps.commands.configure import ConfigureMariaDBCMake
 from configuration.steps.commands.download import FetchGitHub, FetchTarball
@@ -68,6 +69,19 @@ def asan_ubsan(
                     options=StepOptions(descriptionDone=f"Fetch {asset}"),
                 ),
             )
+        )
+        sequence.add_step(
+            InContainer(
+                docker_environment=config,
+                step=ShellStep(
+                    command=BashCommand(
+                        name="Filter to unfixed bugs",
+                        workdir=PurePath("bld"),
+                        cmd=f"sed -i -e '/^# BUILDBOT CI MARKER FOR /,$d' '{asset}'",
+                    ),
+                    options=StepOptions(descriptionDone=f"Adjusted {asset}"),
+                ),
+            ),
         )
 
     flags = [
