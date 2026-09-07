@@ -22,8 +22,8 @@ FOUNDRY_FORCE_SCHEDULERS.append(
                 codebase="",
                 branch=util.FixedParameter(name="branch", default="main"),
                 revision=util.FixedParameter(name="revision", default=""),
-                repository=util.FixedParameter(name="repository", default="https://github.com/vuvova/foundry"),
-                project=util.FixedParameter(name="project", default="vuvova/foundry"),
+                repository=util.FixedParameter(name="repository", default="https://github.com/MariaDB/foundry"),
+                project=util.FixedParameter(name="project", default="MariaDB/foundry"),
             )
         ]
     )

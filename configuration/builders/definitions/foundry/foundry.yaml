@@ -1,5 +1,5 @@
 ---
-# Plugins registered in https://github.com/vuvova/foundry (one top-level
+# Plugins registered in https://github.com/MariaDB/foundry (one top-level
 # directory each). Selectable via foundry_force_scheduler's "plugin" param
 # and passed straight to "cmake -P run.cmake <plugin>" in the child builders.
 # Note: the plugin's installed MTR "plugin/<name>/suite/" directory isn't
