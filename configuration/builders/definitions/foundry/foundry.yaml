@@ -115,7 +115,7 @@ packages:
 # last-known-good tarbuildnum for each branch.
 mariadb_versions:
   "11.4":
-    tarbuildnum: 73276
+    tarbuildnum: 73489
     packages:
       - centosstream-9
       - centosstream-10
