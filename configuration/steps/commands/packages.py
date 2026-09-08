@@ -415,6 +415,13 @@ class SetupDEBRepoFromURL(Command):
                 f"""
 set -euo pipefail
 curl -fsSL {self.sources_file_url} -o /etc/apt/sources.list.d/mariadb.sources
+# Debian 11 (bullseye) is oldoldstable -- debian-security's Release file
+# sometimes goes past its Valid-Until before a new one is published, which
+# makes apt-get update hard-fail. Stop checking its expiry.
+. /etc/os-release
+if [ "$ID" = "debian" ] && [ "$VERSION_ID" = "11" ] && [ -f /etc/apt/sources.list ]; then
+    sed -i 's|^deb \\(.*\\)debian-security bullseye-security|deb [check-valid-until=no] \\1debian-security bullseye-security|' /etc/apt/sources.list
+fi
 apt-get update
 """
             ),
