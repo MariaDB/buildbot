@@ -417,10 +417,14 @@ set -euo pipefail
 curl -fsSL {self.sources_file_url} -o /etc/apt/sources.list.d/mariadb.sources
 # Debian 11 (bullseye) is oldoldstable -- debian-security's Release file
 # sometimes goes past its Valid-Until before a new one is published, which
-# makes apt-get update hard-fail. Stop checking its expiry.
+# makes apt-get update hard-fail. Stop checking its expiry. The deb-src
+# line for the same repo (derived from sources.list at image build time,
+# see debian.Dockerfile) lives in a separate sources.list.d/*.list file --
+# apt rejects mismatched Check-Valid-Until values for the same URI, so
+# both the deb and deb-src lines need patching, wherever they are.
 . /etc/os-release
-if [ "$ID" = "debian" ] && [ "$VERSION_ID" = "11" ] && [ -f /etc/apt/sources.list ]; then
-    sed -i 's|^deb \\(.*\\)debian-security bullseye-security|deb [check-valid-until=no] \\1debian-security bullseye-security|' /etc/apt/sources.list
+if [ "$ID" = "debian" ] && [ "$VERSION_ID" = "11" ]; then
+    sed -i 's#^\\(deb\\|deb-src\\) \\(.*\\)debian-security bullseye-security#\\1 [check-valid-until=no] \\2debian-security bullseye-security#' /etc/apt/sources.list /etc/apt/sources.list.d/*.list 2>/dev/null || true
 fi
 apt-get update
 """
