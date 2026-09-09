@@ -692,7 +692,7 @@ def getRpmAutobakeFactory():
             ],
             env={"CCACHE_DIR": "/mnt/ccache"},
             description="make package",
-            timeout=3600,
+            timeout=7200,
         )
     )
     # list rpm contents
