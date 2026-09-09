@@ -1,15 +1,12 @@
 ---
-# Plugins registered in https://github.com/MariaDB/foundry (one top-level
-# directory each). Selectable via foundry_force_scheduler's "plugin" param
-# and passed straight to "cmake -P run.cmake <plugin>" in the child builders.
-# Note: the plugin's installed MTR "plugin/<name>/suite/" directory isn't
-# necessarily named the same (e.g. tidesql's CMake target is "tidesdb") --
-# RunPluginMTRSuite discovers that at runtime rather than assuming it matches.
-plugins:
-  - disabled-functions
-  - levenshtein
-  - tidesql
-
+# Plugins are NOT listed here. Foundry registers one plugin per top-level
+# directory containing a CMakeLists.txt, and the dispatcher builder clones
+# the repo and discovers them at runtime (DiscoverFoundryPlugins in
+# configuration/steps/commands/foundry.py), so adding a plugin to Foundry is
+# all it takes to get it built. For a pull request only the plugins it
+# touches are built. The whole list is then handed to one
+# "cmake -P run.cmake <plugin>..." per builder.
+#
 # Foundry package builders: one builder per (package, arch) combination.
 # "version" + "ops" concatenate to the docker image tag (see os_info.yaml),
 # e.g. ops: ubuntu, version: "22.04" -> image "ubuntu22.04".
@@ -91,10 +88,14 @@ packages:
     os_info_key: opensuse-1600
     arch: [amd64]
   # Bintar builds: the plugin is built against a MariaDB server bintar
-  # (fetched from ci_bintar_builder on ci.mariadb.org, same tarbuildnum)
   # instead of installed -devel packages -- see autobake.bintar. Only one
   # image builds bintars per MariaDB version range: centos7 up to 11.4,
   # almalinux8 from 11.8 on (see mariadb_versions below).
+  # "ci_bintar_builder" names the ci.mariadb.org builder publishing the
+  # bintar for this image under the dispatched tarbuildnum; it's unused on
+  # mirror-sourced runs, which take the GA release bintar (a single
+  # linux-systemd-x86_64 tarball, the same one for every builder). x86_64
+  # only, hence arch: [amd64].
   - ops: centos
     version: "7-bintar"
     type: bintar
@@ -106,16 +107,24 @@ packages:
     ci_bintar_builder: amd64-almalinux-8-bintar
     arch: [amd64]
 
-# Supported MariaDB versions: which packages get built for each, and the
-# tarbuildnum of the server CI build to install MariaDB-devel/libmariadb-dev
-# from (i.e. https://ci.mariadb.org/<tarbuildnum>/). Add or remove a version
-# here to change what "foundry-trigger-builders" dispatches.
+# Supported MariaDB versions: which packages get built for each. Add or
+# remove a version here to change both what "foundry-trigger-builders"
+# dispatches and what foundry_force_scheduler asks about.
 #
-# TODO: these tarbuildnum values are placeholders -- replace with the actual
-# last-known-good tarbuildnum for each branch.
+# Where the server packages come from is no longer pinned here -- the force
+# scheduler asks per version, offering "use the MariaDB Server mirrors" (the
+# default), "use a ci.mariadb.org tarball" (with a tarbuildnum to go with it)
+# or "skip this version". See sources.py.
+#
+# The version key doubles as the mirror path segment, so it has to be a
+# directory published under https://mirror.mariadb.org/repo/ (deb) and
+# https://mirror.mariadb.org/yum/ (rpm), with a matching mariadb-<version>.<z>
+# GA release at https://mirror.mariadb.org/ for the bintar builders -- and
+# each package listed for it has to be one the mirrors carry for that version.
+# Those differ per branch: 11.4 has no sles-15.7/16.0 or opensuse-16.0 repo,
+# while 11.8 does, which is why the SUSE packages are only listed from 11.8 on.
 mariadb_versions:
   "11.4":
-    tarbuildnum: 73489
     packages:
       - centosstream-9
       - centosstream-10
@@ -128,7 +137,6 @@ mariadb_versions:
       - ubuntu-24.04
       - centos-7-bintar
   # "11.8":
-  #   tarbuildnum: 0
   #   packages:
   #     - centosstream-9
   #     - centosstream-10

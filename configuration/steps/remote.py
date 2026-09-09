@@ -1,6 +1,7 @@
 from buildbot.interfaces import IBuildStep
 from buildbot.plugins import steps, util
 from buildbot.process.results import SUCCESS, WARNINGS
+
 from configuration.steps.base import BaseStep, StepOptions
 from configuration.steps.commands.base import URL, Command, ShellCommandWithURL
 
@@ -18,11 +19,19 @@ class ShellStep(BaseStep):
         urlText (str): Optional text for the URL. Defaults to the url itself.
         timeout (int): Timeout for the command execution in seconds. Defaults to 1200 seconds.
         warn_on_fail (bool): If True, treat non-zero return codes as warnings instead of failures.
+        decode_rc (dict): Explicit return-code-to-result mapping, overriding
+            warn_on_fail. Return codes absent from it are failures.
     Args:
     """
 
     DEFAULT_DECODE_RC = {0: SUCCESS}
     WARN_ON_FAIL_DECODE_RC = {0: SUCCESS, **{i: WARNINGS for i in range(1, 256)}}
+    # For commands that work through a list of items best-effort and report
+    # the outcome in their exit code: 0 = all succeeded, 2 = some did and some
+    # didn't, anything else = none did. Pair with
+    # StepOptions(flunkOnWarnings=True) so the partial case reads as a warning
+    # on the step but still fails the build.
+    PARTIAL_SUCCESS_DECODE_RC = {0: SUCCESS, 2: WARNINGS}
 
     def __init__(
         self,
@@ -33,6 +42,7 @@ class ShellStep(BaseStep):
         url: URL = None,
         timeout=1200,  # Default timeout in seconds
         warn_on_fail=False,
+        decode_rc: dict = None,
     ):
         if env_vars is None:
             env_vars = []
@@ -44,7 +54,9 @@ class ShellStep(BaseStep):
         assert isinstance(command, Command)
         super().__init__(command.name, options)
         self.prefix_cmd = []
-        if warn_on_fail:
+        if decode_rc is not None:
+            self.decode_return_code = decode_rc
+        elif warn_on_fail:
             self.decode_return_code = self.WARN_ON_FAIL_DECODE_RC
         else:
             self.decode_return_code = self.DEFAULT_DECODE_RC
