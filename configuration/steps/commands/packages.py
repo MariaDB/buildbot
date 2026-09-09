@@ -2,7 +2,24 @@ from pathlib import PurePath
 from typing import Iterable, Union
 
 from buildbot.plugins import util
+
 from configuration.steps.commands.base import Command
+
+# Debian 11 (bullseye) is oldoldstable -- its debian-security repo is served
+# off a mirror network whose backend nodes lag/desync for this EOL suite
+# (stale Release "Valid-Until", and even 404s on packages that other backends
+# serve fine). All its packages also exist, unpatched, in plain bullseye main,
+# so just disable the security repo outright rather than fight the mirror --
+# the deb-src line for it (derived from sources.list at image build time, see
+# debian.Dockerfile) lives in a separate sources.list.d/*.list file, so both
+# need disabling, wherever they are. Must run before the first apt-get update,
+# which otherwise fails on the stale Release file.
+_DISABLE_EOL_DEBIAN_SECURITY_REPO = """
+. /etc/os-release
+if [ "$ID" = "debian" ] && [ "$VERSION_ID" = "11" ]; then
+    sed -i '/^\\(deb\\|deb-src\\) .*debian-security bullseye-security/s/^/# /' /etc/apt/sources.list /etc/apt/sources.list.d/*.list 2>/dev/null || true
+fi
+"""
 
 
 class CreateDebRepo(Command):
@@ -244,13 +261,19 @@ class ArchiveSource(Command):
 
 
 class SetupDEBRepo(Command):
-    def __init__(self, repo_name: str, repo_url: str, components: str = "main"):
+    def __init__(
+        self,
+        repo_name: str,
+        repo_url: str,
+        components: str = "main",
+        name: str = None,
+    ):
         self.repo_name = repo_name
         self.repo_url = repo_url.rstrip("/")
         self.components = components
 
         super().__init__(
-            name=f"Setup DEB repository: {repo_name}",
+            name=name or f"Setup DEB repository: {repo_name}",
             workdir=PurePath("."),
             user="root",
         )
@@ -262,6 +285,7 @@ class SetupDEBRepo(Command):
             util.Interpolate(
                 f"""
 set -euo pipefail
+{_DISABLE_EOL_DEBIAN_SECURITY_REPO}
 apt-get update
 apt-get install -y apt-utils apt-transport-https ca-certificates
 
@@ -332,10 +356,25 @@ case $ID in
   ;;
 esac
 base_id=$ID
+case $base_id in
+  # openSUSE reports ID=opensuse-leap / opensuse-tumbleweed, but the MariaDB
+  # repositories publish it under a plain "opensuse" directory.
+  opensuse*)
+    base_id=opensuse
+  ;;
+esac
 url_path="$base_id/$base_version/$(rpm --eval '%%_arch')"
 
+# zypper reads its own directory, not yum's
+if [ "$PKG_MGR" = "zypper" ]; then
+    repo_dir=/etc/zypp/repos.d
+else
+    repo_dir=/etc/yum.repos.d
+fi
+mkdir -p "$repo_dir"
+
 # Create repo file
-cat > /etc/yum.repos.d/{self.repo_name}.repo <<EOF
+cat > "$repo_dir/{self.repo_name}.repo" <<EOF
 [{self.repo_name}]
 name={self.repo_name}
 baseurl={self.repo_url}/$url_path
@@ -351,6 +390,72 @@ if [ "$PKG_MGR" = "zypper" ]; then
 else
     $PKG_MGR makecache
 fi
+"""
+            ),
+        ]
+
+
+class SetupRPMRepoFromURL(Command):
+    # Unlike SetupRPMRepo, installs an existing, unsigned MariaDB.repo published
+    # by a CI build as-is, instead of constructing a repo definition from scratch.
+    def __init__(self, repo_file_url: str):
+        self.repo_file_url = repo_file_url
+        super().__init__(
+            name="Install MariaDB CI repo",
+            workdir=PurePath("."),
+            user="root",
+        )
+
+    def as_cmd_arg(self) -> list[str]:
+        return [
+            "bash",
+            "-exc",
+            util.Interpolate(
+                f"""
+set -euo pipefail
+
+if command -v zypper >/dev/null 2>&1; then
+    repo_dir=/etc/zypp/repos.d
+else
+    repo_dir=/etc/yum.repos.d
+fi
+mkdir -p "$repo_dir"
+curl -fsSL {self.repo_file_url} -o "$repo_dir/MariaDB.repo"
+echo "module_hotfixes = 1" >> "$repo_dir/MariaDB.repo"
+
+if command -v dnf >/dev/null 2>&1; then
+    dnf makecache
+elif command -v zypper >/dev/null 2>&1; then
+    zypper --gpg-auto-import-keys refresh
+else
+    yum makecache
+fi
+"""
+            ),
+        ]
+
+
+class SetupDEBRepoFromURL(Command):
+    # Unlike SetupDEBRepo, installs an existing, unsigned mariadb.sources file
+    # published by a CI build as-is, instead of constructing one from scratch.
+    def __init__(self, sources_file_url: str):
+        self.sources_file_url = sources_file_url
+        super().__init__(
+            name="Install MariaDB CI repo",
+            workdir=PurePath("."),
+            user="root",
+        )
+
+    def as_cmd_arg(self) -> list[str]:
+        return [
+            "bash",
+            "-exc",
+            util.Interpolate(
+                f"""
+set -euo pipefail
+curl -fsSL {self.sources_file_url} -o /etc/apt/sources.list.d/mariadb.sources
+{_DISABLE_EOL_DEBIAN_SECURITY_REPO}
+apt-get update
 """
             ),
         ]

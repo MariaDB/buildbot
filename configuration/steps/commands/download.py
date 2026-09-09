@@ -59,6 +59,15 @@ class GitInitFromCommit(Command):
             depth = "--depth " + str(self.depth)
         else:
             depth = ""
+        # Some worker images (e.g. centos7) ship a git old enough (<1.8.4/2.8)
+        # to not understand submodule update's --depth/--jobs flags at all --
+        # it rejects the whole option set and dumps usage instead of erroring
+        # on just the unknown flag. Fall back to a plain (non-shallow,
+        # unparallelized) submodule update on those rather than failing.
+        submodule_update = (
+            f"git -c http.version=HTTP/1.1 submodule update --init --recursive {depth} --jobs={self.jobs}"
+            " || git -c http.version=HTTP/1.1 submodule update --init --recursive"
+        )
         return [
             "bash",
             "-exc",
@@ -68,7 +77,7 @@ class GitInitFromCommit(Command):
                     f"git remote add origin {self.repo_url} && "
                     f"git -c http.version=HTTP/1.1 fetch {depth} origin {self.commit} && "
                     "git checkout FETCH_HEAD && "
-                    f"git -c http.version=HTTP/1.1 submodule update --init --recursive {depth} --jobs={self.jobs}"
+                    f"({submodule_update})"
                 )
             ),
         ]

@@ -13,12 +13,19 @@ class StepOptions:  # all step (shell, compile, etc) types support these options
     Attributes:
         alwaysRun (bool): If True, the step will always run regardless of previous failures.
         haltOnFailure (bool): If True, the build will halt if this step fails.
+        flunkOnWarnings (bool): If True, a step ending in WARNINGS still fails the
+            overall build, while the step itself stays a warning and the build
+            carries on (see computeResultAndTermination in buildbot's
+            process/results.py). Use for best-effort steps that partly succeeded:
+            the step stays open-able to see what went wrong, but the run is not
+            reported as green.
         doStepIf (callable): A callable that determines if the step should be executed.
     """
 
     # Default : safety first
     alwaysRun: bool = False
     haltOnFailure: bool = True
+    flunkOnWarnings: bool = False
     doStepIf: callable = lambda _: True
     description: str = None
     descriptionDone: str = None
