@@ -694,7 +694,7 @@ def bintar(
                 ShellStep(
                     command=BashCommand(
                         name="Checkout latest C/C",
-                        cmd="git -c http.version=HTTP/1.1 fetch origin $(([ '%(prop:cpp_version)s' = '1.0' ]) && echo 3.3 || echo 3.4) && git reset --hard FETCH_HEAD",
+                        cmd="git fetch origin $(([ '%(prop:cpp_version)s' = '1.0' ]) && echo 3.3 || echo 3.4) && git reset --hard FETCH_HEAD",
                         workdir=PurePath(source_path) / "libmariadb",
                     ),
                     options=StepOptions(

@@ -66,9 +66,9 @@ class GitInitFromCommit(Command):
                 (
                     "git init && "
                     f"git remote add origin {self.repo_url} && "
-                    f"git -c http.version=HTTP/1.1 fetch {depth} origin {self.commit} && "
+                    f"git fetch {depth} origin {self.commit} && "
                     "git checkout FETCH_HEAD && "
-                    f"git -c http.version=HTTP/1.1 submodule update --init --recursive {depth} --jobs={self.jobs}"
+                    f"git submodule update --init --recursive {depth} --jobs={self.jobs}"
                 )
             ),
         ]
