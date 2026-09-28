@@ -48,14 +48,14 @@ packages:
     # without the Memoize MTR needs.
     test_packages: [MariaDB-server, MariaDB-test, "perl(Memoize)"]
     targets:
-      centos-stream9-rpm-autobake:  { image: centosstream9,  arch: [amd64, aarch64],      base_image: quay.io/centos/centos:stream9 }
-      centos-stream10-rpm-autobake: { image: centosstream10, arch: [amd64, aarch64],      base_image: quay.io/centos/centos:stream10 }
-      rhel-8-rpm-autobake:          { image: rhel8,          arch: [amd64, aarch64],      base_image: registry.access.redhat.com/ubi8/ubi, base_mounts: *rhel_subscription }
-      rhel-9-rpm-autobake:          { image: rhel9,          arch: [amd64, aarch64],      base_image: registry.access.redhat.com/ubi9/ubi, base_mounts: *rhel_subscription }
-      rhel-10-rpm-autobake:         { image: rhel10,         arch: [amd64, aarch64],      base_image: registry.access.redhat.com/ubi10/ubi, base_mounts: *rhel_subscription }
-      sles-1507-rpm-autobake:       { image: sles1507,       arch: [amd64],               base_image: registry.suse.com/bci/bci-base:15.7 }
-      sles-1600-rpm-autobake:       { image: sles1600,       arch: [amd64],               base_image: registry.suse.com/bci/bci-base:16.0 }
-      opensuse-1600-rpm-autobake:   { image: opensuse1600,   arch: [amd64],               base_image: docker.io/opensuse/leap:16.0 }
+      centos-stream9-rpm-autobake: { image: centosstream9, arch: [amd64, aarch64], base_image: quay.io/centos/centos:stream9 }
+      centos-stream10-rpm-autobake: { image: centosstream10, arch: [amd64, aarch64], base_image: quay.io/centos/centos:stream10 }
+      rhel-8-rpm-autobake: { image: rhel8, arch: [amd64, aarch64], base_image: registry.access.redhat.com/ubi8/ubi, base_mounts: *rhel_subscription }
+      rhel-9-rpm-autobake: { image: rhel9, arch: [amd64, aarch64], base_image: registry.access.redhat.com/ubi9/ubi, base_mounts: *rhel_subscription }
+      rhel-10-rpm-autobake: { image: rhel10, arch: [amd64, aarch64], base_image: registry.access.redhat.com/ubi10/ubi, base_mounts: *rhel_subscription }
+      sles-1507-rpm-autobake: { image: sles1507, arch: [amd64], base_image: registry.suse.com/bci/bci-base:15.7 }
+      sles-1600-rpm-autobake: { image: sles1600, arch: [amd64], base_image: registry.suse.com/bci/bci-base:16.0 }
+      opensuse-1600-rpm-autobake: { image: opensuse1600, arch: [amd64], base_image: docker.io/opensuse/leap:16.0 }
 
   deb:
     repo_file: mariadb.sources        # published by the CI server builder
@@ -63,19 +63,19 @@ packages:
     build_packages: [libmariadb-dev]
     test_packages: [mariadb-server, mariadb-test]
     targets:
-      debian-12-deb-autobake:       { image: debian12,       arch: [amd64, aarch64, x86], base_image: docker.io/library/debian:12 }
-      debian-13-deb-autobake:       { image: debian13,       arch: [amd64, aarch64],      base_image: docker.io/library/debian:13 }
-      ubuntu-2204-deb-autobake:     { image: ubuntu22.04,    arch: [amd64, aarch64],      base_image: docker.io/library/ubuntu:22.04 }
-      ubuntu-2404-deb-autobake:     { image: ubuntu24.04,    arch: [amd64, aarch64],      base_image: docker.io/library/ubuntu:24.04 }
-      ubuntu-2604-deb-autobake:     { image: ubuntu26.04,    arch: [amd64, aarch64],      base_image: docker.io/library/ubuntu:26.04 }
+      debian-12-deb-autobake: { image: debian12, arch: [amd64, aarch64, x86], base_image: docker.io/library/debian:12 }
+      debian-13-deb-autobake: { image: debian13, arch: [amd64, aarch64], base_image: docker.io/library/debian:13 }
+      ubuntu-2204-deb-autobake: { image: ubuntu22.04, arch: [amd64, aarch64], base_image: docker.io/library/ubuntu:22.04 }
+      ubuntu-2404-deb-autobake: { image: ubuntu24.04, arch: [amd64, aarch64], base_image: docker.io/library/ubuntu:24.04 }
+      ubuntu-2604-deb-autobake: { image: ubuntu26.04, arch: [amd64, aarch64], base_image: docker.io/library/ubuntu:26.04 }
 
   # Built against an unpacked server bintar. centos7 up to 11.4, almalinux8
   # from 11.8.
   bintar:
     mirror_bintar: bintar-linux-systemd-x86_64   # the only flavour mirrored, hence amd64 only
     targets:
-      centos-7-bintar:              { image: centos7-bintar,    arch: [amd64] }
-      almalinux-8-bintar:           { image: almalinux8-bintar, arch: [amd64] }
+      centos-7-bintar: { image: centos7-bintar, arch: [amd64] }
+      almalinux-8-bintar: { image: almalinux8-bintar, arch: [amd64] }
 
 # targets: built on every run; each must be on the mirrors for that version.
 # ci_only: platforms on CI but not on the mirrors yet; built only when Force
