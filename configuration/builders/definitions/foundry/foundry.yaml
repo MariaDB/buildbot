@@ -8,7 +8,7 @@ repository:
   branch: main                        # built when Force is given no commit
 
 access:
-  force_users: []                     # GitHub usernames allowed to press Force
+  force_users: []                     # GitHub usernames allowed to press Force, if MariaDB members
 
 # Where server packages come from: the mirrors (default) or a CI tarbuildnum,
 # picked per version on Force. Pull requests always use the mirrors.

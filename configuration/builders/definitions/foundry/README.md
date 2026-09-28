@@ -12,7 +12,7 @@ Builds each plugin of [MariaDB/foundry](https://github.com/MariaDB/foundry) (one
 
 ## Starting a run
 
-**Force**, open to `access.force_users` in `foundry.yaml` (other MariaDB members can still Rebuild):
+**Force**, open to the MariaDB organization members listed in `access.force_users` in `foundry.yaml` (other MariaDB members can still Rebuild):
 
 - an optional Foundry commit (full SHA), else the tip of `main`;
 - per MariaDB version: the MariaDB Server mirrors (default), a ci.mariadb.org `tarbuildnum`, or skip. A version not on the mirrors yet offers only a `tarbuildnum` or skip, and defaults to skip.

@@ -1,6 +1,7 @@
 import configuration.builders.definitions.foundry.builders as foundry_builders
 from buildbot.plugins import schedulers, util
 from configuration.builders.definitions.foundry import sources
+from configuration.schedulers.foundry_access import force_access
 
 _REPOSITORY = foundry_builders.FOUNDRY_REPOSITORY
 
@@ -74,23 +75,10 @@ FOUNDRY_FORCE_SCHEDULERS = [
     )
 ]
 
-# Who may force the dispatcher, by username: GitHubAuth (API v3) doesn't
-# report team membership.
-FOUNDRY_FORCE_ROLE = "foundry-force"
-FOUNDRY_ROLE_MATCHERS = [
-    util.RolesFromUsername(
-        roles=[FOUNDRY_FORCE_ROLE], usernames=foundry_builders.FOUNDRY_FORCE_USERS
-    )
-]
-
-# Put before master-web's organisation-wide rule. Rebuild stays open.
-FOUNDRY_AUTHZ_RULES = [
-    util.ForceBuildEndpointMatcher(
-        builder=foundry_builders.DISPATCHER_BUILDER.name,
-        role=FOUNDRY_FORCE_ROLE,
-        defaultDeny=True,
-    )
-]
+# Only force_users may force the dispatcher; see foundry_access.py.
+FOUNDRY_ROLE_MATCHERS, FOUNDRY_AUTHZ_RULES = force_access(
+    foundry_builders.DISPATCHER_BUILDER.name, foundry_builders.FOUNDRY_FORCE_USERS
+)
 
 # Pull requests on Foundry: the GitHub hook sets category "pull" on those,
 # not on pushes. Loaded on the master receiving the webhook.
