@@ -31,11 +31,13 @@ _ARCHIVE = "sources/%(prop:buildnumber)s/foundry-%(prop:foundry_head)s.tar.gz"
 def _clone_foundry_step(config: DockerConfig):
     return InContainer(
         ShellStep(
-            # The forced commit, else the branch tip (a PR's refs/pull/<n>/head).
-            # Full history, to diff a PR against its merge base.
+            # The forced commit, else the webhook's (a PR's head when it was
+            # pushed, which the status is reported on, even if the PR has
+            # moved on since), else the branch tip. Full history, to diff a PR
+            # against its merge base.
             command=GitInitFromCommit(
                 repo_url="%(prop:repository)s",
-                commit="%(prop:foundry_commit:~%(prop:branch)s)s",
+                commit="%(prop:foundry_commit:~%(prop:revision:~%(prop:branch)s)s)s",
                 depth=0,
             ),
             # GitHub answers anonymous clones with a 401; see git_auth.py.
@@ -46,11 +48,20 @@ def _clone_foundry_step(config: DockerConfig):
 
 
 def _property_step(
-    config: DockerConfig, command, property: str, env_vars=None, options=None
+    config: DockerConfig,
+    command,
+    property: str,
+    env_vars=None,
+    secret_env_vars=None,
+    options=None,
 ):
     return InContainer(
         PropFromShellStep(
-            command=command, property=property, env_vars=env_vars, options=options
+            command=command,
+            property=property,
+            env_vars=env_vars,
+            secret_env_vars=secret_env_vars,
+            options=options,
         ),
         docker_environment=config,
     )
@@ -76,9 +87,14 @@ def trigger_foundry(config: DockerConfig, trigger_specs):
             config, BashCommand(cmd="git rev-parse --short HEAD"), "foundry_revision"
         )
     )
+    # Fetches a PR's base branch, so it needs the token too.
     sequence.add_step(
         _property_step(
-            config, DiscoverFoundryPlugins(), "foundry_plugins", env_vars=_EVENT_ENV
+            config,
+            DiscoverFoundryPlugins(),
+            "foundry_plugins",
+            env_vars=_EVENT_ENV,
+            secret_env_vars=git_auth_env_vars(),
         )
     )
     # Nothing to publish when there is nothing to build.

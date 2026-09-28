@@ -7,6 +7,7 @@ from buildbot.plugins import util
 from buildbot.process import logobserver
 from buildbot.process.results import FAILURE, SUCCESS, WARNINGS, Results
 from configuration.steps.commands.base import Command, ShellCommandWithURL
+from git_auth import git_auth_args
 
 # Plugin lists reach the scripts as environment variables rather than through
 # util.Interpolate, so the scripts can use % freely (rpm --qf '%{NAME}').
@@ -72,6 +73,7 @@ class DiscoverFoundryPlugins(Command):
 
     def as_cmd_arg(self) -> list[str]:
         # No Interpolate: the script uses ${d%/}.
+        auth = git_auth_args()
         return [
             "bash",
             "-exc",
@@ -94,12 +96,13 @@ case "${{{BRANCH_ENV}:-}}" in
 esac
 
 # Diff from where the PR forked off its base branch; the default branch if
-# GitHub gave none (a PR ref forced by hand).
+# GitHub gave none (a PR ref forced by hand). Authenticated like the clone,
+# which keeps no credentials; see git_auth.py.
 base="${{{BASE_BRANCH_ENV}:-}}"
 if [ -z "$base" ]; then
-    base=$(git remote show origin | sed -n 's/^ *HEAD branch: //p')
+    base=$(git {auth} remote show origin | sed -n 's/^ *HEAD branch: //p')
 fi
-git fetch --quiet origin "+refs/heads/$base:refs/foundry-base"
+git {auth} fetch --quiet origin "+refs/heads/$base:refs/foundry-base"
 changed=$(git diff --name-only "$(git merge-base refs/foundry-base HEAD)" HEAD)
 
 if echo "$changed" | grep -qxE 'CMakeLists\\.txt|run\\.cmake'; then

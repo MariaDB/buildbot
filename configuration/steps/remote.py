@@ -108,6 +108,7 @@ class PropFromShellStep(ShellStep):
         options (StepOptions): Options for the step, such as timeout and retry settings.
         interrupt_signal (str): The signal to send to interrupt the command (default: "TERM").
         env_vars (list[tuple]): Environment variables to set for the command.
+        secret_env_vars (list[tuple]): Credentials, as for ShellStep.
     """
 
     def __init__(
@@ -117,6 +118,7 @@ class PropFromShellStep(ShellStep):
         options: StepOptions = None,
         interrupt_signal="TERM",
         env_vars: list[tuple] = None,
+        secret_env_vars: list[tuple] = None,
     ):
         self.property = property
         super().__init__(
@@ -124,6 +126,7 @@ class PropFromShellStep(ShellStep):
             options=options,
             interrupt_signal=interrupt_signal,
             env_vars=env_vars,
+            secret_env_vars=secret_env_vars,
         )
         self.name = f"Set {self.property} from {command.name}"
 
@@ -136,4 +139,10 @@ class PropFromShellStep(ShellStep):
             property=self.property,
             **self.options.getopt,
             workdir=workdir,
+            env={
+                k: util.Interpolate(v)
+                for k, v in (*self.env_vars, *self.secret_env_vars)
+            },
+            # As in ShellStep.generate.
+            logEnviron=not self.secret_env_vars,
         )

@@ -8,7 +8,7 @@ import unittest
 
 import git_auth
 from configuration.steps.commands.base import Command
-from configuration.steps.remote import ShellStep
+from configuration.steps.remote import PropFromShellStep, ShellStep
 from git_auth import (
     GITHUB_TOKEN_ENV_VAR,
     git_auth_args,
@@ -145,6 +145,13 @@ class TestLogEnviron(unittest.TestCase):
     def test_left_alone_otherwise(self):
         kwargs = self._generate(env_vars=[("CCACHE_DIR", "/mnt/ccache")])
         self.assertTrue(kwargs["logEnviron"])
+
+    def test_disabled_when_a_property_step_carries_a_token(self):
+        step = PropFromShellStep(
+            command=_StubCommand(), property="x", secret_env_vars=git_auth_env_vars()
+        ).generate()
+        self.assertIn(GITHUB_TOKEN_ENV_VAR, step.remote_kwargs["env"])
+        self.assertFalse(step.remote_kwargs["logEnviron"])
 
 
 class TestCredentialHelperBehaviour(unittest.TestCase):
