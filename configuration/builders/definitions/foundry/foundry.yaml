@@ -44,7 +44,9 @@ packages:
     repo_file: MariaDB.repo           # published by the CI server builder
     mirror_path: yum                  # <mirror_url>/yum/<version>/<os>/<os_version>/<arch>/
     build_packages: [MariaDB-devel]
-    test_packages: [MariaDB-server, MariaDB-test]
+    # MariaDB-test only requires /usr/bin/perl; on SUSE that is perl-base,
+    # without the Memoize MTR needs.
+    test_packages: [MariaDB-server, MariaDB-test, "perl(Memoize)"]
     targets:
       centos-stream9-rpm-autobake:  { image: centosstream9,  arch: [amd64, aarch64],      base_image: quay.io/centos/centos:stream9 }
       centos-stream10-rpm-autobake: { image: centosstream10, arch: [amd64, aarch64],      base_image: quay.io/centos/centos:stream10 }

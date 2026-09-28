@@ -659,6 +659,10 @@ def _save_mtr_logs(save_logs_path: str, find_binaries: str) -> str:
             save_logs_path="{save_logs_path}"
             file_patterns_to_save="{patterns}"
             {find_binaries}
+            if [ ! -d "$vardir" ]; then
+                echo "MTR failed before running any test, left no logs to save"
+                exit 1
+            fi
             echo "Saving MTR logs"
 
             mkdir -p "$save_logs_path"

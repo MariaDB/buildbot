@@ -1,3 +1,5 @@
+import shlex
+
 from configuration.builders.infra.runtime import (
     BuildSequence,
     DockerConfig,
@@ -187,6 +189,10 @@ def packages(
     # installed and tested in the plain base image (base_config), so an
     # undeclared dependency fails. Only the workspace volume carries over.
     _, _, install = _PACKAGE_COMMANDS[package_type]
+    # Names from foundry.yaml, quoted for the shell: an rpm capability such as
+    # perl(Memoize) has parentheses. The install commands don't quote, for globs.
+    build_packages = [shlex.quote(package) for package in build_packages]
+    test_packages = [shlex.quote(package) for package in test_packages]
     sequence = BuildSequence()
 
     # Build, in the worker image.
