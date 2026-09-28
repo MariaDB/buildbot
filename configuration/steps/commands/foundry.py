@@ -32,11 +32,40 @@ plugin_installed() {
     done
 }
 """,
+    # dpkg -s also succeeds for a package whose postinst failed.
     "DEB": """
 plugin_installed() {
     for f in "$1.build"/*.deb; do
         pkg=$(dpkg-deb -f "$f" Package)
-        dpkg -s "$pkg" >/dev/null 2>&1 || { echo "$pkg ($f) is not installed" >&2; return 1; }
+        status=$(dpkg-query -W -f='${Status}' "$pkg" 2>/dev/null || true)
+        [ "$status" = "install ok installed" ] || { echo "$pkg ($f) is not installed: ${status:-absent}" >&2; return 1; }
+    done
+}
+""",
+}
+
+# remove_plugin <plugin> removes what a failed install left of its packages,
+# without their scripts, which may fail as well. Else apt retries a failed
+# postinst on every later install, and suite discovery sees the package.
+_REMOVE_PLUGIN = {
+    "RPM": """
+remove_plugin() {
+    for f in "$1.build"/*.rpm; do
+        pkg=$(rpm -qp --qf '%{NAME}' "$f")
+        if rpm -q "$pkg" >/dev/null 2>&1; then
+            rpm -e --nodeps --noscripts --notriggers "$pkg"
+        fi
+    done
+}
+""",
+    "DEB": """
+remove_plugin() {
+    for f in "$1.build"/*.deb; do
+        pkg=$(dpkg-deb -f "$f" Package)
+        dpkg-query -W "$pkg" >/dev/null 2>&1 || continue
+        rm -f /var/lib/dpkg/info/"$pkg".prerm /var/lib/dpkg/info/"$pkg".postrm \\
+            /var/lib/dpkg/info/"$pkg":*.prerm /var/lib/dpkg/info/"$pkg":*.postrm
+        dpkg --purge --force-all "$pkg"
     done
 }
 """,
@@ -369,8 +398,9 @@ class BuildPluginsShellCommand(ShellCommandWithURL):
 class InstallBuiltPackages(Command):
     # Installs each built plugin separately, so one that won't install doesn't
     # sink the rest, and checks its packages really landed: apt/dnf can exit 0
-    # having skipped a file. Exits 0 if all installed, 2 if some did (see
-    # ShellStep.PARTIAL_SUCCESS_DECODE_RC), 1 if none did.
+    # having skipped a file. A failed install script fails the plugin too, and
+    # a failed plugin is removed again. Exits 0 if all installed, 2 if some
+    # did (see ShellStep.PARTIAL_SUCCESS_DECODE_RC), 1 if none did.
     #
     # Paths start with ./ because apt reads "a.build/x.deb" as package
     # "a.build" from release "x.deb".
@@ -388,7 +418,10 @@ class InstallBuiltPackages(Command):
 if command -v zypper >/dev/null 2>&1; then
     zypper --non-interactive install --allow-unsigned-rpm ./"$1.build"/*.rpm || return 1
 else
-    dnf install -y ./"$1.build"/*.rpm || return 1
+    # dnf only warns when an install script fails; zypper exits 107.
+    log=$(mktemp)
+    dnf install -y ./"$1.build"/*.rpm 2>&1 | tee "$log" || return 1
+    if grep -qE 'scriptlet failed|Error in [A-Z]+ scriptlet' "$log"; then return 1; fi
 fi"""
         else:
             install = """
@@ -400,6 +433,7 @@ apt-get install -y ./"$1.build"/*.deb || return 1"""
             f"""
 set -uo pipefail
 {_PLUGIN_INSTALLED[self.package_type]}
+{_REMOVE_PLUGIN[self.package_type]}
 install_plugin() {{{install}
     plugin_installed "$1"
 }}
@@ -418,6 +452,7 @@ for p in $plugins; do
         installed="$installed $p"
     else
         failed="$failed $p"
+        remove_plugin "$p"
     fi
 done
 
@@ -654,12 +689,13 @@ def _save_mtr_logs(save_logs_path: str, find_binaries: str) -> str:
     # plus the plugins and mariadbd if a core was dumped, then fails the step.
     # find_binaries sets $plugins_dir and $mariadbd_path. Like
     # MTRTest._save_logs (commands/mtr.py), for installed packages or a bintar.
+    # Written into find's arguments, quoted: from a variable they would be
+    # globbed against the vardir's own files.
     logs = ["*.log", "*.err*", "core*"]
-    patterns = " -o ".join([f'-iname "{log}"' for log in logs])
+    patterns = " -o ".join([f"-iname '{log}'" for log in logs])
     return f"""
             vardir="{_MTR_VARDIR}"
             save_logs_path="{save_logs_path}"
-            file_patterns_to_save="{patterns}"
             {find_binaries}
             if [ ! -d "$vardir" ]; then
                 echo "MTR failed before running any test, left no logs to save"
@@ -669,10 +705,9 @@ def _save_mtr_logs(save_logs_path: str, find_binaries: str) -> str:
 
             mkdir -p "$save_logs_path"
 
-            # Save plugins .so and mariadbd if a core file was generated
-            save_bin=0
-            find $vardir -name '*core.*' -exec false {{}} + || save_bin=1
-            if [[ $save_bin -ne 0 ]]; then
+            # Save plugins .so and mariadbd if a core file was generated:
+            # core, core.<pid>, or either compressed.
+            if [ -n "$(find "$vardir" -type f \\( -name core -o -name 'core.*' \\) -print -quit)" ]; then
                 plugins_list=$(mktemp)
                 find -L "$plugins_dir" -maxdepth 1 -type f -name '*.so' -printf '%%f\\n' > "$plugins_list"
                 tar -czvf "$save_logs_path/plugins.tar.gz" --dereference -C "$plugins_dir" -T "$plugins_list"
@@ -681,9 +716,9 @@ def _save_mtr_logs(save_logs_path: str, find_binaries: str) -> str:
             fi
 
             # Some core files are left uncompressed by MTR
-            find $vardir -iregex ".*/core\\(\\.[0-9]+\\)?" -ls -exec gzip {{}} +
+            find "$vardir" -iregex ".*/core\\(\\.[0-9]+\\)?" -ls -exec gzip {{}} +
 
-            cd "$vardir" && find . -type f \\( -path './log/*' -o $file_patterns_to_save \\) -print0 | tar -czf "$save_logs_path/var.tar.gz" --null -T -
+            cd "$vardir" && find . -type f \\( -path './log/*' -o {patterns} \\) -print0 | tar -czf "$save_logs_path/var.tar.gz" --null -T -
             exit 1 # Script was invoked by an MTR failure so we must mark the step as failed
             """
 
