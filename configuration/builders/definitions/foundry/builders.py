@@ -37,7 +37,12 @@ def _base_image_config(package_config, arch_override):
             tuple(mount) for mount in package_config.get("base_mounts", [])
         ],
         # A bare image has no debconf defaults; keep apt from prompting.
-        additional_env_vars=[("DEBIAN_FRONTEND", "noninteractive")],
+        # systemd isn't PID 1 here, so have systemctl skip its calls instead
+        # of failing MariaDB-server's %posttrans (zypper exits 107 on it).
+        additional_env_vars=[
+            ("DEBIAN_FRONTEND", "noninteractive"),
+            ("SYSTEMD_OFFLINE", "1"),
+        ],
     )
     return replace(config, repository="")
 
