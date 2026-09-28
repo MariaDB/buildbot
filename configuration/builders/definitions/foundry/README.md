@@ -33,7 +33,7 @@ The build step reads each plugin's outcome from the summary `run.cmake` prints (
 
 ## Configuration
 
-`foundry.yaml` holds the repository, server sources, dispatcher, the OS × architecture matrix, the MariaDB versions and their targets, and who may Force. The MariaDB version is a build property, so the same builders serve every version. Plugins, changed files, MTR suites and the newest mirrored release are found at run time, so adding a plugin needs no change here.
+`foundry.yaml` holds the branch Force builds, server sources, dispatcher, the OS × architecture matrix, the MariaDB versions and their targets, and who may Force. The repository is `FOUNDRY_REPO_URL` in `docker-compose/.env` (MariaDB/foundry) and `.env.dev` (a fork), as for the connectors. The MariaDB version is a build property, so the same builders serve every version. Plugins, changed files, MTR suites and the newest mirrored release are found at run time, so adding a plugin needs no change here.
 
 A version's `targets` must be on the mirrors for that version. A platform that is only on CI so far goes under `ci_only`, which is built only when Force picks a CI `tarbuildnum`. A version not on the mirrors at all, such as a new series, lists its platforms under `ci_only` only; pull requests skip it.
 

@@ -1,5 +1,7 @@
+import os
 from dataclasses import replace
 from pathlib import Path
+from urllib.parse import urlparse
 
 import yaml
 
@@ -11,7 +13,13 @@ from configuration.builders.sequences.foundry import autobake, dispatcher, stora
 with open(Path(__file__).parent / "foundry.yaml") as f:
     _FOUNDRY_CONFIG = yaml.safe_load(f)
 
-FOUNDRY_REPOSITORY = _FOUNDRY_CONFIG["repository"]
+# MariaDB/foundry on production, a fork on dev; the project is its owner/name.
+_REPO_URL = os.environ["FOUNDRY_REPO_URL"]
+FOUNDRY_REPOSITORY = {
+    **_FOUNDRY_CONFIG["repository"],
+    "url": _REPO_URL,
+    "project": urlparse(_REPO_URL).path.strip("/").removesuffix(".git"),
+}
 _CI_URL = _FOUNDRY_CONFIG["server"]["ci_url"]
 _MIRROR_URL = _FOUNDRY_CONFIG["server"]["mirror_url"]
 _ARCH_OVERRIDES = _FOUNDRY_CONFIG["arch"]

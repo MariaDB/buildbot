@@ -2,9 +2,9 @@
 # Foundry CI settings; see README.md. Plugins aren't listed: the dispatcher
 # finds them in Foundry.
 
+# The repository's URL is FOUNDRY_REPO_URL in docker-compose/.env (MariaDB)
+# and .env.dev (a fork).
 repository:
-  url: https://github.com/MariaDB/foundry
-  project: MariaDB/foundry
   branch: main                        # built when Force is given no commit
 
 access:
