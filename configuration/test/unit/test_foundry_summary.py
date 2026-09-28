@@ -3,7 +3,6 @@
 import unittest
 
 from buildbot.process.results import FAILURE, SUCCESS, WARNINGS
-
 from configuration.steps.commands.foundry import FoundrySummary
 
 # The tail of a real run.cmake run, as the step's stdout carries it.

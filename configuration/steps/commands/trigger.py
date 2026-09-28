@@ -1,9 +1,9 @@
+from twisted.internet import defer
+
 from buildbot.plugins import steps
 from buildbot.process.buildstep import BuildStepFailed
 from buildbot.process.properties import Interpolate, Property
 from buildbot.steps.trigger import Trigger as BuildbotTrigger
-from twisted.internet import defer
-
 from configuration.builders.definitions.foundry import sources
 from constants import SAVED_PACKAGE_BRANCHES
 from utils import (

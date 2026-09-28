@@ -2,7 +2,6 @@ from pathlib import PurePath
 from typing import Iterable, Union
 
 from buildbot.plugins import util
-
 from configuration.steps.commands.base import Command
 
 # Debian 11 (bullseye) is oldoldstable -- its debian-security repo is served

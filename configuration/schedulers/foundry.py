@@ -1,6 +1,5 @@
-from buildbot.plugins import schedulers, util
-
 import configuration.builders.definitions.foundry.builders as foundry_builders
+from buildbot.plugins import schedulers, util
 from configuration.builders.definitions.foundry import sources
 
 _REPOSITORY = foundry_builders.FOUNDRY_REPOSITORY

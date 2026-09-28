@@ -6,7 +6,6 @@ from twisted.internet import defer
 from buildbot.plugins import util
 from buildbot.process import logobserver
 from buildbot.process.results import FAILURE, SUCCESS, WARNINGS, Results
-
 from configuration.steps.commands.base import Command, ShellCommandWithURL
 
 # Plugin lists reach the scripts as environment variables rather than through
