@@ -244,13 +244,19 @@ class ArchiveSource(Command):
 
 
 class SetupDEBRepo(Command):
-    def __init__(self, repo_name: str, repo_url: str, components: str = "main"):
+    def __init__(
+        self,
+        repo_name: str,
+        repo_url: str,
+        components: str = "main",
+        name: str = None,
+    ):
         self.repo_name = repo_name
         self.repo_url = repo_url.rstrip("/")
         self.components = components
 
         super().__init__(
-            name=f"Setup DEB repository: {repo_name}",
+            name=name or f"Setup DEB repository: {repo_name}",
             workdir=PurePath("."),
             user="root",
         )
@@ -332,10 +338,25 @@ case $ID in
   ;;
 esac
 base_id=$ID
+case $base_id in
+  # openSUSE reports ID=opensuse-leap / opensuse-tumbleweed, but the MariaDB
+  # repositories publish it under a plain "opensuse" directory.
+  opensuse*)
+    base_id=opensuse
+  ;;
+esac
 url_path="$base_id/$base_version/$(rpm --eval '%%_arch')"
 
+# zypper reads its own directory, not yum's
+if [ "$PKG_MGR" = "zypper" ]; then
+    repo_dir=/etc/zypp/repos.d
+else
+    repo_dir=/etc/yum.repos.d
+fi
+mkdir -p "$repo_dir"
+
 # Create repo file
-cat > /etc/yum.repos.d/{self.repo_name}.repo <<EOF
+cat > "$repo_dir/{self.repo_name}.repo" <<EOF
 [{self.repo_name}]
 name={self.repo_name}
 baseurl={self.repo_url}/$url_path
@@ -356,9 +377,102 @@ fi
         ]
 
 
+class SetupRPMRepoFromURL(Command):
+    # Unlike SetupRPMRepo, installs an existing, unsigned MariaDB.repo published
+    # by a CI build as-is, instead of constructing a repo definition from scratch.
+    #
+    # galera_repo_url: the same CI run's galera repo file, installed verbatim
+    # alongside. MariaDB-server requires galera-4, and no other repo carries a
+    # matching build. It has to land in the same step: each InContainer step
+    # is a fresh "docker run", so anything written outside the /home/buildbot
+    # volume survives only through this step's container_commit.
+    def __init__(
+        self,
+        repo_file_url: str,
+        galera_repo_url: str,
+        name: str = "Install MariaDB CI repo",
+    ):
+        self.repo_file_url = repo_file_url
+        self.galera_repo_url = galera_repo_url
+        super().__init__(
+            name=name,
+            workdir=PurePath("."),
+            user="root",
+        )
+
+    def as_cmd_arg(self) -> list[str]:
+        # No module_hotfixes on galera.repo: it's a plain unsigned repo, and
+        # bash_lib.sh's rpm_setup_bb_galera_artifacts_mirror installs the same
+        # file as-is.
+        return [
+            "bash",
+            "-exc",
+            util.Interpolate(
+                f"""
+set -euo pipefail
+
+if command -v zypper >/dev/null 2>&1; then
+    repo_dir=/etc/zypp/repos.d
+else
+    repo_dir=/etc/yum.repos.d
+fi
+mkdir -p "$repo_dir"
+curl -fsSL {self.repo_file_url} -o "$repo_dir/MariaDB.repo"
+echo "module_hotfixes = 1" >> "$repo_dir/MariaDB.repo"
+curl -fsSL {self.galera_repo_url} -o "$repo_dir/galera.repo"
+
+if command -v dnf >/dev/null 2>&1; then
+    dnf makecache
+elif command -v zypper >/dev/null 2>&1; then
+    zypper --gpg-auto-import-keys refresh
+else
+    yum makecache
+fi
+"""
+            ),
+        ]
+
+
+class SetupDEBRepoFromURL(Command):
+    # Unlike SetupDEBRepo, installs an existing, unsigned mariadb.sources file
+    # published by a CI build as-is, instead of constructing one from scratch.
+    #
+    # galera_repo_url: see SetupRPMRepoFromURL.
+    def __init__(
+        self,
+        sources_file_url: str,
+        galera_repo_url: str,
+        name: str = "Install MariaDB CI repo",
+    ):
+        self.sources_file_url = sources_file_url
+        self.galera_repo_url = galera_repo_url
+        super().__init__(
+            name=name,
+            workdir=PurePath("."),
+            user="root",
+        )
+
+    def as_cmd_arg(self) -> list[str]:
+        return [
+            "bash",
+            "-exc",
+            util.Interpolate(
+                f"""
+set -euo pipefail
+curl -fsSL {self.sources_file_url} -o /etc/apt/sources.list.d/mariadb.sources
+curl -fsSL {self.galera_repo_url} -o /etc/apt/sources.list.d/galera.sources
+apt-get update
+"""
+            ),
+        ]
+
+
 class InstallDEBPackages(Command):
     def __init__(
-        self, packages: Union[str, Iterable[str]], workdir: PurePath = PurePath(".")
+        self,
+        packages: Union[str, Iterable[str]],
+        workdir: PurePath = PurePath("."),
+        name: str = "Install DEB packages",
     ):
         if isinstance(packages, str):
             self.packages = [packages]
@@ -366,7 +480,7 @@ class InstallDEBPackages(Command):
             self.packages = list(packages)
 
         super().__init__(
-            name="Install DEB packages",
+            name=name,
             workdir=workdir,
             user="root",
         )

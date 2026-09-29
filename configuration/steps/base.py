@@ -13,12 +13,15 @@ class StepOptions:  # all step (shell, compile, etc) types support these options
     Attributes:
         alwaysRun (bool): If True, the step will always run regardless of previous failures.
         haltOnFailure (bool): If True, the build will halt if this step fails.
+        flunkOnWarnings (bool): If True, a step ending in WARNINGS fails the
+            build, which carries on; the step itself stays a warning.
         doStepIf (callable): A callable that determines if the step should be executed.
     """
 
     # Default : safety first
     alwaysRun: bool = False
     haltOnFailure: bool = True
+    flunkOnWarnings: bool = False
     doStepIf: callable = lambda _: True
     description: str = None
     descriptionDone: str = None
