@@ -217,42 +217,43 @@ MARIADB_VERSIONS = {
             "centos-7-bintar",
         ],
     ),
-    # "11.8": MariaDBVersion(
-    #     targets=[
-    #         "centos-stream9-rpm-autobake",
-    #         "centos-stream10-rpm-autobake",
-    #         "rhel-8-rpm-autobake",
-    #         "rhel-9-rpm-autobake",
-    #         "rhel-10-rpm-autobake",
-    #         "sles-1507-rpm-autobake",
-    #         "sles-1600-rpm-autobake",
-    #         "opensuse-1600-rpm-autobake",
-    #         "debian-12-deb-autobake",
-    #         "debian-13-deb-autobake",
-    #         "ubuntu-2204-deb-autobake",
-    #         "ubuntu-2404-deb-autobake",
-    #         "ubuntu-2604-deb-autobake",
-    #         "almalinux-8-bintar",
-    #     ],
-    # ),
-    # "12.3": MariaDBVersion(
-    #     targets=[
-    #         "centos-stream9-rpm-autobake",
-    #         "centos-stream10-rpm-autobake",
-    #         "rhel-8-rpm-autobake",
-    #         "rhel-9-rpm-autobake",
-    #         "rhel-10-rpm-autobake",
-    #         "sles-1507-rpm-autobake",
-    #         "sles-1600-rpm-autobake",
-    #         "opensuse-1600-rpm-autobake",
-    #         "debian-12-deb-autobake",
-    #         "debian-13-deb-autobake",
-    #         "ubuntu-2204-deb-autobake",
-    #         "ubuntu-2404-deb-autobake",
-    #         "ubuntu-2604-deb-autobake",
-    #         "almalinux-8-bintar",
-    #     ],
-    # ),
+    "11.8": MariaDBVersion(
+        targets=[
+            "centos-stream9-rpm-autobake",
+            "centos-stream10-rpm-autobake",
+            "rhel-8-rpm-autobake",
+            "rhel-9-rpm-autobake",
+            "rhel-10-rpm-autobake",
+            "sles-1507-rpm-autobake",
+            "sles-1600-rpm-autobake",
+            "opensuse-1600-rpm-autobake",
+            "debian-12-deb-autobake",
+            "debian-13-deb-autobake",
+            "ubuntu-2204-deb-autobake",
+            "ubuntu-2404-deb-autobake",
+            "ubuntu-2604-deb-autobake",
+            "almalinux-8-bintar",
+        ],
+    ),
+    "12.3": MariaDBVersion(
+        targets=[
+            "centos-stream9-rpm-autobake",
+            "centos-stream10-rpm-autobake",
+            "rhel-8-rpm-autobake",
+            "rhel-9-rpm-autobake",
+            "rhel-10-rpm-autobake",
+            "sles-1507-rpm-autobake",
+            "sles-1600-rpm-autobake",
+            "opensuse-1600-rpm-autobake",
+            "debian-12-deb-autobake",
+            "debian-13-deb-autobake",
+            "ubuntu-2204-deb-autobake",
+            "ubuntu-2404-deb-autobake",
+            "ubuntu-2604-deb-autobake",
+            "almalinux-8-bintar",
+        ],
+    ),
+    # TODO - No action here, this is just an example so we don't forget.
     # A new series, not on the mirrors yet:
     # "13.3": MariaDBVersion(
     #     ci_only=["debian-12-deb-autobake", "rhel-9-rpm-autobake"],
@@ -270,7 +271,7 @@ REPO_PROJECT = urlparse(REPO_URL).path.strip("/").removesuffix(".git")
 REPO_BRANCH = "main"  # built when Force is given no commit
 
 # GitHub usernames allowed to press Force, if MariaDB members.
-FORCE_USERS = []
+FORCE_USERS = ["RazvanLiviuVarzaru", "fauust"]
 
 # Where server packages come from: the mirrors (default) or a CI tarbuildnum,
 # picked per version on Force. Pull requests always use the mirrors.
