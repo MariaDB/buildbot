@@ -1,7 +1,7 @@
 import configuration.builders.definitions.foundry.builders as foundry_builders
 from buildbot.plugins import schedulers, util
 from configuration.builders.definitions.foundry import sources
-from configuration.builders.sequences.foundry.settings import (
+from configuration.builders.definitions.foundry.settings import (
     FORCE_USERS,
     MARIADB_VERSIONS,
     REPO_BRANCH,

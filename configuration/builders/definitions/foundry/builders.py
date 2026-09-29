@@ -3,8 +3,7 @@ from dataclasses import replace
 from configuration.builders.base import GenericBuilder
 from configuration.builders.common import docker_config
 from configuration.builders.definitions.foundry import sources
-from configuration.builders.sequences.foundry import autobake, dispatcher
-from configuration.builders.sequences.foundry.settings import (
+from configuration.builders.definitions.foundry.settings import (
     ARCH_OVERRIDES,
     ARTIFACTS_URL,
     CI_URL,
@@ -18,6 +17,7 @@ from configuration.builders.sequences.foundry.settings import (
     PackageTarget,
     Target,
 )
+from configuration.builders.sequences.foundry import autobake, dispatcher
 
 
 def _docker_config(**kwargs):

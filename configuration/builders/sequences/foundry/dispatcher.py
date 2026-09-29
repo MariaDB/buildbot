@@ -1,12 +1,12 @@
+from configuration.builders.definitions.foundry.settings import (
+    ARCHIVE,
+    ARTIFACTS_URL,
+    EVENT_ENV_VARS,
+)
 from configuration.builders.infra.runtime import (
     BuildSequence,
     DockerConfig,
     InContainer,
-)
-from configuration.builders.sequences.foundry.settings import (
-    ARCHIVE,
-    ARTIFACTS_URL,
-    EVENT_ENV_VARS,
 )
 from configuration.steps.base import StepOptions
 from configuration.steps.commands import trigger

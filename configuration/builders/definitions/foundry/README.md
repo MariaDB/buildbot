@@ -33,7 +33,7 @@ The build step reads each plugin's outcome from the summary `run.cmake` prints (
 
 ## Configuration
 
-`settings.py` (`configuration/builders/sequences/foundry/`) holds the targets (OS × architecture), the MariaDB versions and the targets each builds, and the other settings: the branch Force builds, server sources, dispatcher, and who may Force. To add a target or a MariaDB version, follow the "HOW TO" at the top of `settings.py`. The repository is `FOUNDRY_REPO_URL` in `docker-compose/.env` (MariaDB/foundry) and `.env.dev` (a fork), as for the connectors. The MariaDB version is a build property, so the same builders serve every version. Plugins, changed files, MTR suites and the newest mirrored release are found at run time, so adding a plugin needs no change here.
+`settings.py` holds the targets (OS × architecture), the MariaDB versions and the targets each builds, and the other settings: the branch Force builds, server sources, dispatcher, and who may Force. To add a target or a MariaDB version, follow the "HOW TO" at the top of `settings.py`. The repository is `FOUNDRY_REPO_URL` in `docker-compose/.env` (MariaDB/foundry) and `.env.dev` (a fork), as for the connectors. The MariaDB version is a build property, so the same builders serve every version. Plugins, changed files, MTR suites and the newest mirrored release are found at run time, so adding a plugin needs no change here.
 
 A version's `targets` must be on the mirrors for that version. A platform that is only on CI so far goes under `ci_only`, which is built only when Force picks a CI `tarbuildnum`. A version not on the mirrors at all, such as a new series, lists its platforms under `ci_only` only; pull requests skip it.
 
@@ -53,8 +53,9 @@ Pull requests save no packages, but still publish the archive their builds need.
 
 | Path | Holds |
 | --- | --- |
+| `settings.py` | The settings, and the paths and properties the sequences share |
 | `builders.py`, `sources.py` | Builders made from the settings; the server source choices |
-| `../../sequences/foundry/` | `settings.py`, the settings and the paths and properties the sequences share; `dispatcher.py`; and `autobake.py` for rpm, deb and bintar |
+| `../../sequences/foundry/` | `dispatcher.py`, and `autobake.py` for rpm, deb and bintar |
 | `../../../steps/commands/foundry.py` | The commands, and the build step that reads `run.cmake`'s summary |
 | `../../../schedulers/foundry.py` | Force, pull request and Triggerable schedulers |
 

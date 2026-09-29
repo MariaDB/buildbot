@@ -1,11 +1,6 @@
 import shlex
 
-from configuration.builders.infra.runtime import (
-    BuildSequence,
-    DockerConfig,
-    InContainer,
-)
-from configuration.builders.sequences.foundry.settings import (
+from configuration.builders.definitions.foundry.settings import (
     ARTIFACTS_URL,
     BEST_EFFORT_OPTIONS,
     BUILT_PLUGINS_ENV_VARS,
@@ -16,6 +11,11 @@ from configuration.builders.sequences.foundry.settings import (
     RUN_DIR,
     SAVE_LOGS_PATH,
     SERVER_BINTAR_PROP,
+)
+from configuration.builders.infra.runtime import (
+    BuildSequence,
+    DockerConfig,
+    InContainer,
 )
 from configuration.steps.base import StepOptions
 from configuration.steps.commands.base import URL
