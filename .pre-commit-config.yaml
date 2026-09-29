@@ -62,8 +62,6 @@ repos:
         language: system
         types: [file]
         files: \.(cfg|py|tac)$
-        # .cfg is for the master.cfg files; isort's config is INI.
-        exclude: ^\.isort\.cfg$
         # TODO add cross-reference in the future
         # exclude: ^cross-reference/.*$
         args:
