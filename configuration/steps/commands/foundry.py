@@ -673,13 +673,10 @@ _MTR_VARDIR = "/home/buildbot/mtr-var"
 
 
 def _save_mtr_logs(save_logs_path: str, find_binaries: str) -> str:
-    # Shell for after a failed MTR run: packs its logs into
-    # save_logs_path/var.tar.gz, as the server builders' createVar() does,
-    # plus the plugins and mariadbd if a core was dumped, then fails the step.
-    # find_binaries sets $plugins_dir and $mariadbd_path. Like
-    # MTRTest._save_logs (commands/mtr.py), for installed packages or a bintar.
-    # Written into find's arguments, quoted: from a variable they would be
-    # globbed against the vardir's own files.
+    # Shell for after a failed MTR run: packs the logs into
+    # save_logs_path/var.tar.gz, plus the plugins and mariadbd if a core was
+    # dumped, then fails the step. find_binaries sets $plugins_dir and
+    # $mariadbd_path.
     logs = ["*.log", "*.err*", "core*"]
     patterns = " -o ".join([f"-iname '{log}'" for log in logs])
     return f"""
