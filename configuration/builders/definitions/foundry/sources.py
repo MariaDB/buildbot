@@ -14,8 +14,9 @@ CHOICES = [MIRROR, CI_TARBALL, SKIP]
 # A version is on the mirrors once it has targets there. One that isn't yet,
 # e.g. a new series, lists its platforms under ci_only only: it builds from a
 # CI tarball when asked, and is skipped otherwise.
-def on_mirrors(version_config: dict) -> bool:
-    return bool(version_config["targets"])
+def on_mirrors(version_config) -> bool:
+    # version_config: a settings.MariaDBVersion.
+    return bool(version_config.targets)
 
 
 def choices(mirrored: bool) -> list[str]:

@@ -5,12 +5,21 @@ from configuration.builders.infra.runtime import (
     DockerConfig,
     InContainer,
 )
-from configuration.builders.sequences.foundry import storage
+from configuration.builders.sequences.foundry.settings import (
+    ARTIFACTS_URL,
+    BEST_EFFORT_OPTIONS,
+    BUILT_PLUGINS_ENV_VARS,
+    LOGS_DIR,
+    MARIADB_VERSION_ENV_VARS,
+    PACKAGE_COMMANDS,
+    PLUGINS_ENV_VARS,
+    RUN_DIR,
+    SAVE_LOGS_PATH,
+    SERVER_BINTAR_PROP,
+)
 from configuration.steps.base import StepOptions
 from configuration.steps.commands.base import URL
 from configuration.steps.commands.foundry import (
-    BUILT_PLUGINS_ENV,
-    PLUGINS_ENV,
     BuildPlugins,
     BuildPluginsShellCommand,
     DiscoverPluginMTRSuites,
@@ -24,30 +33,7 @@ from configuration.steps.commands.foundry import (
     RunPluginMTRSuiteFromBintar,
     SavePluginPackages,
 )
-from configuration.steps.commands.packages import (
-    InstallDEBPackages,
-    InstallRPMPackages,
-    SetupDEBRepo,
-    SetupDEBRepoFromURL,
-    SetupRPMRepo,
-    SetupRPMRepoFromURL,
-)
 from configuration.steps.remote import PropFromShellStep, ShellStep
-
-_MARIADB_VERSION_ENV = [("MARIADB_VERSION", "%(prop:mariadb_version)s")]
-
-# The plugins the dispatcher asked for, then those that built.
-_PLUGINS_ENV = [(PLUGINS_ENV, "%(prop:foundry_plugins)s")]
-_BUILT_PLUGINS_ENV = [(BUILT_PLUGINS_ENV, "%(prop:built_plugins)s")]
-
-# A partly successful step is a warning, but still fails the build.
-_BEST_EFFORT_OPTIONS = StepOptions(flunkOnWarnings=True)
-
-# Saved packages and MTR logs, per MariaDB version and server source. Mirror
-# builds have no tarbuildnum and go under "mirror" (":~" also catches empty).
-_RUN_DIR = "%(prop:mariadb_version)s-%(prop:tarbuildnum:~mirror)s"
-_LOGS_DIR = f"{_RUN_DIR}/%(prop:foundry_revision)s/logs/%(prop:buildername)s"
-_SAVE_LOGS_PATH = f"/packages/{_LOGS_DIR}"
 
 
 # The server source is chosen per build: the dispatcher sets tarbuildnum for
@@ -88,7 +74,7 @@ def _run_mtr_step(config: DockerConfig, command):
     return InContainer(
         ShellStep(
             command=command,
-            url=URL(url=f"{storage.ARTIFACTS_URL}/{_LOGS_DIR}", url_text="Logs"),
+            url=URL(url=f"{ARTIFACTS_URL}/{LOGS_DIR}", url_text="Logs"),
             options=StepOptions(doStepIf=_has_suites),
         ),
         docker_environment=config,
@@ -100,8 +86,8 @@ def _build_plugins_step(config: DockerConfig, command: BuildPlugins):
     return InContainer(
         ShellStep(
             command=command,
-            env_vars=_MARIADB_VERSION_ENV + _PLUGINS_ENV,
-            options=_BEST_EFFORT_OPTIONS,
+            env_vars=MARIADB_VERSION_ENV_VARS + PLUGINS_ENV_VARS,
+            options=BEST_EFFORT_OPTIONS,
             step_class=BuildPluginsShellCommand,
         ),
         docker_environment=config,
@@ -112,23 +98,17 @@ def _save_packages_step(config: DockerConfig):
     # One directory per plugin, commit and builder, so runs don't overwrite
     # each other. The link can only point at the run's directory.
     destination = (
-        f"/packages/{_RUN_DIR}/$plugin/%(prop:foundry_revision)s/%(prop:buildername)s"
+        f"/packages/{RUN_DIR}/$plugin/%(prop:foundry_revision)s/%(prop:buildername)s"
     )
     return InContainer(
         ShellStep(
             command=SavePluginPackages(destination=destination),
-            env_vars=_BUILT_PLUGINS_ENV,
-            url=URL(url=f"{storage.ARTIFACTS_URL}/{_RUN_DIR}", url_text="Packages"),
+            env_vars=BUILT_PLUGINS_ENV_VARS,
+            url=URL(url=f"{ARTIFACTS_URL}/{RUN_DIR}", url_text="Packages"),
             options=StepOptions(doStepIf=_not_pull_request),
         ),
         docker_environment=config,
     )
-
-
-_PACKAGE_COMMANDS = {
-    "DEB": (SetupDEBRepoFromURL, SetupDEBRepo, InstallDEBPackages),
-    "RPM": (SetupRPMRepoFromURL, SetupRPMRepo, InstallRPMPackages),
-}
 
 
 def _server_repo_steps(
@@ -140,7 +120,7 @@ def _server_repo_steps(
     where: str,
 ):
     # where: "worker" or "base".
-    setup_from_url, setup_mirror, _ = _PACKAGE_COMMANDS[package_type]
+    setup_from_url, setup_mirror, _ = PACKAGE_COMMANDS[package_type]
     return [
         InContainer(
             ShellStep(
@@ -185,8 +165,8 @@ def packages(
     # package_type: "RPM" or "DEB". Built in the worker image (config), then
     # installed and tested in the plain base image (base_config), so an
     # undeclared dependency fails. Only the workspace volume carries over.
-    _, _, install = _PACKAGE_COMMANDS[package_type]
-    # Names from foundry.yaml, quoted for the shell: an rpm capability such as
+    _, _, install = PACKAGE_COMMANDS[package_type]
+    # Names from settings.PACKAGE_TYPES, quoted for the shell: an rpm capability such as
     # perl(Memoize) has parentheses. The install commands don't quote, for globs.
     build_packages = [shlex.quote(package) for package in build_packages]
     test_packages = [shlex.quote(package) for package in test_packages]
@@ -233,8 +213,8 @@ def packages(
         InContainer(
             ShellStep(
                 command=InstallBuiltPackages(package_type),
-                env_vars=_BUILT_PLUGINS_ENV,
-                options=_BEST_EFFORT_OPTIONS,
+                env_vars=BUILT_PLUGINS_ENV_VARS,
+                options=BEST_EFFORT_OPTIONS,
                 decode_rc=ShellStep.PARTIAL_SUCCESS_DECODE_RC,
             ),
             docker_environment=base_config,
@@ -247,7 +227,7 @@ def packages(
             PropFromShellStep(
                 command=DiscoverPluginMTRSuites(package_type),
                 property="plugin_suites",
-                env_vars=_BUILT_PLUGINS_ENV,
+                env_vars=BUILT_PLUGINS_ENV_VARS,
             ),
             docker_environment=base_config,
         )
@@ -266,21 +246,18 @@ def packages(
         _run_mtr_step(
             base_config,
             RunPluginMTRSuite(
-                package_type, "%(prop:plugin_suites)s", save_logs_path=_SAVE_LOGS_PATH
+                package_type, "%(prop:plugin_suites)s", save_logs_path=SAVE_LOGS_PATH
             ),
         )
     )
     return sequence
 
 
-_SERVER_BINTAR_PROP = "%(prop:server_bintar_dir)s"
-
-
 def bintar(
     config: DockerConfig, ci_bintar_url: str, mirror_url: str, mirror_bintar: str
 ):
     # No -devel packages here: build against a server bintar, from CI or the
-    # newest mirrored release, then test inside it with its own ./mtr.
+    # newest mirrored release, then test inside it with its own MTR.
     sequence = BuildSequence()
     sequence.add_step(_download_foundry_step(config))
     sequence.add_step(
@@ -304,15 +281,15 @@ def bintar(
         )
     )
     sequence.add_step(
-        _build_plugins_step(config, BuildPlugins(cmake_prefix_path=_SERVER_BINTAR_PROP))
+        _build_plugins_step(config, BuildPlugins(cmake_prefix_path=SERVER_BINTAR_PROP))
     )
     sequence.add_step(_save_packages_step(config))
     sequence.add_step(
         InContainer(
             PropFromShellStep(
-                command=ExtractPluginBintarIntoServerBintar(_SERVER_BINTAR_PROP),
+                command=ExtractPluginBintarIntoServerBintar(SERVER_BINTAR_PROP),
                 property="plugin_suites",
-                env_vars=_BUILT_PLUGINS_ENV,
+                env_vars=BUILT_PLUGINS_ENV_VARS,
             ),
             docker_environment=config,
         )
@@ -321,9 +298,9 @@ def bintar(
         _run_mtr_step(
             config,
             RunPluginMTRSuiteFromBintar(
-                _SERVER_BINTAR_PROP,
+                SERVER_BINTAR_PROP,
                 "%(prop:plugin_suites)s",
-                save_logs_path=_SAVE_LOGS_PATH,
+                save_logs_path=SAVE_LOGS_PATH,
             ),
         )
     )

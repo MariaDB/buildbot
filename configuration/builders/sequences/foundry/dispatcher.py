@@ -3,29 +3,21 @@ from configuration.builders.infra.runtime import (
     DockerConfig,
     InContainer,
 )
-from configuration.builders.sequences.foundry import storage
+from configuration.builders.sequences.foundry.settings import (
+    ARCHIVE,
+    ARTIFACTS_URL,
+    EVENT_ENV_VARS,
+)
 from configuration.steps.base import StepOptions
 from configuration.steps.commands import trigger
 from configuration.steps.commands.base import BashCommand
 from configuration.steps.commands.download import GitInitFromCommit
 from configuration.steps.commands.foundry import (
-    BASE_BRANCH_ENV,
-    BRANCH_ENV,
     ArchiveFoundrySource,
     DiscoverFoundryPlugins,
 )
 from configuration.steps.remote import PropFromShellStep, ShellStep
 from git_auth import git_auth_env_vars
-
-# "basename" is a pull request's target branch, set by the GitHub hook.
-_EVENT_ENV = [
-    (BRANCH_ENV, "%(prop:branch)s"),
-    (BASE_BRANCH_ENV, "%(prop:basename:-)s"),
-]
-
-# The Foundry archive for the package builds, one directory per dispatcher
-# build, in Foundry's storage (see storage.py).
-_ARCHIVE = "sources/%(prop:buildnumber)s/foundry-%(prop:foundry_head)s.tar.gz"
 
 
 def _clone_foundry_step(config: DockerConfig):
@@ -95,7 +87,7 @@ def trigger_foundry(
             config,
             DiscoverFoundryPlugins(),
             "foundry_plugins",
-            env_vars=_EVENT_ENV,
+            env_vars=EVENT_ENV_VARS,
             secret_env_vars=git_auth_env_vars(),
         )
     )
@@ -103,7 +95,7 @@ def trigger_foundry(
     sequence.add_step(
         _property_step(
             config,
-            ArchiveFoundrySource(archive=f"/packages/{_ARCHIVE}"),
+            ArchiveFoundrySource(archive=f"/packages/{ARCHIVE}"),
             "foundry_source_sha256",
             options=StepOptions(doStepIf=_has_plugins),
         )
@@ -113,7 +105,7 @@ def trigger_foundry(
             mariadb_versions,
             scheduler_names,
             ci_url,
-            source_url=f"{storage.ARTIFACTS_URL}/{_ARCHIVE}",
+            source_url=f"{ARTIFACTS_URL}/{ARCHIVE}",
         )
     )
     return sequence

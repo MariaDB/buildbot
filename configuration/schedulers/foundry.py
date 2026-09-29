@@ -1,9 +1,14 @@
 import configuration.builders.definitions.foundry.builders as foundry_builders
 from buildbot.plugins import schedulers, util
 from configuration.builders.definitions.foundry import sources
+from configuration.builders.sequences.foundry.settings import (
+    FORCE_USERS,
+    MARIADB_VERSIONS,
+    REPO_BRANCH,
+    REPO_PROJECT,
+    REPO_URL,
+)
 from configuration.schedulers.foundry_access import force_access
-
-_REPOSITORY = foundry_builders.FOUNDRY_REPOSITORY
 
 
 def _server_source_parameters():
@@ -11,7 +16,7 @@ def _server_source_parameters():
     # tarbuildnum for sources.CI_TARBALL. A version not on the mirrors yet
     # can only use a CI tarball, and is skipped by default.
     parameters = []
-    for version, version_config in foundry_builders.FOUNDRY_MARIADB_VERSIONS.items():
+    for version, version_config in MARIADB_VERSIONS.items():
         mirrored = sources.on_mirrors(version_config)
         parameters.append(
             util.ChoiceStringParameter(
@@ -49,8 +54,7 @@ FOUNDRY_FORCE_SCHEDULERS = [
             util.StringParameter(
                 name="foundry_commit",
                 label=(
-                    "Foundry commit (full SHA, empty for the tip of "
-                    f"{_REPOSITORY['branch']})"
+                    "Foundry commit (full SHA, empty for the tip of " f"{REPO_BRANCH})"
                 ),
                 default="",
                 regex=r"^([0-9a-f]{40})?$",
@@ -60,16 +64,10 @@ FOUNDRY_FORCE_SCHEDULERS = [
         codebases=[
             util.CodebaseParameter(
                 codebase="",
-                branch=util.FixedParameter(
-                    name="branch", default=_REPOSITORY["branch"]
-                ),
+                branch=util.FixedParameter(name="branch", default=REPO_BRANCH),
                 revision=util.FixedParameter(name="revision", default=""),
-                repository=util.FixedParameter(
-                    name="repository", default=_REPOSITORY["url"]
-                ),
-                project=util.FixedParameter(
-                    name="project", default=_REPOSITORY["project"]
-                ),
+                repository=util.FixedParameter(name="repository", default=REPO_URL),
+                project=util.FixedParameter(name="project", default=REPO_PROJECT),
             )
         ],
     )
@@ -77,7 +75,7 @@ FOUNDRY_FORCE_SCHEDULERS = [
 
 # Only force_users may force the dispatcher; see foundry_access.py.
 FOUNDRY_ROLE_MATCHERS, FOUNDRY_AUTHZ_RULES = force_access(
-    foundry_builders.DISPATCHER_BUILDER.name, foundry_builders.FOUNDRY_FORCE_USERS
+    foundry_builders.DISPATCHER_BUILDER.name, FORCE_USERS
 )
 
 # Pull requests on Foundry: the GitHub hook sets category "pull" on those,
@@ -88,7 +86,7 @@ FOUNDRY_CHANGE_SCHEDULERS = [
         builderNames=[foundry_builders.DISPATCHER_BUILDER.name],
         treeStableTimer=60,
         change_filter=util.ChangeFilter(
-            repository=_REPOSITORY["url"],
+            repository=REPO_URL,
             category="pull",
         ),
     )

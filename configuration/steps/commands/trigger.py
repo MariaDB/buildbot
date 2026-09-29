@@ -202,9 +202,9 @@ class _FoundryDispatchStep(BuildbotTrigger):
                 schedulers_and_properties.append(
                     (sources.scheduler_name(version), properties)
                 )
-            if version_config["ci_only"]:
+            if version_config.ci_only:
                 # Not on the mirrors yet, so only built from a CI tarball.
-                ci_only = ", ".join(version_config["ci_only"])
+                ci_only = ", ".join(version_config.ci_only)
                 if source == sources.CI_TARBALL:
                     schedulers_and_properties.append(
                         (sources.ci_only_scheduler_name(version), properties)
@@ -229,9 +229,9 @@ class FoundryDispatch:
     def __init__(
         self, mariadb_versions, scheduler_names: list[str], ci_url: str, source_url: str
     ):
-        # mariadb_versions: foundry.yaml's. scheduler_names: every Triggerable
-        # the step may pick. source_url: the Foundry archive's URL, an
-        # Interpolate string.
+        # mariadb_versions: settings.MARIADB_VERSIONS. scheduler_names:
+        # every Triggerable the step may pick. source_url: the Foundry
+        # archive's URL, an Interpolate string.
         self.mariadb_versions = mariadb_versions
         self.scheduler_names = scheduler_names
         self.ci_url = ci_url
