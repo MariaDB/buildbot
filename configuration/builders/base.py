@@ -119,6 +119,7 @@ class BaseBuilder:
         jobs: int,
         tags: list[str] = [],
         properties: dict[str, str] = None,
+        collapse_requests: bool = None,
     ) -> util.BuilderConfig:
         """
         Generates a BuilderConfig object for the builder, including worker names,
@@ -133,6 +134,8 @@ class BaseBuilder:
                 Defaults to an empty list.
             properties (dict[str, str], optional): Additional properties for the builder.
                 Defaults to an empty dictionary.'
+            collapse_requests (bool, optional): Whether pending build requests
+                may be merged. Defaults to the master's setting (collapsing).
         Mention on the jobs parameter:
             - jobs is a measure of how many CPU's are used for the build, for commands that support parallel execution (e.g. make, mtr).
             - provide a value greater or equal to 1
@@ -158,6 +161,7 @@ class BaseBuilder:
             canStartBuild=canStartBuild,
             factory=self.get_factory(),
             properties=properties,
+            collapseRequests=collapse_requests,
         )
 
 
