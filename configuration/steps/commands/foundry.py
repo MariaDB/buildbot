@@ -591,8 +591,6 @@ class DownloadServerBintarFromMirror(Command):
     ):
         self.mirror_url = mirror_url
         self.mirror_bintar = mirror_bintar
-        # Named apart from DownloadServerBintar: buildbot suffixes a repeated
-        # step name with "_1", which would overflow the 50 characters.
         super().__init__(name="Download mirror bintar", workdir=workdir)
 
     def as_cmd_arg(self) -> list[str]:

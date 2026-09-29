@@ -139,8 +139,7 @@ def _server_repo_steps(
     galera_repo_url: str,
     where: str,
 ):
-    # where: "worker" or "base". Both steps are checkpointed, which adds a
-    # "Checkpoint <name>" step, so names must stay within 39 characters.
+    # where: "worker" or "base".
     setup_from_url, setup_mirror, _ = _PACKAGE_COMMANDS[package_type]
     return [
         InContainer(

@@ -9,7 +9,6 @@ from buildbot.process.factory import BuildFactory
 from buildbot.process.workerforbuilder import AbstractWorkerForBuilder
 from configuration.builders.callables import canStartBuild, nextBuild
 from configuration.builders.infra.runtime import BuildSequence, Sidecar
-from configuration.steps.base import check_repeated_step_names
 from configuration.steps.processors import (
     processor_docker_cleanup,
     processor_docker_commit,
@@ -110,9 +109,7 @@ class BaseBuilder:
 
         # Generating factory steps
         steps = prepare_steps + active_steps + cleanup_steps
-        generated = [step.generate() for step in steps]
-        check_repeated_step_names(step.name for step in generated)
-        factory.addSteps(generated)
+        factory.addSteps(step.generate() for step in steps)
 
         return factory
 

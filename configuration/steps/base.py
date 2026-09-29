@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from collections import Counter, namedtuple
+from collections import namedtuple
 from dataclasses import dataclass
 from typing import Optional
 
@@ -36,11 +36,6 @@ class StepOptions:  # all step (shell, compile, etc) types support these options
 
 
 class BaseStep(ABC):
-    # buildbot stores step names in a VARCHAR(50) and only rejects a longer
-    # one mid-build, so check at config time. Derived names count too:
-    # "Checkpoint <name>" and PropFromShellStep's "Set <property> from <name>".
-    MAX_NAME_LENGTH = 50
-
     def __init__(self, name: str, options: Optional[StepOptions] = None):
         self.name = name
         self.options = options
@@ -48,32 +43,5 @@ class BaseStep(ABC):
             self.options = StepOptions()  # Load default options
         assert isinstance(self.options, StepOptions)
 
-    @property
-    def name(self) -> str:
-        return self._name
-
-    @name.setter
-    def name(self, value: str):
-        # A setter, as PropFromShellStep renames the step after __init__.
-        if isinstance(value, str) and len(value) > self.MAX_NAME_LENGTH:
-            raise ValueError(
-                f"step name is {len(value)} characters, over the "
-                f"{self.MAX_NAME_LENGTH} buildbot stores: {value!r}"
-            )
-        self._name = value
-
     @abstractmethod
     def generate(self): ...
-
-
-def check_repeated_step_names(names) -> None:
-    # A build tells repeated step names apart by appending "_1", "_2", ...,
-    # without truncating, so a repeated name must leave room for that too.
-    for name, count in Counter(names).items():
-        suffix = f"_{count - 1}"
-        if count > 1 and len(name) + len(suffix) > BaseStep.MAX_NAME_LENGTH:
-            raise ValueError(
-                f"step name {name!r} is used {count} times; with the "
-                f"{suffix!r} buildbot adds it is over "
-                f"{BaseStep.MAX_NAME_LENGTH} characters"
-            )
