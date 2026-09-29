@@ -99,8 +99,9 @@ class _FoundryDispatchStep(BuildbotTrigger):
     # Merged with Trigger's own renderables, in buildbot 2.x and 3.0+ alike.
     renderables = ["source_url"]
 
-    def __init__(self, trigger_specs, source_url, **kwargs):
-        self.trigger_specs = trigger_specs
+    def __init__(self, mariadb_versions, ci_url, source_url, **kwargs):
+        self.mariadb_versions = mariadb_versions
+        self.ci_url = ci_url
         self.source_url = source_url
         super().__init__(**kwargs)
 
@@ -108,7 +109,7 @@ class _FoundryDispatchStep(BuildbotTrigger):
         return str(self.getProperty(name, "") or "").strip()
 
     # Fans out per MariaDB version, with properties read from this build: the
-    # force-scheduler choices named in trigger_specs, and what the earlier
+    # version's force-scheduler choices (see sources.py), and what the earlier
     # steps found.
     @defer.inlineCallbacks
     def getSchedulersAndProperties(self):
@@ -119,7 +120,6 @@ class _FoundryDispatchStep(BuildbotTrigger):
         commit = self._prop("foundry_head")
         # What the package builds need to get Foundry: see dispatcher.py.
         foundry_source = {
-            "foundry_commit": commit,
             "foundry_revision": self._prop("foundry_revision"),
             "foundry_source_url": self.source_url,
             "foundry_source_sha256": self._prop("foundry_source_sha256"),
@@ -146,9 +146,8 @@ class _FoundryDispatchStep(BuildbotTrigger):
                 f"no Foundry source to hand on, missing: {', '.join(missing)}"
             )
 
-        for spec in self.trigger_specs:
-            version = spec["mariadb_version"]
-            mirrored = spec["mirrored"]
+        for version, version_config in self.mariadb_versions.items():
+            mirrored = sources.on_mirrors(version_config)
             if is_pull_request:
                 if not mirrored:
                     plan.append(f"{version}: skipped, not on the mirrors yet")
@@ -157,9 +156,9 @@ class _FoundryDispatchStep(BuildbotTrigger):
                 tarbuildnum = ""
             else:
                 source = self.getProperty(
-                    spec["source_property"], sources.default(mirrored)
+                    sources.source_property(version), sources.default(mirrored)
                 )
-                tarbuildnum = self._prop(spec["tarbuildnum_property"])
+                tarbuildnum = self._prop(sources.tarbuildnum_property(version))
 
             allowed = sources.choices(mirrored)
             if source not in allowed:
@@ -193,20 +192,24 @@ class _FoundryDispatchStep(BuildbotTrigger):
                 # Set only for CI: the package builders take its absence to
                 # mean the mirrors.
                 properties["tarbuildnum"] = tarbuildnum
-                plan.append(f"{version}: https://ci.mariadb.org/{tarbuildnum}/")
+                plan.append(f"{version}: {self.ci_url}/{tarbuildnum}/")
             else:
                 plan.append(f"{version}: MariaDB Server mirrors")
 
-            if spec["scheduler"]:
-                schedulers_and_properties.append((spec["scheduler"], properties))
-            if spec["ci_only_targets"]:
+            # A version not on the mirrors has no targets, so no Triggerable
+            # for them.
+            if mirrored:
+                schedulers_and_properties.append(
+                    (sources.scheduler_name(version), properties)
+                )
+            if version_config["ci_only"]:
                 # Not on the mirrors yet, so only built from a CI tarball.
-                ci_only = ", ".join(spec["ci_only_targets"])
+                ci_only = ", ".join(version_config["ci_only"])
                 if source == sources.CI_TARBALL:
                     schedulers_and_properties.append(
-                        (spec["ci_only_scheduler"], properties)
+                        (sources.ci_only_scheduler_name(version), properties)
                     )
-                    also = "also " if spec["scheduler"] else ""
+                    also = "also " if mirrored else ""
                     plan.append(f"{version}: {also}CI-only targets: {ci_only}")
                 else:
                     plan.append(f"{version}: skipped CI-only targets: {ci_only}")
@@ -223,26 +226,24 @@ class _FoundryDispatchStep(BuildbotTrigger):
 
 
 class FoundryDispatch:
-    def __init__(self, trigger_specs, source_url: str):
-        # trigger_specs: see _dispatch_specs() in definitions/foundry/builders.py.
-        # source_url: the Foundry archive's URL, an Interpolate string.
-        self.trigger_specs = trigger_specs
+    def __init__(
+        self, mariadb_versions, scheduler_names: list[str], ci_url: str, source_url: str
+    ):
+        # mariadb_versions: foundry.yaml's. scheduler_names: every Triggerable
+        # the step may pick. source_url: the Foundry archive's URL, an
+        # Interpolate string.
+        self.mariadb_versions = mariadb_versions
+        self.scheduler_names = scheduler_names
+        self.ci_url = ci_url
         self.source_url = source_url
 
     def generate(self):
         return _FoundryDispatchStep(
-            trigger_specs=self.trigger_specs,
+            mariadb_versions=self.mariadb_versions,
+            ci_url=self.ci_url,
             source_url=Interpolate(self.source_url),
             name="Trigger Foundry Builders",
-            # Every Triggerable the step may pick.
-            schedulerNames=sorted(
-                {spec["scheduler"] for spec in self.trigger_specs if spec["scheduler"]}
-                | {
-                    spec["ci_only_scheduler"]
-                    for spec in self.trigger_specs
-                    if spec["ci_only_scheduler"]
-                }
-            ),
+            schedulerNames=sorted(self.scheduler_names),
             # Fail with any package build, so the pull request status does
             # too. The waiting build holds a job, so the next run queues.
             waitForFinish=True,

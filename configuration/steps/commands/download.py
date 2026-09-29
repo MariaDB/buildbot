@@ -58,18 +58,8 @@ class GitInitFromCommit(Command):
     def as_cmd_arg(self) -> list[str]:
         if self.depth != 0:
             depth = "--depth " + str(self.depth)
-            # git < 1.8.4 (e.g. CentOS 7's) aborts on "submodule update
-            # --depth"; there, submodules are cloned in full instead. "sort
-            # -VC" succeeds if 1.8.4 <= the installed git. echo, not printf:
-            # Interpolate would read printf's "%s".
-            set_sub_depth = (
-                "if { echo 1.8.4; git --version | awk '{print $3}'; } "
-                "| sort -VC; "
-                f"then sub_depth='{depth}'; else sub_depth=''; fi && "
-            )
         else:
             depth = ""
-            set_sub_depth = "sub_depth='' && "
         # Only the network-facing commands need it; the flags reach the
         # submodule clones too, via GIT_CONFIG_PARAMETERS.
         auth = git_auth_args()
@@ -82,9 +72,7 @@ class GitInitFromCommit(Command):
                     f"git remote add origin {self.repo_url} && "
                     f"git {auth} fetch {depth} origin {self.commit} && "
                     "git checkout FETCH_HEAD && "
-                    f"{set_sub_depth}"
-                    f"git {auth} submodule update --init --recursive "
-                    f"$sub_depth --jobs={self.jobs}"
+                    f"git {auth} submodule update --init --recursive {depth} --jobs={self.jobs}"
                 )
             ),
         ]

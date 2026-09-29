@@ -31,15 +31,7 @@ def _summary(output: str) -> FoundrySummary:
 class TestFoundrySummary(unittest.TestCase):
     def test_reads_each_plugin_line(self):
         summary = _summary(_OUTPUT)
-        self.assertEqual(
-            summary.packages,
-            {
-                "tidesql": [
-                    "MariaDB-plugin-tidesdb-5.0.0-1.el9.x86_64.rpm",
-                    "MariaDB-plugin-tidesdb-debuginfo-5.0.0-1.el9.x86_64.rpm",
-                ]
-            },
-        )
+        self.assertEqual(summary.built, ["tidesql"])
         self.assertEqual(
             summary.failures,
             {"broken": "build: 2", "empty": "package: No packages found"},
@@ -125,7 +117,7 @@ class TestFoundrySummary(unittest.TestCase):
             "-- FOUNDRY-RESULT: PASS\n"
             "-- Configuring done\n"
         )
-        self.assertEqual(summary.packages, {})
+        self.assertEqual(summary.built, [])
         self.assertEqual(summary.failures, {})
         self.assertFalse(summary.complete)
 
@@ -133,7 +125,7 @@ class TestFoundrySummary(unittest.TestCase):
         summary = _summary(
             "-- FOUNDRY-RESULT: PASS a a.rpm \r\n-- FOUNDRY-SUMMARY: 0 of 1 plugins failed\r\n"
         )
-        self.assertEqual(summary.packages, {"a": ["a.rpm"]})
+        self.assertEqual(summary.built, ["a"])
         self.assertTrue(summary.complete)
 
 

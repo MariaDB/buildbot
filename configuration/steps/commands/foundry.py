@@ -71,12 +71,18 @@ remove_plugin() {
 """,
 }
 
-# add_suites <plugin>, given the plugin's file list on stdin, adds its MTR
-# suites to $suites (comma-separated, once each) or logs that it has none. A
-# suite is a plugin/<x>/<suite>/ directory with t/*.test files; suite.pm is
-# optional. Fed by process substitution, so bash -x doesn't trace the list.
-_ADD_SUITES = """
-add_suites() {
+
+def _print_suites(package_glob: str, list_files: str, only_if: str = None) -> str:
+    # Shell that prints the built plugins' MTR suites, comma-separated and
+    # once each, or logs that a plugin has none. They are read from the file
+    # lists (list_files, of "$f") of each plugin's package_glob files; only_if
+    # skips a plugin "$p" for which it fails. A suite is a
+    # plugin/<x>/<suite>/ directory with t/*.test files; suite.pm is optional.
+    # add_suites is fed by process substitution, so bash -x doesn't trace the
+    # list.
+    skip = f"\n    {only_if} || continue" if only_if else ""
+    return f"""
+add_suites() {{
     found=""
     for path in $(grep -oE '/plugin/[^/]+/[^/]+/t/[^/]+\\.test$' || true); do
         found=1
@@ -87,7 +93,13 @@ add_suites() {
         esac
     done
     if [ -z "$found" ]; then echo "$1 has no MTR suite, so it won't be tested" >&2; fi
-}
+}}
+
+suites=""
+for p in ${{{BUILT_PLUGINS_ENV}}}; do{skip}
+    add_suites "$p" < <(for f in {package_glob}; do [ -e "$f" ] && {list_files}; done)
+done
+echo "${{suites#,}}"
 """
 
 
@@ -276,7 +288,7 @@ class FoundrySummary:
     _LINE = re.compile(r"-- FOUNDRY-(RESULT|SUMMARY): (.*)")
 
     def __init__(self):
-        self.packages = {}  # plugin -> its package files, from PASS lines
+        self.built = []  # plugins, from PASS lines
         self.failures = {}  # plugin -> "<stage>: <reason>", from FAIL lines
         self.complete = False  # the FOUNDRY-SUMMARY line was seen
 
@@ -297,18 +309,18 @@ class FoundrySummary:
             return
         verdict, plugin, details = fields[0], fields[1], fields[2:]
         if verdict == "PASS":
-            self.packages[plugin] = details
+            self.built.append(plugin)
         elif verdict == "FAIL":
             stage, *reason = details or ["unknown"]
             self.failures[plugin] = f"{stage}: {' '.join(reason)}"
 
     def evaluate(self, requested: list[str], command_ok: bool):
         # Returns (result, built plugins, {failed plugin: why}, description).
-        built = list(self.packages)
+        built = list(self.built)
         failures = dict(self.failures)
         # run.cmake silently skips any argument with a dot in it.
         for plugin in requested:
-            if plugin not in self.packages and plugin not in failures:
+            if plugin not in built and plugin not in failures:
                 failures[plugin] = "not reported by run.cmake"
         if not self.complete:
             return FAILURE, built, failures, "run.cmake printed no summary"
@@ -342,8 +354,7 @@ class BuildPluginsShellCommand(ShellCommandWithURL):
     # The step for BuildPlugins, as ShellStep's step_class. Its result comes
     # from the summary: SUCCESS if every plugin built, WARNINGS if some did
     # (pair with flunkOnWarnings), FAILURE if none did or there's no summary.
-    # Sets built_plugins, failed_plugins and plugin_packages. A stopped step
-    # records nothing.
+    # Sets built_plugins. A stopped step records nothing.
     #
     # Buildbot 2.x (the production fork) decides in evaluateCommand(); 3.0+
     # only calls run(). 2.x calls run() too, as its bridge to start(), hence
@@ -376,14 +387,10 @@ class BuildPluginsShellCommand(ShellCommandWithURL):
             # Cut short: the missing summary says nothing about the plugins.
             return command_result
         requested = str(self.getProperty("foundry_plugins") or "").split()
-        result, built, failures, self.verdict_line = self.foundry_summary.evaluate(
+        result, built, _, self.verdict_line = self.foundry_summary.evaluate(
             requested, command_ok=command_result == SUCCESS
         )
         self.setProperty("built_plugins", " ".join(built), self.name)
-        self.setProperty("failed_plugins", " ".join(failures), self.name)
-        self.setProperty(
-            "plugin_packages", dict(self.foundry_summary.packages), self.name
-        )
         return result
 
     def getResultSummary(self):
@@ -536,10 +543,11 @@ done
 
 
 # Shared tail of both server bintar downloads: fetches the one server bintar
-# listed at $base_url, unpacks it under /home/buildbot/bintar and prints its
-# directory. awk 'NR==1' rather than head -1, which would close the pipe early
-# and, under pipefail, fail the step on the writer's SIGPIPE. `|| true` lets
-# an empty grep reach the error message.
+# listed at $base_url, unpacks it under /home/buildbot/bintar as it downloads
+# and prints its directory, the first in tar's listing. awk 'NR==1' rather
+# than head -1, which would close the pipe early and, under pipefail, fail the
+# step on the writer's SIGPIPE. `|| true` lets an empty grep reach the error
+# message.
 _FETCH_SERVER_BINTAR = """
 filename=$(curl -fsSL "$base_url/" | grep -oE 'href="mariadb-[^"]*-linux[^"]*\\.tar\\.gz"' | sed -E 's/^href="(.*)"$/\\1/' | awk 'NR==1' || true)
 if [ -z "$filename" ]; then
@@ -548,10 +556,7 @@ if [ -z "$filename" ]; then
 fi
 
 mkdir -p /home/buildbot/bintar
-curl -fsSL "$base_url/$filename" -o "/home/buildbot/bintar/$filename"
-tar -xzf "/home/buildbot/bintar/$filename" -C /home/buildbot/bintar
-
-dirname=$(tar -tzf "/home/buildbot/bintar/$filename" | awk -F/ 'NR==1{print $1}')
+dirname=$(curl -fsSL "$base_url/$filename" | tar -xzvf - -C /home/buildbot/bintar | awk -F/ 'NR==1{print $1}')
 echo "/home/buildbot/bintar/$dirname"
 """
 
@@ -629,17 +634,14 @@ class ExtractPluginBintarIntoServerBintar(Command):
             util.Interpolate(
                 f"""
 set -euo pipefail
-{_ADD_SUITES}
-suites=""
+
 for p in ${{{BUILT_PLUGINS_ENV}}}; do
   for f in "$p.build"/*.tar.gz; do
     [ -e "$f" ] || continue
     tar -xf "$f" -C "{self.server_bintar_dir}" --strip-components=1
   done
-  add_suites "$p" < <(for f in "$p.build"/*.tar.gz; do [ -e "$f" ] && tar -tzf "$f"; done)
 done
-echo "${{suites#,}}"
-"""
+{_print_suites('"$p.build"/*.tar.gz', 'tar -tzf "$f"')}"""
             ),
         ]
 
@@ -667,14 +669,7 @@ class DiscoverPluginMTRSuites(Command):
             f"""
 set -euo pipefail
 {_PLUGIN_INSTALLED[self.package_type]}
-{_ADD_SUITES}
-suites=""
-for p in ${{{BUILT_PLUGINS_ENV}}}; do
-  plugin_installed "$p" || continue
-  add_suites "$p" < <(for f in {package_glob}; do [ -e "$f" ] && {list_files_cmd}; done)
-done
-echo "${{suites#,}}"
-""",
+{_print_suites(package_glob, list_files_cmd, only_if='plugin_installed "$p"')}""",
         ]
 
 
@@ -723,30 +718,62 @@ def _save_mtr_logs(save_logs_path: str, find_binaries: str) -> str:
             """
 
 
-class RunPluginMTRSuite(Command):
-    # Runs every suite in one MTR run (--force), from the installed test
-    # package. On failure the logs go to save_logs_path.
+class _RunPluginMTR(Command):
+    # Runs every suite in one MTR run (--force). On failure the logs go to
+    # save_logs_path. Subclasses give the shell that cds to
+    # mariadb-test-run.pl, and find_binaries for _save_mtr_logs.
     def __init__(
-        self,
-        package_type: str,
-        suites: str,
-        save_logs_path: str,
-        workdir: PurePath = PurePath("."),
+        self, suites: str, save_logs_path: str, workdir: PurePath = PurePath(".")
     ):
-        self.package_type = package_type
         self.suites = suites
         self.save_logs_path = save_logs_path
         # Not root: galera SST's rsync then drops to nobody, which can't read
         # the 0660 wsrep_* tables.
         super().__init__(name="Run plugin MTR suite", workdir=workdir)
 
+    def _cd_to_mtr(self) -> str:
+        raise NotImplementedError
+
+    def _find_binaries(self) -> str:
+        raise NotImplementedError
+
     def as_cmd_arg(self) -> list[str]:
+        return [
+            "bash",
+            "-exc",
+            util.Interpolate(
+                f"""
+set -euo pipefail
+{self._cd_to_mtr()}
+perl mariadb-test-run.pl --force --max-test-fail=20 --suite="{self.suites}" --vardir={_MTR_VARDIR} || ({_save_mtr_logs(self.save_logs_path, self._find_binaries())})
+"""
+            ),
+        ]
+
+
+class RunPluginMTRSuite(_RunPluginMTR):
+    # From the installed test package.
+    def __init__(self, package_type: str, suites: str, save_logs_path: str):
+        self.package_type = package_type
+        super().__init__(suites, save_logs_path)
+
+    def _cd_to_mtr(self) -> str:
         # Ask the package where mariadb-test-run.pl is; lib/v1/ has an old one.
         if self.package_type == "RPM":
             list_files_cmd = "rpm -ql MariaDB-test"
         else:
             list_files_cmd = "dpkg -L mariadb-test"
-        find_binaries = """
+        return f"""
+mtr_script=$({list_files_cmd} | grep -v '/lib/v1/' | grep -m1 '/mariadb-test-run\\.pl$' || true)
+if [ -z "$mtr_script" ]; then
+    echo "Could not locate mariadb-test-run.pl from the installed test package" >&2
+    exit 1
+fi
+cd "$(dirname "$mtr_script")"
+"""
+
+    def _find_binaries(self) -> str:
+        return """
             if [ -d /usr/lib/mysql/plugin ]; then
                 plugins_dir="/usr/lib/mysql/plugin"
             elif [ -d /usr/lib64/mysql/plugin ]; then
@@ -755,54 +782,20 @@ class RunPluginMTRSuite(Command):
                 plugins_dir="$vardir/plugins"
             fi
             mariadbd_path=$(command -v mariadbd 2>/dev/null || true)"""
-        return [
-            "bash",
-            "-exc",
-            util.Interpolate(
-                f"""
-set -euo pipefail
-
-mtr_script=$({list_files_cmd} | grep -v '/lib/v1/' | grep -m1 '/mariadb-test-run\\.pl$' || true)
-if [ -z "$mtr_script" ]; then
-    echo "Could not locate mariadb-test-run.pl from the installed test package" >&2
-    exit 1
-fi
-mtr_base_dir=$(dirname "$mtr_script")
-
-cd "$mtr_base_dir" && perl mariadb-test-run.pl --force --max-test-fail=20 --suite="{self.suites}" --vardir={_MTR_VARDIR} || ({_save_mtr_logs(self.save_logs_path, find_binaries)})
-"""
-            ),
-        ]
 
 
-class RunPluginMTRSuiteFromBintar(Command):
-    # Runs the suites ExtractPluginBintarIntoServerBintar found, with the
-    # server bintar's own ./mtr. On failure the logs go to save_logs_path.
-    def __init__(
-        self,
-        server_bintar_dir: str,
-        suites: str,
-        save_logs_path: str,
-        workdir: PurePath = PurePath("."),
-    ):
+class RunPluginMTRSuiteFromBintar(_RunPluginMTR):
+    # Runs the suites ExtractPluginBintarIntoServerBintar found, inside the
+    # server bintar.
+    def __init__(self, server_bintar_dir: str, suites: str, save_logs_path: str):
         self.server_bintar_dir = server_bintar_dir
-        self.suites = suites
-        self.save_logs_path = save_logs_path
-        super().__init__(name="Run plugin MTR suite", workdir=workdir)
+        super().__init__(suites, save_logs_path)
 
-    def as_cmd_arg(self) -> list[str]:
-        find_binaries = (
+    def _cd_to_mtr(self) -> str:
+        return f'cd "{self.server_bintar_dir}/mariadb-test"'
+
+    def _find_binaries(self) -> str:
+        return (
             f'plugins_dir="{self.server_bintar_dir}/lib/plugin"; '
             f'mariadbd_path="{self.server_bintar_dir}/bin/mariadbd"'
         )
-        return [
-            "bash",
-            "-exc",
-            util.Interpolate(
-                f"""
-set -euo pipefail
-
-cd "{self.server_bintar_dir}/mariadb-test" && ./mtr --force --max-test-fail=20 --suite="{self.suites}" --vardir={_MTR_VARDIR} || ({_save_mtr_logs(self.save_logs_path, find_binaries)})
-"""
-            ),
-        ]

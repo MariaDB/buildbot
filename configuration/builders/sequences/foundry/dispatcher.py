@@ -71,11 +71,13 @@ def _has_plugins(step):
     return bool(step.getProperty("foundry_plugins"))
 
 
-def trigger_foundry(config: DockerConfig, trigger_specs):
+def trigger_foundry(
+    config: DockerConfig, mariadb_versions, scheduler_names: list[str], ci_url: str
+):
     # The only Foundry clone of a run: it finds the plugins to build and
     # archives the commit, which every package build then downloads. So they
-    # all build the same commit, however late they start. trigger_specs: see
-    # _dispatch_specs() in definitions/foundry/builders.py.
+    # all build the same commit, however late they start. The rest is for
+    # trigger.FoundryDispatch.
     sequence = BuildSequence()
     sequence.add_step(_clone_foundry_step(config))
     # The commit, and its short form for saved packages' and logs' paths.
@@ -108,7 +110,10 @@ def trigger_foundry(config: DockerConfig, trigger_specs):
     )
     sequence.add_step(
         trigger.FoundryDispatch(
-            trigger_specs, source_url=f"{storage.ARTIFACTS_URL}/{_ARCHIVE}"
+            mariadb_versions,
+            scheduler_names,
+            ci_url,
+            source_url=f"{storage.ARTIFACTS_URL}/{_ARCHIVE}",
         )
     )
     return sequence

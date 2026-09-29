@@ -130,8 +130,6 @@ _PACKAGE_COMMANDS = {
     "RPM": (SetupRPMRepoFromURL, SetupRPMRepo, InstallRPMPackages),
 }
 
-_GALERA_REPO_FILE = {"DEB": "galera.sources", "RPM": "galera.repo"}
-
 
 def _server_repo_steps(
     package_type: str,
@@ -152,8 +150,8 @@ def _server_repo_steps(
                 # mirrors carry galera already.
                 command=setup_from_url(
                     repo_file_url,
+                    galera_repo_url,
                     name=f"Add server CI repo ({where})",
-                    extra_repos={_GALERA_REPO_FILE[package_type]: galera_repo_url},
                 ),
                 options=StepOptions(doStepIf=_uses_ci_tarball),
             ),

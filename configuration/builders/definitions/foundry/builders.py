@@ -150,40 +150,16 @@ for version, version_config in FOUNDRY_MARIADB_VERSIONS.items():
         )
 
 
-def _dispatch_specs():
-    # Per version: the force-scheduler fields holding its choice, and the
-    # Triggerable(s) to fire.
-    return [
-        {
-            "mariadb_version": version,
-            "source_property": sources.source_property(version),
-            "tarbuildnum_property": sources.tarbuildnum_property(version),
-            "mirrored": sources.on_mirrors(version_config),
-            # None for a version not on the mirrors yet: it has no targets.
-            "scheduler": (
-                sources.scheduler_name(version)
-                if sources.on_mirrors(version_config)
-                else None
-            ),
-            # Fired too on CI tarball runs; None without ci_only targets.
-            "ci_only_scheduler": (
-                sources.ci_only_scheduler_name(version)
-                if version_config["ci_only"]
-                else None
-            ),
-            "ci_only_targets": version_config["ci_only"],
-        }
-        for version, version_config in FOUNDRY_MARIADB_VERSIONS.items()
-    ]
-
-
 _DISPATCHER = _FOUNDRY_CONFIG["dispatcher"]
 
 DISPATCHER_BUILDER = GenericBuilder(
     name=_DISPATCHER["builder"],
     sequences=[
         dispatcher.trigger_foundry(
-            _docker_config(image=_DISPATCHER["image"]), _dispatch_specs()
+            _docker_config(image=_DISPATCHER["image"]),
+            FOUNDRY_MARIADB_VERSIONS,
+            scheduler_names=list(FOUNDRY_TRIGGERABLE_BUILDERS),
+            ci_url=_CI_URL,
         )
     ],
 )
