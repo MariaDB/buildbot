@@ -4,22 +4,6 @@ from typing import Iterable, Union
 from buildbot.plugins import util
 from configuration.steps.commands.base import Command
 
-# Debian 11 (bullseye) is oldoldstable -- its debian-security repo is served
-# off a mirror network whose backend nodes lag/desync for this EOL suite
-# (stale Release "Valid-Until", and even 404s on packages that other backends
-# serve fine). All its packages also exist, unpatched, in plain bullseye main,
-# so just disable the security repo outright rather than fight the mirror --
-# the deb-src line for it (derived from sources.list at image build time, see
-# debian.Dockerfile) lives in a separate sources.list.d/*.list file, so both
-# need disabling, wherever they are. Must run before the first apt-get update,
-# which otherwise fails on the stale Release file.
-_DISABLE_EOL_DEBIAN_SECURITY_REPO = """
-. /etc/os-release
-if [ "$ID" = "debian" ] && [ "$VERSION_ID" = "11" ]; then
-    sed -i '/^\\(deb\\|deb-src\\) .*debian-security bullseye-security/s/^/# /' /etc/apt/sources.list /etc/apt/sources.list.d/*.list 2>/dev/null || true
-fi
-"""
-
 
 class CreateDebRepo(Command):
     """
@@ -284,7 +268,6 @@ class SetupDEBRepo(Command):
             util.Interpolate(
                 f"""
 set -euo pipefail
-{_DISABLE_EOL_DEBIAN_SECURITY_REPO}
 apt-get update
 apt-get install -y apt-utils apt-transport-https ca-certificates
 
