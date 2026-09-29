@@ -542,12 +542,8 @@ done
         ]
 
 
-# Shared tail of both server bintar downloads: fetches the one server bintar
-# listed at $base_url, unpacks it under /home/buildbot/bintar as it downloads
-# and prints its directory, the first in tar's listing. awk 'NR==1' rather
-# than head -1, which would close the pipe early and, under pipefail, fail the
-# step on the writer's SIGPIPE. `|| true` lets an empty grep reach the error
-# message.
+# Shared tail of both server bintar downloads: fetches the bintar listed at
+# $base_url, unpacks it into /home/buildbot/bintar and prints its directory.
 _FETCH_SERVER_BINTAR = """
 filename=$(curl -fsSL "$base_url/" | grep -oE 'href="mariadb-[^"]*-linux[^"]*\\.tar\\.gz"' | sed -E 's/^href="(.*)"$/\\1/' | awk 'NR==1' || true)
 if [ -z "$filename" ]; then
