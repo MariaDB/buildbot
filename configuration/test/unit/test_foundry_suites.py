@@ -5,7 +5,11 @@ import subprocess
 import tempfile
 import unittest
 
-from configuration.steps.commands.foundry import BUILT_PLUGINS_ENV, _print_suites
+from configuration.steps.commands.foundry import (
+    BUILT_PLUGINS_ENV,
+    STATUS_ENV,
+    _print_suites,
+)
 
 # The files of each plugin's package, as rpm -qlp lists them: a suite with its
 # tests in t/, one with its tests in the suite directory, and no suite.
@@ -41,6 +45,8 @@ class TestFoundrySuites(unittest.TestCase):
             os.mkdir(os.path.join(self.workdir, f"{plugin}.build"))
             with open(os.path.join(self.workdir, f"{plugin}.build", "files"), "w") as f:
                 f.write(files)
+        self.status_dir = os.path.join(self.workdir, "status")
+        os.mkdir(self.status_dir)
 
     def _print_suites(self):
         # The shell the suite steps run, with cat for listing a package's files.
@@ -48,7 +54,11 @@ class TestFoundrySuites(unittest.TestCase):
         return subprocess.run(
             ["bash", "-c", f"set -euo pipefail\n{shell}"],
             cwd=self.workdir,
-            env={**os.environ, BUILT_PLUGINS_ENV: " ".join(_FILES)},
+            env={
+                **os.environ,
+                BUILT_PLUGINS_ENV: " ".join(_FILES),
+                STATUS_ENV: self.status_dir,
+            },
             capture_output=True,
             text=True,
             check=True,
@@ -58,6 +68,11 @@ class TestFoundrySuites(unittest.TestCase):
         result = self._print_suites()
         self.assertEqual(result.stdout, "spider,levenshtein\n")
         self.assertIn("no_tests has no MTR suite", result.stderr)
+
+    def test_writes_each_plugins_suites_to_the_status_directory(self):
+        self._print_suites()
+        with open(os.path.join(self.status_dir, "suites")) as f:
+            self.assertEqual(f.read(), "spider spider\nlevenshtein levenshtein\n")
 
 
 if __name__ == "__main__":

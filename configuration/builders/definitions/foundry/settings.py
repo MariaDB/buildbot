@@ -8,6 +8,7 @@ from configuration.steps.commands.foundry import (
     BRANCH_ENV,
     BUILT_PLUGINS_ENV,
     PLUGINS_ENV,
+    STATUS_ENV,
 )
 from configuration.steps.commands.packages import (
     InstallDEBPackages,
@@ -330,14 +331,17 @@ TARGETS_BY_TYPE = {"rpm": RPM_TARGETS, "deb": DEB_TARGETS, "bintar": BINTAR_TARG
 PACKAGES_DIR = os.environ["FOUNDRY_PACKAGES_DIR"]
 ARTIFACTS_URL = f"{os.environ['ARTIFACTS_URL']}/foundry"
 
-# The Foundry archive for the package builds, one directory per dispatcher
-# build, in Foundry's storage.
-ARCHIVE = "sources/%(prop:buildnumber)s/foundry-%(prop:foundry_head)s.tar.gz"
-
-# Saved packages and MTR logs, per MariaDB version and server source. Mirror
-# builds have no tarbuildnum and go under "mirror" (":~" also catches empty).
-RUN_DIR = "%(prop:mariadb_version)s-%(prop:tarbuildnum:~mirror)s"
-LOGS_DIR = f"{RUN_DIR}/%(prop:foundry_revision)s/logs/%(prop:buildername)s"
+# Everything a run saves is under its dispatcher build's directory, the only
+# part of Foundry's storage its containers mount: RUN_DIR as the dispatcher
+# names it, TRIGGERED_RUN_DIR as its package builds do. The dispatcher creates
+# it. Each package build saves to its own BUILD_DIR there.
+RUN_DIR = "runs/%(prop:buildnumber)s"
+TRIGGERED_RUN_DIR = "runs/%(prop:foundry_run)s"
+ARCHIVE = f"{RUN_DIR}/foundry-%(prop:foundry_head)s.tar.gz"
+BUILD_DIR = f"{TRIGGERED_RUN_DIR}/%(prop:mariadb_version)s/%(prop:buildername)s"
+STATUS_DIR = f"{BUILD_DIR}/status"  # a file per stage, read by the report
+PLUGINS_DIR = f"{BUILD_DIR}/plugins"  # a directory of packages per plugin
+LOGS_DIR = f"{BUILD_DIR}/logs"
 SAVE_LOGS_PATH = f"/packages/{LOGS_DIR}"
 
 SERVER_BINTAR_PROP = "%(prop:server_bintar_dir)s"
@@ -351,6 +355,7 @@ MARIADB_VERSION_ENV_VARS = [("MARIADB_VERSION", "%(prop:mariadb_version)s")]
 # The plugins the dispatcher asked for, then those that built.
 PLUGINS_ENV_VARS = [(PLUGINS_ENV, "%(prop:foundry_plugins)s")]
 BUILT_PLUGINS_ENV_VARS = [(BUILT_PLUGINS_ENV, "%(prop:built_plugins)s")]
+STATUS_ENV_VARS = [(STATUS_ENV, f"/packages/{STATUS_DIR}")]
 
 # A partly successful step is a warning, but still fails the build.
 BEST_EFFORT_OPTIONS = StepOptions(flunkOnWarnings=True)

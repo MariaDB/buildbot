@@ -186,6 +186,8 @@ class _FoundryDispatchStep(BuildbotTrigger):
                 "mariadb_version": version,
                 "foundry_plugins": plugins,
                 "is_pull_request": is_pull_request,
+                # The dispatcher's build number, for the status report.
+                "foundry_run": self.getProperty("buildnumber"),
                 **foundry_source,
             }
             if source == sources.CI_TARBALL:
@@ -222,6 +224,21 @@ class _FoundryDispatchStep(BuildbotTrigger):
             # Only after the log, as BuildStepFailed carries no message, and
             # before anything is triggered.
             raise BuildStepFailed()
+        # For the status report: the builders it should find, and each
+        # version's server source, "<version>=<tarbuildnum or mirror>".
+        self.setProperty(
+            "foundry_triggered",
+            " ".join(scheduler for scheduler, _ in schedulers_and_properties),
+            self.name,
+        )
+        self.setProperty(
+            "foundry_sources",
+            " ".join(
+                f"{props['mariadb_version']}={props.get('tarbuildnum', 'mirror')}"
+                for _, props in schedulers_and_properties
+            ),
+            self.name,
+        )
         return schedulers_and_properties
 
 
