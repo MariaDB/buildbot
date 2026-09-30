@@ -1,3 +1,4 @@
+import json
 import re
 from pathlib import PurePath
 
@@ -6,7 +7,7 @@ from twisted.internet import defer
 from buildbot.plugins import util
 from buildbot.process import logobserver
 from buildbot.process.results import FAILURE, SUCCESS, WARNINGS, Results
-from configuration.steps.commands.base import Command, ShellCommandWithURL
+from configuration.steps.commands.base import Command, ShellCommandWithURL, load_script
 from git_auth import git_auth_args
 
 # Plugin lists reach the scripts as environment variables rather than through
@@ -16,6 +17,9 @@ BUILT_PLUGINS_ENV = "FOUNDRY_BUILT_PLUGINS"
 # Read by DiscoverFoundryPlugins only.
 BRANCH_ENV = "FOUNDRY_BRANCH"
 BASE_BRANCH_ENV = "FOUNDRY_BASE_BRANCH"
+# A package build's status directory: each stage writes a file there, one line
+# per plugin, which the dispatcher's WriteFoundryReport reads.
+STATUS_ENV = "FOUNDRY_STATUS_DIR"
 
 # Commands take a plugin's packages from its own <plugin>.build/: run.cmake
 # also copies all of them into the workspace root, where they can't be told
@@ -74,7 +78,8 @@ remove_plugin() {
 
 def _print_suites(package_glob: str, list_files: str, only_if: str = None) -> str:
     # Shell that prints the built plugins' MTR suites, comma-separated and
-    # once each, or logs that a plugin has none. They are read from the file
+    # once each, or logs that a plugin has none, and writes "<plugin> <suite>
+    # <suite>" lines to the status directory's suites file. They are read from the file
     # lists (list_files, of "$f") of each plugin's package_glob files; only_if
     # skips a plugin "$p" for which it fails. A suite is a
     # plugin/<x>/<suite>/ directory with *.test files, in t/ or in the
@@ -84,19 +89,27 @@ def _print_suites(package_glob: str, list_files: str, only_if: str = None) -> st
     skip = f"\n    {only_if} || continue" if only_if else ""
     return f"""
 add_suites() {{
-    found=""
+    mine=""
     for path in $(grep -oE '/plugin/[^/]+/[^/]+/(t/)?[^/]+\\.test$' || true); do
-        found=1
         [[ $path =~ /plugin/[^/]+/([^/]+)/ ]] && name=${{BASH_REMATCH[1]}}
+        case " $mine " in
+            *" $name "*) ;;
+            *) mine="$mine $name" ;;
+        esac
         case ",$suites," in
             *",$name,"*) ;;
             *) suites="$suites,$name" ;;
         esac
     done
-    if [ -z "$found" ]; then echo "$1 has no MTR suite, so it won't be tested" >&2; fi
+    if [ -n "$mine" ]; then
+        echo "$1$mine" >> "${{{STATUS_ENV}}}/suites"
+    else
+        echo "$1 has no MTR suite, so it won't be tested" >&2
+    fi
 }}
 
 suites=""
+: > "${{{STATUS_ENV}}}/suites"
 for p in ${{{BUILT_PLUGINS_ENV}}}; do{skip}
     add_suites "$p" < <(for f in {package_glob}; do [ -f "$f" ] && {list_files}; done)
 done
@@ -193,6 +206,8 @@ cut -d' ' -f1 sha256sums.txt
 class DownloadFoundrySource(Command):
     # Fetches the dispatcher's archive, checks its SHA-256 and unpacks it into
     # the workdir. Retries in case the artifacts server doesn't serve it yet.
+    # Writes the build's page in Buildbot ($1) to the status directory's url
+    # file, which the report links to.
     ATTEMPTS = 5
 
     def __init__(self, url: str, sha256: str, workdir: PurePath = PurePath(".")):
@@ -215,6 +230,9 @@ if [ -z "$url" ] || [ -z "$sha256" ]; then
     exit 1
 fi
 
+mkdir -p "${{{STATUS_ENV}}}"
+echo "$1" > "${{{STATUS_ENV}}}/url"
+
 archive=foundry.tar.gz
 attempt=1
 until curl -fsSL -o "$archive" "$url" && echo "$sha256  $archive" | sha256sum -c -; do
@@ -229,6 +247,8 @@ tar -xzvf "$archive" --strip-components=1
 rm -f "$archive"
 """
             ),
+            "download-foundry",
+            util.URLForBuild,
         ]
 
 
@@ -275,7 +295,10 @@ if [ -z "$plugins" ]; then
 fi
 
 echo "Building: $plugins"
-CMAKE_BUILD_PARALLEL_LEVEL=%(prop:jobs:-1)s cmake {cmake_define}-P run.cmake $plugins
+status=0
+CMAKE_BUILD_PARALLEL_LEVEL=%(prop:jobs:-1)s cmake {cmake_define}-P run.cmake $plugins | tee run.cmake.log || status=$?
+sed -n 's/^-- FOUNDRY-RESULT: //p' run.cmake.log > "${{{STATUS_ENV}}}/build"
+exit $status
 """
             ),
         ]
@@ -485,13 +508,16 @@ fi
 
 installed=""
 failed=""
+: > "${{{STATUS_ENV}}}/install"
 for p in $plugins; do
     echo "--- Installing $p"
     if install_plugin "$p"; then
         installed="$installed $p"
+        echo "$p pass" >> "${{{STATUS_ENV}}}/install"
     else
         failed="$failed $p"
         remove_plugin "$p"
+        echo "$p fail" >> "${{{STATUS_ENV}}}/install"
     fi
 done
 
@@ -540,8 +566,8 @@ fi
 
 
 class SavePluginPackages(Command):
-    # Copies each built plugin's packages to destination, whose literal
-    # $plugin the shell fills in, with a sha256sums.txt for them.
+    # Copies each built plugin's packages to destination/<plugin>/, with a
+    # sha256sums.txt for them.
     def __init__(self, destination: str, workdir: PurePath = PurePath(".")):
         self.destination = destination
         super().__init__(name="Save packages", workdir=workdir)
@@ -557,7 +583,7 @@ class SavePluginPackages(Command):
 set -euo pipefail
 
 for plugin in ${{{BUILT_PLUGINS_ENV}}}; do
-    destination="{self.destination}"
+    destination="{self.destination}/$plugin"
     mkdir -p "$destination"
     saved=""
     for f in "$plugin.build"/*.rpm "$plugin.build"/*.deb "$plugin.build"/*.tar.gz "$plugin.build"/*.zip; do
@@ -753,7 +779,10 @@ class _RunPluginMTR(Command):
                 f"""
 set -euo pipefail
 {self._cd_to_mtr()}
-perl mariadb-test-run.pl --force --max-test-fail=20 --suite="{self.suites}" --vardir={_MTR_VARDIR} || ({_save_mtr_logs(self.save_logs_path)})
+status=0
+perl mariadb-test-run.pl --force --max-test-fail=20 --suite="{self.suites}" --vardir={_MTR_VARDIR} | tee /home/buildbot/mtr.log || status=$?
+grep -E 'were successful|^Failing test\\(s\\):' /home/buildbot/mtr.log > "${{{STATUS_ENV}}}/mtr" || true
+if [ "$status" -ne 0 ]; then ({_save_mtr_logs(self.save_logs_path)}); fi
 """
             ),
         ]
@@ -791,3 +820,38 @@ class RunPluginMTRSuiteFromBintar(_RunPluginMTR):
 
     def _cd_to_mtr(self) -> str:
         return f'cd "{self.server_bintar_dir}/mariadb-test"'
+
+
+class WriteFoundryReport(Command):
+    # Writes run_dir/status.html and status.json from the files the package
+    # builds wrote to run_dir/<mariadb version>/<builder>/; see
+    # scripts/foundry_report.py. versions: {version: {Triggerable:
+    # [builder]}}; the report lists the builders of those in
+    # foundry_triggered. ci_url: where the CI tarballs it links are. The page
+    # links back to the build running it.
+    def __init__(
+        self,
+        run_dir: str,
+        versions: dict,
+        ci_url: str,
+        workdir: PurePath = PurePath("."),
+    ):
+        self.run_dir = run_dir
+        self.versions = versions
+        self.ci_url = ci_url
+        super().__init__(name="Write status report", workdir=workdir)
+
+    def as_cmd_arg(self) -> list[str]:
+        return [
+            "python3",
+            "-c",
+            load_script("foundry_report.py"),
+            util.Interpolate(self.run_dir),
+            json.dumps(self.versions),
+            util.Interpolate("%(prop:foundry_triggered)s"),
+            util.Interpolate("%(prop:foundry_plugins)s"),
+            util.Interpolate("%(prop:foundry_head)s"),
+            util.Interpolate("%(prop:foundry_sources)s"),
+            self.ci_url,
+            util.URLForBuild,
+        ]
