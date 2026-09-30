@@ -46,6 +46,8 @@ Foundry has its own storage, apart from the server's, as the connectors do: `FOU
 | Packages, with `sha256sums.txt` | `<version>-<tarbuildnum\|mirror>/<plugin>/<revision>/<builder>/` |
 | MTR logs of a failed run | `<version>-<tarbuildnum\|mirror>/<revision>/logs/<builder>/` |
 | Foundry archive, with `sha256sums.txt` | `sources/<dispatcher build>/foundry-<commit>.tar.gz` |
+| Status report: every plugin's build, install and MTR result per version and platform, failed tests only (the dispatcher's Status link). Versions open on click; it filters by plugin and builder | `runs/<dispatcher build>/status.html`, `status.json` |
+| What each package build reports, one file per stage | `runs/<dispatcher build>/<version>/<builder>/` |
 
 Pull requests save no packages, but still publish the archive their builds need.
 

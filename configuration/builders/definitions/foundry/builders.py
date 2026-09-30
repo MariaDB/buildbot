@@ -130,6 +130,18 @@ DISPATCHER_BUILDER = GenericBuilder(
             MARIADB_VERSIONS,
             scheduler_names=list(FOUNDRY_TRIGGERABLE_BUILDERS),
             ci_url=CI_URL,
+            # Per version, the builders the status report lists.
+            report_builders={
+                version: {
+                    scheduler: FOUNDRY_TRIGGERABLE_BUILDERS[scheduler]
+                    for scheduler in (
+                        sources.scheduler_name(version),
+                        sources.ci_only_scheduler_name(version),
+                    )
+                    if scheduler in FOUNDRY_TRIGGERABLE_BUILDERS
+                }
+                for version in MARIADB_VERSIONS
+            },
         )
     ],
 )

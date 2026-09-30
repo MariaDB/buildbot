@@ -8,6 +8,7 @@ from configuration.steps.commands.foundry import (
     BRANCH_ENV,
     BUILT_PLUGINS_ENV,
     PLUGINS_ENV,
+    STATUS_ENV,
 )
 from configuration.steps.commands.packages import (
     InstallDEBPackages,
@@ -339,6 +340,12 @@ RUN_DIR = "%(prop:mariadb_version)s-%(prop:tarbuildnum:~mirror)s"
 LOGS_DIR = f"{RUN_DIR}/%(prop:foundry_revision)s/logs/%(prop:buildername)s"
 SAVE_LOGS_PATH = f"/packages/{LOGS_DIR}"
 
+# Status report, per dispatcher build: each package build writes a file per
+# stage to its status directory, and the dispatcher reads them into
+# REPORT_DIR/status.html.
+REPORT_DIR = "runs/%(prop:buildnumber)s"
+STATUS_DIR = "runs/%(prop:foundry_run)s/%(prop:mariadb_version)s/%(prop:buildername)s"
+
 SERVER_BINTAR_PROP = "%(prop:server_bintar_dir)s"
 
 # "basename" is a pull request's target branch, set by the GitHub hook.
@@ -350,6 +357,7 @@ MARIADB_VERSION_ENV_VARS = [("MARIADB_VERSION", "%(prop:mariadb_version)s")]
 # The plugins the dispatcher asked for, then those that built.
 PLUGINS_ENV_VARS = [(PLUGINS_ENV, "%(prop:foundry_plugins)s")]
 BUILT_PLUGINS_ENV_VARS = [(BUILT_PLUGINS_ENV, "%(prop:built_plugins)s")]
+STATUS_ENV_VARS = [(STATUS_ENV, f"/packages/{STATUS_DIR}")]
 
 # A partly successful step is a warning, but still fails the build.
 BEST_EFFORT_OPTIONS = StepOptions(flunkOnWarnings=True)

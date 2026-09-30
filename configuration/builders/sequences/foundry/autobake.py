@@ -11,6 +11,7 @@ from configuration.builders.definitions.foundry.settings import (
     RUN_DIR,
     SAVE_LOGS_PATH,
     SERVER_BINTAR_PROP,
+    STATUS_ENV_VARS,
 )
 from configuration.builders.infra.runtime import (
     BuildSequence,
@@ -64,6 +65,7 @@ def _download_foundry_step(config: DockerConfig):
                 url="%(prop:foundry_source_url)s",
                 sha256="%(prop:foundry_source_sha256)s",
             ),
+            env_vars=STATUS_ENV_VARS,
         ),
         docker_environment=config,
     )
@@ -74,6 +76,7 @@ def _run_mtr_step(config: DockerConfig, command):
     return InContainer(
         ShellStep(
             command=command,
+            env_vars=STATUS_ENV_VARS,
             url=URL(url=f"{ARTIFACTS_URL}/{LOGS_DIR}", url_text="Logs"),
             options=StepOptions(doStepIf=_has_suites),
         ),
@@ -86,7 +89,7 @@ def _build_plugins_step(config: DockerConfig, command: BuildPlugins):
     return InContainer(
         ShellStep(
             command=command,
-            env_vars=MARIADB_VERSION_ENV_VARS + PLUGINS_ENV_VARS,
+            env_vars=MARIADB_VERSION_ENV_VARS + PLUGINS_ENV_VARS + STATUS_ENV_VARS,
             options=BEST_EFFORT_OPTIONS,
             step_class=BuildPluginsShellCommand,
         ),
@@ -213,7 +216,7 @@ def packages(
         InContainer(
             ShellStep(
                 command=InstallBuiltPackages(package_type),
-                env_vars=BUILT_PLUGINS_ENV_VARS,
+                env_vars=BUILT_PLUGINS_ENV_VARS + STATUS_ENV_VARS,
                 options=BEST_EFFORT_OPTIONS,
                 decode_rc=ShellStep.PARTIAL_SUCCESS_DECODE_RC,
             ),
@@ -227,7 +230,7 @@ def packages(
             PropFromShellStep(
                 command=DiscoverPluginMTRSuites(package_type),
                 property="plugin_suites",
-                env_vars=BUILT_PLUGINS_ENV_VARS,
+                env_vars=BUILT_PLUGINS_ENV_VARS + STATUS_ENV_VARS,
             ),
             docker_environment=base_config,
         )
@@ -289,7 +292,7 @@ def bintar(
             PropFromShellStep(
                 command=ExtractPluginBintarIntoServerBintar(SERVER_BINTAR_PROP),
                 property="plugin_suites",
-                env_vars=BUILT_PLUGINS_ENV_VARS,
+                env_vars=BUILT_PLUGINS_ENV_VARS + STATUS_ENV_VARS,
             ),
             docker_environment=config,
         )

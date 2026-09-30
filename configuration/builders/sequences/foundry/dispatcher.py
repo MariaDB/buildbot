@@ -2,6 +2,7 @@ from configuration.builders.definitions.foundry.settings import (
     ARCHIVE,
     ARTIFACTS_URL,
     EVENT_ENV_VARS,
+    REPORT_DIR,
 )
 from configuration.builders.infra.runtime import (
     BuildSequence,
@@ -10,11 +11,12 @@ from configuration.builders.infra.runtime import (
 )
 from configuration.steps.base import StepOptions
 from configuration.steps.commands import trigger
-from configuration.steps.commands.base import BashCommand
+from configuration.steps.commands.base import URL, BashCommand
 from configuration.steps.commands.download import GitInitFromCommit
 from configuration.steps.commands.foundry import (
     ArchiveFoundrySource,
     DiscoverFoundryPlugins,
+    WriteFoundryReport,
 )
 from configuration.steps.remote import PropFromShellStep, ShellStep
 from git_auth import git_auth_env_vars
@@ -64,12 +66,16 @@ def _has_plugins(step):
 
 
 def trigger_foundry(
-    config: DockerConfig, mariadb_versions, scheduler_names: list[str], ci_url: str
+    config: DockerConfig,
+    mariadb_versions,
+    scheduler_names: list[str],
+    ci_url: str,
+    report_builders: dict,
 ):
     # The only Foundry clone of a run: it finds the plugins to build and
     # archives the commit, which every package build then downloads. So they
-    # all build the same commit, however late they start. The rest is for
-    # trigger.FoundryDispatch.
+    # all build the same commit, however late they start. report_builders:
+    # see WriteFoundryReport. The rest is for trigger.FoundryDispatch.
     sequence = BuildSequence()
     sequence.add_step(_clone_foundry_step(config))
     # The commit, and its short form for saved packages' and logs' paths.
@@ -106,6 +112,24 @@ def trigger_foundry(
             scheduler_names,
             ci_url,
             source_url=f"{ARTIFACTS_URL}/{ARCHIVE}",
+        )
+    )
+    # Once the package builds are done, whatever their result.
+    sequence.add_step(
+        InContainer(
+            ShellStep(
+                command=WriteFoundryReport(
+                    f"/packages/{REPORT_DIR}", report_builders, ci_url
+                ),
+                url=URL(
+                    url=f"{ARTIFACTS_URL}/{REPORT_DIR}/status.html", url_text="Status"
+                ),
+                options=StepOptions(
+                    alwaysRun=True, haltOnFailure=False, doStepIf=_has_plugins
+                ),
+                warn_on_fail=True,
+            ),
+            docker_environment=config,
         )
     )
     return sequence
