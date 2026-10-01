@@ -693,17 +693,15 @@ set -euo pipefail
 _MTR_VARDIR = "/home/buildbot/mtr-var"
 
 
-def _save_mtr_logs(save_logs_path: str, find_binaries: str) -> str:
-    # Shell for after a failed MTR run: packs the logs into
-    # save_logs_path/var.tar.gz, plus the plugins and mariadbd if a core was
-    # dumped, then fails the step. find_binaries sets $plugins_dir and
-    # $mariadbd_path.
+def _save_mtr_logs(save_logs_path: str) -> str:
+    # Shell for after a failed MTR run: packs the logs and core files into
+    # save_logs_path/var.tar.gz, then fails the step. A core's server binaries
+    # are those of the server packages or bintar the run installed.
     logs = ["*.log", "*.err*", "core*"]
     patterns = " -o ".join([f"-iname '{log}'" for log in logs])
     return f"""
             vardir="{_MTR_VARDIR}"
             save_logs_path="{save_logs_path}"
-            {find_binaries}
             if [ ! -d "$vardir" ]; then
                 echo "MTR failed before running any test, left no logs to save"
                 exit 1
@@ -711,16 +709,6 @@ def _save_mtr_logs(save_logs_path: str, find_binaries: str) -> str:
             echo "Saving MTR logs"
 
             mkdir -p "$save_logs_path"
-
-            # Save plugins .so and mariadbd if a core file was generated:
-            # core, core.<pid>, or either compressed.
-            if [ -n "$(find "$vardir" -type f \\( -name core -o -name 'core.*' \\) -print -quit)" ]; then
-                plugins_list=$(mktemp)
-                find -L "$plugins_dir" -maxdepth 1 -type f -name '*.so' -printf '%%f\\n' > "$plugins_list"
-                tar -czvf "$save_logs_path/plugins.tar.gz" --dereference -C "$plugins_dir" -T "$plugins_list"
-                rm -f "$plugins_list"
-                [ -f "$mariadbd_path" ] && gzip -c "$mariadbd_path" > "$save_logs_path/mariadbd.gz"
-            fi
 
             # Some core files are left uncompressed by MTR
             find "$vardir" -iregex ".*/core\\(\\.[0-9]+\\)?" -ls -exec gzip {{}} +
@@ -733,7 +721,7 @@ def _save_mtr_logs(save_logs_path: str, find_binaries: str) -> str:
 class _RunPluginMTR(Command):
     # Runs every suite in one MTR run (--force). On failure the logs go to
     # save_logs_path. Subclasses give the shell that cds to
-    # mariadb-test-run.pl, and find_binaries for _save_mtr_logs.
+    # mariadb-test-run.pl.
     def __init__(
         self, suites: str, save_logs_path: str, workdir: PurePath = PurePath(".")
     ):
@@ -744,9 +732,6 @@ class _RunPluginMTR(Command):
         super().__init__(name="Run plugin MTR suite", workdir=workdir)
 
     def _cd_to_mtr(self) -> str:
-        raise NotImplementedError
-
-    def _find_binaries(self) -> str:
         raise NotImplementedError
 
     def as_cmd_arg(self) -> list[str]:
@@ -760,7 +745,7 @@ set -euo pipefail
 status=0
 perl mariadb-test-run.pl --force --max-test-fail=20 --suite="{self.suites}" --vardir={_MTR_VARDIR} | tee /home/buildbot/mtr.log || status=$?
 grep -E 'were successful|^Failing test\\(s\\):' /home/buildbot/mtr.log > "${{{STATUS_ENV}}}/mtr" || true
-if [ "$status" -ne 0 ]; then ({_save_mtr_logs(self.save_logs_path, self._find_binaries())}); fi
+if [ "$status" -ne 0 ]; then ({_save_mtr_logs(self.save_logs_path)}); fi
 """
             ),
         ]
@@ -787,17 +772,6 @@ fi
 cd "$(dirname "$mtr_script")"
 """
 
-    def _find_binaries(self) -> str:
-        return """
-            if [ -d /usr/lib/mysql/plugin ]; then
-                plugins_dir="/usr/lib/mysql/plugin"
-            elif [ -d /usr/lib64/mysql/plugin ]; then
-                plugins_dir="/usr/lib64/mysql/plugin"
-            else
-                plugins_dir="$vardir/plugins"
-            fi
-            mariadbd_path=$(command -v mariadbd 2>/dev/null || true)"""
-
 
 class RunPluginMTRSuiteFromBintar(_RunPluginMTR):
     # Runs the suites ExtractPluginBintarIntoServerBintar found, inside the
@@ -808,12 +782,6 @@ class RunPluginMTRSuiteFromBintar(_RunPluginMTR):
 
     def _cd_to_mtr(self) -> str:
         return f'cd "{self.server_bintar_dir}/mariadb-test"'
-
-    def _find_binaries(self) -> str:
-        return (
-            f'plugins_dir="{self.server_bintar_dir}/lib/plugin"; '
-            f'mariadbd_path="{self.server_bintar_dir}/bin/mariadbd"'
-        )
 
 
 class WriteFoundryReport(Command):
