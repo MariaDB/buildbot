@@ -67,7 +67,8 @@ class TestFoundryReport(unittest.TestCase):
         _write(bintar, "mtr", "Completed: All 2 tests were successful.\n")
 
     def _dir(self, version, builder):
-        return os.path.join(self.run_dir, version, builder)
+        # The build's status files.
+        return os.path.join(self.run_dir, version, builder, "status")
 
     def _status(self, triggered=MIRROR_RUN):
         return report.run_status(self.run_dir, VERSIONS, triggered, PLUGINS, SOURCES)
@@ -171,7 +172,8 @@ class TestFoundryReport(unittest.TestCase):
             'CI tarball <a href="https://ci.mariadb.org/1234/">1234</a>', page
         )
         self.assertIn("Server packages: MariaDB Server mirrors", page)  # 11.8
-        self.assertIn("<caption>foundry-amd64-debian-12-deb-autobake</caption>", page)
+        # Each builder links to its own directory.
+        self.assertIn(f'<caption><a href="11.4/{DEB}/">{DEB}</a></caption>', page)
         self.assertIn("failing_suite.t2 &#x27;innodb&#x27;", page)
         self.assertIn("No status", page)
         self.assertIn("Not triggered in this run", page)

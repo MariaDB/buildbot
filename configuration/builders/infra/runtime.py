@@ -154,12 +154,12 @@ class InContainer(BaseStep):
         if not self.container_commit:
             cmd_prefix.append(["--rm"])
 
-        # User defined bind mounts
+        # User defined bind mounts, which may hold build properties
         for src, dst in self.docker_environment.bind_mounts:
             cmd_prefix.append(
                 [
                     "--mount",
-                    f"type=bind,src={src},dst={dst}",
+                    util.Interpolate(f"type=bind,src={src},dst={dst}"),
                 ]
             )
 

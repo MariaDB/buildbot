@@ -330,21 +330,18 @@ TARGETS_BY_TYPE = {"rpm": RPM_TARGETS, "deb": DEB_TARGETS, "bintar": BINTAR_TARG
 PACKAGES_DIR = os.environ["FOUNDRY_PACKAGES_DIR"]
 ARTIFACTS_URL = f"{os.environ['ARTIFACTS_URL']}/foundry"
 
-# The Foundry archive for the package builds, one directory per dispatcher
-# build, in Foundry's storage.
-ARCHIVE = "sources/%(prop:buildnumber)s/foundry-%(prop:foundry_head)s.tar.gz"
-
-# Saved packages and MTR logs, per MariaDB version and server source. Mirror
-# builds have no tarbuildnum and go under "mirror" (":~" also catches empty).
-RUN_DIR = "%(prop:mariadb_version)s-%(prop:tarbuildnum:~mirror)s"
-LOGS_DIR = f"{RUN_DIR}/%(prop:foundry_revision)s/logs/%(prop:buildername)s"
+# Everything a run saves is under its dispatcher build's directory, the only
+# part of Foundry's storage its containers mount: RUN_DIR as the dispatcher
+# names it, TRIGGERED_RUN_DIR as its package builds do. The dispatcher creates
+# it. Each package build saves to its own BUILD_DIR there.
+RUN_DIR = "runs/%(prop:buildnumber)s"
+TRIGGERED_RUN_DIR = "runs/%(prop:foundry_run)s"
+ARCHIVE = f"{RUN_DIR}/foundry-%(prop:foundry_head)s.tar.gz"
+BUILD_DIR = f"{TRIGGERED_RUN_DIR}/%(prop:mariadb_version)s/%(prop:buildername)s"
+STATUS_DIR = f"{BUILD_DIR}/status"  # a file per stage, read by the report
+PLUGINS_DIR = f"{BUILD_DIR}/plugins"  # a directory of packages per plugin
+LOGS_DIR = f"{BUILD_DIR}/logs"
 SAVE_LOGS_PATH = f"/packages/{LOGS_DIR}"
-
-# Status report, per dispatcher build: each package build writes a file per
-# stage to its status directory, and the dispatcher reads them into
-# REPORT_DIR/status.html.
-REPORT_DIR = "runs/%(prop:buildnumber)s"
-STATUS_DIR = "runs/%(prop:foundry_run)s/%(prop:mariadb_version)s/%(prop:buildername)s"
 
 SERVER_BINTAR_PROP = "%(prop:server_bintar_dir)s"
 

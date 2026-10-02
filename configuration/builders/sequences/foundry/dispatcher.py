@@ -2,7 +2,8 @@ from configuration.builders.definitions.foundry.settings import (
     ARCHIVE,
     ARTIFACTS_URL,
     EVENT_ENV_VARS,
-    REPORT_DIR,
+    PACKAGES_DIR,
+    RUN_DIR,
 )
 from configuration.builders.infra.runtime import (
     BuildSequence,
@@ -77,8 +78,23 @@ def trigger_foundry(
     # all build the same commit, however late they start. report_builders:
     # see WriteFoundryReport. The rest is for trigger.FoundryDispatch.
     sequence = BuildSequence()
+    # The run's directory in Foundry's storage, the only part of it the run's
+    # containers mount; see settings.RUN_DIR. Made by the containers' user, in
+    # a container that runs only mkdir.
+    sequence.add_step(
+        ShellStep(
+            command=BashCommand(
+                name="Create run directory",
+                cmd=(
+                    "docker run --rm -u buildbot "
+                    f"--mount type=bind,src={PACKAGES_DIR}/,dst=/storage "
+                    f"{config.image_url} mkdir -p /storage/{RUN_DIR}"
+                ),
+            )
+        )
+    )
     sequence.add_step(_clone_foundry_step(config))
-    # The commit, and its short form for saved packages' and logs' paths.
+    # The commit, and its short form.
     sequence.add_step(
         _property_step(config, BashCommand(cmd="git rev-parse HEAD"), "foundry_head")
     )
@@ -119,10 +135,10 @@ def trigger_foundry(
         InContainer(
             ShellStep(
                 command=WriteFoundryReport(
-                    f"/packages/{REPORT_DIR}", report_builders, ci_url
+                    f"/packages/{RUN_DIR}", report_builders, ci_url
                 ),
                 url=URL(
-                    url=f"{ARTIFACTS_URL}/{REPORT_DIR}/status.html", url_text="Status"
+                    url=f"{ARTIFACTS_URL}/{RUN_DIR}/status.html", url_text="Status"
                 ),
                 options=StepOptions(
                     alwaysRun=True, haltOnFailure=False, doStepIf=_has_plugins

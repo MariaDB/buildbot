@@ -13,17 +13,25 @@ from configuration.builders.definitions.foundry.settings import (
     MIRROR_URL,
     PACKAGE_TYPES,
     PACKAGES_DIR,
+    RUN_DIR,
     TARGETS_BY_TYPE,
+    TRIGGERED_RUN_DIR,
     PackageTarget,
     Target,
 )
 from configuration.builders.sequences.foundry import autobake, dispatcher
 
 
-def _docker_config(**kwargs):
-    # Foundry's containers mount its own storage as /packages; see settings.py.
-    return docker_config(
-        packages_dir=PACKAGES_DIR, artifacts_url=ARTIFACTS_URL, **kwargs
+def _docker_config(storage_dir: str, **kwargs):
+    # Foundry's containers mount only storage_dir of its storage, at the same
+    # path under /packages, in place of docker_config's /packages and ccache
+    # mounts; see settings.py.
+    config = docker_config(artifacts_url=ARTIFACTS_URL, **kwargs)
+    return replace(
+        config,
+        bind_mounts=[(f"{PACKAGES_DIR}/{storage_dir}", f"/packages/{storage_dir}")]
+        + [m for m in config.bind_mounts if m[1] not in ("/packages", "/mnt/ccache")],
+        env_vars=[e for e in config.env_vars if e[0] != "CCACHE_DIR"],
     )
 
 
@@ -34,6 +42,7 @@ def _base_image_config(target: PackageTarget, arch_override):
     if "base_image_prefix" in arch_override:
         image = arch_override["base_image_prefix"] + image.rsplit("/", 1)[-1]
     config = _docker_config(
+        TRIGGERED_RUN_DIR,
         image=image,
         platform=arch_override.get("platform"),
         additional_bind_mounts=target.base_mounts,
@@ -52,6 +61,7 @@ def _builder(package_type: str, target: Target, arch: str) -> GenericBuilder:
     type_config = PACKAGE_TYPES[package_type]
     arch_override = ARCH_OVERRIDES.get(arch, {})
     container_config = _docker_config(
+        TRIGGERED_RUN_DIR,
         image=f"{target.image}{arch_override.get('image_suffix', '')}",
         platform=arch_override.get("platform"),
     )
@@ -126,7 +136,7 @@ DISPATCHER_BUILDER = GenericBuilder(
     name=DISPATCHER_NAME,
     sequences=[
         dispatcher.trigger_foundry(
-            _docker_config(image=DISPATCHER_IMAGE),
+            _docker_config(RUN_DIR, image=DISPATCHER_IMAGE),
             MARIADB_VERSIONS,
             scheduler_names=list(FOUNDRY_TRIGGERABLE_BUILDERS),
             ci_url=CI_URL,

@@ -7,8 +7,8 @@ from configuration.builders.definitions.foundry.settings import (
     LOGS_DIR,
     MARIADB_VERSION_ENV_VARS,
     PACKAGE_COMMANDS,
+    PLUGINS_DIR,
     PLUGINS_ENV_VARS,
-    RUN_DIR,
     SAVE_LOGS_PATH,
     SERVER_BINTAR_PROP,
     STATUS_ENV_VARS,
@@ -98,16 +98,12 @@ def _build_plugins_step(config: DockerConfig, command: BuildPlugins):
 
 
 def _save_packages_step(config: DockerConfig):
-    # One directory per plugin, commit and builder, so runs don't overwrite
-    # each other. The link can only point at the run's directory.
-    destination = (
-        f"/packages/{RUN_DIR}/$plugin/%(prop:foundry_revision)s/%(prop:buildername)s"
-    )
+    # A directory per plugin, in the build's own directory.
     return InContainer(
         ShellStep(
-            command=SavePluginPackages(destination=destination),
+            command=SavePluginPackages(destination=f"/packages/{PLUGINS_DIR}"),
             env_vars=BUILT_PLUGINS_ENV_VARS,
-            url=URL(url=f"{ARTIFACTS_URL}/{RUN_DIR}", url_text="Packages"),
+            url=URL(url=f"{ARTIFACTS_URL}/{PLUGINS_DIR}", url_text="Packages"),
             options=StepOptions(doStepIf=_not_pull_request),
         ),
         docker_environment=config,

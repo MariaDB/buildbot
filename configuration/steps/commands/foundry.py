@@ -529,8 +529,8 @@ fi
 
 
 class SavePluginPackages(Command):
-    # Copies each built plugin's packages to destination, whose literal
-    # $plugin the shell fills in, with a sha256sums.txt for them.
+    # Copies each built plugin's packages to destination/<plugin>/, with a
+    # sha256sums.txt for them.
     def __init__(self, destination: str, workdir: PurePath = PurePath(".")):
         self.destination = destination
         super().__init__(name="Save packages", workdir=workdir)
@@ -546,7 +546,7 @@ class SavePluginPackages(Command):
 set -euo pipefail
 
 for plugin in ${{{BUILT_PLUGINS_ENV}}}; do
-    destination="{self.destination}"
+    destination="{self.destination}/$plugin"
     mkdir -p "$destination"
     saved=""
     for f in "$plugin.build"/*.rpm "$plugin.build"/*.deb "$plugin.build"/*.tar.gz "$plugin.build"/*.zip; do

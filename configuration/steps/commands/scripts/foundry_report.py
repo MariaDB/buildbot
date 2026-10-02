@@ -1,13 +1,13 @@
 """Writes a Foundry run's status.html and status.json.
 
-Reads the files each package build wrote to <run dir>/<mariadb version>/<builder>/:
+Reads the files each package build wrote to <run dir>/<mariadb version>/<builder>/status/:
   build    run.cmake's result lines: "PASS <plugin> ..." or "FAIL <plugin> <stage> <reason>"
   install  "<plugin> pass" or "<plugin> fail"
   suites   "<plugin> <suite> <suite> ..." for the plugins with MTR suites
   mtr      MTR's closing summary: "... were successful." and "Failing test(s): ..."
 A plugin that reached a stage whose file is missing shows "builder failed":
 the builder failed for another cause, or was cancelled, before that stage. A
-builder with no directory failed before its first Foundry step, or never
+builder with no status directory failed before its first Foundry step, or never
 started.
 
 Usage: foundry_report.py <run dir> <versions json> <triggered> <plugins> <commit>
@@ -153,7 +153,7 @@ def run_status(run_dir, versions, triggered, plugins, sources):
             "builders": {},
         }
         for builder in builders:
-            directory = os.path.join(run_dir, version, builder)
+            directory = os.path.join(run_dir, version, builder, "status")
             report[version]["builders"][builder] = (
                 platform_status(directory, plugins, bintar=builder.endswith("-bintar"))
                 if os.path.isdir(directory)
@@ -293,9 +293,14 @@ def render(run_label, commit, plugins, report, ci_url):
             parts.append("<p>Server packages: MariaDB Server mirrors.</p>")
         for builder, statuses in info["builders"].items():
             name = html.escape(builder)
+            # Links to the build's directory: its packages, logs and status.
+            caption = (
+                f'<caption><a href="{html.escape(version)}/{name}/">{name}</a>'
+                "</caption>"
+            )
             if statuses is None:
                 parts.append(
-                    f'<table data-builder="{name}"><caption>{name}</caption>'
+                    f'<table data-builder="{name}">{caption}'
                     f"<tr><td>{badge(NO_STATUS)}: "
                     "the builder failed before its first Foundry step, or never "
                     "started.</td></tr></table>"
@@ -309,7 +314,7 @@ def render(run_label, commit, plugins, report, ci_url):
                 for plugin, stages in statuses.items()
             )
             parts.append(
-                f'<table data-builder="{name}"><caption>{name}</caption>'
+                f'<table data-builder="{name}">{caption}'
                 "<tr><th>Plugin</th><th>Build</th><th>Install</th><th>MTR</th></tr>"
                 f"{rows}</table>"
             )
