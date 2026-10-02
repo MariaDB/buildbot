@@ -32,7 +32,7 @@ _PLUGIN_INSTALLED = {
 plugin_installed() {
     for f in "$1.build"/*.rpm; do
         pkg=$(rpm -qp --qf '%{NAME}' "$f")
-        rpm -q "$pkg" >/dev/null 2>&1 || { echo "$pkg ($f) is not installed" >&2; return 1; }
+        rpm -q "$pkg" >/dev/null || { echo "$pkg ($f) is not installed" >&2; return 1; }
     done
 }
 """,
@@ -41,7 +41,7 @@ plugin_installed() {
 plugin_installed() {
     for f in "$1.build"/*.deb; do
         pkg=$(dpkg-deb -f "$f" Package)
-        status=$(dpkg-query -W -f='${Status}' "$pkg" 2>/dev/null || true)
+        status=$(dpkg-query -W -f='${Status}' "$pkg" || true)
         [ "$status" = "install ok installed" ] || { echo "$pkg ($f) is not installed: ${status:-absent}" >&2; return 1; }
     done
 }
@@ -56,7 +56,7 @@ _REMOVE_PLUGIN = {
 remove_plugin() {
     for f in "$1.build"/*.rpm; do
         pkg=$(rpm -qp --qf '%{NAME}' "$f")
-        if rpm -q "$pkg" >/dev/null 2>&1; then
+        if rpm -q "$pkg" >/dev/null; then
             rpm -e --nodeps --noscripts --notriggers "$pkg"
         fi
     done
@@ -66,7 +66,7 @@ remove_plugin() {
 remove_plugin() {
     for f in "$1.build"/*.deb; do
         pkg=$(dpkg-deb -f "$f" Package)
-        dpkg-query -W "$pkg" >/dev/null 2>&1 || continue
+        dpkg-query -W "$pkg" >/dev/null || continue
         rm -f /var/lib/dpkg/info/"$pkg".prerm /var/lib/dpkg/info/"$pkg".postrm \\
             /var/lib/dpkg/info/"$pkg":*.prerm /var/lib/dpkg/info/"$pkg":*.postrm
         dpkg --purge --force-all "$pkg"
@@ -90,7 +90,7 @@ def _print_suites(package_glob: str, list_files: str, only_if: str = None) -> st
 add_suites() {{
     mine=""
     for path in $(grep -oE '/plugin/[^/]+/[^/]+/t/[^/]+\\.test$' || true); do
-        name=$(basename "$(dirname "$(dirname "$path")")")
+        [[ $path =~ /plugin/[^/]+/([^/]+)/t/ ]] && name=${{BASH_REMATCH[1]}}
         case " $mine " in
             *" $name "*) ;;
             *) mine="$mine $name" ;;
@@ -110,7 +110,7 @@ add_suites() {{
 suites=""
 : > "${{{STATUS_ENV}}}/suites"
 for p in ${{{BUILT_PLUGINS_ENV}}}; do{skip}
-    add_suites "$p" < <(for f in {package_glob}; do [ -e "$f" ] && {list_files}; done)
+    add_suites "$p" < <(for f in {package_glob}; do [ -f "$f" ] && {list_files}; done)
 done
 echo "${{suites#,}}"
 """
@@ -177,6 +177,8 @@ class ArchiveFoundrySource(Command):
         super().__init__(name="Archive Foundry", workdir=workdir)
 
     def as_cmd_arg(self) -> list[str]:
+        directory = PurePath(self.archive).parent
+        name = PurePath(self.archive).name
         return [
             "bash",
             "-exc",
@@ -189,13 +191,11 @@ if [ -n "$(git submodule status)" ]; then
     exit 1
 fi
 
-archive="{self.archive}"
-dir=$(dirname "$archive")
-name=$(basename "$archive")
-mkdir -p "$dir"
-git archive --format=tar.gz --prefix=foundry/ -o "$archive" HEAD
-cd "$dir"
-sha256sum "$name" > sha256sums.txt
+mkdir -p "{directory}"
+git archive --format=tar.gz --prefix=foundry/ -o "{self.archive}" HEAD
+cd "{directory}"
+sha256sum "{name}" > sha256sums.txt
+# The step's output, foundry_source_sha256: the archive's SHA-256.
 cut -d' ' -f1 sha256sums.txt
 """
             ),
@@ -239,7 +239,7 @@ until curl -fsSL -o "$archive" "$url" && echo "$sha256  $archive" | sha256sum -c
     sleep $((attempt * 10))
     attempt=$((attempt + 1))
 done
-tar -xzf "$archive" --strip-components=1
+tar -xzvf "$archive" --strip-components=1
 rm -f "$archive"
 """
             ),
@@ -440,7 +440,7 @@ class InstallBuiltPackages(Command):
     def as_cmd_arg(self) -> list[str]:
         if self.package_type == "RPM":
             install = """
-if command -v zypper >/dev/null 2>&1; then
+if command -v zypper >/dev/null; then
     zypper --non-interactive install --allow-unsigned-rpm ./"$1.build"/*.rpm || return 1
 else
     # dnf only warns when an install script fails; zypper exits 107.
@@ -511,17 +511,17 @@ class PrepareBaseImage(Command):
             "-exc",
             f"""
 set -euo pipefail
-id -u buildbot >/dev/null 2>&1 || useradd --non-unique --uid {self.WORKER_UID} \\
+id -u buildbot >/dev/null || useradd --non-unique --uid {self.WORKER_UID} \\
     --no-create-home --home-dir /home/buildbot buildbot
-if command -v apt-get >/dev/null 2>&1; then
+if command -v apt-get >/dev/null; then
     export DEBIAN_FRONTEND=noninteractive
     apt-get update
     apt-get install -y --no-install-recommends ca-certificates curl procps
-elif command -v zypper >/dev/null 2>&1; then
+elif command -v zypper >/dev/null; then
     zypper --non-interactive install findutils procps
-elif command -v dnf >/dev/null 2>&1; then
+elif command -v dnf >/dev/null; then
     dnf install -y procps-ng
-elif command -v yum >/dev/null 2>&1; then
+elif command -v yum >/dev/null; then
     yum install -y procps-ng
 fi
 """,
@@ -550,9 +550,9 @@ for plugin in ${{{BUILT_PLUGINS_ENV}}}; do
     mkdir -p "$destination"
     saved=""
     for f in "$plugin.build"/*.rpm "$plugin.build"/*.deb "$plugin.build"/*.tar.gz "$plugin.build"/*.zip; do
-        [ -e "$f" ] || continue
-        cp -r "$f" "$destination"
-        saved="$saved $(basename "$f")"
+        [ -f "$f" ] || continue
+        cp "$f" "$destination"
+        saved="$saved ${{f##*/}}"
     done
     if [ -n "$saved" ]; then
         (cd "$destination" && sha256sum $saved > sha256sums.txt)
@@ -652,8 +652,8 @@ set -euo pipefail
 
 for p in ${{{BUILT_PLUGINS_ENV}}}; do
   for f in "$p.build"/*.tar.gz; do
-    [ -e "$f" ] || continue
-    tar -xf "$f" -C "{self.server_bintar_dir}" --strip-components=1
+    [ -f "$f" ] || continue
+    tar -xvf "$f" -C "{self.server_bintar_dir}" --strip-components=1 >&2
   done
 done
 {_print_suites('"$p.build"/*.tar.gz', 'tar -tzf "$f"')}"""
@@ -713,7 +713,7 @@ def _save_mtr_logs(save_logs_path: str) -> str:
             # Some core files are left uncompressed by MTR
             find "$vardir" -iregex ".*/core\\(\\.[0-9]+\\)?" -ls -exec gzip {{}} +
 
-            cd "$vardir" && find . -type f \\( -path './log/*' -o {patterns} \\) -print0 | tar -czf "$save_logs_path/var.tar.gz" --null -T -
+            cd "$vardir" && find . -type f \\( -path './log/*' -o {patterns} \\) -print0 | tar -czvf "$save_logs_path/var.tar.gz" --null -T -
             exit 1 # Script was invoked by an MTR failure so we must mark the step as failed
             """
 
@@ -759,6 +759,7 @@ class RunPluginMTRSuite(_RunPluginMTR):
 
     def _cd_to_mtr(self) -> str:
         # Ask the package where mariadb-test-run.pl is; lib/v1/ has an old one.
+        # Then cd to its directory: Interpolate turns the %% into %.
         if self.package_type == "RPM":
             list_files_cmd = "rpm -ql MariaDB-test"
         else:
@@ -769,7 +770,7 @@ if [ -z "$mtr_script" ]; then
     echo "Could not locate mariadb-test-run.pl from the installed test package" >&2
     exit 1
 fi
-cd "$(dirname "$mtr_script")"
+cd "${{mtr_script%%/*}}"
 """
 
 

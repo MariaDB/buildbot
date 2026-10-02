@@ -317,11 +317,11 @@ class SetupRPMRepo(Command):
 set -euo pipefail
 
 # Detect package manager
-if command -v dnf >/dev/null 2>&1; then
+if command -v dnf >/dev/null; then
     PKG_MGR="dnf"
-elif command -v yum >/dev/null 2>&1; then
+elif command -v yum >/dev/null; then
     PKG_MGR="yum"
-elif command -v zypper >/dev/null 2>&1; then
+elif command -v zypper >/dev/null; then
     PKG_MGR="zypper"
 else
     echo "Unsupported RPM-based system"
@@ -411,7 +411,7 @@ class SetupRPMRepoFromURL(Command):
                 f"""
 set -euo pipefail
 
-if command -v zypper >/dev/null 2>&1; then
+if command -v zypper >/dev/null; then
     repo_dir=/etc/zypp/repos.d
 else
     repo_dir=/etc/yum.repos.d
@@ -421,9 +421,9 @@ curl -fsSL {self.repo_file_url} -o "$repo_dir/MariaDB.repo"
 echo "module_hotfixes = 1" >> "$repo_dir/MariaDB.repo"
 curl -fsSL {self.galera_repo_url} -o "$repo_dir/galera.repo"
 
-if command -v dnf >/dev/null 2>&1; then
+if command -v dnf >/dev/null; then
     dnf makecache
-elif command -v zypper >/dev/null 2>&1; then
+elif command -v zypper >/dev/null; then
     zypper --gpg-auto-import-keys refresh
 else
     yum makecache
@@ -530,11 +530,11 @@ class InstallRPMPackages(Command):
             f"""
 set -euo pipefail
 
-if command -v dnf >/dev/null 2>&1; then
+if command -v dnf >/dev/null; then
     dnf install -y {pkg_str}
-elif command -v yum >/dev/null 2>&1; then
+elif command -v yum >/dev/null; then
     yum install -y {pkg_str}
-elif command -v zypper >/dev/null 2>&1; then
+elif command -v zypper >/dev/null; then
     zypper --non-interactive install {pkg_str}
 else
     echo "Unsupported RPM-based system"

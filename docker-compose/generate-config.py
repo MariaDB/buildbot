@@ -169,10 +169,8 @@ def main(args):
     ]:
         master_volumes[master].append("/srv/buildbot/packages:/srv/buildbot/packages")
     for master in ["master-migration"]:
-        master_volumes[master].append(
-            "/srv/buildbot/connectors:/srv/buildbot/connectors"
-        )
-        master_volumes[master].append("/srv/buildbot/foundry:/srv/buildbot/foundry")
+        for storage in ["/srv/buildbot/connectors", "/srv/buildbot/foundry"]:
+            master_volumes[master].append(f"{storage}:{storage}")
 
     # Capture the current environment variables' keys
     current_env_keys = set(os.environ.keys())
