@@ -56,7 +56,10 @@ server {
 	proxy_set_header X-Forwarded-Host  $host;
 
 	# Allow normal page/API bursts, but reject sustained aggressive clients.
-	limit_req zone=bb burst=150 nodelay;
+	# A build page with triggered builds sends a few hundred requests at once:
+	# the first 150 over the rate are served immediately, the next 350 are
+	# queued and served at the zone rate, and only requests beyond that get 429.
+	limit_req zone=bb burst=500 delay=150;
 	limit_req_status 429;
 
 	location / {
@@ -77,9 +80,10 @@ server {
 
 	# Avatars are fetched in bulk (one per commit author) when a
 	# changes/build page loads, so give them their own, higher limit
-	# instead of sharing the site-wide "bb" zone.
+	# instead of sharing the site-wide "bb" zone. The first 300 over the rate
+	# are served immediately, the next 300 are queued.
 	location /avatar {
-		limit_req zone=avatar burst=300 nodelay;
+		limit_req zone=avatar burst=600 delay=300;
 		proxy_pass http://127.0.0.1:8010;
 	}
 
