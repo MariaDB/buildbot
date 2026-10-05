@@ -23,6 +23,24 @@ limit_req_zone $binary_remote_addr zone=bb:10m rate=35r/s;
 limit_req_zone $binary_remote_addr zone=avatar:10m rate=100r/s;
 client_max_body_size 10M;
 
+# API collections that grow with every build. Buildbot reads and serialises
+# the whole table, blocking the master, for a query without a limit, or with
+# a filter or order on a field it can't run in SQL. Twisted splits arguments
+# on ";" as well as "&", and decodes "%XX".
+map "$uri?$args" $bb_api_heavy {
+	default 1;
+	# limit outside 1..9999, or above 999 for changes
+	"~[?&;]limit=(?![1-9][0-9]{0,3}([&;]|$))" 1;
+	"~^/api/v2/changes\?(.*[&;])?limit=[0-9]{4}" 1;
+	# filter or order on a field Buildbot can't run in SQL
+	"~[?&;](order=-?(files|properties|sourcestamps?|complete|claimed|branch)([&;]|$)|(files|properties|sourcestamps?)(=|__)|(complete|claimed|branch)__)" 1;
+	"~[?&;](complete|claimed|branch)=.*[&;]\1=" 1;
+	# percent-encoded argument name or order
+	"~[?&;]([^=&;]*%|order=[^&;]*%)" 1;
+	# a limit, or a filter the web UI sends without one
+	"~[?&;](limit=|complete=false|claimed=false|buildrequestid=)" 0;
+}
+
 server {
 	listen 443 ssl;
 	listen [::]:443 ssl;
@@ -45,25 +63,16 @@ server {
 		proxy_pass http://127.0.0.1:8010;
 	}
 
-	# block heavy API calls
-	location = /api/v2/builds {
-		if ($args = "") {
+	# block heavy API calls, see $bb_api_heavy
+	location ~ ^/api/v2/(builders/[^/]+/|workers/[^/]+/)?(builds|changes|buildsets|buildrequests)$ {
+		if ($bb_api_heavy) {
 			return 403 "Not allowed.\n";
 		}
 		proxy_pass http://127.0.0.1:8010;
 	}
-	location = /api/v2/changes {
-		if ($args = "") {
-			return 403 "Not allowed.\n";
-		}
-		proxy_pass http://127.0.0.1:8010;
-	}
-
-	location = /api/v2/buildsets {
-		if ($args = "") {
-			return 403 "Not allowed.\n";
-		}
-		proxy_pass http://127.0.0.1:8010;
+	# Buildbot reads the whole table for this one whatever the query
+	location = /api/v2/sourcestamps {
+		return 403 "Not allowed.\n";
 	}
 
 	# Avatars are fetched in bulk (one per commit author) when a
