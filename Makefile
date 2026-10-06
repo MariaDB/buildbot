@@ -55,9 +55,10 @@ pre-commit-run-all: ## Run pre-commit on the whole repository
 	$(info --> run pre-commit on the whole repo (pre-commit run -a))
 	pre-commit run -a --color=always
 
-checkconfig: ## Validate master.cfg files
+checkconfig: ## Validate master.cfg files, for DEV and PROD
 	$(info --> validate master.cfg files with docker)
-	./validate_master_cfg.sh
+	./validate_master_cfg.sh -e DEV
+	./validate_master_cfg.sh -e PROD
 
 test: ## Run unittests
 	$(info --> run unittests)

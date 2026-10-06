@@ -12,27 +12,29 @@ err() {
 
 usage() {
   echo "Usage: $0 -e <DEV|PROD>"
-  exit 0
 }
 
 ENVIRONMENT=""
 
-while getopts ":e:" opt; do
+while getopts ":he:" opt; do
   case ${opt} in
-    e )
+    e)
       ENVIRONMENT=$OPTARG
       ;;
-    \? )
+    h)
       usage
+      exit 0
       ;;
-    : )
+    *)
       usage
+      exit 1
       ;;
   esac
 done
 
 if [[ -z "$ENVIRONMENT" ]]; then
   usage
+  exit 1
 fi
 
 case $ENVIRONMENT in
