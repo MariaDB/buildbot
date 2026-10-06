@@ -12,280 +12,147 @@
 [![bbm-build-container](https://github.com/MariaDB/buildbot/actions/workflows/bbm_build_container.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/bbm_build_container.yml)
 [![bbm-deploy](https://github.com/MariaDB/buildbot/actions/workflows/bbm_deploy.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/bbm_deploy.yml)
 [![eco container build](https://github.com/MariaDB/buildbot/actions/workflows/eco_containers.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/eco_containers.yml)
-
-## pre-commit
-
 [![pre-commit](https://github.com/MariaDB/buildbot/actions/workflows/pre-commit.yml/badge.svg)](https://github.com/MariaDB/buildbot/actions/workflows/pre-commit.yml)
 
-Any code submitted to this project is checked with the [pre-commit](https://pre-commit.com/) framework. To make sure that your code will pass the checks, you can execute the pre-commit checks locally before "git pushing" your code.
+## Overview
 
-You will need the following:
+This repository is the configuration of the MariaDB Foundation's CI. It runs on a fork of [Buildbot](https://buildbot.net) 2.7 ([vladbogo/buildbot](https://github.com/vladbogo/buildbot/tree/grid), branch `grid`) and builds and tests:
 
-- uv (see: <https://github.com/astral-sh/uv>)
-- libvirt-dev
+- [MariaDB Server](https://github.com/MariaDB/server), including the packages that go into a release;
+- [Galera](https://github.com/MariaDB/galera) packages;
+- the MariaDB Connectors: [C](https://github.com/mariadb-corporation/mariadb-connector-c), [C++](https://github.com/mariadb-corporation/mariadb-connector-cpp) and [ODBC](https://github.com/mariadb-corporation/mariadb-connector-odbc);
+- the plugins in [Foundry](https://github.com/MariaDB/foundry).
 
-Then you should be able to setup your environment with:
+Two instances run from this repository:
+
+| Environment | Web UI | Deployed from | Saved files | Cross-Reference |
+| --- | --- | --- | --- | --- |
+| Production | <https://buildbot.mariadb.org> | `main` | <https://ci.mariadb.org> | <https://buildbot.mariadb.org/cr/> |
+| Development | <https://buildbot.dev.mariadb.org> | `dev` | <https://ci.dev.mariadb.org> | <https://buildbot.dev.mariadb.org/cr/> |
+
+Cross-Reference records the MTR test failures of the builds, so that a failure can be looked up in earlier runs. Its code is in [MariaDB/cross-reference](https://github.com/MariaDB/cross-reference).
+
+Pull requests target `dev`, and changes reach `main` once they have run on dev. The settings that differ between the two are in [docker-compose/.env](docker-compose/.env) and [docker-compose/.env.dev](docker-compose/.env.dev).
+
+Buildbot runs as several [masters](#masters) that share one database. Each project has an entry point builder that every build of the project starts from ([How changes reach Buildbot](#how-changes-reach-buildbot)). New builders go on [master-migration](master-migration/README.md), which uses the builder framework in [configuration/](configuration/README.md).
+
+## Local development
+
+### Requirements
+
+- [uv](https://github.com/astral-sh/uv), which installs Python 3.9 for the virtual environment;
+- `libvirt-dev` and `libmariadb-dev`, to build the Python bindings;
+- Docker or Podman, to check the masters' configuration in the masters' images, and for the hadolint hook.
+
+### Setting up
 
 ```console
 make install
 source .venv/bin/activate
 make install-pre-commit
-make pre-commit-run
 ```
 
-You can also [install](https://pre-commit.com/#install) the pre-commit tool so
-that any commit will be checked automatically.
+`make install` creates `.venv`, installs [requirements.txt](requirements.txt), and builds and installs the same Buildbot fork as the masters run, cloned into `.vendor/`. `make clean` removes both, and `make help` lists the other targets. To run the linters on every commit, run `pre-commit install`.
 
-## Overview
+The private settings, `master-private.cfg` and `master-config.yaml`, are links to their `-sample` files, whose placeholder values are enough to load every master. The real ones exist only on the master hosts; see [Secrets](docker-compose/README.md#secrets).
 
-buildbot.mariadb.org is our continuous integration testing platform, based on the Buildbot.net open-source testing framework.
+### Checking a change
 
-This installation uses a custom version 2.7.1 at time of initial deployment running with Python 3 on a Ubuntu 18.04 decently tuned (performance wise) machine for a more speedy, modern and responsive UI in contrast to the existing Buildbot v0.8.8 running at buildbot.askmonty.org.
+| Command | Checks |
+| --- | --- |
+| `make pre-commit-run` | The linters (Python, YAML, shell, Markdown, Dockerfiles, spelling), on the staged files. `make pre-commit-run-all` checks the whole repository. |
+| `./validate_master_cfg.sh -e DEV` | `buildbot checkconfig` of every master, in the dev master image with `.env.dev`. It generates the autogen masters first, and prints how many there are per architecture. |
+| `./validate_master_cfg.sh -e PROD` | The same, with the production image and `.env` |
+| `make checkconfig` | Both of the above |
+| `make test` | The unit tests of `configuration/` |
 
-This directory contains all the configuration needed to deploy a new installation of Buildbot master to a new machine, as well as all the information needed to add new builder configurations, extra worker machines to extend our building capability and platform support and specific steps you can take to reproduce the exact environment in which a build failure occurred so you can debug without much effort.
+The masters expect the repository at `/srv/buildbot/master` and read their settings from environment variables, which is why `validate_master_cfg.sh` runs them in containers. It also writes `checkconfig_summary.md`, with the jobs master-migration's builders ask of each worker.
 
-Quick layout of the main components of the current directory structure:
+### Testing on dev
 
-```console
-buildbot.mariadb.org/
-├── buildbot.tac
-├── dockerfiles
-│   ├── buildbot.tac
-│   └── ...
-│   └── ecofiles
-│       ├── installdb.sh
-│       ├── test-php.sh
-│       └── test-pymysql.sh
-├── master.cfg
-├── master-private.cfg-sample
-├── master-web
-│   ├── buildbot.tac
-│   ├── master.cfg
-│   ├── static
-│   │   └── (sponsor logos)
-│   ├── templates
-│   │   ├── console_view
-│   │   │   └── console.jade
-│   │   ├── grid.html
-│   │   ├── grid_view
-│   │   │   └── grid.jade
-│   │   ├── home.jade
-│   │   └── sponsor.html
-│   └── twistd.pid
-├── README.md
-├── sponsor.py
-├── static
-└── util
-    ├── buildbot-master.service
-    ├── buildbot-worker.service
-    └── nginx.conf
-```
+Merging into `dev` deploys to buildbot.dev.mariadb.org, which builds the forks under the [RazvanLiviuVarzaru](https://github.com/RazvanLiviuVarzaru) GitHub account. Dev shares its build hosts with production: read [Testing on dev](docker-compose/README.md#testing-on-dev) before starting builds there.
 
-- **buildbot.tac**: the only application configuration file Buildbot needs to get up and running in master mode, this one can remain largely unchanged
-- **dockerfiles/buildbot.tac**: worker application configuration file, being sent by the master to the Docker workers
-- **dockerfiles/\*.dockerfile**: [docker image files](https://docs.docker.com/engine/reference/builder/), also sent from the master to the docker based worker machines
-- **master.cfg**: the master configuration file, describes the build scheme and all other site site specific configuration
-- **sponsor.py**: custom Buildbot dashboard plugin that adds a menu item named _Sponsors_, used to list all the donated servers that are being used by this instance
-- **static**: image logos for the donors HTML presentation of the dashboard plugin
-- **templates**: HTML templates for dashboard plugins, currently only _sponsor.html_ for the Sponsors plugin
-- **util**: various associated config files and tools, like the systemd service file and nginx configuration
-- **master-web**: a separate master configuration for handling the UI
+### Opening a pull request
 
-### A word on Docker
+Open it against `dev`, and link the Jira issue ([MDBF project](https://jira.mariadb.org/projects/MDBF)), as commit messages do with an `MDBF-<number>:` prefix. The [pull request template](.github/pull_request_template.md) links to a checklist for each project: server builders and their install and upgrade VMs, Galera, the Connectors, Foundry, build images and workers.
 
-Using Buildbot's DockerLatentWorker to connect to docker instances, the worker runs inside the Docker image, and on a build trigger, master connects to Docker first via docker-py , instantiates the image and then connects using Buildbot usual Worker API to do the heavy lifting. Upon build completion, the image is stopped and no left-overs are left behind.
+On a pull request, GitHub runs:
 
-### Navigating the new interface
+- **pre-commit**, the same linters;
+- **bbm-deploy**, the `checkconfig` of every master with the dev and the production images. Its summary shows, for each master-migration worker, the jobs its builders ask for;
+- **unittests**, when `configuration/` changes;
+- the image builds that use a changed Dockerfile. The image workflows are grouped by family, so only the affected family is rebuilt.
 
-Starting with version 1.0, Buildbot interface changed in a significant and positive manner. The new UI is a fresh rewrite with responsive, lazy loading and modern web conveniences that makes it easy to follow running builds as well as convenient to browse build history.
+## Masters
 
-Grid View and MTRLogObserver plugin are usable out of the box and behave in a similar fashion as in the current Buildbot instance.
+The masters share one database and coordinate through a [Crossbar](https://crossbar.io) message router. Each master runs on a single event loop; when one master ran many builds in parallel, the loop fell behind and the master stalled, which is why the builds are spread over several masters.
 
-## Debugging build failures
+The heaviest load on a master today is Buildbot's MTR step, which parses the test output on the master: one build with a very long backtrace in its MTR output can freeze the master running it. The planned Buildbot upgrade drops the MTR step: tests run as ordinary shell steps and a separate service collects their logs, which is how [master-migration](master-migration/README.md) already works.
 
-Debugging build failures with Docker is facilitated by the ease of replicating the actual build environment where a particular builder failed. First step is to identify on which platform the failure occurred and what's the associated Dockerfile. If you're not familiar with Docker, start by reading the [Docker overview](https://docs.docker.com/engine/docker-overview/) and [Docker getting started documentation](https://docs.docker.com/get-started/).
+| Master | What it runs |
+| --- | --- |
+| [master-web](master-web/README.md) | The web UI and the GitHub change hooks. No workers. |
+| [master-protected-branches](master-protected-branches/README.md) | `tarball-docker`, the entry point of every server build, and fast server builders that report to GitHub. |
+| `autogen/<arch>-master-<n>` | Generated from [os_info.yaml](os_info.yaml): one test builder and one package (`-autobake`) builder per server platform. See [Server builders](docs/server-builders.md). |
+| [master-libvirt](master-libvirt/README.md) | Install and upgrade tests of the server packages, in VMs. |
+| [master-galera](master-galera/README.md) | Galera packages. |
+| [master-nonlatent](master-nonlatent/README.md) | Windows, macOS, FreeBSD and AIX builders, and the Docker Library and WordPress tests. |
+| [master-docker-nonstandard, master-docker-nonstandard-2](master-docker-nonstandard/README.md) | Server builders with special configurations: Valgrind, other compilers, full test suites. |
+| [master-migration](master-migration/README.md) | The builder framework in [configuration/](configuration/README.md): the Connectors, Foundry, and the server builders moving to it. |
 
-To repeat a build on buildbot, first identify the platform and look for the associated dockerfile in the dockerfiles/ directory. To create a container for Ubuntu 18.04 for e.g. you would use the _docker build_ command like this:
-`docker build -t ubuntu-1804 --file ubuntu1804.dockerfile .`
+Add new builders to master-migration. The aim is to move the builders of the other masters there over time.
 
-After a successful image build, you can run a container and execute bash using that image with _docker run_:
-`docker run -it ubuntu-1804 bash`
+## Workers
 
-After this step you can follow the usual MariaDB development setup instructions, i.e. clone the repo and start a build. To specifically reproduce what a particular Buildbot worker did, look into the master.cfg configuration file what addStep() has been defined for that worker, and copy paste the contents of those into the session you are running in the Docker image.
+Builds run on three kinds of workers:
 
-## Deployment
+- **Docker latent** (autogen masters, master-protected-branches, master-galera, master-docker-nonstandard*): for each build, the master starts a container from a [build image](ci_build_images/README.md) on a worker host's Docker daemon. The image contains `buildbot-worker`, which connects back to the master. Each container is a worker of its own, so the master doesn't know which host a build runs on; [worker_locks.yaml](worker_locks.yaml) caps how many builds start on a host. The locks are held in each master's memory and masters don't share them: when two masters use the same host, as the duplicated amd64 autogen masters do, each applies the cap on its own and the host can get more builds than the cap allows.
+- **Non-latent** (master-nonlatent, master-migration): a `buildbot-worker` process that runs on the host all the time. On master-migration, each worker has a pool of jobs (its vCPUs) and each build takes as many as its builder asks for, so the host's load is controlled per builder. See [master-migration](master-migration/README.md#workers-and-jobs).
+- **libvirt** (master-libvirt): a VM that starts for a build.
 
-Deploying a new master (since Buildbot > 1.0 supports multi-master configuration):
+Dev and production share the build hosts, except the libvirt hosts: see [Testing on dev](docker-compose/README.md#testing-on-dev) before running many builds on dev.
 
-1. Setup your server. This configuration has been tested on Buildbot 2.0.1, Python 3 and Ubuntu so far.
-1. Install Buildbot and associated plugins, you have two options here:
-   a) install from the official distribution repositories (1.1 in Ubuntu 18.04)
-   b) install from the PyPi repository which should have the latest stable release (2.0.1 in March 2019)
-   Follow the official install instructions here:
-   <http://docs.buildbot.net/latest/manual/installation/installation.html>
-1. Clone this directory to your desired master destination. A good choice on Ubuntu would be:
-   `/srv/buildbot/master`
-1. Create the master using:
-   `buildbot create-master -r /srv/buildbot/master`
-   `buildbot upgrade-master /srv/buildbot/master`
-1. Start the master using:
-   `buildbot start /srv/buildbot/master`
-   Stop, restart and reconfig are the other most relevant commands.
-1. For service persistence and convenience, consider using the systemd service file _util/buildbot-master.service_.
-1. For https support and better HTTP performance overall, consider setting up Nginx as a reverse proxy, see _util/nginx.conf_.
-1. Some build artefacts are uploaded from workers to the master for archival and debugging purposes. In our setup, they are placed in /srv/buildbot/bb_builds/. This directory is also exposed via nginx index listing at [ci.mariadb.org](https://ci.mariadb.org).
+## How changes reach Buildbot
 
-To upgrade Buildbot to latest version:
+GitHub sends push and pull request events to the change hook on master-web. Production receives them from the official repositories; dev receives them from forks under the [RazvanLiviuVarzaru](https://github.com/RazvanLiviuVarzaru) GitHub account, for every project. Each project has its own entry point builder, which every build of that project starts from:
 
-```console
-sudo systemctl stop buildbot-master
-sudo pip3 install -U buildbot buildbot-grid-view buildbot-waterfall-view buildbot-console-view buildbot-wsgi-dashboards buildbot-www
-buildbot upgrade-master /srv/buildbot/master
-buildbot cleanupdb /srv/buildbot/master
-sudo systemctl start buildbot-master
-```
+| Project | Entry point | Master | Documentation |
+| --- | --- | --- | --- |
+| Server | `tarball-docker` | master-protected-branches | [Server builders](docs/server-builders.md) |
+| Galera | `trigger-galera-builds` | master-galera | [master-galera](master-galera/README.md) |
+| Connectors | `cc-tarball-docker`, `ccpp-tarball-docker`, `codbc-tarball-docker` | master-migration | [Connectors](configuration/builders/definitions/connectors/README.md) |
+| Foundry | `foundry-trigger-builders` | master-migration | [Foundry](configuration/builders/definitions/foundry/README.md) |
 
-To upgrade Buildbot-worker to latest version:
+## Repository layout
 
-```console
-sudo pip3 install -U buildbot-worker
-```
+| Path | Holds |
+| --- | --- |
+| `master-*/` | One directory per master, with its `master.cfg` |
+| [master.cfg](master.cfg), [os_info.yaml](os_info.yaml), [define_masters.py](define_masters.py) | The template, platform list and generator of the autogen masters |
+| [constants.py](constants.py) | Server versions, platforms per version, builders that report to GitHub, extra MTR suites |
+| [master_common.py](master_common.py) | The settings all masters share: database, message queue, GitHub status reporting |
+| [common_factories.py](common_factories.py), [utils.py](utils.py), [schedulers_definition.py](schedulers_definition.py), [locks.py](locks.py) | The server builders' factories, schedulers and helpers, used by every master except master-migration |
+| [configuration/](configuration/README.md) | The builder framework used by master-migration |
+| [ci_build_images/](ci_build_images/README.md) | Dockerfiles of the build images |
+| [.github/workflows/](.github/workflows/README.md) | Image builds, checks and deployment |
+| [docker-compose/](docker-compose/README.md) | The containers that run the masters, and deployment |
+| [dashboards/release/](dashboards/release/README.md) | The Server Release Status page |
+| `scripts/` | Scripts that builders download from GitHub at build time |
+| [minio/](minio/README.md) | The MinIO service used by the S3 tests |
+| [Dockerfile](Dockerfile) | The image of the masters |
 
-### Master configuration
+## Deploying
 
-The master configuration can be site specific and should be customized according to the needs and purpose for a particular master. What follows is a description of our current master configuration.
+A push to `dev` deploys dev. An operator deploys production, from `main`. See [Deploying](docker-compose/README.md#deploying).
 
-Master.cfg is a Python script and defines the behavior of Buildbot. These are the main sections of interest:
+Some changes reach production as soon as they are merged to `main`, without a deployment:
 
-- PROJECT IDENTITY - various site specific definitions
-- WORKERS - defines the list of recognized workers by this instance
-- CHANGESOURCES - defines list of repositories to watch for changes
-- SCHEDULERS - defines what changes we are interested in and triggers appropriate builders based on that
-- BUILDERS & FACTORY CODE - defines the steps for any individual builder
+- scripts that builders download from GitHub when they run: the install and upgrade tests on master-libvirt, the Docker Library tests;
+- build images: merging a Dockerfile change to `main` moves the production tags to the images tested on dev. See [Build images](ci_build_images/README.md).
 
-Also, master.cfg sources a private config file that is not included in this repo, namely _master-private.cfg_. This file should include a Python dictionary with private information like worker passwords, database url and anything else not deemed for public disclosure.
+## The master image and the Buildbot upgrade
 
-#### GitHub credentials
-
-github.com rejects anonymous clones from our CI with HTTP 401, so git
-operations authenticate with a read-only Personal Access Token, stored as the
-secret `github_token` in `MASTER_CREDENTIALS_DIR` (buildbot's `SecretInAFile`
-provider):
-
-```sh
-install -d -m 0700 master-credential-provider
-printf '%s' "$PAT" > master-credential-provider/github_token
-chmod 0600 master-credential-provider/github_token
-# reconfig (SIGHUP, no restart) only the masters that clone from github.com
-for m in master-galera master-nonlatent master-protected-branches master-migration; do
-  docker kill -s HUP "$m"
-done
-```
-
-Git normally sends requests anonymously and offers credentials only after a
-401, so we also set `http.proactiveAuth=basic` to send the token up front. That
-needs git >= 2.46: on older images git authenticates only when GitHub
-challenges it, which still fixes the 401 but lets unchallenged requests go out
-anonymously. Where proactive auth is in effect, a missing or empty token fails
-the clone instead of falling back to anonymous access.
-
-**No scope beyond public read is required** — authenticating at all is what
-lifts us off the 401 path. Prefer a fine-grained token with *Public
-repositories (read-only)*; a classic token with no scopes ticked also works.
-Either can be set to never expire. If you do set an expiry, track it: when the
-token lapses every builder that clones fails at once, with a symptom
-indistinguishable from the original 401.
-
-Four things that will bite you otherwise:
-
-- The file holds the token and nothing else (a trailing newline is stripped).
-- `SecretInAFile` treats **every** file in that directory as a secret and
-  refuses to start if any is group- or world-readable — so no notes, backups
-  or `.gitkeep` in there.
-- The secret is read once at reconfig, not per build, so a **reload is required**
-  after creating or rotating it. A missing secret fails the builds that need it,
-  not `checkconfig`.
-- No write access is granted or needed. The only factory that pushes (the
-  unexercised staging-branch rebase in `master-protected-branches`) still uses
-  `push_access_token` from `master-private.cfg`.
-
-To confirm the token itself is accepted:
-
-```sh
-curl -sS -H "Authorization: Bearer $(cat master-credential-provider/github_token)" \
-     https://api.github.com/rate_limit | grep -m1 limit
-```
-
-`"limit": 5000` means authenticated; `60` means still anonymous.
-
-That does not show that builders send it, and neither does a green build. To
-check a builder, force a build against a repository that does not exist (if
-the force-build form lets you set one), e.g.
-`https://github.com/MariaDB/this-repo-requires-auth`, and read the clone step:
-
-- `Repository not found` — the token reached git and GitHub accepted it.
-- `Authentication failed` — the token reached git but GitHub rejected it.
-- `could not read Username` — the token never reached git on that builder.
-
-Everything consuming the token goes through `git_auth.py` — never interpolate
-one into a URL or a command, use the helpers there.
-
-#### Reloading the master
-
-For changes to the master.cfg to take effect, the server needs to be reloaded. While doing this, please keep an eye on the logs with `tail -f /srv/buildbot/master/twistd.log`. The Buildbot master is managed by our own rolled systemd file. To invoke a reload run `sudo systemctl reload buildbot-master`. The other usual systemctl are also available (`status`, `restart`). Before the reload, consider testing the config with `buildbot checkconfig`.
-
-### Adding workers
-
-There's currently two types of workers that we use. Normal Buildbot workers, running bare-bones builds and can be added using `c['workers'].append(mkWorker("bm-bbw1-ubuntu1804"))`. The password entry needs to be defined in `master-private.cfg`. Note that the worker name cannot be a hostname with dots. Only alphanumeric and dashes are allowed in the worker name.
-
-For instructions on setting up a Buildbot Worker see <http://docs.buildbot.net/latest/manual/installation/worker.html>.
-
-To add a buildbot worker use the following commands:
-
-```console
-useradd buildbot
-su - buildbot
-python3 -m venv buildbot-worker
-source buildbot-worker/bin/activate
-pip install buildbot-worker
-curl -o buildbot.tac https://raw.githubusercontent.com/MariaDB/buildbot/main/dockerfiles/buildbot.tac
-#set buildmaster, port and worker user and password
-buildbot-worker start
-```
-
-The other type of worker we use is [DockerLatentWorker](https://docs.buildbot.net/current/manual/configuration/workers-docker.html). It is useful for running tests inside single use, disposable container Linux instances. We are currently aiming to use it for most of our Linux builds.
-
-Adding a Docker based worker is as simple as providing the IP address to the Docker server and everything else can be handled on the master side.
-
-We currently have 2 Docker instances:
-
-- `do-ubuntu-1804-bbw1-docker`: DigitalOcean worker 1 running Debian/Ubuntu (including main tarbake) builds
-- `do-ubuntu-1804-bbw2-docker`: DigitalOcean worker 2 running Fedora, CentOS, OpenSuSe docker builds
-
-This separation is purely conventional and can be arbitrarily implemented subject to available resources on each Docker host.
-
-Sample DockerLatentWorker configuration:
-
-```python
-c['workers'].append(worker.DockerLatentWorker("do-bbw1-docker-tarball", None,
-                    docker_host='tcp://10.0.0.46:2375',
-                    dockerfile=open("dockerfiles/debian.dockerfile").read(),
-                    masterFQDN='buildbot.mariadb.org',
-                    hostconfig={ 'shm_size':'500M' },
-                    volumes=['/srv/buildbot/ccache:/mnt/ccache'],
-                    properties={ 'jobs':'2' }))
-```
-
-### Current build matrix
-
-We currently define a build matrix via _supportedPlatforms_ which specified which builders should we run for a particular change after figuring out which branch it is based on. For this particular reason, all branch names should follow the following naming scheme: `<version>-<suffix>` or `<prefix>-<version>-<suffix>`.
-
-Examples
-
-- `10.4` - main development branch that becomes the next 10.4.x release
-- `10.0-galera` - main development branch that becomes the next 10.0.x Galera release
-- `bb-10.3-feature` - feature branch targeting next 10.3.x release, tested by Buildbot normally
-- `hf-5.5-fixbug` - hotfix branch targeting next 5.5.x release, **not** tested by Buildbot as it lacks bb-\*
+The masters' image, built from [Dockerfile](Dockerfile), no longer builds. A Buildbot upgrade is planned, which will rewrite it. Until then, avoid changes to the current Buildbot version and its fork: they would have to be ported to the new version.
 
 ## Special Thanks
 
