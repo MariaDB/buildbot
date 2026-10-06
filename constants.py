@@ -113,7 +113,7 @@ RELEASE_BRANCHES = ["bb-*-release", "preview-*"]
 # Maximum supported branch is the one where the default distro MariaDB package major version <= branch
 # For example, if Debian 10 has MariaDB 10.3 by default, we don't support MariaDB 10.2 on it.
 SUPPORTED_PLATFORMS = {}
-SUPPORTED_PLATFORMS["10.6"] = [
+SUPPORTED_PLATFORMS["10.9"] = [
     "aarch64-centos-stream9",
     "aarch64-debian-11",
     "aarch64-macos",
@@ -131,7 +131,6 @@ SUPPORTED_PLATFORMS["10.6"] = [
     "amd64-compile-only-without-server",
     "amd64-debian-11",
     "amd64-debian-11-debug-ps-embedded",
-    "amd64-debian-12-asan-ubsan",
     "amd64-debian-12-rocksdb",
     "amd64-fedora-44-valgrind",
     "amd64-freebsd-14",
@@ -149,7 +148,6 @@ SUPPORTED_PLATFORMS["10.6"] = [
     "amd64-ubuntu-2204-fulltest",
     "amd64-ubuntu-2204-debug-ps",
     "amd64-ubuntu-2204-icc",
-    "amd64-ubuntu-2404-clang18-asan",
     "amd64-windows",
     "amd64-windows-packages",
     "ppc64le-centos-stream9",
@@ -165,11 +163,6 @@ SUPPORTED_PLATFORMS["10.6"] = [
     "x86-debian-12-fulltest",
     "x86-debian-12-fulltest-debug",
 ]
-
-SUPPORTED_PLATFORMS["10.9"] = SUPPORTED_PLATFORMS["10.6"].copy()
-# replaced by amd64-ubasan-clang-20*
-SUPPORTED_PLATFORMS["10.9"].remove("amd64-ubuntu-2404-clang18-asan")
-SUPPORTED_PLATFORMS["10.9"].remove("amd64-debian-12-asan-ubsan")
 
 SUPPORTED_PLATFORMS["10.10"] = [
     "amd64-debian-11-aocc",
