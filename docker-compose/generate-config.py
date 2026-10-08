@@ -8,6 +8,7 @@ config = {"private": {}}
 exec(open("../master-private.cfg").read(), config, {})
 
 BUILDBOT_STOP_GRACE_PERIOD = "5m"
+MARIADB_STOP_GRACE_PERIOD = "10m"
 
 MASTER_DIRECTORIES = [
     "master-nonlatent",
@@ -31,9 +32,10 @@ START_TEMPLATE = """
 ---
 services:
   mariadb:
-    image: mariadb:10.11.10
+    image: mariadb:10.11.19
     restart: unless-stopped
     container_name: mariadb
+    stop_grace_period: {mariadb_stop_grace_period}
     hostname: mariadb
     environment:
       - MARIADB_ROOT_PASSWORD=password
@@ -212,6 +214,7 @@ def main(args):
                 environment="" if args.env == "prod" else "dev_",
                 config_path=args.env,
                 buildbot_stop_grace_period=BUILDBOT_STOP_GRACE_PERIOD,
+                mariadb_stop_grace_period=MARIADB_STOP_GRACE_PERIOD,
             )
         )
         port = starting_port
