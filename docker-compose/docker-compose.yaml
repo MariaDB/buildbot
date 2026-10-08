@@ -3,9 +3,10 @@
 ---
 services:
   mariadb:
-    image: mariadb:10.11.10
+    image: mariadb:10.11.19
     restart: unless-stopped
     container_name: mariadb
+    stop_grace_period: 10m
     hostname: mariadb
     environment:
       - MARIADB_ROOT_PASSWORD=password
