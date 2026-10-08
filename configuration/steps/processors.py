@@ -139,7 +139,9 @@ def processor_docker_tag(
 ) -> tuple[list[BaseStep], list[BaseStep], list[BaseStep]]:
     """Prepare Docker tagging steps for active InContainer steps.
     This function checks the active steps for any InContainer steps and adds a
-    tag step whenever an environment change (different docker config) is detected.
+    tag step whenever the image (URL and platform) changes. Steps on the same
+    image can use different docker configs (mounts, environment variables, ...)
+    and keep the committed state.
     Args:
         prepare_steps (list[BaseStep]): Steps to be executed before the main steps.
         active_steps (list[BaseStep]): Main steps to be executed.
@@ -150,13 +152,14 @@ def processor_docker_tag(
     prepare_steps = prepare_steps.copy()
     active_steps = active_steps.copy()
     cleanup_steps = cleanup_steps.copy()
-    current_docker_environment = None
+    current_image = None
 
     for id, step in enumerate(active_steps):
         if not isinstance(step, InContainer):
             continue
-            # Changing environments requires deleting the old image/tag and creating a new one
-        if current_docker_environment != step.docker_environment:
+        image = (step.docker_environment.image_url, step.docker_environment.platform)
+        # Changing images requires deleting the old image/tag and creating a new one
+        if current_image != image:
             active_steps.insert(
                 id,
                 add_docker_tag_step(
@@ -164,7 +167,7 @@ def processor_docker_tag(
                     runtime_tag=step.docker_environment.runtime_tag,
                 ),
             )
-            current_docker_environment = step.docker_environment
+            current_image = image
 
     return prepare_steps, active_steps, cleanup_steps
 
@@ -176,7 +179,7 @@ def processor_docker_fetch(
 ) -> tuple[list[BaseStep], list[BaseStep], list[BaseStep]]:
     """Fetch Docker images for steps that require them.
     This function checks the active steps for any InContainer steps and adds a
-    Docker fetch step for each unique Docker environment used in those steps.
+    Docker fetch step for each unique image (URL and platform) they use.
     Args:
         prepare_steps (list[BaseStep]): Steps to be executed before the main steps.
         active_steps (list[BaseStep]): Main steps to be executed.
@@ -187,18 +190,19 @@ def processor_docker_fetch(
     prepare_steps = prepare_steps.copy()
     active_steps = active_steps.copy()
     cleanup_steps = cleanup_steps.copy()
-    docker_environments = set()
+    images = set()
 
     relevant_steps = filter(lambda x: isinstance(x, InContainer), active_steps)
     for step in relevant_steps:
-        if step.docker_environment not in docker_environments:
+        image = (step.docker_environment.image_url, step.docker_environment.platform)
+        if image not in images:
             prepare_steps.append(
                 add_docker_fetch_step(
                     image_url=step.docker_environment.image_url,
                     platform=step.docker_environment.platform,
                 )
             )
-            docker_environments.add(step.docker_environment)
+            images.add(image)
 
     return prepare_steps, active_steps, cleanup_steps
 
