@@ -15,6 +15,7 @@ from configuration.builders.sequences.helpers import (
     save_mtr_logs,
 )
 from configuration.steps.base import StepOptions
+from configuration.steps.commands.base import BashCommand
 from configuration.steps.commands.compile import CompileCMakeCommand
 from configuration.steps.commands.configure import ConfigureMariaDBCMake
 from configuration.steps.commands.download import FetchGitHub, FetchTarball
@@ -53,22 +54,34 @@ def asan_ubsan(
         )
     )
 
-    for asset in ["UBSAN.filter", "ASAN.filter"]:
-        sequence.add_step(
-            InContainer(
-                docker_environment=config,
-                container_commit=False,
-                step=ShellStep(
-                    command=FetchGitHub(
-                        workdir=PurePath("bld"),
-                        repo="mariadb-corporation/mariadb-qa",
-                        asset=asset,
-                        branch="master",
-                    ),
-                    options=StepOptions(descriptionDone=f"Fetch {asset}"),
+    sequence.add_step(
+        InContainer(
+            docker_environment=config,
+            container_commit=False,
+            step=ShellStep(
+                command=FetchGitHub(
+                    workdir=PurePath("bld"),
+                    repo="mariadb-corporation/mariadb-qa",
+                    asset="UBSAN.filter",
+                    branch="master",
                 ),
-            )
+                options=StepOptions(descriptionDone=f"Fetch UBSAN.filter"),
+            ),
         )
+    )
+    sequence.add_step(
+        InContainer(
+            docker_environment=config,
+            step=ShellStep(
+                command=BashCommand(
+                    name="Filter to unfixed bugs",
+                    workdir=PurePath("bld"),
+                    cmd=f"sed -i -e '/^# BUILDBOT CI MARKER FOR /,$d' 'UBSAN.filter'",
+                ),
+                options=StepOptions(descriptionDone=f"Adjusted UBSAN.filter"),
+            ),
+        ),
+    )
 
     flags = [
         CMakeOption(WITH.ASAN, True),
@@ -129,9 +142,7 @@ def asan_ubsan(
         ),
         (
             "ASAN_OPTIONS",
-            "suppressions="
-            + str(PurePath("/home", "buildbot", "bld", "ASAN.filter"))
-            + ":quarantine_size_mb=512:atexit=0:detect_invalid_pointer_pairs=3:dump_instruction_bytes=1:allocator_may_return_null=1",
+            + "quarantine_size_mb=512:atexit=0:detect_invalid_pointer_pairs=3:dump_instruction_bytes=1:allocator_may_return_null=1",
         ),
         (
             "UBSAN_OPTIONS",
