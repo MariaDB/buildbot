@@ -5,7 +5,7 @@ Builds each plugin of [MariaDB/foundry](https://github.com/MariaDB/foundry) (one
 ## Pipeline
 
 1. **Trigger**: Force, or a GitHub pull request on Foundry.
-1. **Dispatch** (`foundry-trigger-builders`): clones Foundry, finds the plugins to build and publishes a `git archive` of the commit. This is the run's only clone from GitHub.
+1. **Dispatch** (`foundry-trigger-builders`): clones Foundry, finds the plugins to build and publishes a `git archive` of the commit. This is the run's only clone of the Foundry repository; plugin definitions may still fetch their upstream sources during each package build.
 1. **Fan out**: one `Triggerable` per MariaDB version, carrying the archive, the plugins and the server package source.
 1. **Build and test**, per OS and architecture, from the archive. rpm/deb packages are built in the worker image, then installed and tested in the plain upstream `base_image`, so an undeclared dependency fails. Bintar targets build against a server bintar and test inside it.
 1. **Report**: the dispatcher fails if any package build does. On a pull request, that is its GitHub status.
