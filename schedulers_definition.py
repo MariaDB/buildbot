@@ -5,6 +5,8 @@ from constants import (
     BUILDERS_DOCKERLIBRARY,
     BUILDERS_ECO,
     BUILDERS_INSTALL,
+    BUILDERS_TXN_TESTER,
+    BUILDERS_TXN_TESTER_SOAK,
     BUILDERS_UPGRADE,
     BUILDERS_WORDPRESS,
     GITHUB_STATUS_BUILDERS,
@@ -92,6 +94,16 @@ def wordpressBuilders(props: IProperties) -> list[str]:
     return BUILDERS_WORDPRESS[0]
 
 
+@util.renderer
+def txnTesterBuilders(props: IProperties) -> list[str]:
+    return BUILDERS_TXN_TESTER[0]
+
+
+@util.renderer
+def txnTesterSoakBuilders(props: IProperties) -> list[str]:
+    return BUILDERS_TXN_TESTER_SOAK[0]
+
+
 SCHEDULERS = [
     schedulers.Triggerable(name="s_upstream_all", builderNames=branchBuilders),
     schedulers.Triggerable(
@@ -105,5 +117,9 @@ SCHEDULERS = [
     schedulers.Triggerable(name="s_wordpress", builderNames=wordpressBuilders),
     schedulers.Triggerable(
         name="s_jepsen", builderNames=["amd64-ubuntu-2204-jepsen-mariadb"]
+    ),
+    schedulers.Triggerable(name="s_txn_tester", builderNames=txnTesterBuilders),
+    schedulers.Triggerable(
+        name="s_txn_tester_soak", builderNames=txnTesterSoakBuilders
     ),
 ]
