@@ -22,11 +22,18 @@ class ShellStep(BaseStep):
         urlText (str): Optional text for the URL. Defaults to the url itself.
         timeout (int): Timeout for the command execution in seconds. Defaults to 1200 seconds.
         warn_on_fail (bool): If True, treat non-zero return codes as warnings instead of failures.
+        decode_rc (dict): Return code to result, overriding warn_on_fail;
+            unlisted codes fail.
+        step_class (type): The buildbot step to generate, ShellCommandWithURL
+            or a subclass, e.g. one that reads the output (BuildPluginsShellCommand).
     Args:
     """
 
     DEFAULT_DECODE_RC = {0: SUCCESS}
     WARN_ON_FAIL_DECODE_RC = {0: SUCCESS, **{i: WARNINGS for i in range(1, 256)}}
+    # Best-effort commands: 0 all succeeded, 2 some did, else none did. Pair
+    # with flunkOnWarnings, so a partial success still fails the build.
+    PARTIAL_SUCCESS_DECODE_RC = {0: SUCCESS, 2: WARNINGS}
 
     def __init__(
         self,
@@ -38,6 +45,8 @@ class ShellStep(BaseStep):
         url: URL = None,
         timeout=1200,  # Default timeout in seconds
         warn_on_fail=False,
+        decode_rc: dict = None,
+        step_class: type = ShellCommandWithURL,
     ):
         if env_vars is None:
             env_vars = []
@@ -49,17 +58,20 @@ class ShellStep(BaseStep):
         self.secret_env_vars = secret_env_vars
         self.url = url
         self.timeout = timeout
+        self.step_class = step_class
         assert isinstance(command, Command)
         super().__init__(command.name, options)
         self.prefix_cmd = []
-        if warn_on_fail:
+        if decode_rc is not None:
+            self.decode_return_code = decode_rc
+        elif warn_on_fail:
             self.decode_return_code = self.WARN_ON_FAIL_DECODE_RC
         else:
             self.decode_return_code = self.DEFAULT_DECODE_RC
 
     def generate(self) -> IBuildStep:
         workdir = self._set_workdir()
-        return ShellCommandWithURL(
+        return self.step_class(
             name=self.name,
             command=[*self.prefix_cmd, *self.command.as_cmd_arg()],
             interruptSignal=self.interrupt_signal,
@@ -96,6 +108,7 @@ class PropFromShellStep(ShellStep):
         options (StepOptions): Options for the step, such as timeout and retry settings.
         interrupt_signal (str): The signal to send to interrupt the command (default: "TERM").
         env_vars (list[tuple]): Environment variables to set for the command.
+        secret_env_vars (list[tuple]): Credentials, as for ShellStep.
     """
 
     def __init__(
@@ -105,6 +118,7 @@ class PropFromShellStep(ShellStep):
         options: StepOptions = None,
         interrupt_signal="TERM",
         env_vars: list[tuple] = None,
+        secret_env_vars: list[tuple] = None,
     ):
         self.property = property
         super().__init__(
@@ -112,6 +126,7 @@ class PropFromShellStep(ShellStep):
             options=options,
             interrupt_signal=interrupt_signal,
             env_vars=env_vars,
+            secret_env_vars=secret_env_vars,
         )
         self.name = f"Set {self.property} from {command.name}"
 
@@ -124,4 +139,10 @@ class PropFromShellStep(ShellStep):
             property=self.property,
             **self.options.getopt,
             workdir=workdir,
+            env={
+                k: util.Interpolate(v)
+                for k, v in (*self.env_vars, *self.secret_env_vars)
+            },
+            # As in ShellStep.generate.
+            logEnviron=not self.secret_env_vars,
         )

@@ -80,6 +80,7 @@ services:
       - /srv/buildbot/galera_packages:/srv/buildbot/galera_packages:ro
       - /srv/buildbot/helper_files:/srv/buildbot/helper_files:ro
       - /srv/buildbot/connectors:/srv/buildbot/connectors:ro
+      - /srv/buildbot/foundry:/srv/buildbot/foundry:ro
       - /srv/buildbot/cloud-init:/srv/buildbot/cloud-init:ro
       - ./certbot/www/:/var/www/certbot/:ro
       - ./certbot/ssl/:/etc/nginx/ssl/:ro
@@ -168,9 +169,8 @@ def main(args):
     ]:
         master_volumes[master].append("/srv/buildbot/packages:/srv/buildbot/packages")
     for master in ["master-migration"]:
-        master_volumes[master].append(
-            "/srv/buildbot/connectors:/srv/buildbot/connectors"
-        )
+        for storage in ["/srv/buildbot/connectors", "/srv/buildbot/foundry"]:
+            master_volumes[master].append(f"{storage}:{storage}")
 
     # Capture the current environment variables' keys
     current_env_keys = set(os.environ.keys())
