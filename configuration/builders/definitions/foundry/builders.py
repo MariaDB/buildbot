@@ -45,7 +45,6 @@ def _base_image_config(target: PackageTarget, arch_override):
         TRIGGERED_RUN_DIR,
         image=image,
         platform=arch_override.get("platform"),
-        additional_bind_mounts=target.base_mounts,
         # A bare image has no debconf defaults; keep apt from prompting.
         # systemd isn't PID 1 here, so have systemctl skip its calls instead
         # of failing MariaDB-server's %posttrans (zypper exits 107 on it).
@@ -78,10 +77,11 @@ def _builder(package_type: str, target: Target, arch: str) -> GenericBuilder:
         # CI publishes a galera repo file per platform: the server builder's
         # name without "-<type>-autobake".
         galera_platform = server_builder.removesuffix(f"-{package_type}-autobake")
+        base_config = _base_image_config(target, arch_override)
         sequence = autobake.packages(
             package_type.upper(),
             container_config,
-            base_config=_base_image_config(target, arch_override),
+            base_config=base_config,
             repo_file_url=(
                 f"{CI_URL}/%(prop:tarbuildnum)s/{server_builder}"
                 f"/{type_config['repo_file']}"
@@ -95,6 +95,14 @@ def _builder(package_type: str, target: Target, arch: str) -> GenericBuilder:
             ),
             build_packages=type_config["build_packages"],
             test_packages=type_config["test_packages"],
+            subscription_config=(
+                replace(
+                    base_config,
+                    bind_mounts=[*base_config.bind_mounts, *target.subscription_mounts],
+                )
+                if target.subscription_mounts
+                else None
+            ),
         )
     return GenericBuilder(name=f"foundry-{server_builder}", sequences=[sequence])
 

@@ -68,9 +68,10 @@ class Target:
 class PackageTarget(Target):
     # An rpm or deb target: its packages are built in image, then installed
     # and tested in base_image, the plain upstream image, so an undeclared
-    # dependency fails. base_mounts are bind mounts for base_image.
+    # dependency fails. subscription_mounts are bind mounts for some of
+    # base_image's package installs; see autobake.packages.
     base_image: str
-    base_mounts: list[tuple[str, str]] = field(default_factory=list)
+    subscription_mounts: list[tuple[str, str]] = field(default_factory=list)
 
 
 # UBI reaches the full RHEL repos only through the host's entitlement, so RHEL
@@ -98,21 +99,21 @@ RPM_TARGETS = [
         image="rhel8",
         arch=["amd64", "aarch64"],
         base_image="registry.access.redhat.com/ubi8/ubi",
-        base_mounts=RHEL_SUBSCRIPTION_MOUNTS,
+        subscription_mounts=RHEL_SUBSCRIPTION_MOUNTS,
     ),
     PackageTarget(
         "rhel-9-rpm-autobake",
         image="rhel9",
         arch=["amd64", "aarch64"],
         base_image="registry.access.redhat.com/ubi9/ubi",
-        base_mounts=RHEL_SUBSCRIPTION_MOUNTS,
+        subscription_mounts=RHEL_SUBSCRIPTION_MOUNTS,
     ),
     PackageTarget(
         "rhel-10-rpm-autobake",
         image="rhel10",
         arch=["amd64", "aarch64"],
         base_image="registry.access.redhat.com/ubi10/ubi",
-        base_mounts=RHEL_SUBSCRIPTION_MOUNTS,
+        subscription_mounts=RHEL_SUBSCRIPTION_MOUNTS,
     ),
     PackageTarget(
         "sles-1507-rpm-autobake",

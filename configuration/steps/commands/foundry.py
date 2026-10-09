@@ -420,6 +420,37 @@ class BuildPluginsShellCommand(ShellCommandWithURL):
         return {"step": summary}
 
 
+class InstallRHELPluginDependencies(Command):
+    # Installs each built plugin's RPM dependencies on RHEL, not the plugin
+    # itself. A plugin whose dependencies can't be installed fails in
+    # InstallBuiltPackages.
+    def __init__(self, workdir: PurePath = PurePath(".")):
+        super().__init__(
+            name="Install plugin dependencies (RHEL)", workdir=workdir, user="root"
+        )
+
+    def as_cmd_arg(self) -> list[str]:
+        return [
+            "bash",
+            "-exc",
+            f"""
+set -uo pipefail
+for p in ${{{BUILT_PLUGINS_ENV}}}; do
+    echo "--- Dependencies of $p"
+    dir=$(mktemp -d)
+    if ! dnf install -y --downloadonly --downloaddir="$dir" ./"$p.build"/*.rpm; then
+        echo "Could not resolve the dependencies of $p" >&2
+        continue
+    fi
+    deps=("$dir"/*.rpm)
+    [ -f "${{deps[0]}}" ] || continue
+    dnf install -y "${{deps[@]}}" || echo "Could not install the dependencies of $p" >&2
+done
+rm -f /etc/yum.repos.d/redhat.repo
+""",
+        ]
+
+
 class InstallBuiltPackages(Command):
     # Installs each built plugin separately, so one that won't install doesn't
     # sink the rest, and checks its packages really landed: apt/dnf can exit 0
@@ -663,9 +694,9 @@ done
 
 class DiscoverPluginMTRSuites(Command):
     # Prints the MTR suites of the built plugins that installed,
-    # comma-separated. Read from their packages before MariaDB-test lands,
-    # since it ships suites of its own in the same layout. A plugin that
-    # didn't install is left out: MTR aborts on a --suite it can't find.
+    # comma-separated, read from their package files: MariaDB-test ships suites
+    # of its own in the same layout. A plugin that didn't install is left out:
+    # MTR aborts on a --suite it can't find.
     def __init__(self, package_type: str, workdir: PurePath = PurePath(".")):
         self.package_type = package_type
         super().__init__(name="Discover plugin MTR suites", workdir=workdir)

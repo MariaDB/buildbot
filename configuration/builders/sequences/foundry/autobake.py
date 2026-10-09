@@ -29,6 +29,7 @@ from configuration.steps.commands.foundry import (
     DownloadServerBintarFromMirror,
     ExtractPluginBintarIntoServerBintar,
     InstallBuiltPackages,
+    InstallRHELPluginDependencies,
     PrepareBaseImage,
     RunPluginMTRSuite,
     RunPluginMTRSuiteFromBintar,
@@ -52,7 +53,7 @@ def _not_pull_request(step):
 
 
 # A plugin without MTR suites is only built and installed. With none at all,
-# the test steps are skipped.
+# the MTR step is skipped.
 def _has_suites(step):
     return bool(step.getProperty("plugin_suites"))
 
@@ -160,10 +161,13 @@ def packages(
     galera_repo_url: str,
     build_packages: list[str],
     test_packages: list[str],
+    subscription_config: DockerConfig = None,
 ):
     # package_type: "RPM" or "DEB". Built in the worker image (config), then
     # installed and tested in the plain base image (base_config), so an
     # undeclared dependency fails. Only the workspace volume carries over.
+    # subscription_config: base_config with the subscription mounts, for the
+    # test packages and the plugins' dependencies, before the plugins.
     _, _, install = PACKAGE_COMMANDS[package_type]
     # Names from settings.PACKAGE_TYPES, quoted for the shell: an rpm capability such as
     # perl(Memoize) has parentheses. The install commands don't quote, for globs.
@@ -211,6 +215,26 @@ def packages(
     sequence.add_step(
         InContainer(
             ShellStep(
+                command=install(packages=test_packages, name="Install test packages")
+            ),
+            docker_environment=subscription_config or base_config,
+            container_commit=True,
+        )
+    )
+    if subscription_config:
+        sequence.add_step(
+            InContainer(
+                ShellStep(
+                    command=InstallRHELPluginDependencies(),
+                    env_vars=BUILT_PLUGINS_ENV_VARS,
+                ),
+                docker_environment=subscription_config,
+                container_commit=True,
+            )
+        )
+    sequence.add_step(
+        InContainer(
+            ShellStep(
                 command=InstallBuiltPackages(package_type),
                 env_vars=BUILT_PLUGINS_ENV_VARS + STATUS_ENV_VARS,
                 options=BEST_EFFORT_OPTIONS,
@@ -220,7 +244,6 @@ def packages(
             container_commit=True,
         )
     )
-    # Before MariaDB-test lands, as its own suites look like ours.
     sequence.add_step(
         InContainer(
             PropFromShellStep(
@@ -229,16 +252,6 @@ def packages(
                 env_vars=BUILT_PLUGINS_ENV_VARS + STATUS_ENV_VARS,
             ),
             docker_environment=base_config,
-        )
-    )
-    sequence.add_step(
-        InContainer(
-            ShellStep(
-                command=install(packages=test_packages, name="Install test packages"),
-                options=StepOptions(doStepIf=_has_suites),
-            ),
-            docker_environment=base_config,
-            container_commit=True,
         )
     )
     sequence.add_step(
