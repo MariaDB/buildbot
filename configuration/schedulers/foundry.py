@@ -79,7 +79,7 @@ FOUNDRY_ROLE_MATCHERS, FOUNDRY_AUTHZ_RULES = force_access(
 )
 
 # Pull requests on Foundry: the GitHub hook sets category "pull" on those,
-# not on pushes. Loaded on the master receiving the webhook.
+# not on pushes. Loaded on master-migration, with the Triggerables.
 FOUNDRY_CHANGE_SCHEDULERS = [
     schedulers.AnyBranchScheduler(
         name="foundry_pull_request_scheduler",

@@ -80,4 +80,4 @@ It prints the matching runs, newest first, with each run's result, and leaves ou
 | `../../../steps/commands/foundry.py` | The commands, and the build step that reads `run.cmake`'s summary |
 | `../../../schedulers/foundry.py` | Force, pull request and Triggerable schedulers |
 
-The force and pull request schedulers run on `master-web`, the builders on `master-migration`.
+The force scheduler runs on `master-web`, the pull request scheduler and the builders on `master-migration`.
