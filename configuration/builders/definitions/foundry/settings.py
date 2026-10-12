@@ -255,6 +255,42 @@ MARIADB_VERSIONS = {
             "almalinux-8-bintar",
         ],
     ),
+    "13.1": MariaDBVersion(
+        targets=[
+            "centos-stream9-rpm-autobake",
+            "centos-stream10-rpm-autobake",
+            "rhel-8-rpm-autobake",
+            "rhel-9-rpm-autobake",
+            "rhel-10-rpm-autobake",
+            "sles-1507-rpm-autobake",
+            "sles-1600-rpm-autobake",
+            "opensuse-1600-rpm-autobake",
+            "debian-12-deb-autobake",
+            "debian-13-deb-autobake",
+            "ubuntu-2204-deb-autobake",
+            "ubuntu-2404-deb-autobake",
+            "ubuntu-2604-deb-autobake",
+            "almalinux-8-bintar",
+        ],
+    ),
+    "13.2": MariaDBVersion(
+        targets=[
+            "centos-stream9-rpm-autobake",
+            "centos-stream10-rpm-autobake",
+            "rhel-8-rpm-autobake",
+            "rhel-9-rpm-autobake",
+            "rhel-10-rpm-autobake",
+            "sles-1507-rpm-autobake",
+            "sles-1600-rpm-autobake",
+            "opensuse-1600-rpm-autobake",
+            "debian-12-deb-autobake",
+            "debian-13-deb-autobake",
+            "ubuntu-2204-deb-autobake",
+            "ubuntu-2404-deb-autobake",
+            "ubuntu-2604-deb-autobake",
+            "almalinux-8-bintar",
+        ],
+    ),
     # TODO - No action here, this is just an example so we don't forget.
     # A new series, not on the mirrors yet:
     # "13.3": MariaDBVersion(
