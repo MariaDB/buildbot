@@ -22,6 +22,7 @@ on:
       - "validate_master_cfg.sh"
       - "worker_locks.yaml"
       - "dashboards/**"
+      - "!**/README.md"
   pull_request:
     paths:
       - ".github/workflows/bbm_deploy.yml"
@@ -42,6 +43,7 @@ on:
       - "validate_master_cfg.sh"
       - "worker_locks.yaml"
       - "dashboards/**"
+      - "!**/README.md"
 
 jobs:
   check:
