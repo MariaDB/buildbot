@@ -30,11 +30,27 @@ The [bbm-deploy](../.github/workflows/bbm_deploy.yml) workflow checks the config
 cd /srv/prod/docker-compose
 docker-compose stop <master>
 docker-compose --env-file .env up -d <master>
+grep 'BuildMaster is running' logs/<log>.log | tail -n 1
 ```
+
+Restart the next master once `grep` shows this start's time. `<log>` is the master's directory name: `amd64-master-0` for `autogen_amd64-master-0`.
 
 `stop` gives the master up to its `stop_grace_period` (5 minutes, set in `generate-config.py`) to shut down before it is killed. To make it faster, pass a shorter timeout, in seconds: `docker-compose stop -t 30 <master>`.
 
 Check the number of autogen masters before deploying a change to `os_info.yaml`; see [Autogen masters](../docs/server-builders.md#autogen-masters).
+
+### Stopping and starting the masters
+
+Because of [buildbot#9215](https://github.com/buildbot/buildbot/issues/9215), stop and start the production masters one at a time, and start the next only once the previous one has logged `BuildMaster is running`.
+
+Stop them in this order, and start them in the reverse order, master-libvirt first:
+
+1. master-protected-branches and master-galera, so that no new server or Galera builds start;
+1. the autogen masters;
+1. master-docker-nonstandard and master-docker-nonstandard-2;
+1. master-migration;
+1. master-nonlatent;
+1. master-libvirt.
 
 ### Restarting production without disrupting anyone
 
