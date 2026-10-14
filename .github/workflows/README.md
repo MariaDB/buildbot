@@ -35,9 +35,9 @@ An item should be added under `matrix/include`. For example:
 ```
   matrix:
     include:
-      - image: debian:11
+      - image: debian:13
         platforms: linux/amd64, linux/arm64/v8
-        branch: 10.11
+        branch: 11.8
         nogalera: false
 ```
 

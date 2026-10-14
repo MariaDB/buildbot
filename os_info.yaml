@@ -48,14 +48,6 @@ centos-stream10:
     - aarch64
     - ppc64le
   type: rpm
-debian-11:
-  image_tag: debian11
-  tags:
-    - release_packages
-  arch:
-    - amd64
-    - aarch64
-  type: deb
 debian-12:
   image_tag: debian12
   tags:
@@ -97,6 +89,14 @@ fedora-43:
   type: rpm
 fedora-44:
   image_tag: fedora44
+  tags:
+    - release_packages
+  arch:
+    - amd64
+    - aarch64
+  type: rpm
+fedora-45:
+  image_tag: fedora45
   tags:
     - release_packages
   arch:
@@ -226,4 +226,12 @@ ubuntu-2604:
     - aarch64
     - ppc64le
     - s390x
+  type: deb
+ubuntu-2610:
+  image_tag: ubuntu26.10
+  tags:
+    - release_packages
+  arch:
+    - amd64
+    - aarch64
   type: deb

@@ -125,6 +125,7 @@ for arch in ["amd64", "aarch64"]:
     for ops, version in [
         ("fedora", "43"),
         ("fedora", "44"),
+        ("fedora", "45"),
         ("sles", "1507"),
         ("sles", "1600"),
         ("rhel", "8"),
@@ -141,7 +142,6 @@ for arch in ["amd64", "aarch64"]:
         RELEASE_BUILDERS_BY_ARCH[arch].append(builder)
 
     for ops, version in [
-        ("debian", "11"),
         ("debian", "12"),
         ("debian", "13"),
         ("ubuntu", "22.04"),

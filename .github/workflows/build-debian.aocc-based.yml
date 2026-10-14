@@ -28,10 +28,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - image: debian:11
+          - image: debian:12
             platforms: linux/amd64
             branch: 10.11
-            tag: debian11-aocc
+            tag: debian12-aocc
     uses: ./.github/workflows/bbw_build_container_template.yml
     with:
       dockerfile: debian.Dockerfile aocc.Dockerfile
