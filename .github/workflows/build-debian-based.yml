@@ -36,11 +36,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - image: debian:11
-            platforms: linux/amd64, linux/arm64/v8
-            branch: 10.11
-            nogalera: false
-
           - image: debian:12
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le
             branch: 10.11
@@ -92,6 +87,7 @@ jobs:
             platforms: linux/amd64, linux/arm64/v8, linux/ppc64le, linux/s390x
             branch: 11.8
             nogalera: false
+            runner: ubuntu-26.04
 
           - image: ubuntu:26.04
             tag: ubuntu26.04-amd64v3
@@ -99,6 +95,12 @@ jobs:
             branch: 11.8
             nogalera: false
             arch_variant: amd64v3
+
+          - image: ubuntu:26.10
+            platforms: linux/amd64, linux/arm64/v8
+            branch: 11.8
+            nogalera: true
+            runner: ubuntu-26.04
 
     uses: ./.github/workflows/bbw_build_container_template.yml
     with:
@@ -111,5 +113,5 @@ jobs:
       arch_variant: ${{ matrix.arch_variant }}
       is_scheduled_event: ${{ inputs.is_scheduled_event || false }}
       deploy_on_schedule: ${{ matrix.deploy_on_schedule || false }}
-      runner: 'ubuntu-24.04'
+      runner: ${{ matrix.runner || 'ubuntu-24.04' }}
     secrets: inherit

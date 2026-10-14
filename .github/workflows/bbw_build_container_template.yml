@@ -124,11 +124,16 @@ jobs:
         run: |
           docker run -i -v $(pwd):/mnt -w /mnt ghcr.io/hadolint/hadolint:latest hadolint /mnt/Dockerfile
 
-      - name: Install qemu-user-static
+      - name: Install qemu user emulation
         if: ${{ env.MAIN_BRANCH == 'false' }}
         run: |
           sudo apt-get update
-          sudo apt-get install -y qemu-user-static
+          # Ubuntu 26.04 ships the static binaries in qemu-user
+          if apt-cache policy qemu-user-static | grep -q 'Candidate: [0-9]'; then
+            sudo apt-get install -y qemu-user-static
+          else
+            sudo apt-get install -y qemu-user qemu-user-binfmt
+          fi
 
       - name: Build image
         if: ${{ env.MAIN_BRANCH == 'false' }}

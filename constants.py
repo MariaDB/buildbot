@@ -48,7 +48,7 @@ STAGING_PROT_TEST_BRANCHES = [
 # Defines what builders report status to GitHub
 GITHUB_STATUS_BUILDERS = [
     "aarch64-macos-compile-only",
-    "aarch64-debian-11",
+    "aarch64-debian-12",
     "amd64-compile-only-minimal",
     "amd64-compile-only-nopart-debug",
     "amd64-compile-only-noperf_schema",
@@ -56,7 +56,7 @@ GITHUB_STATUS_BUILDERS = [
     "amd64-debian-12",
     "amd64-debian-12-debug-embedded",
     "amd64-debian-12-deb-autobake",
-    "amd64-debian-11-debug-ps-embedded",
+    "amd64-debian-12-debug-ps-embedded",
     "amd64-msan-clang-22",
     "amd64-fedora-43",
     "amd64-ubuntu-2204-debug",
@@ -79,7 +79,7 @@ else:
     BUILDERS_DOCKERLIBRARY = ["amd64-rhel8-dockerlibrary"]
 
 BUILDERS_GALERA_MTR = [
-    "aarch64-debian-12",
+    "aarch64-debian-13",
     "s390x-ubuntu-2204",
     "ppc64le-ubuntu-2204",
     "amd64-freebsd-14",
@@ -115,7 +115,6 @@ RELEASE_BRANCHES = ["bb-*-release", "preview-*"]
 SUPPORTED_PLATFORMS = {}
 SUPPORTED_PLATFORMS["10.9"] = [
     "aarch64-centos-stream9",
-    "aarch64-debian-11",
     "aarch64-macos",
     "aarch64-macos-compile-only",
     "aarch64-openeuler-2403",
@@ -129,8 +128,6 @@ SUPPORTED_PLATFORMS["10.9"] = [
     "amd64-compile-only-nopart-debug",
     "amd64-compile-only-noperf_schema",
     "amd64-compile-only-without-server",
-    "amd64-debian-11",
-    "amd64-debian-11-debug-ps-embedded",
     "amd64-debian-12-rocksdb",
     "amd64-fedora-44-valgrind",
     "amd64-freebsd-14",
@@ -165,7 +162,7 @@ SUPPORTED_PLATFORMS["10.9"] = [
 ]
 
 SUPPORTED_PLATFORMS["10.10"] = [
-    "amd64-debian-11-aocc",
+    "amd64-debian-12-aocc",
 ]
 SUPPORTED_PLATFORMS["10.10"] += SUPPORTED_PLATFORMS["10.9"]
 
@@ -178,6 +175,7 @@ SUPPORTED_PLATFORMS["10.11"] = [
     "amd64-debian-12",
     "amd64-debian-12-deb-autobake-migration",
     "amd64-debian-12-debug-embedded",
+    "amd64-debian-12-debug-ps-embedded",
     "amd64-rhel-10",
     "amd64-ubasan-clang-22",
     "amd64-ubasan-clang-22-debug",
@@ -228,11 +226,17 @@ SUPPORTED_PLATFORMS["11.8"] += [
     "amd64v3-ubuntu-2604-deb-autobake-migration",
     "ppc64le-ubuntu-2604",
     "s390x-ubuntu-2604",
+    "aarch64-ubuntu-2610",
+    "amd64-ubuntu-2610",
 ]
 SUPPORTED_PLATFORMS["12.0"] = SUPPORTED_PLATFORMS["11.8"].copy()
 SUPPORTED_PLATFORMS["12.1"] = SUPPORTED_PLATFORMS["12.0"].copy()
 SUPPORTED_PLATFORMS["12.2"] = SUPPORTED_PLATFORMS["12.1"].copy()
 SUPPORTED_PLATFORMS["12.3"] = SUPPORTED_PLATFORMS["12.2"].copy()
+SUPPORTED_PLATFORMS["12.3"] += [
+    "aarch64-fedora-45",
+    "amd64-fedora-45",
+]
 SUPPORTED_PLATFORMS["13.0"] = SUPPORTED_PLATFORMS["12.3"].copy()
 SUPPORTED_PLATFORMS["13.1"] = SUPPORTED_PLATFORMS["13.0"].copy()
 SUPPORTED_PLATFORMS["13.2"] = SUPPORTED_PLATFORMS["13.1"].copy()

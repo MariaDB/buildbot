@@ -31,19 +31,6 @@ RUN source /etc/os-release \
             && zypper -n install rpm-build wget which sudo gcc-c++ ccache \
             && zypper clean; \
             ;; \
-        rhel:7*) \
-            yum -y upgrade \
-            && rpm -ivh https://dl.fedoraproject.org/pub/archive/epel/7/x86_64/Packages/e/epel-release-7-14.noarch.rpm \
-            && yum -y install rpm-build \
-                yum-utils \
-                wget \
-                which \
-                perl-generators \
-                sudo \
-                gcc-c++ \
-                ccache \
-            && yum clean all; \
-            ;; \
         *) \
             echo "Unsupported base image: $BASE_IMAGE"; \
             exit 1; \

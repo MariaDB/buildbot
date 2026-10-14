@@ -10,8 +10,8 @@ push or pull request on MariaDB/server
    │  source tarball saved at <ARTIFACTS_URL>/<tarbuildnum>/
    ├─ s_protected_branches: GITHUB_STATUS_BUILDERS in SUPPORTED_PLATFORMS[version]
    └─ s_upstream_all:       the rest of SUPPORTED_PLATFORMS[version], on any master
-      └─ e.g. aarch64-debian-12                     autogen: RelWithDebInfo build, default MTR suites
-         └─ aarch64-debian-12-deb-autobake          autogen: release packages, no tests
+      └─ e.g. aarch64-debian-13                     autogen: RelWithDebInfo build, default MTR suites
+         └─ aarch64-debian-13-deb-autobake          autogen: release packages, no tests
             ├─ ...-install                          master-libvirt
             ├─ ...-minor-upgrade-all, -major-upgrade, -distro-upgrade, ...
             └─ Docker Library tests                 master-nonlatent

@@ -10,7 +10,7 @@ An image's Dockerfile is a concatenation of the files here: a base for its distr
 | --- | --- | --- |
 | `<os>-srpm` | `srpm.Dockerfile`, `build-srpm.yml` | Rebuilding the server or a connector from its `.src.rpm`. They are kept close to the bare distribution, to check that the source package declares all its build dependencies. |
 | `debian13-msan-clang-22` | `msan.fragment.Dockerfile`, `msan.instrumentedlibs.sh` | Builds with clang and MSAN, ASAN or UBSAN; holds the clang toolchain and libraries built with MSAN |
-| `debian11-aocc`, `ubuntu22.04-jepsen-mariadb`, `almalinux8-bintar` | `aocc.Dockerfile`, `jepsen-mariadb.Dockerfile`, `bintar.Dockerfile` | The `-aocc`, Jepsen and `-bintar` builders |
+| `debian12-aocc`, `ubuntu22.04-jepsen-mariadb`, `almalinux8-bintar` | `aocc.Dockerfile`, `jepsen-mariadb.Dockerfile`, `bintar.Dockerfile` | The `-aocc`, Jepsen and `-bintar` builders |
 
 The images install `galera-4` from the Galera packages built by [master-galera](../master-galera/README.md#galera-in-the-servers-build-images), so the server builders can run the Galera suites. Use `nogalera: true` for a platform that has no Galera packages yet.
 
