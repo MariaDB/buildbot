@@ -40,6 +40,16 @@ Check the number of autogen masters before deploying a change to `os_info.yaml`;
 
 Prefer restarting when no branch protection builds are running, so that contributors already have their results on GitHub. Buildbot is meant to restart the builds a stop interrupts, but doesn't always. If you restart while such builds run, check the Grid View, filtered on the `protected` tag, that they finished or were restarted.
 
+### Reloading nginx
+
+The nginx container renders [nginx/templates/](nginx/templates/) into `conf.d/` only when it starts. To apply a template change without restarting it:
+
+```console
+docker exec nginx /docker-entrypoint.d/20-envsubst-on-templates.sh
+docker exec nginx nginx -t
+docker exec nginx nginx -s reload
+```
+
 ### Changes that don't need a deployment
 
 - Scripts that builders download from GitHub when they run, from `BRANCH`: merging them to `main` changes production right away. These are the install and upgrade tests on master-libvirt and the Docker Library tests.

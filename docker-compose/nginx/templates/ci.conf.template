@@ -48,6 +48,10 @@ server {
 
 	location /foundry {
 		alias /srv/buildbot/foundry;
+		types {
+			text/plain repo sources txt;
+			text/html  html htm;
+		}
 	}
 
   # disallow bots
