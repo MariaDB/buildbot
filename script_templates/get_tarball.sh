@@ -26,7 +26,7 @@ f="${tarbuildnum}/$tarball"
 
 verify_checksum() {
   echo "verify checksum"
-  checksum=$(wget -qO- "$artifacts_url/$tarbuildnum/sha256sums.txt" | awk '{print $1}')
+  checksum=$(wget -qO- "$artifacts_url/$tarbuildnum/sha256sums.txt" | grep -F "${tarball}" | awk '{print $1}')
   checksum_file=$(sha256sum "$1" | awk '{print $1}')
 
   if [[ "$checksum_file" == "$checksum" ]]; then

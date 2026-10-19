@@ -92,7 +92,6 @@ def tarball(config: DockerConfig):
                     input_dir=PurePath("."),
                     output_dir=PurePath("ci_source"),
                     tarball_name="ci.tar.gz",
-                    generate_sha256=True,
                 ),
                 options=StepOptions(
                     description="Archive source code",
@@ -176,9 +175,9 @@ def tarball(config: DockerConfig):
                     packages=[
                         "ci_source/ci.tar.gz",
                         "*src.tar.gz",
-                        "ci_source/sha256sums.txt",
                     ],
                     destination="/packages/%(prop:buildnumber)s",
+                    generate_sha256=True,
                 ),
                 url=URL(
                     url=f"{os.environ['ARTIFACTS_URL']}/connector-cpp/%(prop:buildnumber)s",
@@ -798,6 +797,7 @@ def save_packages(config: DockerConfig, packages: list[str], user: str = "buildb
                     packages=packages,
                     destination="/packages/%(prop:tarbuildnum)s/%(prop:buildername)s",
                     user=user,
+                    generate_sha256=True,
                 ),
                 options=StepOptions(
                     description="Save packages",
@@ -894,11 +894,34 @@ def windows(jobs: int, target_platform: str):
     )
 
     sequence.add_step(
+        ShellStep(
+            command=BashCommand(
+                name="MSI sha256sums",
+                cmd='sha256sum "%(prop:packages)s" > sha256sums.txt',
+                workdir=PurePath("wininstall"),
+            ),
+            options=StepOptions(
+                description="Write MSI sha256sums",
+                descriptionDone="MSI sha256sums written",
+            ),
+        ),
+    )
+
+    sequence.add_step(
         FileUpload(
             workersrc="wininstall\\%(prop:packages)s",
             masterdest="/srv/buildbot/connectors/cpp/%(prop:tarbuildnum)s/%(prop:buildername)s/%(prop:packages)s",
             mode=0o755,
             url=f"{os.environ['ARTIFACTS_URL']}/connector-cpp/%(prop:tarbuildnum)s/%(prop:buildername)s/",
+        )
+    )
+
+    sequence.add_step(
+        FileUpload(
+            workersrc="wininstall\\sha256sums.txt",
+            masterdest="/srv/buildbot/connectors/cpp/%(prop:tarbuildnum)s/%(prop:buildername)s/sha256sums.txt",
+            mode=0o644,
+            url=f"{os.environ['ARTIFACTS_URL']}/connector-cpp/%(prop:tarbuildnum)s/%(prop:buildername)s/sha256sums.txt",
         )
     )
     return sequence

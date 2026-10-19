@@ -26,7 +26,7 @@ Under `CONNECTORS_PACKAGES_DIR/<c|cpp|odbc>` on the worker hosts, served at `<AR
 | What | Where |
 | --- | --- |
 | Source package, `git archive` and `sha256sums.txt` | `<tarbuildnum>/` |
-| A builder's packages | `<tarbuildnum>/<builder>/` |
+| A builder's packages and `sha256sums.txt` | `<tarbuildnum>/<builder>/` |
 
 ## Maintenance
 
