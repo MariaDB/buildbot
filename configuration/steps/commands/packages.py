@@ -110,6 +110,8 @@ class SavePackages(Command):
     This class is used to recursively copy a list of files and dirs to CI,
     starting from the current working directory and
     assuming that /packages is bind mounted.
+    With generate_sha256, it also writes a sha256sums.txt listing every
+    file the build saved to the destination.
     """
 
     def __init__(
@@ -118,14 +120,34 @@ class SavePackages(Command):
         workdir: PurePath = PurePath("."),
         destination: str = "/packages/%(prop:tarbuildnum)s/%(prop:buildername)s",
         user: str = "buildbot",
+        generate_sha256: bool = False,
     ):
         name = "Save packages"
         self.packages = packages
         self.destination = destination
+        self.generate_sha256 = generate_sha256
+        assert not (generate_sha256 and workdir.is_absolute())
+        # The sums are kept at the build's root, which the workdir is
+        # relative to: /home/buildbot in a container, build/ on a host.
+        root = "../" * len(workdir.parts)
+        self.sums_dir = f"{root}sha256sums/{destination.lstrip('/')}"
         super().__init__(name=name, workdir=workdir, user=user)
 
     def as_cmd_arg(self) -> list[str]:
         package_list = " ".join(self.packages)
+        sha256sums = f"""
+                mkdir -p "{self.sums_dir}"
+                for package in {package_list}; do
+                  [[ -e "${{package}}" ]] || continue
+                  (
+                    cd "$(dirname "${{package}}")"
+                    find -L "$(basename "${{package}}")" -type f -exec sha256sum {{}} +
+                  )
+                done >> "{self.sums_dir}/sha256sums.txt"
+                if [[ -s "{self.sums_dir}/sha256sums.txt" ]]; then
+                  cp -f "{self.sums_dir}/sha256sums.txt" "{self.destination}/sha256sums.txt"
+                fi
+                """
         result = [
             "bash",
             "-exc",
@@ -139,6 +161,7 @@ class SavePackages(Command):
                     fi
                     cp -r $package {self.destination}
                 done
+                {sha256sums if self.generate_sha256 else ""}
                 """
             ),
         ]
@@ -222,12 +245,10 @@ class ArchiveSource(Command):
         input_dir: PurePath,
         output_dir: PurePath,
         tarball_name: str,
-        generate_sha256: bool = False,
     ):
         self.input_dir = input_dir
         self.output_dir = output_dir
         self.tarball_name = tarball_name
-        self.generate_sha256 = generate_sha256
         super().__init__(name="Archive source code", workdir=input_dir)
 
     def as_cmd_arg(self) -> list[str]:
@@ -237,7 +258,6 @@ class ArchiveSource(Command):
             f"""
             mkdir -p {self.output_dir}
             tar --exclude-vcs --exclude {self.output_dir} -czf {self.output_dir}/{self.tarball_name} -C {self.input_dir} .
-            {f"sha256sum {self.output_dir}/{self.tarball_name} > {self.output_dir}/sha256sums.txt" if self.generate_sha256 else ""}
             """,
         ]
         return result
