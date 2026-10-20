@@ -39,6 +39,7 @@ def _server_source_parameters():
                 ),
                 default="",
                 required=False,
+                regex=r"^([0-9]+)?\Z",
             )
         )
     return parameters
