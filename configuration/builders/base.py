@@ -120,6 +120,7 @@ class BaseBuilder:
         tags: list[str] = [],
         properties: dict[str, str] = None,
         collapse_requests: bool = None,
+        mtr_max_parallel: dict[str, int] = None,
     ) -> util.BuilderConfig:
         """
         Generates a BuilderConfig object for the builder, including worker names,
@@ -136,6 +137,9 @@ class BaseBuilder:
                 Defaults to an empty dictionary.'
             collapse_requests (bool, optional): Whether pending build requests
                 may be merged. Defaults to the master's setting (collapsing).
+            mtr_max_parallel (dict[str, int], optional): Caps MTR --parallel
+                of this builder's builds, per worker name. Workers not listed
+                run MTR with the --parallel of the builder's sequences.
         Mention on the jobs parameter:
             - jobs is a measure of how many CPU's are used for the build, for commands that support parallel execution (e.g. make, mtr).
             - provide a value greater or equal to 1
@@ -148,6 +152,15 @@ class BaseBuilder:
         if not properties:
             properties = {}
         properties["jobs"] = jobs
+        if mtr_max_parallel:
+            worker_names = {worker.name for worker in workers}
+            for name, max_parallel in mtr_max_parallel.items():
+                assert (
+                    name in worker_names
+                ), f"mtr_max_parallel: {name} is not a worker of {self.name}"
+                assert max_parallel >= 1, "mtr_max_parallel must be at least 1"
+            # Read by MTRTest when the build runs
+            properties["mtr_max_parallel"] = mtr_max_parallel
 
         # Update worker metadata
         for worker in workers:
