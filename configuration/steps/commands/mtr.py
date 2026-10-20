@@ -5,6 +5,7 @@ from pathlib import PurePath
 from buildbot.plugins import util
 from configuration.steps.commands.base import BashScriptCommand, Command
 from configuration.steps.generators.mtr.generator import MTRGenerator
+from configuration.steps.generators.mtr.options import MTR, MTROption
 
 
 class MTRTest(Command):
@@ -46,8 +47,38 @@ class MTRTest(Command):
                 self.log_path = opt.value
                 break
 
-    def as_cmd_arg(self) -> list[str]:
-        mtr_cmd = " ".join(self.testcase.generate())
+    def as_cmd_arg(self) -> list:
+        # The script is rendered at build time, when the worker running the
+        # build is known.
+        return [
+            "bash",
+            "-exc",
+            util.Transform(
+                self._script,
+                util.Property("mtr_max_parallel", default={}),
+                util.Property("workername"),
+            ),
+        ]
+
+    def _script(self, mtr_max_parallel: dict[str, int], workername: str) -> str:
+        """
+        Returns the script running MTR, with --parallel capped at the
+        builder's mtr_max_parallel for the worker, when it has one.
+        """
+        testcase = self.testcase
+        max_parallel = mtr_max_parallel.get(workername)
+        if max_parallel:
+            testcase = MTRGenerator(
+                flags=[
+                    (
+                        MTROption(MTR.PARALLEL, min(flag.value, max_parallel))
+                        if flag.name == MTR.PARALLEL
+                        else flag
+                    )
+                    for flag in self.testcase.flags
+                ]
+            )
+        mtr_cmd = " ".join(testcase.generate())
         if self.tests_from_file:
             incompatible_flags = ["do-test", "suites", "suite"]
             has_incompatible_flag = any(
@@ -59,13 +90,9 @@ class MTRTest(Command):
                 "--suite(s) or --do-test flags"
             )
             mtr_cmd += " $(< {})".format(str(self.tests_from_file))
-        return [
-            "bash",
-            "-exc",
-            f"""
+        return f"""
             MTR_FEEDBACK_PLUGIN={self.mtr_feedback_plugin} {mtr_cmd} || ({self._save_logs()})
-            """,
-        ]
+            """
 
     def _save_logs(self) -> str:
         logs = ["*.log", "*.err*", "core*"]
