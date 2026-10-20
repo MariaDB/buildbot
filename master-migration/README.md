@@ -21,6 +21,8 @@ Workers are listed in [workers.yaml](workers.yaml), their passwords in `worker_p
 
 Each worker has a pool of `total_jobs` jobs, and each builder asks for `jobs` (`get_config(jobs=...)`). A build starts on a worker only when the worker has that many jobs free, counting the builds running on it ([callables.py](../configuration/builders/callables.py)), so builders that need to finish fast can take more of a host than others. `max_builds` caps the number of builds as well.
 
+MTR runs with `--parallel` at twice the builder's `jobs`. A builder whose tests need more memory than a worker has caps it there with `get_config(mtr_max_parallel={"<worker>": N})`.
+
 The bbm-deploy check prints, per worker, the jobs its builders ask for against its `total_jobs`, flagging a worker whose builders ask for more.
 
 A non-latent worker connects to one master, so this master counts every build it runs on a worker.
