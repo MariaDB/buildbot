@@ -35,6 +35,7 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     curl-devel \
     flex \
     galera-4 \
+    iproute \
     java-1.8.0-openjdk-devel \
     java-1.8.0-openjdk \
     jemalloc-devel \
@@ -45,6 +46,7 @@ RUN dnf -y install 'dnf-command(config-manager)' \
     libpmem-devel \
     libxml2-devel \
     libzstd-devel \
+    lsof \
     lzo-devel \
     perl-autodie \
     perl-Net-SSLeay \
