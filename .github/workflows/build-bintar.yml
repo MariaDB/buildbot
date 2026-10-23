@@ -21,6 +21,7 @@ on:
       - .github/workflows/build-bintar.yml
       - .github/workflows/bbw_build_container_template.yml
   workflow_call:
+  workflow_dispatch:
 
 jobs:
   build-images:
