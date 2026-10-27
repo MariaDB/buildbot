@@ -352,6 +352,8 @@ PACKAGE_TYPES = {
     "bintar": {
         # The only flavour mirrored, hence amd64 only.
         "mirror_bintar": "bintar-linux-systemd-x86_64",
+        # The bintar images' static libraries, as in the server bintar builders.
+        "env_vars": [("CMAKE_LIBRARY_PATH", "/scripts/local/lib/")],
     },
 }
 
