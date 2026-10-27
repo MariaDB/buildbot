@@ -63,6 +63,7 @@ def _builder(package_type: str, target: Target, arch: str) -> GenericBuilder:
         TRIGGERED_RUN_DIR,
         image=f"{target.image}{arch_override.get('image_suffix', '')}",
         platform=arch_override.get("platform"),
+        additional_env_vars=type_config.get("env_vars"),
     )
     # The server builder this one mirrors, e.g. amd64-debian-12-deb-autobake.
     server_builder = f"{arch}-{target.name}"
