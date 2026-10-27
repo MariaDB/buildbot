@@ -446,7 +446,7 @@ def windows(jobs: int, target_platform: str):
         FileUpload(
             workersrc="win\\packaging\\sha256sums.txt",
             masterdest="/srv/buildbot/connectors/c/%(prop:tarbuildnum)s/%(prop:buildername)s/sha256sums.txt",
-            mode=0o644,
+            mode=0o755,
             url=f"{os.environ['ARTIFACTS_URL']}/connector-c/%(prop:tarbuildnum)s/%(prop:buildername)s/sha256sums.txt",
         )
     )

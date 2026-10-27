@@ -1039,7 +1039,7 @@ def windows(jobs: int, target_platform: str):
         FileUpload(
             workersrc="packaging/windows/sha256sums.txt",
             masterdest="/srv/buildbot/connectors/odbc/%(prop:tarbuildnum)s/%(prop:buildername)s/sha256sums.txt",
-            mode=0o644,
+            mode=0o755,
             url=f"{os.environ['ARTIFACTS_URL']}/connector-odbc/%(prop:tarbuildnum)s/%(prop:buildername)s/sha256sums.txt",
         )
     )
