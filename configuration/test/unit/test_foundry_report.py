@@ -103,6 +103,17 @@ class TestFoundryReport(unittest.TestCase):
             bintar["broken"]["build"]["detail"], "not reported by run.cmake"
         )
 
+    def test_skipped_plugin(self):
+        _write(self._dir("11.8", DEB), "build", "SKIP passing\n")
+        passing = self._builders("11.8")[DEB]["passing"]
+        self.assertEqual(passing["build"], {"status": "skipped"})
+        self.assertEqual(_statuses(passing), ["skipped", "skipped", "skipped"])
+        self.assertFalse(report.has_failures({"passing": passing}))
+
+        _write(self._dir("11.4", BINTAR), "build", "SKIP passing\n")
+        bintar = self._builders("11.4")[BINTAR]["passing"]
+        self.assertEqual(_statuses(bintar), ["skipped", "n/a", "skipped"])
+
     def test_versions_and_builders(self):
         status = self._status()
         # Triggered, but its builders failed before writing anything.

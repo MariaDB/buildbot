@@ -308,12 +308,14 @@ class FoundrySummary:
     # Parses the summary run.cmake prints at the end:
     #   -- FOUNDRY-RESULT: PASS <plugin> <package file>...
     #   -- FOUNDRY-RESULT: FAIL <plugin> <configure|build|package> <reason>
+    #   -- FOUNDRY-RESULT: SKIP <plugin>
     #   -- FOUNDRY-SUMMARY: <failed> of <total> plugins failed
     _LINE = re.compile(r"-- FOUNDRY-(RESULT|SUMMARY): (.*)")
 
     def __init__(self):
         self.built = []  # plugins, from PASS lines
         self.failures = {}  # plugin -> "<stage>: <reason>", from FAIL lines
+        self.skipped = []  # plugins, from SKIP lines
         self.complete = False  # the FOUNDRY-SUMMARY line was seen
 
     # Runs on the reactor thread for every output line, so most lines stop at
@@ -337,24 +339,30 @@ class FoundrySummary:
         elif verdict == "FAIL":
             stage, *reason = details or ["unknown"]
             self.failures[plugin] = f"{stage}: {' '.join(reason)}"
+        elif verdict == "SKIP":
+            self.skipped.append(plugin)
 
     def evaluate(self, requested: list[str], command_ok: bool):
         # Returns (result, built plugins, {failed plugin: why}, description).
         built = list(self.built)
         failures = dict(self.failures)
+        skipped = self.skipped
         # run.cmake silently skips any argument with a dot in it.
         for plugin in requested:
-            if plugin not in built and plugin not in failures:
+            if not (plugin in built or plugin in failures or plugin in skipped):
                 failures[plugin] = "not reported by run.cmake"
         if not self.complete:
             return FAILURE, built, failures, "run.cmake printed no summary"
 
-        description = f"built {len(built)} of {len(built) + len(failures)} plugins"
+        total = len(built) + len(failures) + len(skipped)
+        description = f"built {len(built)} of {total} plugins"
         if failures:
             description += "; failed: " + ", ".join(
                 f"{plugin} ({why})" for plugin, why in failures.items()
             )
-        if not built:
+        if skipped:
+            description += "; skipped: " + ", ".join(skipped)
+        if not built and (failures or not skipped):
             return FAILURE, built, failures, description
         if failures:
             return WARNINGS, built, failures, description
@@ -376,9 +384,10 @@ class _FoundrySummaryObserver(logobserver.LogLineObserver):
 
 class BuildPluginsShellCommand(ShellCommandWithURL):
     # The step for BuildPlugins, as ShellStep's step_class. Its result comes
-    # from the summary: SUCCESS if every plugin built, WARNINGS if some did
-    # (pair with flunkOnWarnings), FAILURE if none did or there's no summary.
-    # Sets built_plugins. A stopped step records nothing.
+    # from the summary: SUCCESS if every plugin built or was skipped, WARNINGS
+    # if some failed and some built (pair with flunkOnWarnings), FAILURE if
+    # none built and not all were skipped, or there's no summary. Sets
+    # built_plugins. A stopped step records nothing.
     #
     # Buildbot 2.x (the production fork) decides in evaluateCommand(); 3.0+
     # only calls run(). 2.x calls run() too, as its bridge to start(), hence
