@@ -1,7 +1,7 @@
 """Writes a Foundry run's status.html and status.json.
 
 Reads the files each package build wrote to <run dir>/<mariadb version>/<builder>/status/:
-  build    run.cmake's result lines: "PASS <plugin> ..." or "FAIL <plugin> <stage> <reason>"
+  build    run.cmake's result lines: "PASS <plugin> ...", "FAIL <plugin> <stage> <reason>" or "SKIP <plugin>"
   install  "<plugin> pass" or "<plugin> fail"
   suites   "<plugin> <suite> <suite> ..." for the plugins with MTR suites
   mtr      MTR's closing summary: "... were successful." and "Failing test(s): ..."
@@ -31,6 +31,7 @@ NOT_RUN = "not run"
 BUILDER_FAILED = "builder failed"
 NO_SUITES = "no suites"
 NOT_APPLICABLE = "n/a"
+SKIPPED = "skipped"
 NO_STATUS = "No status"
 NOT_TRIGGERED = "Not triggered in this run"
 
@@ -44,6 +45,7 @@ LEGEND = {
     NOT_RUN: "An earlier stage failed for this plugin, so this one was skipped.",
     NO_SUITES: "The plugin has no MTR suite, so there was nothing to test.",
     NOT_APPLICABLE: "The platform has no such stage: bintar builds have no install.",
+    SKIPPED: "Foundry skipped the plugin, which isn't a failure.",
     NO_STATUS: "For a whole platform: its builder failed before its first "
     "Foundry step, or never started.",
     NOT_TRIGGERED: "For a whole MariaDB version: the dispatcher didn't trigger "
@@ -97,11 +99,15 @@ def platform_status(directory, plugins, bintar):
             b = {"status": FAIL, "detail": "not reported by run.cmake"}
         elif built[plugin][0] == "PASS":
             b = {"status": PASS}
+        elif built[plugin][0] == "SKIP":
+            b = {"status": SKIPPED}
         else:
             b = {"status": FAIL, "detail": " ".join(built[plugin][2:])}
 
         if bintar:
             i = {"status": NOT_APPLICABLE}
+        elif b["status"] == SKIPPED:
+            i = {"status": SKIPPED}
         elif b["status"] != PASS:
             i = {"status": NOT_RUN}
         elif install is None:
@@ -110,7 +116,9 @@ def platform_status(directory, plugins, bintar):
             i = {"status": PASS if installed.get(plugin) == PASS else FAIL}
 
         ready = (b if bintar else i)["status"] == PASS
-        if not ready:
+        if b["status"] == SKIPPED:
+            m = {"status": SKIPPED}
+        elif not ready:
             m = {"status": NOT_RUN}
         elif suites is None:
             m = {"status": BUILDER_FAILED}

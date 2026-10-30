@@ -98,6 +98,46 @@ class TestFoundrySummary(unittest.TestCase):
         self.assertEqual(built, ["a"])
         self.assertEqual(failures, {"b.c": "not reported by run.cmake"})
 
+    def test_skipped_plugin_among_built_ones(self):
+        summary = _summary(
+            "-- FOUNDRY-RESULT: PASS a a.deb\n"
+            "-- FOUNDRY-RESULT: SKIP duckdb\n"
+            "-- FOUNDRY-SUMMARY: 0 of 2 plugins failed\n"
+        )
+        self.assertEqual(summary.skipped, ["duckdb"])
+        self.assertEqual(
+            summary.evaluate(["a", "duckdb"], command_ok=True),
+            (SUCCESS, ["a"], {}, "built 1 of 2 plugins; skipped: duckdb"),
+        )
+
+    def test_only_plugin_skipped(self):
+        summary = _summary(
+            "-- FOUNDRY-RESULT: SKIP duckdb\n"
+            "-- FOUNDRY-SUMMARY: 0 of 1 plugins failed\n"
+        )
+        self.assertEqual(
+            summary.evaluate(["duckdb"], command_ok=True),
+            (SUCCESS, [], {}, "built 0 of 1 plugins; skipped: duckdb"),
+        )
+
+    def test_skipped_and_failed_with_none_built(self):
+        summary = _summary(
+            "-- FOUNDRY-RESULT: SKIP a\n"
+            "-- FOUNDRY-RESULT: FAIL b build 2\n"
+            "-- FOUNDRY-SUMMARY: 1 of 2 plugins failed\n"
+        )
+        result, built, failures, _ = summary.evaluate(["a", "b"], command_ok=False)
+        self.assertEqual(result, FAILURE)
+        self.assertEqual(built, [])
+        self.assertEqual(failures, {"b": "build: 2"})
+
+    def test_skipped_but_cmake_failed(self):
+        summary = _summary(
+            "-- FOUNDRY-RESULT: SKIP a\n" "-- FOUNDRY-SUMMARY: 0 of 1 plugins failed\n"
+        )
+        result, _, _, _ = summary.evaluate(["a"], command_ok=False)
+        self.assertEqual(result, FAILURE)
+
     def test_all_built_but_cmake_failed(self):
         summary = _summary(
             "-- FOUNDRY-RESULT: PASS a a.rpm\n"
