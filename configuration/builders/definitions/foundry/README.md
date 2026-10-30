@@ -29,7 +29,7 @@ Builds each plugin of [MariaDB/foundry](https://github.com/MariaDB/foundry) (one
 | some | `WARNINGS` | fail; the rest carry on |
 | none | `FAILURE` | fail; stops |
 
-The build step reads each plugin's outcome from the summary `run.cmake` prints (`-- FOUNDRY-RESULT: PASS|FAIL ...`, `-- FOUNDRY-SUMMARY: ...`), and sets `built_plugins`. A plugin missing from the summary failed. Each stage hands on only what succeeded, so MTR runs the suites of the plugins that installed. A suite is a `plugin/<x>/<suite>/` directory with `*.test` files, in `t/` or in the directory itself. A plugin without one is built and installed but not tested, which the suite step's log notes; if no plugin has one, the MTR step is skipped. make runs one job per CPU the builder is allotted (`jobs`, 1 for Foundry).
+The build step reads each plugin's outcome from the summary `run.cmake` prints (`-- FOUNDRY-RESULT: PASS|FAIL|SKIP ...`, `-- FOUNDRY-SUMMARY: ...`), and sets `built_plugins`. A plugin missing from the summary failed. A `SKIP` isn't a failure: the plugin goes no further, and with every plugin skipped, a package build stops there. Each stage hands on only what succeeded, so MTR runs the suites of the plugins that installed. A suite is a `plugin/<x>/<suite>/` directory with `*.test` files, in `t/` or in the directory itself. A plugin without one is built and installed but not tested, which the suite step's log notes; if no plugin has one, the MTR step is skipped. make runs one job per CPU the builder is allotted (`jobs`, 1 for Foundry).
 
 ## Configuration
 

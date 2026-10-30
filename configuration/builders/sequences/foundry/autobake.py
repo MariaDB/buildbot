@@ -52,6 +52,11 @@ def _not_pull_request(step):
     return not step.getProperty("is_pull_request", False)
 
 
+# With every plugin skipped, a package build has nothing to install or test.
+def _has_built_plugins(step):
+    return bool(step.getProperty("built_plugins"))
+
+
 # A plugin without MTR suites is only built and installed. With none at all,
 # the MTR step is skipped.
 def _has_suites(step):
@@ -118,8 +123,9 @@ def _server_repo_steps(
     mirror_repo_url: str,
     galera_repo_url: str,
     where: str,
+    only_if=lambda _: True,
 ):
-    # where: "worker" or "base".
+    # where: "worker" or "base". only_if: a further doStepIf condition.
     setup_from_url, setup_mirror, _ = PACKAGE_COMMANDS[package_type]
     return [
         InContainer(
@@ -132,7 +138,9 @@ def _server_repo_steps(
                     galera_repo_url,
                     name=f"Add server CI repo ({where})",
                 ),
-                options=StepOptions(doStepIf=_uses_ci_tarball),
+                options=StepOptions(
+                    doStepIf=lambda step: _uses_ci_tarball(step) and only_if(step)
+                ),
             ),
             docker_environment=config,
             container_commit=True,
@@ -144,7 +152,9 @@ def _server_repo_steps(
                     repo_url=mirror_repo_url,
                     name=f"Add server mirror repo ({where})",
                 ),
-                options=StepOptions(doStepIf=_uses_mirror),
+                options=StepOptions(
+                    doStepIf=lambda step: _uses_mirror(step) and only_if(step)
+                ),
             ),
             docker_environment=config,
             container_commit=True,
@@ -198,7 +208,10 @@ def packages(
     # Install and test, in the base image.
     sequence.add_step(
         InContainer(
-            ShellStep(command=PrepareBaseImage()),
+            ShellStep(
+                command=PrepareBaseImage(),
+                options=StepOptions(doStepIf=_has_built_plugins),
+            ),
             docker_environment=base_config,
             container_commit=True,
         )
@@ -210,12 +223,14 @@ def packages(
         mirror_repo_url,
         galera_repo_url,
         "base",
+        only_if=_has_built_plugins,
     ):
         sequence.add_step(step)
     sequence.add_step(
         InContainer(
             ShellStep(
-                command=install(packages=test_packages, name="Install test packages")
+                command=install(packages=test_packages, name="Install test packages"),
+                options=StepOptions(doStepIf=_has_built_plugins),
             ),
             docker_environment=subscription_config or base_config,
             container_commit=True,
@@ -227,6 +242,7 @@ def packages(
                 ShellStep(
                     command=InstallRHELPluginDependencies(),
                     env_vars=BUILT_PLUGINS_ENV_VARS,
+                    options=StepOptions(doStepIf=_has_built_plugins),
                 ),
                 docker_environment=subscription_config,
                 container_commit=True,
@@ -237,7 +253,7 @@ def packages(
             ShellStep(
                 command=InstallBuiltPackages(package_type),
                 env_vars=BUILT_PLUGINS_ENV_VARS + STATUS_ENV_VARS,
-                options=BEST_EFFORT_OPTIONS,
+                options=StepOptions(flunkOnWarnings=True, doStepIf=_has_built_plugins),
                 decode_rc=ShellStep.PARTIAL_SUCCESS_DECODE_RC,
             ),
             docker_environment=base_config,
@@ -250,6 +266,7 @@ def packages(
                 command=DiscoverPluginMTRSuites(package_type),
                 property="plugin_suites",
                 env_vars=BUILT_PLUGINS_ENV_VARS + STATUS_ENV_VARS,
+                options=StepOptions(doStepIf=_has_built_plugins),
             ),
             docker_environment=base_config,
         )
