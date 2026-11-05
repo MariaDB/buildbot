@@ -62,6 +62,8 @@ private["worker_pass"]= {
     "bg-bbw5-x64": "1234",
     "hz-bbw6": "1234",
     "sg-bbw1": "1234",
+    "rs-bbw1": "1234",
+    "rs-bbw2": "1234",
     "bg-arm-rasmus-5": "1234",
     "bbw3-mac": "1234",
 }

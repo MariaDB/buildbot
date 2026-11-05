@@ -45,3 +45,13 @@
   total_jobs: 12
   os_type: windows
   max_builds: 1
+
+- name: rs-bbw1
+  arch: amd64
+  total_jobs: 8
+  os_type: debian
+
+- name: rs-bbw2
+  arch: amd64
+  total_jobs: 8
+  os_type: debian
