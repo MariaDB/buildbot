@@ -111,12 +111,16 @@ def _builder(package_type: str, target: Target, arch: str) -> GenericBuilder:
 # One builder per target and arch.
 FOUNDRY_BUILDERS_BY_ARCH = {}
 FOUNDRY_BUILDERS_BY_PACKAGE = {}
+# Names of the builders whose target needs the host's RHEL subscription.
+FOUNDRY_SUBSCRIPTION_BUILDERS = set()
 for package_type, targets in TARGETS_BY_TYPE.items():
     for target in targets:
         for arch in target.arch:
             builder = _builder(package_type, target, arch)
             FOUNDRY_BUILDERS_BY_ARCH.setdefault(arch, []).append(builder)
             FOUNDRY_BUILDERS_BY_PACKAGE.setdefault(target.name, []).append(builder)
+            if getattr(target, "subscription_mounts", None):
+                FOUNDRY_SUBSCRIPTION_BUILDERS.add(builder.name)
 
 
 def _builder_names(packages):
