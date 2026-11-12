@@ -173,3 +173,14 @@ class LDDCheck(BashScriptCommand):
     ):
         args = [f"{binary}:{','.join(libs)}" for binary, libs in binary_checks.items()]
         super().__init__(script_name="ldd_check.sh", args=args)
+
+
+class ConCSeries(BashScriptCommand):
+    """
+    A command to print the C/C series (major.minor, e.g. 3.4) of a
+    Connector/C source tree. Fails when it cannot read the version.
+    """
+
+    def __init__(self, conc_dir: str = "libmariadb"):
+        args = [f"{conc_dir}/CMakeLists.txt"]
+        super().__init__(script_name="conc_series.sh", args=args)
