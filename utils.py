@@ -965,10 +965,10 @@ class CancelOlderSameBranchRequests(BuildStep):
             ("buildrequests", current_buildrequestid)
         )
         current_claimed_at = current_buildrequest.get("claimed_at")
+        current_submitted_at = current_buildrequest.get("submitted_at")
         current_buildsetid = current_buildrequest["buildsetid"]
 
         current_buildset = yield self.master.data.get(("buildsets", current_buildsetid))
-        current_submitted_at = current_buildset.get("submitted_at")
         current_sourcestamps = current_buildset.get("sourcestamps", [])
 
         if (
@@ -978,8 +978,8 @@ class CancelOlderSameBranchRequests(BuildStep):
         ):
             self.addCompleteLog(
                 "summary",
-                "Current buildrequest is missing claimed_at or current buildset "
-                "is missing submitted_at or sourcestamps; nothing to do.\n",
+                "Current buildrequest is missing claimed_at or submitted_at, or "
+                "current buildset is missing sourcestamps; nothing to do.\n",
             )
             return SUCCESS
 
@@ -1048,8 +1048,14 @@ class CancelOlderSameBranchRequests(BuildStep):
             if other_submitted_at is None:
                 continue
 
-            # Newest wins: only cancel requests created before this request was claimed.
-            if other_submitted_at >= current_claimed_at:
+            other_builderid = br["builderid"]
+
+            # Same builder: cut off at submit time; others: at claim time.
+            if other_builderid == current_builderid:
+                cutoff = current_submitted_at
+            else:
+                cutoff = current_claimed_at
+            if other_submitted_at >= cutoff:
                 continue
 
             # A match means same branch+repository+codebase but different revision
@@ -1076,7 +1082,6 @@ class CancelOlderSameBranchRequests(BuildStep):
             if matched_other_ss is None:
                 continue
 
-            other_builderid = br["builderid"]
             other_buildername = yield self._builder_name(other_builderid)
 
             info = {
