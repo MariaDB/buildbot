@@ -12,6 +12,7 @@ from configuration.builders.sequences.connectors.conodbc import (
     get_source_package,
     git_clone_sq,
     macos,
+    mariadb_repo,
     rpm,
     rpm_pkg_tests,
     save_packages,
@@ -105,7 +106,21 @@ def generate_bintar_sqs(
     )
 
 
-def generate_rpm_release_sq(ops, version):
+def has_conc_repo(conc_repos: dict[str, str]):
+    # True when the platform lists a MariaDB Server repo for the build's C/C series
+    return lambda step: step.getProperty("conc_series") in conc_repos
+
+
+def generate_bintar_release_sq(ops, version):
+    build_environment = docker_config(
+        image=f"{ops}{version}",
+        packages_dir=PACKAGES_DIR,
+        artifacts_url=f"{os.environ['ARTIFACTS_URL']}/connector-odbc/",
+    )
+    return generate_bintar_sqs(build_environment, ops, version)
+
+
+def generate_rpm_release_sq(ops, version, conc_repos):
     build_environment = docker_config(
         image=f"{ops}{version}",
         packages_dir=PACKAGES_DIR,
@@ -140,6 +155,7 @@ def generate_rpm_release_sq(ops, version):
     bintar_sqs = generate_bintar_sqs(build_environment, ops, version)
 
     rhel_sqs = [
+        mariadb_repo(config=build_environment, conc_repos=conc_repos),
         rpm(
             config=build_environment,
             jobs=util.Property("jobs"),
@@ -173,13 +189,14 @@ def generate_rpm_release_sq(ops, version):
             os_name=f"ROCKY",
         ),
     ]
+    for sequence in rhel_sqs:
+        for step in sequence.get_steps():
+            step.options.doStepIf = has_conc_repo(conc_repos)
 
-    if ops == "rhel":
-        return bintar_sqs + rhel_sqs
-    return bintar_sqs
+    return bintar_sqs + rhel_sqs
 
 
-def generate_deb_release_sq(ops, version):
+def generate_deb_release_sq(ops, version, conc_repos):
     build_environment = docker_config(
         image=f"{ops}{version}",
         packages_dir=PACKAGES_DIR,
@@ -191,27 +208,19 @@ def generate_deb_release_sq(ops, version):
         bind_mounts=[(f"{PACKAGES_DIR}/", "/packages")],
     )
 
-    do_step_if = lambda props: True
-    if ops == "debian" and version == "13":
-        # ODBC 3.1 needs C/C 3.3 which is not available in Debian 13
-        # MariaDB-Server repos as only >= 11.8 is built which contains C/C 3.4
-        # In this case we only produce a bintar
-        do_step_if = lambda step: step.getProperty("odbc_version") != "3.1"
-
     bintar_sqs = generate_bintar_sqs(build_environment, ops[:3], version)
     deb_sqs = [
+        mariadb_repo(config=build_environment, conc_repos=conc_repos),
         deb(
             config=build_environment,
             jobs=util.Property("jobs"),
             package_platform_suffix=f"{ops[:3]}{version}",
             deb_path=DEB_PATH,
             source_path=SOURCE_PATH,
-            do_step_if=do_step_if,
         ),
         deb_pkg_tests(
             config=clean_environment,
             deb_path=DEB_PATH,
-            do_step_if=do_step_if,
         ),
         save_packages(
             packages=DEB_PACKAGES_TO_SAVE,
@@ -219,9 +228,10 @@ def generate_deb_release_sq(ops, version):
             config=clean_environment,
         ),
     ]
+    for sequence in deb_sqs:
+        for step in sequence.get_steps():
+            step.options.doStepIf = has_conc_repo(conc_repos)
 
-    if ops == "ubuntu" and version == "26.04":
-        return bintar_sqs
     return bintar_sqs + deb_sqs
 
 
@@ -233,30 +243,49 @@ for arch in ["amd64", "aarch64"]:
         ("fedora", "45"),
         ("sles", "1507"),
         ("sles", "1600"),
-        ("rhel", "8"),
-        ("rhel", "9"),
-        ("rhel", "10"),
     ]:
         if ops == "sles" and arch != "amd64":
             continue
         builder = GenericBuilder(
             name=f"codbc-{arch}-{ops}-{version}",
             sidecar=SIDECAR,
-            sequences=generate_rpm_release_sq(ops=ops, version=version),
+            sequences=generate_bintar_release_sq(ops=ops, version=version),
         )
         RELEASE_BUILDERS_BY_ARCH[arch].append(builder)
 
-    for ops, version in [
-        ("debian", "12"),
-        ("debian", "13"),
-        ("ubuntu", "22.04"),
-        ("ubuntu", "24.04"),
-        ("ubuntu", "26.04"),
+    # Packaging platforms: (ops, version, conc_repos)
+    # A branch's C/C series (e.g. "3.4") is read from its libmariadb submodule.
+    # For deb/rpm packaging, the builder installs that C/C from the repo of a
+    # MariaDB Server release on mirror.mariadb.org: conc_repos says, for this
+    # platform, which server version's repo has each C/C series.
+    # Series not in conc_repos -> only the bintar is built.
+    for ops, version, conc_repos in [
+        ("rhel", "8", {"3.3": "10.11", "3.4": "11.8"}),
+        ("rhel", "9", {"3.3": "10.11", "3.4": "11.8"}),
+        ("rhel", "10", {"3.3": "10.11", "3.4": "11.8"}),
     ]:
         builder = GenericBuilder(
             name=f"codbc-{arch}-{ops}-{version}",
             sidecar=SIDECAR,
-            sequences=generate_deb_release_sq(ops=ops, version=version),
+            sequences=generate_rpm_release_sq(
+                ops=ops, version=version, conc_repos=conc_repos
+            ),
+        )
+        RELEASE_BUILDERS_BY_ARCH[arch].append(builder)
+
+    for ops, version, conc_repos in [
+        ("debian", "12", {"3.3": "10.11", "3.4": "11.8"}),
+        ("debian", "13", {"3.4": "11.8"}),
+        ("ubuntu", "22.04", {"3.3": "10.11", "3.4": "11.8"}),
+        ("ubuntu", "24.04", {"3.3": "10.11", "3.4": "11.8"}),
+        ("ubuntu", "26.04", {"3.4": "11.8"}),
+    ]:
+        builder = GenericBuilder(
+            name=f"codbc-{arch}-{ops}-{version}",
+            sidecar=SIDECAR,
+            sequences=generate_deb_release_sq(
+                ops=ops, version=version, conc_repos=conc_repos
+            ),
         )
         RELEASE_BUILDERS_BY_ARCH[arch].append(builder)
 

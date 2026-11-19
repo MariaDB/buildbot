@@ -26,7 +26,7 @@ from configuration.steps.commands.srpm import (
     SRPMRebuild,
 )
 from configuration.steps.commands.upload import FileUpload
-from configuration.steps.commands.util import PrintEnvironmentDetails
+from configuration.steps.commands.util import ConCSeries, PrintEnvironmentDetails
 from configuration.steps.generators.cmake.generator import CMakeGenerator
 from configuration.steps.generators.cmake.options import (
     BUILDPLATFORM,
@@ -125,45 +125,12 @@ def tarball(config: DockerConfig):
         ),
     )
 
-    # Both C/C++ 1.0 and 1.1 use C/C 3.3
+    # C/C series (major.minor) of the libmariadb submodule, e.g. 3.4
     sequence.add_step(
         InContainer(
             PropFromShellStep(
-                command=BashCommand(
-                    name="cpp_to_mariadb_repo",
-                    cmd="""
-    file=$(echo mariadb-connector-cpp-*-src.tar.gz)
-    version=${file#*-cpp-}
-    version=${version%%-src.tar.gz}
-    cpp_version=$(echo "$version" | cut -d. -f1,2)
-
-    if [[ $cpp_version == 1.0 ]] || [[ $cpp_version == 1.1 ]]; then
-        echo 10.11
-    else
-        echo 11.8
-    fi
-    """,
-                ),
-                property="cpp_to_mariadb_repo",
-            ),
-            docker_environment=config,
-        ),
-    )
-
-    sequence.add_step(
-        InContainer(
-            PropFromShellStep(
-                command=BashCommand(
-                    name="cpp_version",
-                    cmd="""
-    file=$(echo mariadb-connector-cpp-*-src.tar.gz)
-    version=${file#*-cpp-}
-    version=${version%%-src.tar.gz}
-    cpp_version=$(echo "$version" | cut -d. -f1,2)
-    echo "$cpp_version"
-    """,
-                ),
-                property="cpp_version",
+                command=ConCSeries(),
+                property="conc_series",
             ),
             docker_environment=config,
         ),
@@ -197,6 +164,35 @@ def tarball(config: DockerConfig):
     return sequence
 
 
+def mariadb_repo(config: DockerConfig, conc_repos: dict[str, str]):
+    """
+    Sets the mariadb_repo property: the MariaDB Server version whose repo on
+    mirror.mariadb.org has the build's C/C series (conc_series), as listed
+    in conc_repos.
+    """
+    cases = "\n".join(
+        f"        {series}) echo {repo} ;;" for series, repo in conc_repos.items()
+    )
+    sequence = BuildSequence()
+    sequence.add_step(
+        InContainer(
+            PropFromShellStep(
+                command=BashCommand(
+                    name="mariadb_repo",
+                    cmd=f"""
+    case "%(prop:conc_series)s" in
+{cases}
+    esac
+    """,
+                ),
+                property="mariadb_repo",
+            ),
+            docker_environment=config,
+        )
+    )
+    return sequence
+
+
 def deb(
     config: DockerConfig,
     jobs: int,
@@ -213,7 +209,7 @@ def deb(
             ShellStep(
                 command=SetupDEBRepo(
                     repo_name="mariadb",
-                    repo_url="https://mirror.mariadb.org/repo/%(prop:cpp_to_mariadb_repo)s",
+                    repo_url="https://mirror.mariadb.org/repo/%(prop:mariadb_repo)s",
                 ),
                 options=StepOptions(
                     description="DEB - Setup MariaDB repository",
@@ -315,7 +311,7 @@ def rpm(
             ShellStep(
                 command=SetupRPMRepo(
                     repo_name="mariadb",
-                    repo_url="https://mirror.mariadb.org/yum/%(prop:cpp_to_mariadb_repo)s",
+                    repo_url="https://mirror.mariadb.org/yum/%(prop:mariadb_repo)s",
                     name=f"{os_name}:Setup MariaDB repository",
                 ),
                 options=StepOptions(
@@ -445,7 +441,7 @@ def deb_pkg_tests(config: DockerConfig, deb_path: str, do_step_if=lambda props: 
             ShellStep(
                 command=SetupDEBRepo(
                     repo_name="mariadb",
-                    repo_url="https://mirror.mariadb.org/repo/%(prop:cpp_to_mariadb_repo)s",
+                    repo_url="https://mirror.mariadb.org/repo/%(prop:mariadb_repo)s",
                 ),
                 options=StepOptions(
                     description="DEB - Setup MariaDB repository",
@@ -520,7 +516,7 @@ def rpm_pkg_tests(config: DockerConfig, rpm_path: str, os_name: str):
             ShellStep(
                 command=SetupRPMRepo(
                     repo_name="mariadb",
-                    repo_url="https://mirror.mariadb.org/yum/%(prop:cpp_to_mariadb_repo)s",
+                    repo_url="https://mirror.mariadb.org/yum/%(prop:mariadb_repo)s",
                     name=f"{os_name}:Setup MariaDB repository",
                 ),
                 options=StepOptions(
@@ -695,7 +691,7 @@ def bintar(
                 ShellStep(
                     command=BashCommand(
                         name="Checkout latest C/C",
-                        cmd=f"git {git_auth_args()} fetch origin $(([ '%(prop:cpp_version)s' = '1.0' ]) && echo 3.3 || echo 3.4) && git reset --hard FETCH_HEAD",
+                        cmd=f"git {git_auth_args()} fetch origin %(prop:conc_series)s && git reset --hard FETCH_HEAD",
                         workdir=PurePath(source_path) / "libmariadb",
                     ),
                     secret_env_vars=git_auth_env_vars(),
