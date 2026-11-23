@@ -19,6 +19,8 @@ Every connector also builds `bb-*` branches. Pull requests are not built.
 
 The sanitizer builders (`-msan-clang-22`, `-ubasan-clang-22`) build and test a bintar without saving it; the ASAN/UBSAN builders build from git, C++ and ODBC with the latest Connector/C of their series.
 
+`ccpp-amd64-debian-13-abi` checks binary compatibility against the latest release of the pushed commit's series (the highest `<major>.<minor>.*` tag; the series and version come from `MACPP_VERSION` in `CMakeLists.txt`). When that release is GA (`MACPP_VERSION_QUALITY` is `ga` or empty) and the pushed commit's version is ahead of it, it builds the release and the pushed commit, puts the new `libmariadbcpp.so` in the release's build, and runs the release's tests against it. Otherwise (no release in the series yet, e.g. a new `master` series; an alpha, beta or rc release; or a branch behind its series' last release, e.g. `develop`), its steps show as skipped.
+
 ## Saved files
 
 Under `CONNECTORS_PACKAGES_DIR/<c|cpp|odbc>` on the worker hosts, served at `<ARTIFACTS_URL>/connector-<c|cpp|odbc>/`:

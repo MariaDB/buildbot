@@ -6,6 +6,7 @@ from configuration.builders.base import GenericBuilder
 from configuration.builders.common import docker_config
 from configuration.builders.infra.runtime import DockerConfig, Sidecar
 from configuration.builders.sequences.connectors.concpp import (
+    abi,
     bintar,
     deb,
     deb_pkg_tests,
@@ -269,6 +270,22 @@ UBASAN_BUILDER = GenericBuilder(
         with_asan_ubsan=True,
         get_source_from_git=True,
     ),
+)
+
+ABI_BUILDER = GenericBuilder(
+    name="ccpp-amd64-debian-13-abi",
+    sidecar=SIDECAR,
+    sequences=[
+        abi(
+            config=docker_config(
+                image="debian13",
+                artifacts_url=f"{os.environ['ARTIFACTS_URL']}/connector-cpp/",
+            ),
+            jobs=util.Property("jobs"),
+            old_path=f"{BUILD_BASE_PATH}/abi-old",
+            new_path=f"{BUILD_BASE_PATH}/abi-new",
+        )
+    ],
 )
 
 WINDOWS_64_BUILDER = GenericBuilder(
