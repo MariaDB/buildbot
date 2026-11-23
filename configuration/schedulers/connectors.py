@@ -76,6 +76,7 @@ CONCPP_SCHEDULERS = [
             cc_builders.UBASAN_BUILDER.name,
             cc_builders.WINDOWS_64_BUILDER.name,
             cc_builders.MSAN_BUILDER.name,
+            cc_builders.ABI_BUILDER.name,
         ],
     ),
 ]

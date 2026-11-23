@@ -921,3 +921,198 @@ def windows(jobs: int, target_platform: str):
         )
     )
     return sequence
+
+
+def _has_abi_base(step):
+    return bool(step.getProperty("abi_base"))
+
+
+def abi(config: DockerConfig, jobs: int, old_path: str, new_path: str):
+    """
+    Builds the latest release of the pushed commit's series, swaps in the
+    library built from the pushed commit, and runs the release's tests
+    against it. Skipped when the series has no release yet, that release is
+    not GA (MACPP_VERSION_QUALITY), or the pushed commit's version is not
+    ahead of that release.
+    """
+    sequence = BuildSequence()
+    old_source = f"{old_path}/source"
+    old_build = f"{old_path}/build"
+    new_source = f"{new_path}/source"
+    new_build = f"{new_path}/build"
+    flags = [
+        CMakeOption(OTHER.CONC_WITH_UNIT_TESTS, False),
+        CMakeOption(CMAKE.BUILD_TYPE, BuildType.RELWITHDEBUG),
+    ]
+
+    sequence.add_step(ShellStep(command=PrintEnvironmentDetails()))
+    sequence.add_step(
+        git_clone_step(
+            lambda step: InContainer(step, docker_environment=config),
+            source_path=new_source,
+        )
+    )
+
+    # MACPP_VERSION "1.01.0007" -> 1.1.7; release tags are plain versions (1.1.9).
+    # Prints nothing when there is no GA release to compare with.
+    sequence.add_step(
+        InContainer(
+            PropFromShellStep(
+                command=BashCommand(
+                    name="last release",
+                    cmd=rf"""
+    raw="$(sed -n 's/^SET(MACPP_VERSION "\([0-9.]*\)").*/\1/p' CMakeLists.txt)"
+    if [[ -z "${{raw}}" ]]; then
+      echo "MACPP_VERSION not found in CMakeLists.txt" >&2
+      exit 1
+    fi
+    IFS=. read -r major minor patch <<< "${{raw}}"
+    series="$((10#${{major}})).$((10#${{minor}}))"
+    version="${{series}}.$((10#${{patch}}))"
+    base="$(git {git_auth_args()} ls-remote --tags --refs origin \
+      | sed 's#.*refs/tags/##' \
+      | grep -E "^${{series//./\\.}}\.[0-9]+$" \
+      | sort -V \
+      | tail -n 1)"
+    echo "Pushed commit: ${{version}}, last ${{series}} release: ${{base}}" >&2
+    if [[ -z "${{base}}" ]]; then
+      exit 0
+    fi
+    newest="$(sort -V <<< "${{base}}"$'\n'"${{version}}" | tail -n 1)"
+    if [[ "${{base}}" == "${{version}}" || "${{newest}}" != "${{version}}" ]]; then
+      exit 0
+    fi
+    git {git_auth_args()} fetch --depth 1 origin tag "${{base}}" >&2
+    quality="$(git show "${{base}}:CMakeLists.txt" \
+      | sed -n 's/^SET(MACPP_VERSION_QUALITY "\([a-zA-Z]*\)").*/\1/p')"
+    echo "Release ${{base}} quality: ${{quality:-ga}}" >&2
+    if [[ -z "${{quality}}" || "${{quality,,}}" == "ga" ]]; then
+      echo "${{base}}"
+    fi
+    """,
+                    workdir=PurePath(new_source),
+                ),
+                property="abi_base",
+                secret_env_vars=git_auth_env_vars(),
+            ),
+            docker_environment=config,
+        )
+    )
+
+    sequence.add_step(
+        InContainer(
+            ShellStep(
+                command=GitInitFromCommit(
+                    repo_url="%(prop:repository)s",
+                    commit="%(prop:abi_base)s",
+                    workdir=PurePath(old_source),
+                ),
+                secret_env_vars=git_auth_env_vars(),
+                options=StepOptions(
+                    description="Initialize git repository - last release",
+                    descriptionDone="Git repository initialized - last release",
+                    doStepIf=_has_abi_base,
+                ),
+            ),
+            docker_environment=config,
+        )
+    )
+
+    for name, source_path, build_path in [
+        ("Last release", old_source, old_build),
+        ("Pushed commit", new_source, new_build),
+    ]:
+        sequence.add_step(
+            InContainer(
+                ShellStep(
+                    command=ConfigureMariaDBCMake(
+                        name=name,
+                        cmake_generator=CMakeGenerator(
+                            source_path=source_path,
+                            builddir=build_path,
+                            use_ccache=True,
+                            flags=flags,
+                        ),
+                    ),
+                    options=StepOptions(
+                        description=f"{name} - Configure CMake",
+                        descriptionDone=f"{name} - CMake configured",
+                        doStepIf=_has_abi_base,
+                    ),
+                ),
+                docker_environment=config,
+            )
+        )
+        sequence.add_step(
+            InContainer(
+                ShellStep(
+                    command=CompileCMakeCommand(
+                        workdir=PurePath(build_path),
+                        jobs=jobs,
+                    ),
+                    options=StepOptions(
+                        description=f"{name} - Compile",
+                        descriptionDone=f"{name} - Compile done",
+                        doStepIf=_has_abi_base,
+                    ),
+                ),
+                docker_environment=config,
+            )
+        )
+
+    # Overwrites the release's library file, so its tests load the new one
+    # whatever their RPATH/RUNPATH says.
+    sequence.add_step(
+        InContainer(
+            ShellStep(
+                command=BashCommand(
+                    name="Swap library",
+                    cmd=f"""
+    new_lib="$(find {new_build} -maxdepth 1 -name 'libmariadbcpp.so*' -type f -print -quit)"
+    old_lib="$(find {old_build} -maxdepth 1 -name 'libmariadbcpp.so*' -type f -print -quit)"
+    if [[ -z "${{new_lib}}" || -z "${{old_lib}}" ]]; then
+      echo "libmariadbcpp.so not found in both builds" >&2
+      exit 1
+    fi
+    if ! ldd {old_build}/test/* 2>/dev/null | grep -q libmariadbcpp; then
+      echo "The release's tests do not load libmariadbcpp.so" >&2
+      exit 1
+    fi
+    cp -v "${{new_lib}}" "${{old_lib}}"
+    """,
+                ),
+                options=StepOptions(
+                    description="Swap in the pushed commit's library",
+                    descriptionDone="Pushed commit's library swapped in",
+                    doStepIf=_has_abi_base,
+                ),
+            ),
+            docker_environment=config,
+        )
+    )
+
+    sequence.add_step(
+        InContainer(
+            ShellStep(
+                command=BashCommand(
+                    name="Last release ctest",
+                    workdir=PurePath(f"{old_build}/test"),
+                    cmd="export TEST_HOST=$SIDECAR_HOST && ctest --output-on-failure",
+                ),
+                env_vars=[
+                    ("TEST_UID", "root"),
+                    ("TEST_PASSWORD", ""),
+                    ("TEST_PORT", "3306"),
+                    ("TEST_SCHEMA", "test"),
+                    ("TEST_VERBOSE", "true"),
+                ],
+                options=StepOptions(
+                    description="Run last release's ctest on the new library",
+                    descriptionDone="Last release's ctest on the new library done",
+                    doStepIf=_has_abi_base,
+                ),
+            ),
+            docker_environment=config,
+        )
+    )
+    return sequence
