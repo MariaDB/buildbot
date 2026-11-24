@@ -1,8 +1,7 @@
 import os
 import sys
 
-from buildbot.plugins import reporters, secrets, util
-from constants import GITHUB_STATUS_BUILDERS
+from buildbot.plugins import secrets
 from schedulers_definition import SCHEDULERS
 
 IS_CHECKCONFIG = any("checkconfig" in arg for arg in sys.argv)
@@ -19,7 +18,6 @@ def base_master_config(
 ):
     # TODO(cvicentiu) either move this to environ or all other params to config
     # file.
-    github_access_token = config["private"]["gh_mdbci"]["access_token"]
     db_url = config["private"]["db_url"]
 
     return {
@@ -38,18 +36,8 @@ def base_master_config(
         # without some help.
         "buildbotURL": buildbot_url,
         # 'services' is a list of BuildbotService items like reporter targets.
-        # The status of each build will be pushed to these targets.
-        # buildbot/reporters/*.py has a variety to choose from, like IRC bots.
-        "services": [
-            reporters.GitHubStatusPush(
-                token=github_access_token,
-                context=util.Interpolate("buildbot/%(prop:buildername)s"),
-                startDescription="Build started.",
-                endDescription="Build done.",
-                verbose=True,
-                builders=GITHUB_STATUS_BUILDERS,
-            )
-        ],
+        # master-web adds the GitHub status reporter.
+        "services": [],
         "secretsProviders": [secrets.SecretInAFile(dirname=secrets_provider_file)],
         # 'protocols' contains information about protocols which master will
         # use for communicating with workers. You must define at least 'port'

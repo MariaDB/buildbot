@@ -126,7 +126,7 @@ GitHub sends push and pull request events to the change hook on master-web. Prod
 | `master-*/` | One directory per master, with its `master.cfg` |
 | [master.cfg](master.cfg), [os_info.yaml](os_info.yaml), [define_masters.py](define_masters.py) | The template, platform list and generator of the autogen masters |
 | [constants.py](constants.py) | Server versions, platforms per version, builders that report to GitHub, extra MTR suites |
-| [master_common.py](master_common.py) | The settings all masters share: database, message queue, GitHub status reporting |
+| [master_common.py](master_common.py) | The settings all masters share: database, message queue |
 | [common_factories.py](common_factories.py), [utils.py](utils.py), [schedulers_definition.py](schedulers_definition.py), [locks.py](locks.py) | The server builders' factories, schedulers and helpers, used by every master except master-migration |
 | [configuration/](configuration/README.md) | The builder framework used by master-migration |
 | [ci_build_images/](ci_build_images/README.md) | Dockerfiles of the build images |

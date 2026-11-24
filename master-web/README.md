@@ -25,6 +25,10 @@ GitHub sends push and pull request events to `/change_hook/github`, signed with 
 | Connectors | `CONNECTOR_*_REPO_URL` in [.env](../docker-compose/.env) | master-migration |
 | Foundry | `FOUNDRY_REPO_URL` in [.env](../docker-compose/.env) | master-web |
 
+## GitHub statuses
+
+master-web is the only master that reports the builders in `GITHUB_STATUS_BUILDERS` ([constants.py](../constants.py)) to GitHub, with the `gh_mdbci` token. It sees every master's builds through the message queue, so each status is sent once.
+
 Dev receives events from the maintainers' forks: the Connectors' and Foundry's are in [.env.dev](../docker-compose/.env.dev), the server's and Galera's are added to the schedulers when `ENVIRON` is `DEV`.
 
 ## Force schedulers
