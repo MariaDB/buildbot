@@ -16,7 +16,13 @@ HEALTH_URL="${BASE_URL}/health"
 
 builderarch=${buildername%%-*}
 
-image=mariadb-${tarbuildnum}
+variantfile="${tarbuildnum}-${buildername}-variant.txt"
+if [ ! -f "$variantfile" ]; then
+  echo "No image was built for $buildername, nothing to test"
+  exit 0
+fi
+
+image=mariadb-${tarbuildnum}$(<"$variantfile")
 
 if [[ "$buildername" = *-rhel-*-rpm-autobake ]]; then
   image=${image}-ubi

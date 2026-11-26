@@ -72,8 +72,24 @@ case "${buildername#*ubuntu-}" in
   *-deb-autobake*)
     pkgver=${buildername#*ubuntu-}
     pkgver=ubu${pkgver%-deb-autobake*}
+    # The mariadb-docker directory whose Dockerfile pins this builder's
+    # packages, e.g. 10.11 (ubu2204) or 10.11-noble (ubu2404)
+    for dir in "mariadb-docker/$master_branch" "mariadb-docker/$master_branch"-*; do
+      [[ $dir = *-ubi ]] && continue
+      if grep -qs "+maria~${pkgver}\$" "$dir/Dockerfile"; then
+        variant=${dir#mariadb-docker/"$master_branch"}
+        break
+      fi
+    done
+    if [ ! -v variant ]; then
+      echo "No mariadb-docker image for $master_branch on $pkgver, nothing to do"
+      exit 0
+    fi
+    master_branch=$master_branch$variant
+    container_tag=$container_tag$variant
     ;;
   *-rhel-*-rpm-autobake)
+    variant=
     ubi=-ubi
     # first arch only
     arches=( linux/amd64 )
@@ -85,7 +101,10 @@ case "${buildername#*ubuntu-}" in
     ;;
 esac
 
-image=mariadb-${tarbuildnum}${ubi}
+image=mariadb-${tarbuildnum}${variant}${ubi}
+
+# tell docker-library-test.sh and docker-library-manifest.sh what was built
+printf '%s\n' "$variant" > "${tarbuildnum}-${buildername}-variant.txt"
 
 # keep a count of architectures that have reached this step
 # and only build once they are all here.

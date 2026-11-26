@@ -22,6 +22,13 @@ else
   container_tag=$master_branch
 fi
 
+variantfile="${tarbuildnum}-${buildername}-variant.txt"
+if [ ! -f "$variantfile" ]; then
+  echo "No image was built for $buildername, nothing to push"
+  exit 0
+fi
+variant=$(<"$variantfile")
+
 ubi=
 if [[ "$buildername" = *-rhel-*-rpm-autobake ]]; then
     ubi=-ubi
@@ -29,9 +36,9 @@ if [[ "$buildername" = *-rhel-*-rpm-autobake ]]; then
 fi
 
 # Container tags must be lower case.
-container_tag=${container_tag,,*}${ubi}
+container_tag=${container_tag,,*}${variant}${ubi}
 
-image=mariadb-${tarbuildnum}${ubi}
+image=mariadb-${tarbuildnum}${variant}${ubi}
 
 # keep a count of architectures that have reached this step
 # and only build once they are all here.
@@ -150,7 +157,7 @@ fi
 buildah rmi --prune --force
 
 # Delete old reference files
-find . -name \*reference.txt  -type f -mtime +7 -delete
+find . \( -name \*reference.txt -o -name \*-variant.txt \) -type f -mtime +7 -delete
 
 buildah images
 # lost and forgotten (or just didn't make enough manifest items - build failure on an arch)
