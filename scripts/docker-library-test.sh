@@ -14,8 +14,6 @@ UPLOAD_URL="${BASE_URL}/upload-test-results/"
 HEALTH_URL="${BASE_URL}/health"
 
 
-builderarch=${buildername%%-*}
-
 variantfile="${tarbuildnum}-${buildername}-variant.txt"
 if [ ! -f "$variantfile" ]; then
   echo "No image was built for $buildername, nothing to test"
@@ -35,20 +33,21 @@ fi
 #
 # TEST Image
 #
+# The manifest only exists in the run that completed it, whichever
+# architecture's autobake that was. Test its amd64 image there, natively;
+# other architectures would need emulation.
 
-if [ "${builderarch}" != amd64 ]; then
-  export DOCKER_LIBRARY_START_TIMEOUT=350
-  echo "Temporarily disable non-amd64 testing"
+if [ "$(uname -m)" != x86_64 ]; then
+  echo "Not an amd64 worker, no emulated testing"
   exit 2
-else
-  export DOCKER_LIBRARY_START_TIMEOUT=150
 fi
+export DOCKER_LIBRARY_START_TIMEOUT=150
 
 # clean images if test does not succeed
 #trap 'buildah rmi "$image"' EXIT
 
 ret=0
-mariadb-docker/.test/run.sh --xml=doi.xml "$image" || ret=1
+mariadb-docker/.test/run.sh --xml=doi.xml "${image}-linux/amd64" || ret=1
 
 if [ $ret ] && ! curl "$HEALTH_URL" \
     --fail \
