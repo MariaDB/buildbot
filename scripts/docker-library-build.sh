@@ -68,6 +68,12 @@ container_tag=${container_tag,,*}
 ubi=
 arches=( linux/amd64 linux/arm64/v8 linux/ppc64le linux/s390x  )
 
+# docker-library-test.sh and docker-library-manifest.sh read this. Drop
+# what a previous build of this tarbuildnum/builder decided, so a no-op
+# leaves none behind.
+variantfile="${tarbuildnum}-${buildername}-variant.txt"
+rm -f "$variantfile"
+
 case "${buildername#*ubuntu-}" in
   *-deb-autobake*)
     pkgver=${buildername#*ubuntu-}
@@ -103,8 +109,7 @@ esac
 
 image=mariadb-${tarbuildnum}${variant}${ubi}
 
-# tell docker-library-test.sh and docker-library-manifest.sh what was built
-printf '%s\n' "$variant" > "${tarbuildnum}-${buildername}-variant.txt"
+printf '%s\n' "$variant" > "$variantfile"
 
 # keep a count of architectures that have reached this step
 # and only build once they are all here.
