@@ -66,12 +66,24 @@ fi
 # Container tags must be lower case.
 container_tag=${container_tag,,*}
 ubi=
+pkgver=
 arches=( linux/amd64 linux/arm64/v8 linux/ppc64le linux/s390x  )
+
+declare -A suffix=(
+        ['ubu2204']='jammy'
+        ['ubu2404']='noble'
+        ['ubu2604']='resolute'
+)
 
 case "${buildername#*ubuntu-}" in
   *-deb-autobake*)
     pkgver=${buildername#*ubuntu-}
     pkgver=ubu${pkgver%-deb-autobake*}
+    if [[ -v "suffix[$pkgver]" ]]; then
+      if [ -d "mariadb-docker/${master_branch}-${suffix[$pkgver]}" ]; then
+        master_branch=${master_branch}-${suffix[$pkgver]}
+      fi
+    fi
     ;;
   *-rhel-*-rpm-autobake)
     ubi=-ubi
@@ -85,13 +97,13 @@ case "${buildername#*ubuntu-}" in
     ;;
 esac
 
-image=mariadb-${tarbuildnum}${ubi}
+image=mariadb-${tarbuildnum}${pkgver}${ubi}
 
 # keep a count of architectures that have reached this step
 # and only build once they are all here.
 
 # UBI for the moment only triggers on one arch
-reffile="${container_tag}-${tarbuildnum}${ubi}-reference.txt"
+reffile="${container_tag}-${tarbuildnum}${pkgver}${ubi}-reference.txt"
 
 # ensure unique entries for each arch
 echo "$buildername" >> "$reffile"

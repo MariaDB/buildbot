@@ -20,6 +20,10 @@ image=mariadb-${tarbuildnum}
 
 if [[ "$buildername" = *-rhel-*-rpm-autobake ]]; then
   image=${image}-ubi
+else
+  pkgver=${buildername#*ubuntu-}
+  pkgver=ubu${pkgver%-deb-autobake*}
+  image=${image}${pkgver}
 fi
 
 if ! buildah manifest exists "$image"; then
