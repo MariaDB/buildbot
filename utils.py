@@ -467,26 +467,20 @@ def hasDockerLibrary(step: BuildStep) -> bool:
     if not savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES):
         return False
 
-    branch = step.getProperty("master_branch")
     builder_name = step.getProperty("buildername")
 
-    # from https://github.com/MariaDB/mariadb-docker/blob/next/update.sh#L7-L15
-    if fnmatch.fnmatch(branch, "10.11") or fnmatch.fnmatch(branch, "10.6"):
-        dockerbase = "ubuntu-2204-deb-autobake"
-    elif fnmatch.fnmatch(branch, "11.*") or fnmatch.fnmatch(branch, "12.2"):
-        dockerbase = "ubuntu-2404-deb-autobake"
-    else:
-        dockerbase = "ubuntu-2604-deb-autobake"
-
-    # UBI images
-    if builder_name.endswith("amd64-rhel-9-rpm-autobake"):
-        return fnmatch.fnmatch(branch, "10.*") or fnmatch.fnmatch(branch, "11.*")
-
-    if builder_name.endswith("amd64-rhel-10-rpm-autobake"):
-        return not (fnmatch.fnmatch(branch, "10.*") or fnmatch.fnmatch(branch, "11.*"))
-
-    # We only build on the above autobakes for all architectures
-    return builder_name.endswith(dockerbase)
+    # Ubuntu images on all architectures, UBI on amd64 only.
+    # scripts/docker-library-build.sh picks the mariadb-docker directory
+    # built from this builder's packages, if any.
+    return builder_name.endswith(
+        (
+            "ubuntu-2204-deb-autobake",
+            "ubuntu-2404-deb-autobake",
+            "ubuntu-2604-deb-autobake",
+            "amd64-rhel-9-rpm-autobake",
+            "amd64-rhel-10-rpm-autobake",
+        )
+    )
 
 
 def filterBranch(step: BuildStep) -> str:

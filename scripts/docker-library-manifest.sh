@@ -22,6 +22,13 @@ else
   container_tag=$master_branch
 fi
 
+variantfile="${tarbuildnum}-${buildername}-variant.txt"
+if [ ! -f "$variantfile" ]; then
+  echo "No image was built for $buildername, nothing to push"
+  exit 0
+fi
+variant=$(<"$variantfile")
+
 ubi=
 if [[ "$buildername" = *-rhel-*-rpm-autobake ]]; then
     ubi=-ubi
@@ -29,9 +36,17 @@ if [[ "$buildername" = *-rhel-*-rpm-autobake ]]; then
 fi
 
 # Container tags must be lower case.
-container_tag=${container_tag,,*}${ubi}
+container_tag=${container_tag,,*}
+# The special tags below (latest, earliest-lts, ...) name a major release:
+# compare them without -ubi, and give them only to the major's plain image,
+# not to a variant like 10.11-noble.
+release_tag=
+if [ -z "$variant" ]; then
+  release_tag=$container_tag
+fi
+container_tag=${container_tag}${variant}${ubi}
 
-image=mariadb-${tarbuildnum}${ubi}
+image=mariadb-${tarbuildnum}${variant}${ubi}
 
 # keep a count of architectures that have reached this step
 # and only build once they are all here.
@@ -84,7 +99,7 @@ if ! wget -nv https://downloads.mariadb.org/rest-api/mariadb/ -O "$t"; then
   echo >&2 "Wget failed"
 fi
 if [ "$branch" = 'main' ]; then
-  specialtags['verylatest']=\"${container_tag}\"
+  specialtags['verylatest']=\"${release_tag}\"
 else
   specialtags['verylatest']=$(jq '.major_releases[0].release_id' <"$t")
 fi
@@ -93,7 +108,7 @@ specialtags['latest-lts']=$(jq '.major_releases | map(select(.release_status == 
 specialtags['earliest']=$(jq '.major_releases | map(select( (( (.release_eol_date // "2031-01-01") + "T00:00:00Z") | fromdate) > now))[-1].release_id' <"$t")
 specialtags['earliest-lts']=$(jq '.major_releases | map(select(.release_status == "Stable" and .release_support_type == "Long Term Support" and (( (.release_eol_date // "2031-01-01") + "T00:00:00Z") | fromdate) > now ))[-1].release_id' <"$t")
 for tag in "${!specialtags[@]}"; do
-  if [ \""$container_tag"\" == "${specialtags[$tag]}" ]; then
+  if [ -n "$release_tag" ] && [ \""$release_tag"\" == "${specialtags[$tag]}" ]; then
     if [ "$prod_environment" = "True" ]; then
       buildah manifest push --all "$devmanifest" "docker://quay.io/mariadb-foundation/mariadb-devel:${tag}${ubi}"
     else
@@ -150,7 +165,7 @@ fi
 buildah rmi --prune --force
 
 # Delete old reference files
-find . -name \*reference.txt  -type f -mtime +7 -delete
+find . \( -name \*reference.txt -o -name \*-variant.txt \) -type f -mtime +7 -delete
 
 buildah images
 # lost and forgotten (or just didn't make enough manifest items - build failure on an arch)

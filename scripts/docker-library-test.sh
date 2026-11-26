@@ -14,9 +14,13 @@ UPLOAD_URL="${BASE_URL}/upload-test-results/"
 HEALTH_URL="${BASE_URL}/health"
 
 
-builderarch=${buildername%%-*}
+variantfile="${tarbuildnum}-${buildername}-variant.txt"
+if [ ! -f "$variantfile" ]; then
+  echo "No image was built for $buildername, nothing to test"
+  exit 0
+fi
 
-image=mariadb-${tarbuildnum}
+image=mariadb-${tarbuildnum}$(<"$variantfile")
 
 if [[ "$buildername" = *-rhel-*-rpm-autobake ]]; then
   image=${image}-ubi
@@ -29,22 +33,23 @@ fi
 #
 # TEST Image
 #
+# The manifest only exists in the run that completed it, whichever
+# architecture's autobake that was. Test its amd64 image there, natively;
+# other architectures would need emulation.
 
-if [ "${builderarch}" != amd64 ]; then
-  export DOCKER_LIBRARY_START_TIMEOUT=350
-  echo "Temporarily disable non-amd64 testing"
+if [ "$(uname -m)" != x86_64 ]; then
+  echo "Not an amd64 worker, no emulated testing"
   exit 2
-else
-  export DOCKER_LIBRARY_START_TIMEOUT=150
 fi
+export DOCKER_LIBRARY_START_TIMEOUT=150
 
 # clean images if test does not succeed
 #trap 'buildah rmi "$image"' EXIT
 
 ret=0
-mariadb-docker/.test/run.sh --xml=doi.xml "$image" || ret=1
+mariadb-docker/.test/run.sh --xml=doi.xml "${image}-linux/amd64" || ret=1
 
-if [ $ret ] && ! curl "$HEALTH_URL" \
+if ! curl "$HEALTH_URL" \
     --fail \
     --max-time 5 \
     --retry 3 \
@@ -52,6 +57,10 @@ if [ $ret ] && ! curl "$HEALTH_URL" \
     --retry-delay 5 \
     --retry-connrefused; then
   echo "Service health check failed. Aborting uploads."
+  # A failed test stays a failure, the upload is what's skipped
+  if [ "$ret" -ne 0 ]; then
+    exit "$ret"
+  fi
   exit 2
 fi
 
@@ -60,7 +69,7 @@ if [ ! -f doi.xml ]; then
   exit 1
 fi
 
-[ $ret ] && curl \
+curl \
     --fail \
     --max-time 120 \
     --connect-timeout 10 \

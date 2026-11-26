@@ -68,16 +68,45 @@ container_tag=${container_tag,,*}
 ubi=
 arches=( linux/amd64 linux/arm64/v8 linux/ppc64le linux/s390x  )
 
+# docker-library-test.sh and docker-library-manifest.sh read this. Drop
+# what a previous build of this tarbuildnum/builder decided, so a no-op
+# leaves none behind.
+variantfile="${tarbuildnum}-${buildername}-variant.txt"
+rm -f "$variantfile"
+
 case "${buildername#*ubuntu-}" in
   *-deb-autobake*)
     pkgver=${buildername#*ubuntu-}
     pkgver=ubu${pkgver%-deb-autobake*}
+    # The mariadb-docker directory whose Dockerfile pins this builder's
+    # packages, e.g. 10.11 (ubu2204) or 10.11-noble (ubu2404)
+    for dir in "mariadb-docker/$master_branch" "mariadb-docker/$master_branch"-*; do
+      [[ $dir = *-ubi ]] && continue
+      if grep -qs "+maria~${pkgver}\$" "$dir/Dockerfile"; then
+        variant=${dir#mariadb-docker/"$master_branch"}
+        break
+      fi
+    done
+    if [ ! -v variant ]; then
+      echo "No mariadb-docker image for $master_branch on $pkgver, nothing to do"
+      exit 0
+    fi
+    master_branch=$master_branch$variant
+    container_tag=$container_tag$variant
     ;;
   *-rhel-*-rpm-autobake)
+    variant=
     ubi=-ubi
     # first arch only
     arches=( linux/amd64 )
     master_branch=${master_branch}-ubi
+    # Only if the UBI image is based on this builder's RHEL major
+    rhel=${buildername#*-rhel-}
+    rhel=${rhel%%-*}
+    if ! grep -qs "^FROM redhat/ubi${rhel}-minimal\$" "mariadb-docker/$master_branch/Dockerfile"; then
+      echo "mariadb-docker/$master_branch is not based on ubi${rhel}, nothing to do"
+      exit 0
+    fi
     ;;
   *)
     echo "unknown base buildername $buildername"
@@ -85,7 +114,9 @@ case "${buildername#*ubuntu-}" in
     ;;
 esac
 
-image=mariadb-${tarbuildnum}${ubi}
+image=mariadb-${tarbuildnum}${variant}${ubi}
+
+printf '%s\n' "$variant" > "$variantfile"
 
 # keep a count of architectures that have reached this step
 # and only build once they are all here.
