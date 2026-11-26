@@ -36,7 +36,15 @@ if [[ "$buildername" = *-rhel-*-rpm-autobake ]]; then
 fi
 
 # Container tags must be lower case.
-container_tag=${container_tag,,*}${variant}${ubi}
+container_tag=${container_tag,,*}
+# The special tags below (latest, earliest-lts, ...) name a major release:
+# compare them without -ubi, and give them only to the major's plain image,
+# not to a variant like 10.11-noble.
+release_tag=
+if [ -z "$variant" ]; then
+  release_tag=$container_tag
+fi
+container_tag=${container_tag}${variant}${ubi}
 
 image=mariadb-${tarbuildnum}${variant}${ubi}
 
@@ -91,7 +99,7 @@ if ! wget -nv https://downloads.mariadb.org/rest-api/mariadb/ -O "$t"; then
   echo >&2 "Wget failed"
 fi
 if [ "$branch" = 'main' ]; then
-  specialtags['verylatest']=\"${container_tag}\"
+  specialtags['verylatest']=\"${release_tag}\"
 else
   specialtags['verylatest']=$(jq '.major_releases[0].release_id' <"$t")
 fi
@@ -100,7 +108,7 @@ specialtags['latest-lts']=$(jq '.major_releases | map(select(.release_status == 
 specialtags['earliest']=$(jq '.major_releases | map(select( (( (.release_eol_date // "2031-01-01") + "T00:00:00Z") | fromdate) > now))[-1].release_id' <"$t")
 specialtags['earliest-lts']=$(jq '.major_releases | map(select(.release_status == "Stable" and .release_support_type == "Long Term Support" and (( (.release_eol_date // "2031-01-01") + "T00:00:00Z") | fromdate) > now ))[-1].release_id' <"$t")
 for tag in "${!specialtags[@]}"; do
-  if [ \""$container_tag"\" == "${specialtags[$tag]}" ]; then
+  if [ -n "$release_tag" ] && [ \""$release_tag"\" == "${specialtags[$tag]}" ]; then
     if [ "$prod_environment" = "True" ]; then
       buildah manifest push --all "$devmanifest" "docker://quay.io/mariadb-foundation/mariadb-devel:${tag}${ubi}"
     else
