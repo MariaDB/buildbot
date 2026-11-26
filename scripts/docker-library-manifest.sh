@@ -23,15 +23,29 @@ else
 fi
 
 ubi=
+pkgver=
 if [[ "$buildername" = *-rhel-*-rpm-autobake ]]; then
     ubi=-ubi
     master_branch=${master_branch}-ubi
+else
+  declare -A suffix=(
+          ['ubu2204']='jammy'
+          ['ubu2404']='noble'
+          ['ubu2604']='resolute'
+  )
+  pkgver=${buildername#*ubuntu-}
+  pkgver=ubu${pkgver%-deb-autobake*}
+  if [[ -v "suffix[$pkgver]" ]]; then
+    if [ -d "mariadb-docker/${master_branch}-${suffix[$pkgver]}" ]; then
+      container_tag=${master_branch}-${suffix[$pkgver]}
+    fi
+  fi
 fi
 
 # Container tags must be lower case.
 container_tag=${container_tag,,*}${ubi}
 
-image=mariadb-${tarbuildnum}${ubi}
+image=mariadb-${tarbuildnum}${pkgver}${ubi}
 
 # keep a count of architectures that have reached this step
 # and only build once they are all here.
