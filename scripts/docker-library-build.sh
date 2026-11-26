@@ -100,6 +100,13 @@ case "${buildername#*ubuntu-}" in
     # first arch only
     arches=( linux/amd64 )
     master_branch=${master_branch}-ubi
+    # Only if the UBI image is based on this builder's RHEL major
+    rhel=${buildername#*-rhel-}
+    rhel=${rhel%%-*}
+    if ! grep -qs "^FROM redhat/ubi${rhel}-minimal\$" "mariadb-docker/$master_branch/Dockerfile"; then
+      echo "mariadb-docker/$master_branch is not based on ubi${rhel}, nothing to do"
+      exit 0
+    fi
     ;;
   *)
     echo "unknown base buildername $buildername"

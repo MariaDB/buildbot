@@ -467,23 +467,18 @@ def hasDockerLibrary(step: BuildStep) -> bool:
     if not savePackageIfBranchMatch(step, SAVED_PACKAGE_BRANCHES):
         return False
 
-    branch = step.getProperty("master_branch")
     builder_name = step.getProperty("buildername")
 
-    # UBI images
-    if builder_name.endswith("amd64-rhel-9-rpm-autobake"):
-        return fnmatch.fnmatch(branch, "10.*") or fnmatch.fnmatch(branch, "11.*")
-
-    if builder_name.endswith("amd64-rhel-10-rpm-autobake"):
-        return not (fnmatch.fnmatch(branch, "10.*") or fnmatch.fnmatch(branch, "11.*"))
-
-    # Ubuntu images, all architectures. scripts/docker-library-build.sh picks
-    # the mariadb-docker directory built from this builder's packages, if any.
+    # Ubuntu images on all architectures, UBI on amd64 only.
+    # scripts/docker-library-build.sh picks the mariadb-docker directory
+    # built from this builder's packages, if any.
     return builder_name.endswith(
         (
             "ubuntu-2204-deb-autobake",
             "ubuntu-2404-deb-autobake",
             "ubuntu-2604-deb-autobake",
+            "amd64-rhel-9-rpm-autobake",
+            "amd64-rhel-10-rpm-autobake",
         )
     )
 
