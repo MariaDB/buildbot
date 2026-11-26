@@ -49,7 +49,7 @@ export DOCKER_LIBRARY_START_TIMEOUT=150
 ret=0
 mariadb-docker/.test/run.sh --xml=doi.xml "${image}-linux/amd64" || ret=1
 
-if [ $ret ] && ! curl "$HEALTH_URL" \
+if ! curl "$HEALTH_URL" \
     --fail \
     --max-time 5 \
     --retry 3 \
@@ -57,6 +57,10 @@ if [ $ret ] && ! curl "$HEALTH_URL" \
     --retry-delay 5 \
     --retry-connrefused; then
   echo "Service health check failed. Aborting uploads."
+  # A failed test stays a failure, the upload is what's skipped
+  if [ "$ret" -ne 0 ]; then
+    exit "$ret"
+  fi
   exit 2
 fi
 
@@ -65,7 +69,7 @@ if [ ! -f doi.xml ]; then
   exit 1
 fi
 
-[ $ret ] && curl \
+curl \
     --fail \
     --max-time 120 \
     --connect-timeout 10 \
