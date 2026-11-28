@@ -6,7 +6,8 @@ Server builders on non-latent workers, for the platforms that don't run in Docke
 | --- | --- | --- |
 | `amd64-windows` | `bbw4-windows` | Debug build and tests; reports to GitHub |
 | `amd64-windows-packages` | `bbw3-windows` | MSI and zip packages; reports to GitHub |
-| `aarch64-macos`, `aarch64-macos-compile-only` | `bbw1-mac`, `bbw2-mac` | Build and tests; compile only, reporting to GitHub |
+| `aarch64-macos` | `bbw1-mac`, `bbw2-mac` | Build and the default MTR suites, without `main` |
+| `aarch64-macos-compile-only` | `bbw1-mac`, `bbw2-mac` | Build and the MTR `main` suite; reports to GitHub |
 | `amd64-freebsd-14` | `hz-freebsd-bbw1`, `hz-freebsd-bbw2` | Build and tests |
 | `ppc64be-aix-71` | `aix-worker` | Build and tests |
 | `amd64-rhel8-dockerlibrary` (`rhel9` on dev) | `MASTER_NONLATENT_DOCKERLIBRARY_WORKER` | Builds and tests the [official Docker image](https://github.com/MariaDB/mariadb-docker) with the packages of an `-autobake` build |
