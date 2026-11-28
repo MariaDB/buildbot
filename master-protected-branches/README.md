@@ -6,7 +6,7 @@ The name is historical. Builders on other masters report to GitHub too, and a bu
 
 ## GitHub statuses and branch protection
 
-Every master runs a `GitHubStatusPush` service ([master_common.py](../master_common.py)), which reports the builders listed in `GITHUB_STATUS_BUILDERS` in [constants.py](../constants.py) as `buildbot/<builder>`. Adding a builder to the list, whichever master runs it, makes it report its status. Which statuses are required before a pull request can merge is set in the branch protection rules of the GitHub repository.
+master-web runs a `GitHubStatusPush` service ([master.cfg](../master-web/master.cfg)), which reports the builders listed in `GITHUB_STATUS_BUILDERS` in [constants.py](../constants.py) as `buildbot/<builder>`. Adding a builder to the list, whichever master runs it, makes it report its status. Which statuses are required before a pull request can merge is set in the branch protection rules of the GitHub repository.
 
 A builder in `GITHUB_STATUS_BUILDERS`:
 
